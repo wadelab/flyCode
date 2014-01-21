@@ -2,6 +2,7 @@ function handle= fly_plotCartData(meanFlyResp,semFlyResp,plotParams)
 % handles= fly_plotCartData(meanFlyResp{thisPhenotype},semFlyResp{thisPhenotype},plotParams)
 % Plots data from a fly sserg experiment in cartesian coordinates.
 % Returns a vector of handles to the plots of the different experiments.
+defFontSize=12;
 if (~isfield(plotParams,'errorEnvelope'))
     plotParams.errorEnvelope=1;
 end
@@ -39,21 +40,22 @@ for t=1:size(meanFlyResp,1) % Different frequencies
         set(handle(2),'LineWidth',plotParams.lineWidthCart);
         grid on;
         axis square
-        set(handle(1),'FontSize',12);
+        set(handle(1),'FontSize',defFontSize-2);
         
         
         set(gca,'XScale','Log');     
-        set(gca,'FontSize',12);
+        set(gca,'FontSize',defFontSize-2);
    
-        xlabel('Probe Contrast','FontSize',14);
-        ylabel('Resp amplitude','FontSize',14);
+        xlabel('Probe Contrast','FontSize',defFontSize,'HorizontalAlignment','left');
+     %   ylabel('Resp amplitude','FontSize',defFontSize,'VerticalAlignment','top');
         
         if (plotParams.maxYLim(t)~=0)
             set(gca,'YLim',[0 plotParams.maxYLim(t)]);
         end
         
         set(gca,'XLim',[0 0.8]);
-        title(sprintf('%s\n%s',plotParams.ptypeName, plotParams.labelList{t}),'FontSize',14);
+        tHand=title(sprintf('%s', plotParams.labelList{t}),'FontSize',defFontSize,'HorizontalAlignment','left');
+        set(tHand,'FontSize',fix(defFontSize*1.12));
         
         
         
@@ -125,16 +127,17 @@ for t=1:size(meanFlyResp,1) % Different frequencies
         
         
         set(gca,'XScale','Log');
-        set(gca,'FontSize',12);
+        set(gca,'FontSize',defFontSize-2);
    
-        xlabel('Probe Contrast','FontSize',14);
-        ylabel('Resp amplitude','FontSize',14);
+        xlabel('Probe Contrast','FontSize',defFontSize,'HorizontalAlignment','left');
+       % ylabel('Resp amplitude','FontSize',defFontSize,'VerticalAlignment','bottom');
         if (plotParams.maxYLim(t)~=0)
             set(gca,'YLim',[0 plotParams.maxYLim(t)]);
         end
         
         set(gca,'XLim',[0 0.8]);
-        title(sprintf('%s\n%s',plotParams.ptypeName, plotParams.labelList{t}),'FontSize',14);
+        tHand=title(sprintf('%s',plotParams.labelList{t}),'FontSize',defFontSize,'HorizontalAlignment','left');
+         set(tHand,'FontSize',fix(defFontSize*1.12));
     end
     
     
