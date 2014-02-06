@@ -249,7 +249,7 @@ for thisRun=1:nRepeats
     
     
     
-    %% Save out the data
+    %% Save out the data - now saves out to top level directory
     save(fullfile(datadir,'temp'));
     if (~exist(datadir,'dir'))
         warning('Data dir does not exist... Making it!');
