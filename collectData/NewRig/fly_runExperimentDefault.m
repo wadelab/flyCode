@@ -57,10 +57,13 @@ end
 % Loop over many reps once you are satisfied with the code
 % *************************************************************
 nRepeats=5;
-
-for thisRun=1:nRepeats
+    exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
+keyboard
     
-    exptParams=fly_getExptStructRig(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
+    for thisRun=1:nRepeats
+    
+    exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
+    
     % We call this within the
     % loop so that subsequent
     % experiments get different
@@ -250,7 +253,7 @@ for thisRun=1:nRepeats
     
     
     %% Save out the data - now saves out to top level directory
-    save(fullfile(datadir,'temp'));
+  
     if (~exist(datadir,'dir'))
         warning('Data dir does not exist... Making it!');
         madeDirFlag=mkdir(datadir);
@@ -259,10 +262,8 @@ for thisRun=1:nRepeats
             datadir=pwd;
         end
     end
-    
-    
-    
-    
+    save(fullfile(datadir,'temp'));
+   
     filename=fullfile(datadir,[int2str(thisRun),'_',datestr(expt.startTime,30),'.mat'])
     save(filename);
     
@@ -312,36 +313,38 @@ for thisRun=1:nRepeats
     colormap hot;
     
     
-    
-    
     %% Compute FFTs and look at the 1F1 and 1F2 components
     fftData=fft(meanCondDat);
-    % disp('1F1 magnitude');
-    % disp(abs(squeeze(fftData(1+F1,:,:,:))));
-    % disp('2F1 magnitude');
-    % disp(abs(squeeze(fftData(1+F1*2,:,:,:))));
-    
-    % Do the thing below to fit log contrast onto a plot
     
     contRange=exptParams.contRange(sortSeq,1);
-    
+    maskRange=exptParams.contRange(sortSeq,2);
     
     contRange(1)=0.01;
-    contRange((exptParams.nTrials+1))=0.01;
-    % Compute the distortion in the output, input.
+      maskPresent=sum(abs(maskRange))~=0;
+    if maskPresent
+        contRange((exptParams.nTrials+1))=0.01;
+      
+    else
+        disp('No masking found');
+    end
+    
+    
     F1=exptParams.F(1).Freq;
     F2=exptParams.F(2).Freq;
     
-    
-    %% Note: the first value (for 0 contrast) is not very meaningful.
+   % Quick look at teh data - functionize this
     figure(2);
     for chanToPlot=1:3
         
         subplot(3,2,(chanToPlot-1)*2+1);hold off;
         f1Plot1=plot(contRange(1:exptParams.nTrials),abs(squeeze(fftData(1+F1,chanToPlot,1:exptParams.nTrials))),'k');
+           set(f1Plot1,'LineWidth',2);
+           if (maskPresent)
         hold on;
         f1Plot2=plot(contRange((exptParams.nTrials+1):end),abs(squeeze(fftData(1+F1,chanToPlot,(exptParams.nTrials+1):end))),'r');
-        set(gca,'XScale','Log');
+       set(f1Plot2,'LineWidth',2);
+       end
+       set(gca,'XScale','Log');
         ylabel('F1 Amplitude');
         xlabel('Contrast');
         legend({'Unmasked','Masked'});
@@ -351,14 +354,17 @@ for thisRun=1:nRepeats
         
         f1_2Plot1=plot(contRange(1:exptParams.nTrials),abs(squeeze(fftData(1+2*F1,chanToPlot,1:exptParams.nTrials))),'k');
         hold on;
+        if (maskPresent)
         f1_2Plot2=plot(contRange((exptParams.nTrials+1):end),abs(squeeze(fftData(1+2*F1,chanToPlot,(exptParams.nTrials+1):end))),'r');
+            set(f1_2Plot2,'LineWidth',2); set(f1_2Plot1,'LineWidth',2);
+        end
         set(gca,'XScale','Log');
         grid on;
         ylabel('2F1 Amplitude');
         xlabel('Contrast');
         legend({'Unmasked','Masked'});
-        set(f1Plot1,'LineWidth',2);set(f1Plot2,'LineWidth',2);
-        set(f1_2Plot2,'LineWidth',2); set(f1_2Plot1,'LineWidth',2);
+    
+    
         
     end
     % Save this as a JPEG
