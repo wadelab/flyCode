@@ -39,8 +39,14 @@ for thisEntry=1:nCells
                     %       exptStruct.F(thisF).LEDName(thisWL)=b{thisEntry}.string;
                 end % End compare to LED tag
             end  % Next wavelength loop
+            if(strcmp(tagVal,'ExperimentTypeList'))
+                exptStruct.type=b{thisEntry}.value;
+            end
             
         end % Next Freq loop
+        
+        
+        
     end % End check for empty tag
     
     
