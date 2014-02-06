@@ -250,7 +250,7 @@ for thisRun=1:nRepeats
     
     
     %% Save out the data
-    save('temp');
+    save(fullfile(datadir,'temp'));
     if (~exist(datadir,'dir'))
         warning('Data dir does not exist... Making it!');
         madeDirFlag=mkdir(datadir);
