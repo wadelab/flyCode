@@ -1,35 +1,35 @@
-function varargout = analyzeData(varargin)
-% ANALYZEDATA MATLAB code for analyzeData.fig
-%      ANALYZEDATA, by itself, creates a new ANALYZEDATA or raises the existing
+function varargout = fly_analyzeDataGUI(varargin)
+% FLY_ANALYZEDATAGUI MATLAB code for fly_analyzeDataGUI.fig
+%      FLY_ANALYZEDATAGUI, by itself, creates a new FLY_ANALYZEDATAGUI or raises the existing
 %      singleton*.
 %
-%      H = ANALYZEDATA returns the handle to a new ANALYZEDATA or the handle to
+%      H = FLY_ANALYZEDATAGUI returns the handle to a new FLY_ANALYZEDATAGUI or the handle to
 %      the existing singleton*.
 %
-%      ANALYZEDATA('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in ANALYZEDATA.M with the given input arguments.
+%      FLY_ANALYZEDATAGUI('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in FLY_ANALYZEDATAGUI.M with the given input arguments.
 %
-%      ANALYZEDATA('Property','Value',...) creates a new ANALYZEDATA or raises the
+%      FLY_ANALYZEDATAGUI('Property','Value',...) creates a new FLY_ANALYZEDATAGUI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before analyzeData_OpeningFcn gets called.  An
+%      applied to the GUI before fly_analyzeDataGUI_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to analyzeData_OpeningFcn via varargin.
+%      stop.  All inputs are passed to fly_analyzeDataGUI_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help analyzeData
+% Edit the above text to modify the response to help fly_analyzeDataGUI
 
-% Last Modified by GUIDE v2.5 18-Feb-2014 14:40:25
+% Last Modified by GUIDE v2.5 18-Feb-2014 14:57:33
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @analyzeData_OpeningFcn, ...
-                   'gui_OutputFcn',  @analyzeData_OutputFcn, ...
+                   'gui_OpeningFcn', @fly_analyzeDataGUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @fly_analyzeDataGUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,26 +44,26 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before analyzeData is made visible.
-function analyzeData_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before fly_analyzeDataGUI is made visible.
+function fly_analyzeDataGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to analyzeData (see VARARGIN)
+% varargin   command line arguments to fly_analyzeDataGUI (see VARARGIN)
 
-% Choose default command line output for analyzeData
+% Choose default command line output for fly_analyzeDataGUI
 handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes analyzeData wait for user response (see UIRESUME)
+% UIWAIT makes fly_analyzeDataGUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = analyzeData_OutputFcn(hObject, eventdata, handles) 
+function varargout = fly_analyzeDataGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -245,3 +245,10 @@ function PlotOpt4_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of PlotOpt4
+
+
+% --- Executes on button press in pushbutton2.
+function pushbutton2_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
