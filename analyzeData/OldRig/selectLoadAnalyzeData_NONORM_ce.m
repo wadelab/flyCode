@@ -59,7 +59,7 @@ for thisPhenotype=1:length(phenotypeList)
     
     % Go into the directory containing the next phenotype and find out how
     % many 'Fly...' subdirectories it contains.
-    
+    if isfield(phenotypeList{thisPhenotype}, 'flyDir')
     nFlies=length(phenotypeList{thisPhenotype}.flyDir);
     
     
@@ -197,7 +197,7 @@ for thisPhenotype=1:length(phenotypeList)
     stdNormFlyResp{thisPhenotype}=squeeze(nanstd(abs(allNormFlyResponses)));
     semNormFlyResp{thisPhenotype}=squeeze(stdNormFlyResp{thisPhenotype}/sqrt(thisFlyIndex));
     
-    
+    end
 end
 
 
