@@ -11,8 +11,8 @@
 clear all; close all; % Housekeeping
 PHOTODIODE_HIDE=1;
 MAX_FREQ=100; % Maximum frequency to retain during F-domain analysis.
-DOFILENORM=0;
-DOFLYNORM=0 ; % These normalization options allow you to perform normalization on a per-file or per-fly basis. 0 = no normalization 1= full (complex) 2=magnitude only
+%DOFILENORM=0;
+%DOFLYNORM=4 ; % These normalization options allow you to perform normalization on a per-file or per-fly basis. 0 = no normalization 1= full (complex) 2=magnitude only
 comment='test';
 set(0, 'DefaulttextInterpreter', 'none');
 baseDir=uigetdir(pwd);
@@ -50,7 +50,7 @@ extractionParams.freqLabels={'F1','F2','2F1','2F2','F2+F1','2F2+2F1'};
 extractionParams.incoherentAvMaxFreq=MAX_FREQ;
 extractionParams.rejectParams.sd=2;
 extractionParams.rejectParams.maxFreq=MAX_FREQ;
-extractionParams.DOFILENORM=0;
+
 extractionParams.SNRFLAG=0;
 extractionParams.waveformSampleRate=1000; % Hz. Resample the average waveform to this rate irrespective of the initial rate.
 extractionParams.dataChannelIndices=[1 2 3];
@@ -166,7 +166,7 @@ else
     set(gcf,'Name',ptypeList{thisFlyTypeIndex});
 
 
-    plotParams.subPlotIndices=[2:2:12]; % Odd- numbered subplots are phase
+    plotParams.subPlotIndices=[1:6]; % Odd- numbered subplots are phase
       % Do some plotting
       if (strcmp(computer,'PCWIN'))
           disp('Cannot plot polar on 32bit windows');
