@@ -22,7 +22,7 @@ function varargout = fly_analyzeDataGUI(varargin)
 
 % Edit the above text to modify the response to help fly_analyzeDataGUI
 
-% Last Modified by GUIDE v2.5 18-Feb-2014 14:57:33
+% Last Modified by GUIDE v2.5 19-Feb-2014 12:16:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -53,7 +53,24 @@ function fly_analyzeDataGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to fly_analyzeDataGUI (see VARARGIN)
 
 % Choose default command line output for fly_analyzeDataGUI
+
+extractionParams.freqsToExtract=[1 0;0 1;2 0;0 2;1 1;2 2];
+extractionParams.freqLabels={'F1','F2','2F1','2F2','F2+F1','2F2+2F1'};
+extractionParams.incoherentAvMaxFreq=100; % Hz
+extractionParams.rejectParams.sd=2;
+extractionParams.rejectParams.maxFreq=100; % Hz
+extractionParams.DOFILENORM=0;
+extractionParams.SNRFLAG=0;
+extractionParams.waveformSampleRate=1000; % Hz. Resample the average waveform to this rate irrespective of the initial rate.
+extractionParams.dataChannelIndices=[1 2 3];
+
 handles.output = hObject;
+handles.allData=[];
+handles.plotParams=[];
+handles.extractionParams=extractionParams;
+handles.exptParams=[];
+
+handles.saveParams=[];
 
 % Update handles structure
 guidata(hObject, handles);
@@ -74,18 +91,18 @@ varargout{1} = handles.output;
 
 
 
-function edit1_Callback(hObject, eventdata, handles)
-% hObject    handle to edit1 (see GCBO)
+function TopLevelDirectory_Callback(hObject, eventdata, handles)
+% hObject    handle to TopLevelDirectory (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit1 as text
-%        str2double(get(hObject,'String')) returns contents of edit1 as a double
+% Hints: get(hObject,'String') returns contents of TopLevelDirectory as text
+%        str2double(get(hObject,'String')) returns contents of TopLevelDirectory as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit1 (see GCBO)
+function TopLevelDirectory_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to TopLevelDirectory (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -96,12 +113,15 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in pushbutton1.
-function pushbutton1_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton1 (see GCBO)
+% --- Executes on button press in SelectDirectory.
+function SelectDirectory_Callback(hObject, eventdata, handles)
+% hObject    handle to SelectDirectory (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+a=uigetdir(pwd);
+set(handles.TopLevelDirectory,'String',char(a));
+set(handles.LoadedStatus,'BackgroundColor',[1 0 0]);
+set(handles.LoadedStatus,'String','Not loaded');
 
 % --- Executes on button press in NoiseCheck.
 function NoiseCheck_Callback(hObject, eventdata, handles)
@@ -247,8 +267,29 @@ function PlotOpt4_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of PlotOpt4
 
 
-% --- Executes on button press in pushbutton2.
-function pushbutton2_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton2 (see GCBO)
+% --- Executes on button press in PlotDataButton.
+function PlotDataButton_Callback(hObject, eventdata, handles)
+% hObject    handle to PlotDataButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in LoadDataButton.
+function LoadDataButton_Callback(hObject, eventdata, handles)
+% hObject    handle to LoadDataButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Loads the data from the directory in handles.TopLevelDirectory into a
+% global data structure...
+
+%% Here we load in all the different data files.
+baseDir=get(handles.TopLevelDirectory,'String');
+subDirList=fly_getDataDirectories_multi(baseDir); % This function generates the locations of all the directories..
+[a,b]=fileparts(baseDir);
+[handles.allData,handles.exptParams]=fly_loadSSData(subDirList,handles.extractionParams);
+set(handles.LoadedStatus,'BackgroundColor',[0 1 0]);
+set(handles.LoadedStatus,'String','Loaded');
+% Update handles structure
+guidata(hObject, handles);
+
