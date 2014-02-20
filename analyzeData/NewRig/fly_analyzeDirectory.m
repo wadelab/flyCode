@@ -10,6 +10,7 @@
 %% Generate a list of all the directories to examine in the destination dir.
 clear all; close all; % Housekeeping
 PHOTODIODE_HIDE=1;
+ABSFLAG=1;
 MAX_FREQ=100; % Maximum frequency to retain during F-domain analysis.
 %DOFILENORM=0;
 %DOFLYNORM=4 ; % These normalization options allow you to perform normalization on a per-file or per-fly basis. 0 = no normalization 1= full (complex) 2=magnitude only
@@ -68,8 +69,9 @@ extractionParams.dataChannelIndices=[1 2 3];
 %% 
 thisStatIndex=1;
 exptIndex=1;
- allExptResponses=[];
-    allNormExptResponses=[];
+allExptResponses=[];
+allNormExptResponses=[];
+
 for thisSubDir=1:length(subDirList) % Loop over all subdirectories
     
     % Go into each subd irectory. Find out how
@@ -80,20 +82,27 @@ for thisSubDir=1:length(subDirList) % Loop over all subdirectories
     
     for thisExptIndex=1:nExpts % Loop over all expts in a single subDirectory. An expt is defined as a new set of flies : a new 'pressing of the go button'
         % Build up lists of complex response amps, average waveforms etc
-        
+   
         thisExptResponse=subDirData{thisSubDir}.expt{thisExptIndex}.allfCondDat;
+        
+        
         % We just concatenate these responses into a big long list and get
         % the hashing algorithm to sort them out later.
-        nFliesInResponseStruct=size(thisExptResponse,2);
+        % The secret here is that we don't need the 'subdir' sorting at all
+        % - it's just for the convenienceof the human experimenter.
+        
+        nFliesInResponseStruct=size(thisExptResponse,2); % In fact there are this number -1 actual flies because one channel is the photodiode
+        
         for thisFlyInResp=1:nFliesInResponseStruct
             
             allExptResponses(thisStatIndex,:,:)=squeeze(thisExptResponse(:,thisFlyInResp,:));
             % Make a list of hashes 
             allPTHashes(thisStatIndex)=cellstr(params.outType(exptIndex).flyHash(thisFlyInResp));
-            allFlyNames{thisStatIndex}=params.outType(exptIndex).flyName(thisFlyInResp)
+            allFlyNames{thisStatIndex}=params.outType(exptIndex).flyName(thisFlyInResp);
             
             thisStatIndex=thisStatIndex+1;
         end % End which fly in resp
+        
         exptIndex=exptIndex+1;
     end % Next experiment
     %
@@ -126,64 +135,60 @@ end
 %% Loop over all fly types
 plotScales=[ .005 .0005 .001]; % Scales
 
-
 for thisFlyTypeIndex=1:nUniqueFlies
- fprintf('\n%s',ptypeList{thisFlyTypeIndex});
-if (strcmp(ptypeList{thisFlyTypeIndex},'Photodiode') && PHOTODIODE_HIDE)
-    % Do nothing
-else
     
-    plotParams.labelList=extractionParams.freqLabels;
-    plotParams.maxYLim=[.05 .05 .008 .005 .01 .0008];%.*plotScales(thisFlyTypeIndex);
-    
-    plotParams.polarLims= plotParams.maxYLim/2;
-    plotParams.subplotDims=[2 3];
-    plotParams.subPlotIndices=[1:6];
-    plotParams.DO_ERRORCIRCS=1;
-    plotParams.ptypeName=ptypeList{thisFlyTypeIndex};
-    plotParams.contRange=linspace(min(params.contRange(:,1)),max(params.contRange(:,1)),length(params.contRange(:,1))/2);
-    plotParams.XAxisRangeCart=[0 1];
-    plotParams.lineWidthPolar=1.5;
-    plotParams.lineWidthCart=2;
-    plotParams.errorEnvelope=1;
-
-    
-    % Do some plotting
-    figure(thisFlyTypeIndex*2-1);
-    set(gcf,'Renderer','OpenGL')
-    % The plotting routine assumes that data are nFreqs x nConts x 2
-    % (masked, unmasked)
-    dataToPlot=squeeze((meanFlyDataCoh(thisFlyTypeIndex,:,:)));
-    semToPlot=squeeze(semFlyDataCoh(thisFlyTypeIndex,:,:));
-    
-    nConts=size(dataToPlot,2);
-    nFreqs=size(dataToPlot,1);
-    dataToPlot=reshape(dataToPlot,[nFreqs,nConts/2,2]);
-    semToPlot=reshape(semToPlot,[nFreqs,nConts/2,2]);
-    
-    
-    hc= fly_plotCartData(abs(dataToPlot),semToPlot,plotParams);
-    set(gcf,'Name',ptypeList{thisFlyTypeIndex});
-
-
-    plotParams.subPlotIndices=[1:6]; % Odd- numbered subplots are phase
-      % Do some plotting
-      if (strcmp(computer,'PCWIN'))
-          disp('Cannot plot polar on 32bit windows');
-      else
-    figure(thisFlyTypeIndex*2);
-    set(gcf,'Renderer','OpenGL')
-    hp= fly_plotPolarData(dataToPlot,semToPlot,plotParams);
-      end
-      
-    %maxfig(gcf,1);
-    %set(gcf,'Renderer','painters')
-    % save this as an EPS file.
-    %fname=[plotParams.ptypeName,'_NoERR_data.eps'];
-    %print('-depsc','-r300', fname);
- 
-end
-end
+    fprintf('\n%s',ptypeList{thisFlyTypeIndex});
+    if (strcmp(ptypeList{thisFlyTypeIndex},'Photodiode') && PHOTODIODE_HIDE)
+        % Do nothing
+    else
+        
+        plotParams.labelList=extractionParams.freqLabels;
+        plotParams.maxYLim=[.05 .05 .01 .005 .01 .0008];%.*plotScales(thisFlyTypeIndex);
+        
+        plotParams.polarLims= plotParams.maxYLim/2;
+        plotParams.subplotDims=[2 3];
+        plotParams.subPlotIndices=[1:6];
+        plotParams.DO_ERRORCIRCS=1;
+        plotParams.ptypeName=ptypeList{thisFlyTypeIndex};
+        plotParams.contRange=linspace(min(params.contRange(:,1)),max(params.contRange(:,1)),length(params.contRange(:,1))/2);
+        plotParams.XAxisRangeCart=[0 .7];
+        plotParams.lineWidthPolar=1.5;
+        plotParams.lineWidthCart=2;
+        plotParams.errorEnvelope=1;
+        plotParams.doPhasePlot=0;
+        plotParams.doCartPlot=1;
+        plotParams.XAxisType='Linear';
+        if (plotParams.doCartPlot)
+        % Do some plotting
+        figure(thisFlyTypeIndex*2-1);
+        set(gcf,'Renderer','OpenGL')
+        % The plotting routine assumes that data are nFreqs x nConts x 2
+        % (masked, unmasked)
+        dataToPlot=squeeze((meanFlyDataCoh(thisFlyTypeIndex,:,:)));
+        semToPlot=squeeze(semFlyDataCoh(thisFlyTypeIndex,:,:));
+        
+        nConts=size(dataToPlot,2);
+        nFreqs=size(dataToPlot,1);
+        dataToPlot=reshape(dataToPlot,[nFreqs,nConts/2,2]);
+        semToPlot=reshape(semToPlot,[nFreqs,nConts/2,2]);
+        
+        
+        hc= fly_plotCartData(abs(dataToPlot),semToPlot,plotParams);
+        set(gcf,'Name',ptypeList{thisFlyTypeIndex});     
+        end
+        if (plotParams.doPhasePlot)
+        plotParams.subPlotIndices=[1:6]; % Odd- numbered subplots are phase
+        % Do some plotting
+        if (strcmp(computer,'PCWIN'))
+            disp('Cannot plot polar on 32bit windows');
+        else
+            figure(thisFlyTypeIndex*2);
+            set(gcf,'Renderer','OpenGL')
+            hp= fly_plotPolarData(dataToPlot,semToPlot,plotParams);
+        end % End check for Win32 plotting
+        end
+    end % End check on photodiode plotting
+end % Next type
 return
 %%
 clear dataToPlot

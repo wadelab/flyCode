@@ -5,6 +5,9 @@ function handle= fly_plotCartData(meanFlyResp,semFlyResp,plotParams)
 if (~isfield(plotParams,'errorEnvelope'))
     plotParams.errorEnvelope=1;
 end
+if (~isfield(plotParams,'XAxisType'))
+    plotParams.XAxisType='Log';
+end
 
 nMaskConds=size(meanFlyResp,3);
 
@@ -42,7 +45,8 @@ for t=1:size(meanFlyResp,1) % Different frequencies
         set(handle(1),'FontSize',12);
         
         
-        set(gca,'XScale','Log');     
+            
+        set(gca,'XScale',plotParams.XAxisType);     
         set(gca,'FontSize',12);
    
         xlabel('Probe Contrast','FontSize',14);
@@ -124,8 +128,8 @@ for t=1:size(meanFlyResp,1) % Different frequencies
         axis square
         
         
-        set(gca,'XScale','Log');
-        set(gca,'FontSize',12);
+ set(gca,'XScale',plotParams.XAxisType); 
+ set(gca,'FontSize',12);
    
         xlabel('Probe Contrast','FontSize',14);
         ylabel('Resp amplitude','FontSize',14);
