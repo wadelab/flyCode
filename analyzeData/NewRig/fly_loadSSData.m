@@ -119,8 +119,8 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
             fCondDat=fft(condDat)/(size(condDat,1)); % Compute FT down time in each averaged bin. Leave in complex domain. Technically, we account for the length of the sample waveform although this is always the same...
             
             
-             meanSpect=squeeze(nanmean(abs(fCondDat(2:nFreqs,:,:,:)),2));
-             compMeanSpect=squeeze(nanmean((fCondDat(2:nFreqs,:,:,:)),2));
+            meanSpect=squeeze(nanmean(abs(fCondDat(2:nFreqs,:,:,:)),2));
+            compMeanSpect=squeeze(nanmean((fCondDat(2:nFreqs,:,:,:)),2));
             
             flyMeanSpectrum{thisSubDir}.data(:,:,:,thisExptIndex)=squeeze(nanmean(meanSpect,4));% Average across files for a single fly
             flyCompMeanSpectrum{thisSubDir}.data(:,:,:,thisExptIndex)=squeeze(nanmean(compMeanSpect,4)); % The same frequency domain average but with complex vals.
@@ -129,28 +129,23 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
             computedFreqsToExtract=abs(params.F(1).Freq*freqsToExtract(:,1)+params.F(2).Freq*freqsToExtract(:,2)); % Which frequencies are we going to extract
             
             params.extractedFreqs=computedFreqsToExtract;
-            
-            
-            
-            
+           
             fCondDat=fCondDat(computedFreqsToExtract+1,:,:,:); % Add 1 to the freqs to offset the mean baseline in the FFT
             
             meanDat=(squeeze(nanmean(fCondDat,4))); % Coherent average (still in complex data)
             absMeanDat=(squeeze(nanmean(abs(fCondDat),4))); % This is the incoherent average
-            
-            
+                
             phenotypeData{thisSubDir}.expt{thisExptIndex}.allfCondDat=meanDat; % Average in the complex fourier domain across bins, then across repetitions
             phenotypeData{thisSubDir}.expt{thisExptIndex}.allAbsfCondDat=absMeanDat; % Average of abs data (incoherent)
-            
-            
+                        
             overallExptIndex=overallExptIndex+1;
             
         end % Next expt
         
-          phenotypeData{thisSubDir}.meanSpectrum=nanmean(flyMeanSpectrum{thisSubDir}.data,4);
+         phenotypeData{thisSubDir}.meanSpectrum=nanmean(flyMeanSpectrum{thisSubDir}.data,4);
          phenotypeData{thisSubDir}.semSpectrum=nanstd(flyMeanSpectrum{thisSubDir}.data,[],4)/sqrt(size(flyMeanSpectrum{thisSubDir}.data,4));
          phenotypeData{thisSubDir}.meanCompSpectrum=nanmean(flyCompMeanSpectrum{thisSubDir}.data,4);
-          phenotypeData{thisSubDir}.avWaveform=nanmean(flyMeanWaveform{thisSubDir}.data,4);
+         phenotypeData{thisSubDir}.avWaveform=nanmean(flyMeanWaveform{thisSubDir}.data,4);
         
     end % End check on nExpt >0
     

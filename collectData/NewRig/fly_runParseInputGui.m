@@ -11,7 +11,6 @@ nCells=length(b);
 for setupF=1:2
     for setupLED=1:4
         exptStruct.F(setupF).LED(setupLED)=0;
-        % exptStruct.F(setupF).LEDName(setupLED)=[];
     end
 end
 disp('***********');
@@ -19,12 +18,10 @@ disp('***********');
 fprintf('Parsing GUI data\n');
 
 
-for thisEntry=1:nCells
+for thisEntry=1:nCells  % Loop over all the GUI elements, look at the 'tags', extract relevent values
     tagVal=b{thisEntry}.tag;
     % First get the wavelengths
-    if (~isempty(tagVal))
-       % fprintf('\n%s\n',tagVal);
-        
+    if (~isempty(tagVal))        
         for thisF=1:2
             tagCompare=sprintf('F%.0dFreqList',thisF);
             

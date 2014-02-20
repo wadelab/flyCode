@@ -23,7 +23,7 @@ end
 clear all;
 close all;
 
-TESTFLAG=0; % Set this to 1 to indicate that we're testing the script without accessing the hardware.
+TESTFLAG=1; % Set this to 1 to indicate that we're testing the script without accessing the hardware.
 % Remember to set it to '0' for real experiments!
 
 datadir='e:\data\SSERG\data\'; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
@@ -56,10 +56,9 @@ end
 %%
 % Loop over many reps once you are satisfied with the code
 % *************************************************************
-nRepeats=5;
+    nRepeats=5;
     exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
-keyboard
-    
+
     for thisRun=1:nRepeats
     
     exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
