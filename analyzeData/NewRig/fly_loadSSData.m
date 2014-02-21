@@ -72,11 +72,18 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
                 nPreBins=params.nPreBins;
                 sampleRate=allData.digitizerSampleRate;
                 nTrials=size(allData.d,3); % How many probe and mask conditions in total
+                channelsToExtract=extractionParams.dataChannelIndices;
                 
-                nChannels=length(extractionParams.dataChannelIndices);% In general we have 2 input channels - 1 and 3. The middle channel here is the photodiode which is a useful check on input linearity
+                nChannels=length(channelsToExtract);% In general we have 2 input channels - 1 and 3. The middle channel here is the photodiode which is a useful check on input linearity
+               if (extractionParams.LowChanOnRightFlag==1) 
+                   channelsToExtract=flipud(channelsToExtract(:));
+                   disp('Swapping channel order...');
+               end
+               
+                
                 binsPerTrial=params.binsPerTrial;
 
-                rawPerFileData=reshape(squeeze(allData.d((sampleRate*nPreBins+1):end,extractionParams.dataChannelIndices,:)),[sampleRate,binsPerTrial,nChannels,nTrials]); % This gets rid of the first 'pre' bins...
+                rawPerFileData=reshape(squeeze(allData.d((sampleRate*nPreBins+1):end,channelsToExtract,:)),[sampleRate,binsPerTrial,nChannels,nTrials]); % This gets rid of the first 'pre' bins...
                 % To get around memory issues and to just generally make things
                 % better, we average across bins straight away.
                 
@@ -119,8 +126,8 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
             fCondDat=fft(condDat)/(size(condDat,1)); % Compute FT down time in each averaged bin. Leave in complex domain. Technically, we account for the length of the sample waveform although this is always the same...
             
             
-            meanSpect=squeeze(nanmean(abs(fCondDat(2:nFreqs,:,:,:)),2));
-            compMeanSpect=squeeze(nanmean((fCondDat(2:nFreqs,:,:,:)),2));
+            meanSpect=(nanmean(abs(fCondDat(2:nFreqs,:,:,:)),2));
+            compMeanSpect=(nanmean((fCondDat(2:nFreqs,:,:,:)),2));
             
             flyMeanSpectrum{thisSubDir}.data(:,:,:,thisExptIndex)=squeeze(nanmean(meanSpect,4));% Average across files for a single fly
             flyCompMeanSpectrum{thisSubDir}.data(:,:,:,thisExptIndex)=squeeze(nanmean(compMeanSpect,4)); % The same frequency domain average but with complex vals.

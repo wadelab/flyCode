@@ -9,7 +9,7 @@
 
 %% Generate a list of all the directories to examine in the destination dir.
 clear all; close all; % Housekeeping
-PHOTODIODE_HIDE=1;
+PHOTODIODE_HIDE=0;
 ABSFLAG=1;
 MAX_FREQ=100; % Maximum frequency to retain during F-domain analysis.
 %DOFILENORM=0;
@@ -51,10 +51,11 @@ extractionParams.freqLabels={'F1','F2','2F1','2F2','F2+F1','2F2+2F1'};
 extractionParams.incoherentAvMaxFreq=MAX_FREQ;
 extractionParams.rejectParams.sd=2;
 extractionParams.rejectParams.maxFreq=MAX_FREQ;
-
 extractionParams.SNRFLAG=0;
 extractionParams.waveformSampleRate=1000; % Hz. Resample the average waveform to this rate irrespective of the initial rate.
 extractionParams.dataChannelIndices=[1 2 3];
+extractionParams.LowChanOnRightFlag=1; % Until 02/21/14 channel 0 went to R, channel 5 went to left. The analysis software thinks it's the other way around unless you set this flag. 
+
 
 %% Here we load in all the different data files.
 [subDirData,params]=fly_loadSSData(subDirList,extractionParams);
@@ -133,6 +134,19 @@ end
 
 
 %% Loop over all fly types
+disp('Fitting');
+tic
+contRange=linspace(min(params.contRange(:,1)),max(params.contRange(:,1)),length(params.contRange(:,1))/2);
+[fittedCRFParamsUnmasked1_1F1]=fly_fitHyperData(params,contRange,abs(meanFlyDataCoh(:,1,1:7))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
+[fittedCRFParamsUnmasked1_2F1]=fly_fitHyperData(params,contRange,abs(meanFlyDataCoh(:,3,1:7))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
+[fittedCRFParamsMasked1_1F1]=fly_fitHyperData(params,contRange,abs(meanFlyDataCoh(:,1,8:14))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
+[fittedCRFParamsMasked1_2F1]=fly_fitHyperData(params,contRange,abs(meanFlyDataCoh(:,3,8:14))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
+
+toc
+
+
+
+%%
 plotScales=[ .005 .0005 .001]; % Scales
 
 for thisFlyTypeIndex=1:nUniqueFlies
@@ -141,6 +155,7 @@ for thisFlyTypeIndex=1:nUniqueFlies
     if (strcmp(ptypeList{thisFlyTypeIndex},'Photodiode') && PHOTODIODE_HIDE)
         % Do nothing
     else
+        plotParams.phenotypesToPlot=[4 5 7 8]; % Set this if for some reason you have bad phenoytypes (incorrectly labeled?) in your data that you no longer want to plot.
         
         plotParams.labelList=extractionParams.freqLabels;
         plotParams.maxYLim=[.05 .05 .01 .005 .01 .0008];%.*plotScales(thisFlyTypeIndex);
@@ -156,8 +171,37 @@ for thisFlyTypeIndex=1:nUniqueFlies
         plotParams.lineWidthCart=2;
         plotParams.errorEnvelope=1;
         plotParams.doPhasePlot=0;
-        plotParams.doCartPlot=1;
+        plotParams.doCartPlot=0;
         plotParams.XAxisType='Linear';
+        plotParams.plotColors=[0 0 0];
+        plotParams.doFitPlot=1;
+        
+        if (plotParams.doFitPlot)
+            %We can plot these fitted data separately
+            figure(99);
+            subplot(1,nUniqueFlies,thisFlyTypeIndex);
+            handles=fly_plotFittedData(contRange,meanFlyDataCoh(thisFlyTypeIndex,3,1:7),fittedCRFParamsUnmasked1_2F1(thisFlyTypeIndex,:),plotParams);
+            set(handles(1),'Color','k');
+              set(handles(1),'LineWidth',2);
+            set(handles(2),'MarkerFaceColor','k');
+              set(handles(2),'MarkerEdgeColor','k');
+            hold on;
+            handles=fly_plotFittedData(contRange,meanFlyDataCoh(thisFlyTypeIndex,3,8:14),fittedCRFParamsMasked1_2F1(thisFlyTypeIndex,:),plotParams);
+            set(handles(1),'Color','r');
+            set(handles(2),'MarkerFaceColor','r');
+            set(handles(2),'MarkerEdgeColor','r');
+                set(handles(2),'LineWidth',2);
+            set(gca,'YLim',[0         plotParams.maxYLim(3)]);
+            grid on;
+            v=axis(gca);
+            g=title(ptypeList{thisFlyTypeIndex});
+            set(g,'Position',[v(2)*.96,v(4)*.5 0]);
+            set(g,'Rotation',90);
+            set(g,'FontSize',8);
+            
+
+        end
+
         if (plotParams.doCartPlot)
         % Do some plotting
         figure(thisFlyTypeIndex*2-1);
