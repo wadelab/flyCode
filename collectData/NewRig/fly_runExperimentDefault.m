@@ -58,7 +58,7 @@ end
 % *************************************************************
 nRepeats=5;
     exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
-keyboard
+
     
     for thisRun=1:nRepeats
     
