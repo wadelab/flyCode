@@ -1,10 +1,21 @@
-function [exptStruct,cancelled]=fly_runParseInputGui
+function [exptStruct,cancelled]=fly_runParseInputGui(exptStruct)
 %function exptStruct=fly_runParseInputGui
 % Runs the flyGui1 and extracts mission-critical fields. Everything else is
 % dumped in exptStruct.b
+% Altered 02/24/14 to allow optional exptStruct input - allows GUI to
+% recreate state of previously-run experiment
+nargin
+if (nargin == 0 )
+    disp('No inputs');
+    origExptStruct=[];
+    EXPTSTRUCTPASSED=0;
+    [a,b]=flyGui1;
+else
+    origExptStruct=exptStruct;
+    [a,b]=flyGui1(exptStruct.b);
+end
 
-[a,b]=flyGui1;
-clear exptStruct;
+
 
 nCells=length(b);
 % Find values of inputs tagged for wavelength and frequency

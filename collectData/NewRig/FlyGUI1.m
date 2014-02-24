@@ -31,11 +31,11 @@ function varargout = FlyGUI1(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @FlyGUI1_OpeningFcn, ...
-                   'gui_OutputFcn',  @FlyGUI1_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @FlyGUI1_OpeningFcn, ...
+    'gui_OutputFcn',  @FlyGUI1_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -59,11 +59,75 @@ function FlyGUI1_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for FlyGUI1
 handles.output = hObject;
 
+
+
 % Update handles structure
 guidata(hObject, handles);
 handles.exitFlag=0;
 guidata(hObject,handles);
+
+% We want to be able to pass in a struct (b) and have it populate the
+% 'value' fields of all the GUI elements. The lazy way would be to iterate
+% through children of hObject, assuming that they are in the same order as
+% b{1...}
+% But if we add something to the GUI, old files will break this function.
+% Better to match up 'tags' from the GUI and the struct and assign values
+% that way.
+if (iscell(varargin) & ~isempty(varargin))
+
+if (iscell(varargin{1})) % If we were passed a cell array, parse it and do some value setting...
+    children=findall(hObject);
+    % f=allchild(hObject);
+    nChild=length(children);
+    outputIndex=1;
+    for thisChild=2:nChild
+        
+        % Get the tag from this field in the GUI
+        d=get(children(thisChild));
+       
+        tagField{thisChild}=d.Tag;
+    end
+    b=varargin{1};
+    for thisInputEntry=1:length(b)
+        disp(thisInputEntry)
+        
+        if (isfield(b{thisInputEntry},'tag'))
+           disp('Found tag field');
+            thisTag=b{thisInputEntry}.tag
+            if (length(thisTag)>0)
+                           disp('non-null tag name');
+
+                tagIndex=find(strcmp(tagField,thisTag));
+                if (length(tagIndex)>1) % Error check
+                    disp(thisTag);
+                    error('More than one GUI field with the same tag');
+                end
+                fprintf('\nTag Index = %d',tagIndex);
+                if (~isempty(tagIndex))
+                    % Set the value
+                    if (isfield(b{thisInputEntry},'value'))
+                        disp('*** SETTING ***');
+                        
+                        thisValue=b{thisInputEntry}.value;
+                        
+                        if (thisValue~=0)
+                            disp(get(children(thisChild)))
+                          set(children(tagIndex),'value',thisValue);
+                        end
+                        
+                    end % End check on presence of value
+                end % End check on empty tagIndex
+            end % End Check on length tag == 0
+        end % End check on input Tag presence
+    end % Next input entry
+    
+    
+end % End check on whether an input cell array was passed
+end % End check on whether any arguments were passed
+
+guidata(hObject,handles);
 % UIWAIT makes FlyGUI1 wait for user response (see UIRESUME)
+
 
 axes(handles.axes5);
 imshow('wobbleWave.gif');
@@ -73,7 +137,7 @@ uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = FlyGUI1_OutputFcn(hObject, eventdata, handles) 
+function varargout = FlyGUI1_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -89,18 +153,18 @@ f=allchild(hObject);
 nChild=length(children);
 outputIndex=1;
 for thisChild=1:nChild
-   
+    
     
     d=get(children(thisChild));
     if(isfield(d,'Value'))
         outData{thisChild}.value=d.Value;
     end
-     if(isfield(d,'Selected'))
+    if(isfield(d,'Selected'))
         outData{thisChild}.selected=d.Selected;
-     end
-     if(isfield(d,'String'))
+    end
+    if(isfield(d,'String'))
         outData{thisChild}.string=d.String;
-     end
+    end
     
     outData{thisChild}.tag=get(children(thisChild),'Tag');
 end
@@ -108,7 +172,7 @@ end
 
 varargout{2} = outData;
 varargout{3} = handles.exitFlag;
-close(handles.figure1) 
+close(handles.figure1)
 
 % --- Executes on selection change in FlyType2.
 function FlyType2_Callback(hObject, eventdata, handles)
