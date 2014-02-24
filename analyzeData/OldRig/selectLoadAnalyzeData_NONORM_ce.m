@@ -12,7 +12,9 @@
 clear all; close all; % Housekeeping
 MAX_FREQ=100; % Maximum frequency to retain during F-domain analysis.
 DOFILENORM=0;
-DOFLYNORM=0; % These normalization options allow you to perform normalization on a per-file or per-fly basis. 0 = no normalization 1= full (complex) 2=magnitude only
+
+%% needs to be 0
+DOFLYNORM=4; % These normalization options allow you to perform normalization on a per-file or per-fly basis. 0 = no normalization 1= full (complex) 2=magnitude only
 comment='allNorm4_ce';
 
 baseDir=uigetdir(pwd);
@@ -59,7 +61,7 @@ for thisPhenotype=1:length(phenotypeList)
     
     % Go into the directory containing the next phenotype and find out how
     % many 'Fly...' subdirectories it contains.
-    
+    if isfield(phenotypeList{thisPhenotype}, 'flyDir')
     nFlies=length(phenotypeList{thisPhenotype}.flyDir);
     
     
@@ -70,10 +72,11 @@ for thisPhenotype=1:length(phenotypeList)
     for thisFlyIndex=1:nFlies
         % Build up lists of complex response amps
         % Compute the distortion in the output, input.
-        
-        thisFlyResp=phenotypeData{thisPhenotype}.fly{thisFlyIndex}.allfCondDat;
-        allFlyResponses(thisFlyIndex,:,:,:)=thisFlyResp(:,:,:); %
-        nTrials=size(phenotypeData{1}.fly{1}.allfCondDat,2);
+       
+            
+            thisFlyResp=phenotypeData{thisPhenotype}.fly{thisFlyIndex}.allfCondDat;
+            allFlyResponses(thisFlyIndex,:,:,:)=thisFlyResp(:,:,:); %
+            nTrials=size(phenotypeData{1}.fly{1}.allfCondDat,2);
         
         switch DOFLYNORM
             case 1 % Complex normalization - this is a slightly oddthing to do...
@@ -197,7 +200,7 @@ for thisPhenotype=1:length(phenotypeList)
     stdNormFlyResp{thisPhenotype}=squeeze(nanstd(abs(allNormFlyResponses)));
     semNormFlyResp{thisPhenotype}=squeeze(stdNormFlyResp{thisPhenotype}/sqrt(thisFlyIndex));
     
-    
+    end
 end
 
 
@@ -228,7 +231,7 @@ for thisPhenotype=1:length(phenotypeList)
     if (DOFLYNORM==1 || DOFLYNORM==2 || DOFLYNORM==3)
         plotParams.maxYLim=[1 1 0.4 0.2 0.25 0.02]; % Zero for adaptive scaling
     else
-        plotParams.maxYLim=[1000 750 75 75 250 30];
+        plotParams.maxYLim=[600 600 125 75 200 25];
     end
     
             
@@ -250,7 +253,8 @@ for thisPhenotype=1:length(phenotypeList)
 
 
     % Do some plotting
-    figure(thisPhenotype);
+    figure('Name',plotParams.ptypeName);  %%%%%%%%%thisPhenotype);
+    set(gcf,'Renderer','painters');
     hc= fly_plotCartData(meanNormFlyResp{thisPhenotype},semNormFlyResp{thisPhenotype},plotParams);
     plotParams.subPlotIndices=[2:2:12]; % Odd- numbered subplots are phase
     hp= fly_plotPolarData(meanNormFlyResp{thisPhenotype},semNormFlyResp{thisPhenotype},plotParams);
@@ -259,7 +263,7 @@ for thisPhenotype=1:length(phenotypeList)
     % save this as an EPS file.
     fname=[plotParams.ptypeName,'_NoERR_data.eps'];
     print('-depsc','-r300', fname);
-    %export_fig(bookName,'-pdf','-transparent','-append','-opengl');
+   % export_fig(bookName,'-pdf','-transparent','-append','-opengl');
     
     no1F=meanNormFlyResp{thisPhenotype};
     %no1F(1:2,:,:)=0;
@@ -283,11 +287,12 @@ gd1=meanF2Masked(g);
 gc1=categoryType(g);
 %[d,p,stats]=manova1([real(gd1(:)), imag(gd1(:))],gc1)
 [d2,p2,stats2]=manova1([abs(gd1(:)),unwrap(angle(gd1(:)))],gc1)
-figure(99);
+%%%figure(99);
 
 anova1(abs(gd1(:)),gc1)
 title(summaryStatisticName);
 set(gca,'XTickLabel',ptName);
+
     maxfig(gcf,1);
 
   export_fig(bookName,'-pdf','-transparent','-append');

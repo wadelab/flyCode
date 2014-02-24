@@ -23,7 +23,7 @@ end
 clear all;
 close all;
 
-TESTFLAG=0; % Set this to 1 to indicate that we're testing the script without accessing the hardware.
+TESTFLAG=1; % Set this to 1 to indicate that we're testing the script without accessing the hardware.
 % Remember to set it to '0' for real experiments!
 
 datadir='e:\data\SSERG\data\'; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
@@ -39,14 +39,9 @@ offVoltage=5.5; % Volts. At this level the LED is off. Don't ask why it's not 0.
 
 digitizerAmpMode='Differential';
 
-% Stuff to do with the actual stimulus
-binDuration=1; % One second per bin
-binsPerTrial=10;  % Average this many bins together for each trial
-nPreBins=1; % Add on this many bins at the start of each trial to avoid onset transients.
-nTrials=11; % Number of separate trial conditions. This will span the contrast range.
 
 %% Experiment logging
-[exptParams,Cancelled]=fly_runParseInputGui;   % This requires a function inputsdlg, available from the mathworks central website.
+[exptParams,Cancelled]=fly_runParseInputGui;   % This calls a matlab 'GUIDE'-generated GUI
 if (Cancelled)
     error('Script cancelled');
 end
@@ -57,10 +52,16 @@ end
 % Loop over many reps once you are satisfied with the code
 % *************************************************************
 nRepeats=5;
+<<<<<<< HEAD
     exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
 
     
     for thisRun=1:nRepeats
+=======
+exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
+
+for thisRun=1:nRepeats
+>>>>>>> f10aad4a49e816b77875e893a8325ea598001e6c
     
     exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
     
@@ -88,7 +89,7 @@ nRepeats=5;
         % Data will be acquired from hardware channels 0,1 and 5. These are
         % the two input
         % electrodes and the photodiode.
-        channelList=[0 1 5]; % List of hardware (NIDAQ - reference type) input channels.
+        channelList=[0 1 5]; % List of hardware (NIDAQ - reference type) input channels. It is very important that these are in the right order!!!!
         
         %% Set up the input system - we can do this just once per expt: Data will
         % come into the same buffer each time and we can extract it after
@@ -253,19 +254,20 @@ nRepeats=5;
     
     
     %% Save out the data - now saves out to top level directory
-  
-    if (~exist(datadir,'dir'))
-        warning('Data dir does not exist... Making it!');
-        madeDirFlag=mkdir(datadir);
-        if (~madeDirFlag)
-            warning('Could not make data directory - using current dir');
-            datadir=pwd;
+    if (~TESTFLAG)
+        if (~exist(datadir,'dir'))
+            warning('Data dir does not exist... Making it!');
+            madeDirFlag=mkdir(datadir);
+            if (~madeDirFlag)
+                warning('Could not make data directory - using current dir');
+                datadir=pwd;
+            end
         end
-    end
-    save(fullfile(datadir,'temp'));
-   
-    filename=fullfile(datadir,[int2str(thisRun),'_',datestr(expt.startTime,30),'.mat'])
-    save(filename);
+        save(fullfile(datadir,'temp'));
+        
+        filename=fullfile(datadir,[int2str(thisRun),'_',datestr(expt.startTime,30),'.mat'])
+        save(filename);
+    end % end TESTFLAG bit
     
     % The data are great, but the order of the contrast settings might
     % (probably >is<) randomized.
@@ -320,10 +322,10 @@ nRepeats=5;
     maskRange=exptParams.contRange(sortSeq,2);
     
     contRange(1)=0.01;
-      maskPresent=sum(abs(maskRange))~=0;
+    maskPresent=sum(abs(maskRange))~=0;
     if maskPresent
         contRange((exptParams.nTrials+1))=0.01;
-      
+        
     else
         disp('No masking found');
     end
@@ -332,19 +334,19 @@ nRepeats=5;
     F1=exptParams.F(1).Freq;
     F2=exptParams.F(2).Freq;
     
-   % Quick look at teh data - functionize this
+    % Quick look at teh data - functionize this
     figure(2);
     for chanToPlot=1:3
         
         subplot(3,2,(chanToPlot-1)*2+1);hold off;
         f1Plot1=plot(contRange(1:exptParams.nTrials),abs(squeeze(fftData(1+F1,chanToPlot,1:exptParams.nTrials))),'k');
-           set(f1Plot1,'LineWidth',2);
-           if (maskPresent)
-        hold on;
-        f1Plot2=plot(contRange((exptParams.nTrials+1):end),abs(squeeze(fftData(1+F1,chanToPlot,(exptParams.nTrials+1):end))),'r');
-       set(f1Plot2,'LineWidth',2);
-       end
-       set(gca,'XScale','Log');
+        set(f1Plot1,'LineWidth',2);
+        if (maskPresent)
+            hold on;
+            f1Plot2=plot(contRange((exptParams.nTrials+1):end),abs(squeeze(fftData(1+F1,chanToPlot,(exptParams.nTrials+1):end))),'r');
+            set(f1Plot2,'LineWidth',2);
+        end
+        set(gca,'XScale','Log');
         ylabel('F1 Amplitude');
         xlabel('Contrast');
         legend({'Unmasked','Masked'});
@@ -355,7 +357,7 @@ nRepeats=5;
         f1_2Plot1=plot(contRange(1:exptParams.nTrials),abs(squeeze(fftData(1+2*F1,chanToPlot,1:exptParams.nTrials))),'k');
         hold on;
         if (maskPresent)
-        f1_2Plot2=plot(contRange((exptParams.nTrials+1):end),abs(squeeze(fftData(1+2*F1,chanToPlot,(exptParams.nTrials+1):end))),'r');
+            f1_2Plot2=plot(contRange((exptParams.nTrials+1):end),abs(squeeze(fftData(1+2*F1,chanToPlot,(exptParams.nTrials+1):end))),'r');
             set(f1_2Plot2,'LineWidth',2); set(f1_2Plot1,'LineWidth',2);
         end
         set(gca,'XScale','Log');
@@ -363,8 +365,8 @@ nRepeats=5;
         ylabel('2F1 Amplitude');
         xlabel('Contrast');
         legend({'Unmasked','Masked'});
-    
-    
+        
+        
         
     end
     % Save this as a JPEG
