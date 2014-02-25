@@ -78,22 +78,24 @@ function handle= fly_plotPolarData(meanFlyResp,semFlyResp,plotParams)
   
        
 
-        title(sprintf('%s\n%s',plotParams.ptypeName, plotParams.labelList{t}));
-        
         
         th = findall(gcf,'Type','text');
         
-        
-        for i = 1:length(th),
-            set(th(i),'FontSize',6)
+        %%%%%%%%%%%%%% do we really want this ???
+        %         for i = 1:length(th),
+        %             set(th(i),'FontSize',6)
+        %         end
+        set(gca,'FontSize',12);
+        if (t==1)
+            title(sprintf('%s\n%s',plotParams.ptypeName, plotParams.labelList{t}));
+        else
+            title(sprintf('\n%s', plotParams.labelList{t}));
         end
-
-        
         
         
  end
  
-  return;
+ return;
   
  
  % NB add error xircles like this:
