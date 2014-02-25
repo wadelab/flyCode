@@ -1,2 +1,5 @@
-
 .DS_Store
+*.asv
+*.m2
+*.mat
+*.jpg
