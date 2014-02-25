@@ -60,6 +60,9 @@ for thisEntry=1:nCells  % Loop over all the GUI elements, look at the 'tags', ex
     
 end % Next entry
 %% Lots more stuff can go in the loop above. But for now all we need are frequencies and LEDs to get moving...
+a
+b
+
 exptStruct.b=b;
 cancelled=0; % for now
 %%
