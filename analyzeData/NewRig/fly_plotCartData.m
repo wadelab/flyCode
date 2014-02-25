@@ -138,7 +138,9 @@ for t=1:size(meanFlyResp,1) % Different frequencies
         end
         
         set(gca,'XLim',[0 0.8]);
-        title(sprintf('%s\n%s',plotParams.ptypeName, plotParams.labelList{t}),'FontSize',14);
+        if (t==1)
+            title(sprintf('%s\n%s',plotParams.ptypeName, plotParams.labelList{t}),'FontSize',14);
+        end    
     end
     
     
