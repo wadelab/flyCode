@@ -23,10 +23,11 @@ end
 clear all;
 close all;
 
-TESTFLAG=0; % Set this to 1 to indicate that we're testing the script without accessing the hardware.
+TESTFLAG=1; % Set this to 1 to indicate that we're testing the script without accessing the hardware.
 % Remember to set it to '0' for real experiments!
 
 datadir='e:\data\SSERG\data\'; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
+datadir=pwd; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
 
 interExptPauseSecs = 0;
 
@@ -52,16 +53,10 @@ end
 % Loop over many reps once you are satisfied with the code
 % *************************************************************
 nRepeats=5;
-<<<<<<< HEAD
-    exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
 
-    
-    for thisRun=1:nRepeats
-=======
 exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
 
 for thisRun=1:nRepeats
->>>>>>> f10aad4a49e816b77875e893a8325ea598001e6c
     
     exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
     
@@ -121,7 +116,7 @@ for thisRun=1:nRepeats
         set(ai,'ManualTriggerHwOn','Trigger')
         
     else
-        ActualOutputRate=outputPWMCarrierRate;
+        ActualOutputRate=digitizerSampleRate;
     end
     
     
@@ -238,7 +233,7 @@ for thisRun=1:nRepeats
             
             d(:,:,thisTrial)=getdata(ai);
         else  % If we're just testing, fill the output with random numbers.
-            d(:,:,thisTrial)=rand(len,2);
+            d(:,:,thisTrial)=rand(totalTrialDuration*digitizerSampleRate,3);
         end
         
     end % Go to the next trial
@@ -289,7 +284,7 @@ for thisRun=1:nRepeats
     
     
     % Condition it a bit. Chop out bins
-    condDat=d((digitizerSampleRate*nPreBins+1):end,:,:);
+    condDat=d((digitizerSampleRate*exptParams.nPreBins+1):end,:,:);
     
     
     % Reformat into bins
