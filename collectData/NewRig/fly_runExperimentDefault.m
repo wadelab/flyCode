@@ -27,7 +27,7 @@ TESTFLAG=0; % Set this to 1 to indicate that we're testing the script without ac
 % Remember to set it to '0' for real experiments!
 
 datadir='e:\data\SSERG\data\'; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
-datadir=pwd; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
+%%%%%%%%%%datadir=pwd; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
 
 interExptPauseSecs = 0;
 
@@ -254,8 +254,8 @@ for thisRun=1:nRepeats
             warning('Data dir does not exist... Making it!');
             madeDirFlag=mkdir(datadir);
             if (~madeDirFlag)
-                warning('Could not make data directory - using current dir');
-                datadir=pwd;
+                error('Could not make data directory - using current dir');
+                %%%%%%%%%%%datadir=pwd;
             end
         end
         save(fullfile(datadir,'temp'));
