@@ -17,7 +17,6 @@ exptIndex=1; % For now we just run the (fully randomized) CRF code.
 % Have to set
 % contRange, F1, F2, channel1, channel2, baseline1, baseline2,
 nExpts=1; % Here we specify completely different sets of experiments. For example, one expt could have zero mask, the next could have 30% mask
-repeats=1;
 
 % Stuff to do with the actual stimulus
 % The 'expt' is now fully-randomized, no more probe-alone, then
@@ -26,8 +25,8 @@ thisExpt=1;
 
 expt=exptParams;
 
- 
-expt.nRepeats=repeats; % Option to repeat each experiment many times.
+
+%expt.nRepeats=repeats; % Option to repeat each experiment many times.
 expt.chanBaselineArray=[offVoltage offVoltage]; % V. Can set this separately for ch1 and ch2 if required.
 expt.baselineVoltage=3; % In real units, the baseline voltage of the average LED level. Remember that these boxes switch >off< at 5.5V!
 

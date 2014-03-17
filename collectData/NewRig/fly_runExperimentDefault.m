@@ -52,11 +52,11 @@ end
 %%
 % Loop over many reps once you are satisfied with the code
 % *************************************************************
-nRepeats=5;
+
 
 exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
 
-for thisRun=1:nRepeats
+for thisRun=1:exptParams.nRepeats
     
     exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
     
