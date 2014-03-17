@@ -33,6 +33,11 @@ for thisEntry=1:nCells  % Loop over all the GUI elements, look at the 'tags', ex
     tagVal=b{thisEntry}.tag;
     % First get the wavelengths
     if (~isempty(tagVal))        
+         if(strcmp(tagVal,'nRepeatsList'))
+             exptStruct.nRepeats=str2num(b{thisEntry}.string{b{thisEntry}.value});
+             
+         end
+         
         for thisF=1:2
             tagCompare=sprintf('F%.0dFreqList',thisF);
             

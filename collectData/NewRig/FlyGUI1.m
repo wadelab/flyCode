@@ -129,8 +129,8 @@ guidata(hObject,handles);
 % UIWAIT makes FlyGUI1 wait for user response (see UIRESUME)
 
 
-axes(handles.axes5);
-imshow('wobbleWave.gif');
+%axes(handles.axes5);
+%imshow('wobbleWave.gif');
 %axes(handles.axes6);
 %imshow('fly.gif');
 uiwait(handles.figure1);
