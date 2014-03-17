@@ -15,13 +15,13 @@ DOFILENORM=0;
 
 %% needs to be 0
 DOFLYNORM=4; % These normalization options allow you to perform normalization on a per-file or per-fly basis. 0 = no normalization 1= full (complex) 2=magnitude only
-comment='allNorm4_ce';
+comment='allNorm4_aw';
 
 baseDir=uigetdir(pwd);
 [a,b]=fileparts(baseDir)
 bookName=[b,'_',datestr(now,30),'_',comment,'.pdf']
 
-phenotypeList=fly_getDataDirectories(baseDir); % This function generates the locations of all the directories..
+phenotypeList=fly_getDataDirectoriesOrig(baseDir); % This function generates the locations of all the directories..
 % Each fly sits in a separate subdirectory. We >want< top do a multivariate repeatedmeasures ANOVA. But we can't in MATLAB. We can in R...
 % With the possibility of performing a MVRMA at some
 % point, we will load in data and store all data. But
@@ -231,7 +231,7 @@ for thisPhenotype=1:length(phenotypeList)
     if (DOFLYNORM==1 || DOFLYNORM==2 || DOFLYNORM==3)
         plotParams.maxYLim=[1 1 0.4 0.2 0.25 0.02]; % Zero for adaptive scaling
     else
-        plotParams.maxYLim=[600 600 125 75 200 25];
+        plotParams.maxYLim=[1800 1000 300 200 300 50];
     end
     
             

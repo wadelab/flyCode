@@ -82,18 +82,18 @@ for thisPhenotype=1:length(phenotypeList)
                     % At this point we need to do averaging across the
                     % bins. And to do >this< we must identify bad bins
                     
-                    %badBinFlags=ss_noiseCheck(condDat,params,rejectParams);  %% Check for noise
-                    %fprintf('\n%d bins (%2.2g %% rejected as bad.\n',sum(badBinFlags(:)),sum(badBinFlags(:))/prod(size(badBinFlags))*100);
+                    badBinFlags=ss_noiseCheck(condDat,params,rejectParams);  %% Check for noise
+                    fprintf('\n%d bins (%2.2g %% rejected as bad.\n',sum(badBinFlags(:)),sum(badBinFlags(:))/prod(size(badBinFlags))*100);
                     
-                    %max(badBinFlags(:))
-                    %min(badBinFlags(:))
-                    %sum(isnan(badBinFlags(:)))
+                    max(badBinFlags(:))
+                    min(badBinFlags(:))
+                    sum(isnan(badBinFlags(:)))
                     
                     
-                    % Replace bad bins with NaNs
-                    %if (sum(badBinFlags(:))>0)
-                    %    condDat(:,find(badBinFlags))=NaN;
-                    %end
+%                     % Replace bad bins with NaNs
+%                     if (sum(badBinFlags(:))>0)
+%                         condDat(:,find(badBinFlags))=NaN;
+%                     end
                     
                     % Cond dat at this point is sampleRate * nBins * nConts * nExpts * nFiles
                     % Make an average waveform for a single bin across all files, bins.

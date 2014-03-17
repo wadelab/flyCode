@@ -37,13 +37,15 @@ for thisSubDir=1:length(allSubDirList);
         
         % Now go into each phenotype and find how many expts...
         exptList=dir([subDirList{thisSubDirIndex}.dirName,'/Expt*']);
-        
+         exptList=cat(1,exptList,dir([subDirList{thisSubDirIndex}.dirName,'/Fly*']));
+
         exptIndex=0;
         for thisExpt=1:length(exptList)
             if(exptList(thisExpt).isdir)
                 exptIndex=exptIndex+1;
                 
                 subDirList{thisSubDirIndex}.exptDir{exptIndex}=fullfile(subDirList{thisSubDirIndex}.dirName,exptList(thisExpt).name);
+                subDirList{thisSubDirIndex}.flyDir{exptIndex}=subDirList{thisSubDirIndex}.exptDir{exptIndex};
                 subDirList{thisSubDirIndex}.nFlies=length(exptList);
                 
                 % At this point, we can delve into the individual expt
@@ -62,7 +64,7 @@ for thisSubDir=1:length(allSubDirList);
                 for thisDatFile=1:subDirList{thisSubDirIndex}.exptData{exptIndex}.nReps
                 subDirList{thisSubDirIndex}.exptData{exptIndex}.fileNames{thisDatFile}=dname{1,thisDatFile};
                 end
-                
+                subDirList{thisSubDirIndex}.flyData{exptIndex}=subDirList{thisSubDirIndex}.exptData{exptIndex};
             else
                 disp('Not a valid Experimental data directory');
             end % End check on expt directory validity

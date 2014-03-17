@@ -1,2 +1,7 @@
-
 .DS_Store
+*.asv
+*.m2
+*.mat
+*.jpg
+Thu*.d*
+*.m_*
