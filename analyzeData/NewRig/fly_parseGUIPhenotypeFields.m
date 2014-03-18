@@ -21,11 +21,11 @@ for thisFly=[1,3]
     for thisPhenoField=1:nPhenoFields % Loop over all the distinguishing phenotype items: the columns from criticalFields
         for thisGUIField=1:nFieldsInGUI % Look over all the fields available from the GUI (30 or so...)
             if(strcmp(tags{thisGUIField}.tag, criticalFields{flyNameIndex,thisPhenoField}))
-                stringVal=tags{thisGUIField}.string(tags{thisGUIField}.value);
+                stringVal=char(tags{thisGUIField}.string(tags{thisGUIField}.value));
                 if (strcmp(lower(stringVal),'none'))
                     stringVal='';
                 end
-                
+                stringVal(~isstrprop(stringVal,'alphanum')) = ''; % Strip out non alphanumeric
                 phenotypeValues{thisFly,thisPhenoField}=stringVal;
                 
                 flyName{thisFly}=strcat(flyName{thisFly},'_',stringVal);
@@ -33,7 +33,7 @@ for thisFly=[1,3]
         end % Next GUI field to check
     end % Next ptype field top search for
     flyHash{thisFly}=DataHash(flyName{thisFly}); % Generate a unique md5 hash. This is more robust than relying on string matching to a name (whitespace etc..)
-    g=flyName{thisFly}{1};
+    g=flyName{thisFly};
     flyName{thisFly}=g(find(~isspace(g))); % Get rid of whitespaces
     flyNameIndex=flyNameIndex+1;
 end % Next fly

@@ -172,7 +172,7 @@ for thisFlyTypeIndex=1:nUniqueFlies
         plotParams.errorEnvelope=1;
         plotParams.doPhasePlot=0;
         plotParams.doCartPlot=0;
-        plotParams.XAxisType='Linear';
+        plotParams.XAxisType='Log';
         plotParams.plotColors=[0 0 0];
         plotParams.doFitPlot=1;
         
