@@ -26,17 +26,15 @@ for thisTrial=1:nTrials
 
     for thisTFIndex=1:nTF
         for thisSFIndex=1:nSF
-            allRespData=thisD.dataSet{thisTFIndex,thisSFIndex}; % We can look in r to see which condition this corresponds to
-            thisOrigIndex=thisD.r(thisTFIndex,thisSFIndex);
+            allRespData=thisD.dataSet{thisTFIndex,thisSFIndex}; % We can look in r to see which condition this corresponds to. These were data corresponding to a particular SF and TF indexed by r
+            
+            thisOrigIndex=thisD.r(thisTFIndex,thisSFIndex); % Here is r. It is a combination of the indices into tfList and sfList
             
             thisTF=ceil(thisOrigIndex/nSF); % This should be the actual TF index that was run on this trial.
             thisSF=1+rem(thisOrigIndex,nTF); % This should be the actual SF index that was run on this trial.
             
-            
             timeSeriesData=allRespData.Data((nPreBin*sampleFreq+1):end-(nPostBin*sampleFreq));
-            
-            
-            
+          
             fTSData=fft(timeSeriesData);
             inputFreq=thisD.tfList(thisTF);
             outAmplitude2F1(thisTrial,thisTF,thisSF)=fTSData(inputFreq*2*nSecs+1); % Remember, adding 1 to allow for 0 freq in FFT
