@@ -1,5 +1,12 @@
 close all;
 clear all;
+
+Screen('Preference', 'VisualDebuglevel', 2)% disables welcome and warning screens
+HideCursor % Hides the mouse cursor
+
+datadir='C:\data\SSERG\data\';
+flyTV_startTime=now;
+
 tfList=[1,2,4,8,16]; % This is in Hz.
 sfList=[1 2 4 8 16]/1000; % We don't know what units this is in
 
@@ -21,7 +28,8 @@ for thisrun=1:5 % 5 repeats
             thisSF=sfList(s);
             fprintf('\nRunning tf %d, sf %d',thisTF,thisSF);
             
-            
+          
+        
             d=flytv_runGrating(thisTF,thisSF);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
             % We might not have to
             % open the screen each
@@ -42,15 +50,20 @@ for thisrun=1:5 % 5 repeats
             finalData.now=now;
             finalData.r=r;
             
-            dataSet{temporalFrequencyIndex,spatialFrequencyIndex}=finalData; % Put the extracted data into an array tf x sf
-            
+       
+       
+            filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisrun),'_',datestr(flyTV_startTime,30),'.mat'])
+            save(filename,'finalData');
+            %dataSet{temporalFrequencyIndex,spatialFrequencyIndex,thisrun}=finalData; % Put the extracted data into an array tf x sf x nrepeats
+           
             
             
         end % Next spatial frequency
     end % Next temporalFrequency
 end    
 
-save temp % This should change to a uniquywe filename than embeds the time and date using datestr and now
+filename=fullfile(datadir,['flyTV_',datestr(flyTV_startTime,30),'.mat'])
+save(filename);
 
 
 
