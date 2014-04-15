@@ -1,8 +1,7 @@
-%load('/Users/alexwade/Downloads/Sweep1 08.04.14.mat') % it is possible to browse files using uigetfile
 clear all
 close all;
 dataDir=uigetdir;
-fList=dir(fullfile(dataDir,'*.mat'))
+fList=dir(fullfile(dataDir,'*.mat'));
 
 nTrials=length(fList);
 
