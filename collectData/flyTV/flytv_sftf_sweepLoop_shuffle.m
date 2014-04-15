@@ -1,7 +1,8 @@
+close all
 close all;
 clear all;
 
-Screen('Preference', 'VisualDebuglevel', 2)% disables welcome and warning screens
+Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
 HideCursor % Hides the mouse cursor
 
 datadir='C:\data\SSERG\data\';
