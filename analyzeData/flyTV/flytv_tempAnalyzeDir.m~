@@ -10,9 +10,21 @@ for thisTrial=1:nTrials
     fName=fullfile(dataDir,fList(thisTrial).name)
     
     
-    dataSet=fullfile(fName); % Fullfile generates a legal filename on any platform
-    thisD=load(dataSet);
-    [nTF,nSF]=size(thisD.dataSet)
+    dataSetName=fullfile(fName); % Fullfile generates a legal filename on any platform
+    thisD=load(dataSetName);
+    tf(thisTrial)=thisD.finalData.thisTF;
+    sf(thisTrial)=thisD.finalData.thisSF;
+    data(thisTrial,:)=thisD.finalData.Data';
+    timeStamps(thisTrial,:)=thisD.finalData.TimeStamps';
+    
+end
+[uniqueTF,d,tfInds]=unique(tf);
+[uniqueSF,d,sfInds]=unique(sf);
+
+    nTF=length(uniqueTF);
+    nSF=length(uniqueSF);
+    
+    
     nSecs=9; % number of good 1sec bins
     nPreBin=1; % In secs
     nPostBin=1; % In secs
@@ -26,6 +38,29 @@ for thisTrial=1:nTrials
 
     for thisTFIndex=1:nTF
         for thisSFIndex=1:nSF
+            allData{thisTFIndex,thisSFIndex}=[];
+        end
+    end
+    
+    for thisTrial=1:nTrials
+        thisTFIndex=tfInds(thisTrial);
+        thisSFIndex=sfInds(thisTrial);
+        allData{thisTFIndex,thisSFIndex}=cat(1,allData{thisTFIndex,thisSFIndex},data(thisTrial,:));
+        tf    
+    end
+    
+       for thisTFIndex=1:nTF
+        for thisSFIndex=1:nSF
+            ds(thisTFIndex,thisSFIndex,:)=mean(allData{thisTFIndex,thisSFIndex},1);
+            tds(thisTFIndex,thisSFIndex,:)=ds(thisTFIndex,thisSFIndex,(sampleFreq*nPreBin+1):(end-sampleFreq*nPostBin));
+            ftds=fft(squeeze(tds(thisTFIndex,thisSFIndex,:));%
+            respFreq=
+            
+        end
+       end
+      
+    
+       
             allRespData=thisD.dataSet{thisTFIndex,thisSFIndex}; % We can look in r to see which condition this corresponds to
             thisOrigIndex=thisD.r(thisTFIndex,thisSFIndex);
             
