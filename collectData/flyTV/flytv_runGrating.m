@@ -62,7 +62,7 @@ toc
 % We're done. Close the window. This will also release all other ressources:
 Screen('CloseAll');
 
-pause(2); % Wait for all the data acq to end
+pause(4); % Wait for all the data acq to end
 %%
 figure(1);
 plot(gl.TimeStamps,gl.Data);
