@@ -10,7 +10,7 @@ gl=[];
 
 s = daq.createSession('ni');
 s.DurationInSeconds = 10;
-addAnalogInputChannel(s,'Dev1','ai0','Voltage')
+addAnalogInputChannel(s,'Dev3','ai0','Voltage')
 s.NumberOfScans = 11000;
 s.NotifyWhenDataAvailableExceeds = s.NumberOfScans;
 myData=[];
