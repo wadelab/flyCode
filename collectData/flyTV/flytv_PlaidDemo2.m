@@ -30,6 +30,7 @@ function PlaidDemo1(angle, cyclespersecond, freq, gratingsize, internalRotation)
 
 % History:
 % 3/1/9  mk   Written.
+% 25/04/14 rw531 edited for flytv
 
 % Make sure this is running on OpenGL Psychtoolbox:
 AssertOpenGL;
@@ -109,8 +110,8 @@ phaseincrement2 = (cyclespersecond * 360 * 2) * ifi; % Twice the frequency
 
 Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-gratingtex1 = CreateProceduralSineGrating(win, res(1), res(2),[.5 .5 .5 1]);
-gratingtex2 = CreateProceduralSineGrating(win, res(2), res(1),[.5 .5 .5 .5]);
+gratingtex1 = CreateProceduralSineGrating(win, res(1), res(2),[.5,.5,.5,1]);
+gratingtex2 = CreateProceduralSineGrating(win, res(2), res(1),[.5 .5 .5 0.5]);
 
 % Wait for release of all keys on keyboard, then sync us to retrace:
 KbReleaseWait;
@@ -131,6 +132,9 @@ while ~KbCheck
     phase2 = phase2 + phaseincrement2;
     p2_2 = 180*(round(phase2/180 ));
      
+    Screen('Preference', 'VisualDebuglevel', 1)% disables welcome and warning screens
+    HideCursor % Hides the mouse cursor
+
     
     % Draw the grating, centered on the screen, with given rotation 'angle',
     % sine grating 'phase' shift and amplitude, rotating via set
