@@ -27,7 +27,7 @@ win.ifi=Screen('GetFlipInterval', win.id);
 win.vbl = Screen('Flip', win.id);
 % Build a procedural sine grating texture for a grating with a support of
 % res(1) x res(2) pixels and a RGB color offset of 0.5 -- a 50% gray.
-res=[2031 1143]; % cloned screen 1 [3000 800];
+res=[1920 1080]; % cloned screen 1 [3000 800];
 win.gratingtex = CreateProceduralSineGrating(win.id, res(1), res(2), [0.5 0.5 0.5 0.0]);
 
 % Make sure the GLSL shading language is supported:
