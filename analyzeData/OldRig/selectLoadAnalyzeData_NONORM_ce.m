@@ -15,11 +15,13 @@ DOFILENORM=0;
 
 %% needs to be 0
 DOFLYNORM=4; % These normalization options allow you to perform normalization on a per-file or per-fly basis. 0 = no normalization 1= full (complex) 2=magnitude only
-comment='allNorm4_aw';
+comment='noNorm';
 
 baseDir=uigetdir(pwd);
 [a,b]=fileparts(baseDir)
 bookName=[b,'_',datestr(now,30),'_',comment,'.pdf']
+F2Name=[b,'_',datestr(now,30),'_F2_',comment,'.csv']
+
 
 phenotypeList=fly_getDataDirectoriesOrig(baseDir); % This function generates the locations of all the directories..
 % Each fly sits in a separate subdirectory. We >want< top do a multivariate repeatedmeasures ANOVA. But we can't in MATLAB. We can in R...
@@ -46,7 +48,7 @@ extractionParams.incoherentAvMaxFreq=MAX_FREQ;
 extractionParams.rejectParams.sd=2;
 extractionParams.rejectParams.maxFreq=MAX_FREQ;
 extractionParams.DOFILENORM=0;
-extractionParams.SNRFLAG=0;
+extractionParams.SNRFLAG=1;
 extractionParams.waveformSampleRate=1000; % Hz. Resample the average waveform to this rate irrespective of the initial rate.
 
 %% Here we load in all the different data files.
@@ -232,7 +234,7 @@ for thisPhenotype=1:length(phenotypeList)
     if (DOFLYNORM==1 || DOFLYNORM==2 || DOFLYNORM==3)
         plotParams.maxYLim=[1 1 0.4 0.2 0.25 0.02]; % Zero for adaptive scaling
     else
-        plotParams.maxYLim=[200 300 50 30 50 10];
+        plotParams.maxYLim=[200 300 50 30 50 10]/100;
     end
     
             
@@ -281,6 +283,12 @@ for thisPType=1:length(phenotypeList)
     ptName{thisPType}=phenotypeList{thisPType}.type;
 end
 
+fout = fopen (F2Name, 'w');
+for thisPhenotype=1:length(meanF2Masked)
+    fprintf(fout, '%d, %d, %s, %g \r\n', thisPhenotype, categoryType(thisPhenotype),  ptName{categoryType(thisPhenotype)}, abs(meanF2Masked(thisPhenotype)))
+end
+fclose (fout);
+
     
 % Check sorting. Check for singleton flies / reps
 g=find(~isnan(meanF2Masked))
@@ -290,7 +298,8 @@ gc1=categoryType(g);
 [d2,p2,stats2]=manova1([abs(gd1(:)),unwrap(angle(gd1(:)))],gc1)
 %%%figure(99);
 
-anova1(abs(gd1(:)),gc1)
+[Myp, Mytable, Mystats] = anova1(abs(gd1(:)),gc1)
+c = multcompare(Mystats, 0.05)
 title(summaryStatisticName);
 set(gca,'XTickLabel',ptName);
 

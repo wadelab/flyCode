@@ -171,7 +171,7 @@ for thisFlyTypeIndex=1:nUniqueFlies
         plotParams.lineWidthCart=2;
         plotParams.errorEnvelope=1;
         plotParams.doPhasePlot=0;
-        plotParams.doCartPlot=0;
+        plotParams.doCartPlot=1;
         plotParams.XAxisType='Log';
         plotParams.plotColors=[0 0 0];
         plotParams.doFitPlot=1;
@@ -180,13 +180,13 @@ for thisFlyTypeIndex=1:nUniqueFlies
             %We can plot these fitted data separately
             figure(99);
             subplot(1,nUniqueFlies,thisFlyTypeIndex);
-            handles=fly_plotFittedData(contRange,meanFlyDataCoh(thisFlyTypeIndex,3,1:7),fittedCRFParamsUnmasked1_2F1(thisFlyTypeIndex,:),plotParams);
+            handles=fly_plotFittedData(contRange,meanFlyDataCoh(thisFlyTypeIndex,1,1:7),fittedCRFParamsUnmasked1_1F1(thisFlyTypeIndex,:),plotParams);
             set(handles(1),'Color','k');
               set(handles(1),'LineWidth',2);
             set(handles(2),'MarkerFaceColor','k');
               set(handles(2),'MarkerEdgeColor','k');
             hold on;
-            handles=fly_plotFittedData(contRange,meanFlyDataCoh(thisFlyTypeIndex,3,8:14),fittedCRFParamsMasked1_2F1(thisFlyTypeIndex,:),plotParams);
+            handles=fly_plotFittedData(contRange,meanFlyDataCoh(thisFlyTypeIndex,1,8:14),fittedCRFParamsMasked1_1F1(thisFlyTypeIndex,:),plotParams);
             set(handles(1),'Color','r');
             set(handles(2),'MarkerFaceColor','r');
             set(handles(2),'MarkerEdgeColor','r');
