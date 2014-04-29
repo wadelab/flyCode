@@ -112,7 +112,7 @@ for thisPhenotype=1:length(phenotypeList)
         flyMeanWaveform{thisPhenotype}.data(:,:,:,thisFlyIndex)=avWaveformRS;
 
         
-        fCondDat=(fft(condDat)/(sqrt(size(avWaveform,1)))); % Compute FT down time in each bin. Leave in complex domain. Do scaling by that strange factor to maintain plotting compatibility with very old datasets
+        fCondDat=(fft(condDat)/((size(avWaveform,1)))); % Compute FT down time in each bin. Leave in complex domain. Do scaling by that strange factor to maintain plotting compatibility with very old datasets
   
         meanSpect=squeeze(nanmean(abs(fCondDat(2:nFreqs,:,:,:,:)),2));
         compMeanSpect=squeeze(nanmean((fCondDat(2:nFreqs,:,:,:,:)),2));
