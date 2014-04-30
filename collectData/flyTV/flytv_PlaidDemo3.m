@@ -1,6 +1,20 @@
-function dataOut=flytv_PlaidDemo2(cyclespersecond, sfreq)
-% function DriftDemo4([angle=0][, cyclespersecond=1][, freq=1/360][, gratingsize=360][, internalRotation=0])
-% ___________________________________________________________________
+function dataOut=flytv_PlaidDemo3(cyclespersecond, sfreq, contrast)
+% function dataOut=flytv_PlaidDemo2(cyclespersecond, sfreq,contrast)
+% Generates a 2-component plaid 
+% Grating 1 is orthogonal to grating 2
+% All the inputs are now 2 element vectors
+% that specify the parameters for rgating 1 and grating 2
+% So for example
+% cyclespersecond=[0.1 0.2]; % The second grating has twice the sf of the
+% first one
+% Contrast is the contrast of each component. [.5 .5] gives equal
+% mixtures of gr 1 and gr 2 with a max screen level of 100%
+% You can go higher : so 0.7 .3 is okay
+% The conversion from contrast to amplitudes in the code is computed by a
+% separate function flytv_computeAlphaAmps
+%
+% Old comments:
+%___________________________________________________________________
 %
 % Display an animated grating, using the new Screen('DrawTexture') command.
 % This demo demonstrates fast drawing of such a grating via use of procedural
@@ -45,7 +59,7 @@ gl=[];
     res = [1920 1080]; % screen resoloution
     %sfreq = 1/180;% Frequency of the grating in cycles per pixel: Here 0.01 cycles per pixel,,This should be specified in cycles per degree...
     %cyclespersecond = 5; % temporal frequency
-    angle = 0  ; % angle of gratings on screen
+    angle = [0 90]  ; % angle of gratings on screen
     Duration=10; % how long to flicker for
 
 % Amplitude of the grating in units of absolute display intensity range: A
@@ -58,7 +72,7 @@ gl=[];
 % than 0.5 don't make sense, as parts of the grating would lie outside the
 % displayable range for your computers displays:
 
-amplitude = 0.5;
+
 
 
 Screen('Preference', 'SkipSyncTests', 1);
@@ -80,21 +94,23 @@ AssertGLSL;
 ifi = Screen('GetFlipInterval', win);
 
 % Phase is the phase shift in degrees (0-360 etc.)applied to the sine grating:
-phase1 = 0;
-phase2 = 0;
+phase=[0 0];
 
 % Compute increment of phase shift per redraw:
-phaseincrement1 = (cyclespersecond * 360) * ifi;
-% Compute increment of phase shift per redraw:
-phaseincrement2 = (cyclespersecond * 360 * 2) * ifi; % Twice the frequency
+phaseincrement = [cyclespersecond] * 360 * ifi;
+
+
 % Build a procedural sine grating texture for a grating with a support of
 % res(1) x res(2) pixels and a RGB color offset of 0.5 -- a 50% gray.
 
 
 Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-gratingtex1 = CreateProceduralSineGrating(win, res(1), res(2),[.5,.5,.5,.5]);
-gratingtex2 = CreateProceduralSineGrating(win, res(2), res(1),[.5 .5 .5 .5]);
+% Compute the alpha and amplitudes that we will use
+[amps,alpha]=flytv_computeAlphaAmps(contrast)
+
+gratingtex1 = CreateProceduralSineGrating(win, res(1), res(2),[.5,.5,.5, 1]); % Bottom grating
+gratingtex2 = CreateProceduralSineGrating(win, res(2), res(1),[.5 .5 .5 alpha]); % Top grating blend 50%
 
 % Wait for release of all keys on keyboard, then sync us to retrace:
 
@@ -110,13 +126,10 @@ while (vbl < vblendtime)
     % Update some grating animation parameters:
     
     % Increment phase by the appropriate amount for this time period:
-    phase1 = phase1 + phaseincrement1;
-    p2_1 = 180*(round(phase1/180 ));
+    phase = phase + phaseincrement;
+    pMod = 180*(round(phase/180 ));
         
-    % Increment phase by the appropriate amount for this time period:
-    phase2 = phase2 + phaseincrement2;
-    p2_2 = 180*(round(phase2/180 ));
-     
+
     
     % Draw the grating, centered on the screen, with given rotation 'angle',
     % sine grating 'phase' shift and amplitude, rotating via set
@@ -125,8 +138,8 @@ while (vbl < vblendtime)
     % vector with a number of components that is an integral multiple of 4,
     % i.e. in our case it must have 4 components:
 
-     Screen('DrawTexture', win, [gratingtex1], [], [], [angle], [], [0], [], [], [rotateMode], [p2_1,sfreq,amplitude,0]');
-     Screen('DrawTexture', win, [gratingtex2], [], [], [90+angle], [], [0], [], [], [rotateMode], [p2_2,sfreq,amplitude,0]');
+     Screen('DrawTexture', win, [gratingtex1], [], [], [angle(1)], [], [0], [], [], [rotateMode], [pMod(1),sfreq(1),amps(1),0]');
+     Screen('DrawTexture', win, [gratingtex2], [], [], [angle(2)], [], [0], [], [], [rotateMode], [pMod(2),sfreq(2),amps(2),0]');
 
 
     % Show it at next retrace:
