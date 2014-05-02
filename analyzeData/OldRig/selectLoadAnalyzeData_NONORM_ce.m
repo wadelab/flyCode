@@ -18,7 +18,7 @@ DOFLYNORM=4; % These normalization options allow you to perform normalization on
 comment='noNorm';
 
 baseDir=uigetdir(pwd);
-[a,b]=fileparts(baseDir)
+[a,b]=fileparts(baseDir);
 bookName=[b,'_',datestr(now,30),'_',comment,'.pdf']
 F2Name=[b,'_',datestr(now,30),'_F2_',comment,'.csv']
 
@@ -234,7 +234,7 @@ for thisPhenotype=1:length(phenotypeList)
     if (DOFLYNORM==1 || DOFLYNORM==2 || DOFLYNORM==3)
         plotParams.maxYLim=[1 1 0.4 0.2 0.25 0.02]; % Zero for adaptive scaling
     else
-        plotParams.maxYLim=[200 300 50 30 50 10]/100;
+        plotParams.maxYLim=[200 300 50 30 50 10]/10000;
     end
     
             
@@ -339,39 +339,39 @@ set(gca,'XTickLabel',ptName);
     maxfig(gcf,1);
 
   export_fig(bookName,'-pdf','-transparent','-append');
-%{
+
   
   %% __-- Plot all the spectra from the phenotypes  
-figure(30);
-    hold off;
-    subplot(1,1,1);
-    grid on
-  
-    
-for thisPhenotype=1:length(phenotypeList)
-  
-    mSpect=squeeze(phenotypeData{thisPhenotype}.meanSpectrum(:,11,1));
-    
-    semSpect=squeeze(phenotypeData{thisPhenotype}.semSpectrum(:,11,1));
-    mSpect(50)=0;
-    semSpect(50)=0;
-   % [handleL(thisPhenotype),handleP(thisPhenotype)]=boundedline(1:199,mSpect,semSpect); % The zero term is already out.
-  handleL(thisPhenotype)=errorbar(mSpect,semSpect);
-   %set(gca,'XLim',[1 nFreqs]);
-    % set(gca,'YScale','log');
-    hold on;
- 
-    
-end
-legend(ptName);
-colMaps=hsv(length(phenotypeList));
-
-for thisPhenotype=1:length(phenotypeList)
-       set(handleL(thisPhenotype),'Color',colMaps(thisPhenotype,:));
-    set(handleL(thisPhenotype),'LineWidth',2);
-   % set(handleP(thisPhenotype),'FaceColor',colMaps(thisPhenotype,:));
-  %  set(handleP(thisPhenotype),'FaceAlpha',0.5);
-end
+% figure(30);
+%     hold off;
+%     subplot(1,1,1);
+%     grid on
+%   
+%     
+% for thisPhenotype=1:length(phenotypeList)
+%   
+%     mSpect=squeeze(phenotypeData{thisPhenotype}.meanSpectrum(:,11,1));
+%     
+%     semSpect=squeeze(phenotypeData{thisPhenotype}.semSpectrum(:,11,1));
+%     mSpect(50)=0;
+%     semSpect(50)=0;
+%    % [handleL(thisPhenotype),handleP(thisPhenotype)]=boundedline(1:199,mSpect,semSpect); % The zero term is already out.
+%   handleL(thisPhenotype)=errorbar(mSpect,semSpect);
+%    %set(gca,'XLim',[1 nFreqs]);
+%     % set(gca,'YScale','log');
+%     hold on;
+%  
+%     
+% end
+% legend(ptName);
+% colMaps=hsv(length(phenotypeList));
+% 
+% for thisPhenotype=1:length(phenotypeList)
+%        set(handleL(thisPhenotype),'Color',colMaps(thisPhenotype,:));
+%     set(handleL(thisPhenotype),'LineWidth',2);
+%    % set(handleP(thisPhenotype),'FaceColor',colMaps(thisPhenotype,:));
+%   %  set(handleP(thisPhenotype),'FaceAlpha',0.5);
+% end
 
 %     subplot(2,1,2);
 % hold off;
@@ -382,8 +382,8 @@ end
 % grid on
 % legend(ptName);
 
-
-  % Here, we want to compute the binned amplitudes across the endogenous
+%%%
+ %%Here, we want to compute the binned amplitudes across the endogenous
     % frequency bands - ignoring the ones containing actual signal.
     % To do that, we first compute the f's containing signal - then work
     % out which ones are noise
@@ -391,7 +391,7 @@ end
     signalBinMultiples=[1 0;0 1;2 0; 0 2;1 1; 1 -1; 2 -2; 2 2];
     signalFs=abs(signalBinMultiples(:,1)*params.F(1)+signalBinMultiples(:,2)*params.F(2));
     noiseFs=setdiff(1:99,signalFs);
-binBoundaries=[1,10;11,20;21,30;31,49;51,70;71,99];
+binBoundaries=[1,10;11,20;21,30;31,40;41,50;51,60;61,70;71,80;81,90]
 for thisPhenotype=1:length(phenotypeList)
     for thisBin=1:size(binBoundaries,1)
         validFs=intersect((binBoundaries(thisBin,1):binBoundaries(thisBin,2)),noiseFs);
@@ -404,6 +404,8 @@ for thisPhenotype=1:length(phenotypeList)
         thisBinSEM(thisPhenotype,thisBin)=sqrt(nanmean(semToAverage(:)))./sum(totalPower');
         binLabel{thisBin}=sprintf('%d to %d',binBoundaries(thisBin,1),binBoundaries(thisBin,2));
     end
+ 
+  
 end
 figure(50);
 barwitherr(thisBinSEM',thisBinRMS');
@@ -415,91 +417,91 @@ ylabel('Average RMS amplitude (AU)');
  legend(ptName)
  
  
- %% 
- r1=phenotypeData{1}.avWaveform;
-  r2=phenotypeData{2}.avWaveform;
- 
- pdat=squeeze(r1(:,:,1));
- pdat=pdat-repmat(mean(pdat),size(pdat,1),1);
- 
-
- figure(120);
-surf(pdat);
-shading interp
-%}
-
-% Plot the mean phase of the high contrast conditions 
-
-% allResp contains these complex amplitudes - it is nFlies x nFreqComp *
-% nConts x nExpts
-totalList=[];
-catType=[];
-for thisPhenotype=1:length(phenotypeList)
-    tempData=allResp{thisPhenotype};
-    tempData=squeeze(nanmean(tempData(:,3,((nConts-1):(nConts-1)),1),3));
-    phenoMean(thisPhenotype)=squeeze(nanmean(tempData));
-    phenoSem(thisPhenotype)=squeeze(nanstd(tempData)/sqrt(size(tempData,1)));
-    
-     totalList=[totalList;tempData];
-    catType=[catType;thisPhenotype*ones(length(tempData),1)];
-end
-[d,p,stats]=manova1([real(totalList(:)), imag(totalList(:))],catType)
-[d2,p2,stats2]=manova1([abs(totalList(:)), (angle(totalList(:)))],catType)
-
-% Circular statistic test of phase
-circ_cmtest(angle(totalList(:)),catType)
-    
-
-
-
-
-figure(250);
-hold off;
-plotParams.DO_ERRORCIRCS=1;
-     % Plot a dummy function to set the scale
-        theta  = linspace(0,2*pi,100);
-        r      = sin(2*theta) .* cos(2*theta);
-        r_max  = 125; % was 25 also been 3
-        h_fake = polar(theta,r_max*ones(size(theta)));
-        set(h_fake,'Color',[1 1 1]);
-        
-        hold on;
-        g=compass(real(phenoMean),imag(phenoMean),'k');
-        set(gca,'FontSize',8);
-        
-        comap=hsv(length(g));
-        
-        for th=1:length(g)
-            %set(g(th),'Color',[1 0.6 0.6]-0.05*th);
-            set(g(th),'Color',comap(th,:));
-            set(g(th),'LineWidth',plotParams.lineWidthPolar);
-            a = get(g(th), 'xdata');  % Get rid of arrows. Thanks StackOverflow!
-            b = get(g(th), 'ydata'); 
-            set(g(th), 'xdata', a(1:2), 'ydata', b(1:2))
-            
-            if (plotParams.DO_ERRORCIRCS)
-                
-            x=get(g(th),'XData');
-            y=get(g(th),'YData');
-            rad=phenoSem(th);
-            
-            xPos=rad*cos(linspace(0,2*pi,30))+x(2);
-            yPos=rad*sin(linspace(0,2*pi,30))+y(2);
-            p(th)=patch(xPos,yPos,'r');
-            set(p(th),'FaceAlpha',.5);
-            set(p(th),'FaceColor',comap(th,:));
-            end
-            
-            
-        end
-legend(p,ptName);
-       maxfig(gcf,1);
-
-  export_fig(bookName,'-pdf','-transparent','-append','-opengl'); 
-     % export_fig('polar.eps','-transparent','-opengl'); 
-
-    
-    
+%  %% 
+%  r1=phenotypeData{1}.avWaveform;
+%   r2=phenotypeData{2}.avWaveform;
+%  
+%  pdat=squeeze(r1(:,:,1));
+%  pdat=pdat-repmat(mean(pdat),size(pdat,1),1);
+%  
+% 
+%  figure(120);
+% surf(pdat);
+% shading interp
+% %}
+% 
+% % Plot the mean phase of the high contrast conditions 
+% 
+% % allResp contains these complex amplitudes - it is nFlies x nFreqComp *
+% % nConts x nExpts
+% totalList=[];
+% catType=[];
+% for thisPhenotype=1:length(phenotypeList)
+%     tempData=allResp{thisPhenotype};
+%     tempData=squeeze(nanmean(tempData(:,3,((nConts-1):(nConts-1)),1),3));
+%     phenoMean(thisPhenotype)=squeeze(nanmean(tempData));
+%     phenoSem(thisPhenotype)=squeeze(nanstd(tempData)/sqrt(size(tempData,1)));
+%     
+%      totalList=[totalList;tempData];
+%     catType=[catType;thisPhenotype*ones(length(tempData),1)];
+% end
+% [d,p,stats]=manova1([real(totalList(:)), imag(totalList(:))],catType)
+% [d2,p2,stats2]=manova1([abs(totalList(:)), (angle(totalList(:)))],catType)
+% 
+% % Circular statistic test of phase
+% circ_cmtest(angle(totalList(:)),catType)
+%     
+% 
+% 
+% 
+% 
+% figure(250);
+% hold off;
+% plotParams.DO_ERRORCIRCS=1;
+%      % Plot a dummy function to set the scale
+%         theta  = linspace(0,2*pi,100);
+%         r      = sin(2*theta) .* cos(2*theta);
+%         r_max  = 125; % was 25 also been 3
+%         h_fake = polar(theta,r_max*ones(size(theta)));
+%         set(h_fake,'Color',[1 1 1]);
+%         
+%         hold on;
+%         g=compass(real(phenoMean),imag(phenoMean),'k');
+%         set(gca,'FontSize',8);
+%         
+%         comap=hsv(length(g));
+%         
+%         for th=1:length(g)
+%             %set(g(th),'Color',[1 0.6 0.6]-0.05*th);
+%             set(g(th),'Color',comap(th,:));
+%             set(g(th),'LineWidth',plotParams.lineWidthPolar);
+%             a = get(g(th), 'xdata');  % Get rid of arrows. Thanks StackOverflow!
+%             b = get(g(th), 'ydata'); 
+%             set(g(th), 'xdata', a(1:2), 'ydata', b(1:2))
+%             
+%             if (plotParams.DO_ERRORCIRCS)
+%                 
+%             x=get(g(th),'XData');
+%             y=get(g(th),'YData');
+%             rad=phenoSem(th);
+%             
+%             xPos=rad*cos(linspace(0,2*pi,30))+x(2);
+%             yPos=rad*sin(linspace(0,2*pi,30))+y(2);
+%             p(th)=patch(xPos,yPos,'r');
+%             set(p(th),'FaceAlpha',.5);
+%             set(p(th),'FaceColor',comap(th,:));
+%             end
+%             
+%             
+%         end
+% legend(p,ptName);
+%        maxfig(gcf,1);
+% 
+%   export_fig(bookName,'-pdf','-transparent','-append','-opengl'); 
+%      % export_fig('polar.eps','-transparent','-opengl'); 
+% 
+%     
+%     
     
     
 %{

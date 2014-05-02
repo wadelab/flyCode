@@ -9,7 +9,7 @@
 
 %% Generate a list of all the directories to examine in the destination dir.
 clear all; close all; % Housekeeping
-PHOTODIODE_HIDE=0;
+PHOTODIODE_HIDE=1;
 ABSFLAG=1;
 MAX_FREQ=100; % Maximum frequency to retain during F-domain analysis.
 %DOFILENORM=0;

@@ -47,7 +47,9 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
                       
             % This is a place where you could add an option to ignore the first n
             % datasets
-            for thisFile=1:nDataSets % Load in all the files in the directory
+            % NOTE :  If you do this, you >must< reset it as this is a
+            % general file used by a lot of people
+            for thisFile=1:nDataSets % Load in all the files in the directory 
                 if (extractionParams.verbose)
                     fprintf('\nLoading file %d of %d',thisFile,nDataSets);
                 end
