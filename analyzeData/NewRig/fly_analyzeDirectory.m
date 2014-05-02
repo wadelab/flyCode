@@ -10,7 +10,7 @@
 %% Generate a list of all the directories to examine in the destination dir.
 clear all; close all; % Housekeeping
 PHOTODIODE_HIDE=1;
-ABSFLAG=1;
+ABSFLAG=1; % This is pretty critical: Is the analysis coherent or incoherent?
 MAX_FREQ=100; % Maximum frequency to retain during F-domain analysis.
 %DOFILENORM=0;
 %DOFLYNORM=4 ; % These normalization options allow you to perform normalization on a per-file or per-fly basis. 0 = no normalization 1= full (complex) 2=magnitude only
