@@ -10,8 +10,7 @@ freqsToExtract=extractionParams.freqsToExtract; % Which frequencies to extract (
 
 nFreqs=extractionParams.incoherentAvMaxFreq; % Cutoff for incoherent averaging
 rejectParams=extractionParams.rejectParams; % Noise rejections parameters
-%DOFILENORM=extractionParams.DOFILENORM;
-%SNRFLAG=extractionParams.SNRFLAG;
+
 waveformSampleRate=extractionParams.waveformSampleRate; % Resample the average waveform to this rate irrespective of the initial rate.
 
 %% Here we load in all the different data files.
