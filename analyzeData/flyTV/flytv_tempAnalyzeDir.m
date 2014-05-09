@@ -49,19 +49,37 @@ end
         tf    
     end
     
+    [nr,nt]=size(allData{1});
+    
+    ds=zeros(5,5,nr,nt);
+    tds=zeros(5,5,nr,nt-2000);
+    
        for thisTFIndex=1:nTF
         for thisSFIndex=1:nSF
-            ds(thisTFIndex,thisSFIndex,:)=mean(allData{thisTFIndex,thisSFIndex},1);
-            tds(thisTFIndex,thisSFIndex,:)=ds(thisTFIndex,thisSFIndex,(sampleFreq*nPreBin+1):(end-sampleFreq*nPostBin));
-            ftds=fft(squeeze(tds(thisTFIndex,thisSFIndex,:)));%
+            disp(thisTFIndex)
+            disp(thisSFIndex)
+            
+            ds=squeeze(allData{thisTFIndex,thisSFIndex});
+           
+            tds=ds(:,(sampleFreq*nPreBin+1):(end-sampleFreq*nPostBin));
+            ftds=fft(tds,[],2);%
+            
             respFreq=nSecs*uniqueTF(thisTFIndex);
-            rAmp(thisTFIndex,thisSFIndex)=abs(ftds(respFreq+1));
-                        rAmp2(thisTFIndex,thisSFIndex)=abs(ftds(respFreq*2+1));
-
+            
+            rAmp(thisTFIndex,thisSFIndex)=mean(squeeze(abs(ftds(:,respFreq+1))));
+            rAmp2(thisTFIndex,thisSFIndex)=mean(squeeze(abs(ftds(:,respFreq*2+1))));
+            stAmp(thisTFIndex,thisSFIndex)=std(squeeze(abs(ftds(:,respFreq+1))),[],1);
+            stAmp2(thisTFIndex,thisSFIndex)=std(squeeze(abs(ftds(:,respFreq*2+1))),[],1);
+            
         end
        end
       
     
+       
+       %rAmp=rAmp./stAmp;
+       %rAmp2=rAmp2./stAmp2;
+       
+       
        figure(1);
        subplot(3,1,1);
        imagesc(rAmp);
