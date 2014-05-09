@@ -9,8 +9,8 @@
 
 %% Generate a list of all the directories to examine in the destination dir.
 clear all; close all; % Housekeeping
-PHOTODIODE_HIDE=0;
-ABSFLAG=1;
+PHOTODIODE_HIDE=1;
+ABSFLAG=1; % This is pretty critical: Is the analysis coherent or incoherent?
 MAX_FREQ=100; % Maximum frequency to retain during F-domain analysis.
 %DOFILENORM=0;
 %DOFLYNORM=4 ; % These normalization options allow you to perform normalization on a per-file or per-fly basis. 0 = no normalization 1= full (complex) 2=magnitude only
@@ -130,17 +130,46 @@ for thisFlyTypeIndex=1:nUniqueFlies
     meanFlyDataInc(thisFlyTypeIndex,:,:)=nanmean(abs(allExptResponses(find(uniqueJ==thisFlyTypeIndex),:,:)),1);
     semFlyDataInc(thisFlyTypeIndex,:,:)=nansem(abs(allExptResponses(find(uniqueJ==thisFlyTypeIndex),:,:)),[],1);
     nFliesInThisType(thisFlyTypeIndex)=sum((uniqueJ==thisFlyTypeIndex));
+    
+    analysisStruct.allFlyDataCoh{thisFlyTypeIndex}=allExptResponses(find(uniqueJ==thisFlyTypeIndex),:,:); % Store all coherent responses for each fly type for later analysis...
+    
 end
 
+
+analysisStruct.contRange=linspace(min(params.contRange(:,1)),max(params.contRange(:,1)),length(params.contRange(:,1))/2); % Which contrasts were the data acquired over?
+
+
+%% About analysisStruct
+% This is a single structure that contains all the important data about the
+% experiment. It should allow you to perform all the analysis you want to
+% do. It should also be the same for the new and old rigs.
+% The actual data are stored in a field called allFlyDataCoh. This is a
+% cell array with as many cells as phenotypes (potentially including the
+% 'Photodiode'.
+% Data in the cell array are ordered nFlies x nFreqsOfInterest x
+% nContrastLevels x nMaskLevels
+%  In the old analysis script (for the 'old' non-screen rig) it is filled
+%  out like this:
+% analysisStruct.contRange=linspace(min(params.contRange(:,1)),max(params.contRange(:,1)),length(params.contRange(:,1)));
+% 
+% for thisPhenotype=1:length(phenotypeList)
+%      analysisStruct.params{thisPhenotype}=params;
+%      analysisStruct.phenotypeName{thisPhenotype}=phenotypeList{thisPhenotype}.type;
+%      analysisStruct.nFlies{thisPhenotype}=phenotypeList{thisPhenotype}.nFlies;
+%      analysisStruct.avWaveform{thisPhenotype}=phenotypeData{thisPhenotype}.avWaveform;
+%      analysisStruct.meanSpectrum{thisPhenotype}=phenotypeData{thisPhenotype}.meanSpectrum;
+%      analysisStruct.semSpectrum{thisPhenotype}=phenotypeData{thisPhenotype}.semSpectrum;
+%      analysisStruct.meanCompSpectrum{thisPhenotype}=phenotypeData{thisPhenotype}.meanCompSpectrum;
+% end
+% %
 
 %% Loop over all fly types
 disp('Fitting');
 tic
-contRange=linspace(min(params.contRange(:,1)),max(params.contRange(:,1)),length(params.contRange(:,1))/2);
-[fittedCRFParamsUnmasked1_1F1]=fly_fitHyperData(params,contRange,abs(meanFlyDataCoh(:,1,1:7))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
-[fittedCRFParamsUnmasked1_2F1]=fly_fitHyperData(params,contRange,abs(meanFlyDataCoh(:,3,1:7))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
-[fittedCRFParamsMasked1_1F1]=fly_fitHyperData(params,contRange,abs(meanFlyDataCoh(:,1,8:14))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
-[fittedCRFParamsMasked1_2F1]=fly_fitHyperData(params,contRange,abs(meanFlyDataCoh(:,3,8:14))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
+[fittedCRFParamsUnmasked1_1F1]=fly_fitHyperData(params,analysisStruct.contRange,abs(meanFlyDataCoh(:,1,1:7))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
+[fittedCRFParamsUnmasked1_2F1]=fly_fitHyperData(params,analysisStruct.contRange,abs(meanFlyDataCoh(:,3,1:7))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
+[fittedCRFParamsMasked1_1F1]=fly_fitHyperData(params,analysisStruct.contRange,abs(meanFlyDataCoh(:,1,8:14))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
+[fittedCRFParamsMasked1_2F1]=fly_fitHyperData(params,analysisStruct.contRange,abs(meanFlyDataCoh(:,3,8:14))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
 
 toc
 
@@ -171,7 +200,7 @@ for thisFlyTypeIndex=1:nUniqueFlies
         plotParams.lineWidthCart=2;
         plotParams.errorEnvelope=1;
         plotParams.doPhasePlot=0;
-        plotParams.doCartPlot=0;
+        plotParams.doCartPlot=1;
         plotParams.XAxisType='Log';
         plotParams.plotColors=[0 0 0];
         plotParams.doFitPlot=1;
@@ -180,13 +209,13 @@ for thisFlyTypeIndex=1:nUniqueFlies
             %We can plot these fitted data separately
             figure(99);
             subplot(1,nUniqueFlies,thisFlyTypeIndex);
-            handles=fly_plotFittedData(contRange,meanFlyDataCoh(thisFlyTypeIndex,3,1:7),fittedCRFParamsUnmasked1_2F1(thisFlyTypeIndex,:),plotParams);
+            handles=fly_plotFittedData(contRange,meanFlyDataCoh(thisFlyTypeIndex,1,1:7),fittedCRFParamsUnmasked1_1F1(thisFlyTypeIndex,:),plotParams);
             set(handles(1),'Color','k');
               set(handles(1),'LineWidth',2);
             set(handles(2),'MarkerFaceColor','k');
               set(handles(2),'MarkerEdgeColor','k');
             hold on;
-            handles=fly_plotFittedData(contRange,meanFlyDataCoh(thisFlyTypeIndex,3,8:14),fittedCRFParamsMasked1_2F1(thisFlyTypeIndex,:),plotParams);
+            handles=fly_plotFittedData(contRange,meanFlyDataCoh(thisFlyTypeIndex,1,8:14),fittedCRFParamsMasked1_1F1(thisFlyTypeIndex,:),plotParams);
             set(handles(1),'Color','r');
             set(handles(2),'MarkerFaceColor','r');
             set(handles(2),'MarkerEdgeColor','r');

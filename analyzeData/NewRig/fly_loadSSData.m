@@ -47,7 +47,9 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
                       
             % This is a place where you could add an option to ignore the first n
             % datasets
-            for thisFile=1:nDataSets % Load in all the files in the directory
+            % NOTE :  If you do this, you >must< reset it as this is a
+            % general file used by a lot of people
+            for thisFile=1:nDataSets % Load in all the files in the directory 
                 if (extractionParams.verbose)
                     fprintf('\nLoading file %d of %d',thisFile,nDataSets);
                 end
@@ -87,13 +89,22 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
                 % To get around memory issues and to just generally make things
                 % better, we average across bins straight away.
                 
-                % Cond dat at this point is sampleRate * nBins * nChannels * nConts * nFiles
-                % Make an average waveform for a single bin across all files, bins.
+              
+                
                 avWaveformThisFile=squeeze(nanmean(rawPerFileData,2)); % Average down bins. This is now sampleRate x nChannels x nTrials
+                  % However - for looking at the endogenous responses, we
+                % want to avoid phase-locked averaging as much as possible.
+                % So at this point, we should compute the incoherent power
+                % spectrum up to some number of frequencies per expt (500 =
+                % 50Hz if we have 10- bins, 1000 = 100Hz etc.). 
+                
+                avSpectrum=squeeze(nanmean(abs(fft(rawPerFileData,[],1)),2));
+                
                 
                 % Sort the condDat - undo the randomization of contrast levels
                 [dummy,sortSeq]=sort(allData.exptParams.randSeq);
                 condDat(:,:,:,thisFile)=avWaveformThisFile(:,:,sortSeq);
+                freqDat(:,:,:,thisFile)=avSpectrum(:,:,sortSeq);
                 
                 
             end % Next file. Then we have a big set of bins

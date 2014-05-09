@@ -76,7 +76,7 @@ for thisPhenotype=1:length(phenotypeList)
         
         % First thing: toss out the first 1000 samples from each probe
         % period: This is the first bin
-        
+        disp(allData.digitizerSampleRate)
         probeData=probeData((allData.digitizerSampleRate+1):end,:,:,:);
         
         % How big is the data set now?

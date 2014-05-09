@@ -10,7 +10,7 @@ gl=[];
 
 s = daq.createSession('ni');
 s.DurationInSeconds = 10;
-addAnalogInputChannel(s,'Dev1','ai0','Voltage')
+addAnalogInputChannel(s,'Dev3','ai0','Voltage')
 s.NumberOfScans = 11000;
 s.NotifyWhenDataAvailableExceeds = s.NumberOfScans;
 myData=[];
@@ -27,7 +27,7 @@ win.ifi=Screen('GetFlipInterval', win.id);
 win.vbl = Screen('Flip', win.id);
 % Build a procedural sine grating texture for a grating with a support of
 % res(1) x res(2) pixels and a RGB color offset of 0.5 -- a 50% gray.
-res=[2031 1143]; % cloned screen 1 [3000 800];
+res=[1920 1080]; % cloned screen 1 [3000 800];
 win.gratingtex = CreateProceduralSineGrating(win.id, res(1), res(2), [0.5 0.5 0.5 0.0]);
 
 % Make sure the GLSL shading language is supported:
@@ -62,7 +62,7 @@ toc
 % We're done. Close the window. This will also release all other ressources:
 Screen('CloseAll');
 
-pause(2); % Wait for all the data acq to end
+pause(4); % Wait for all the data acq to end
 %%
 figure(1);
 plot(gl.TimeStamps,gl.Data);
