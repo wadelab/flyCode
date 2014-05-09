@@ -15,7 +15,7 @@ function pars = fit_hyper_ratio(resps,nn,R0)
 % see also: hyper_ratio
 %disp('-------');
 %cs=[ 0    0.0700    0.1400    0.2100    0.2800    0.3500    0.4200    0.4900    0.5600    0.6300    0.7000];
-cs=linspace(0,.7,7);
+cs=linspace(0,.7,size(resps,2));
 
 %disp(resps)
 resps=abs(mean((resps),1)); % Average across rows

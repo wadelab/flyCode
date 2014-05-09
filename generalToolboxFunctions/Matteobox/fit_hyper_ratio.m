@@ -53,10 +53,10 @@ sigma = mean(cs);
 
 if fixR0
    [ err pars ] = fitit('hyper_ratio',resps,...
-      [ 0 eps 0 R0 ], [ Rmax, sigma, n, R0 ], [ 2*Rmax max(cs) 5 R0 ], [0 1e-4 1e-4 nn], cs );
+      [ 0 eps 0 R0 ], [ Rmax, sigma, n, R0 ], [ 2*Rmax max(cs)*1.5 5 R0 ], [0 1e-4 1e-4 nn], cs );
 else
    [ err pars ] = fitit('hyper_ratio',resps,...
-      [ 0 eps 0 0 ], [ Rmax, sigma, n, R0 ], [ 2*Rmax max(cs) 5 Rmax ], [0 1e-4 1e-4 nn], cs );
+      [ 0 eps 0 0 ], [ Rmax, sigma, n, R0 ], [ 2*Rmax max(cs)*0.5 5 Rmax ], [0 1e-4 1e-4 nn], cs );
 end
 
 

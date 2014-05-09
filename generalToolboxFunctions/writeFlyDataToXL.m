@@ -13,7 +13,7 @@ function [status]=writeFlyDataToXL(filename,xlsData,semXlsData, xlParams)
 
 %% Initialisation of POI Libs
 % Add Java POI Libs to matlab javapath
- a='/data_biology/SSERG/toolbox/xlwrite/';
+ a='/data_biology/SSERG/toolbox/git/flyCode/generalToolboxFunctions/xlwrite/';
 available=exist('xlwrite');
 if (available ~=2)
     disp('You should add xlwrite to your path (it''s in the toolbox directory');
