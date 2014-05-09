@@ -1,4 +1,6 @@
+close all;
 clear all;
+
 PsychDefaultSetup(2);
 nLevels=11; % How many luminance steps?
 WhichScreen=1
@@ -6,6 +8,8 @@ WhichScreen=1
 win=PsychImaging('Openwindow', WhichScreen, 1);
 
 Screen('TextSize', win, 48);
+
+HideCursor;
 
 DrawFormattedText(win, 'GO','center','center');
 r1=[0 0 3000 2000]
@@ -114,5 +118,23 @@ end
     
     %% Remaining to do: Fit a gamma function to the curves. The best thing to do here is look at the Psychtoolbox routines for calibration. They will do this last part in a function.
     
-  fig5 = CalibratePlotGamma(cla,[h2])
+    % Set Parameters
+    %plot
+    % blank array for input values
+    %my_values_in = transpose(linspace(0,1,11)); 
+    %my_values_out = transpose(linspace(0,1,256));
+    %
+    %Raw_measurements = transpose(sumPower);
+    %Norm_measurements = NormalizeGamma(Raw_measurements);
+    
+    %fitType = 2 ;  %%'crtLinear'
+    %% 
+
+    %[gammaFit,gammaParams,fitComment] = FitGamma(my_values_in,Norm_measurements,my_values_out,fitType);
+   
+    
+    %%
+   
+    
+   %Screen('LoadNormalizedGammaTable',WhichScreen,sumPower)
     

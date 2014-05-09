@@ -1,6 +1,9 @@
 close all
 clear all
 
+datadir='C:\data\ScreenCalibration';
+time = now
+
 %% Create MATLAB Instrument OmniDriver Object
 Ocean=icdevice('OceanOptics_OmniDriver.mdd');
 
@@ -52,3 +55,12 @@ spectralData= invoke(Ocean, 'getSpectrum', spectrometerIndex);
 plot (wavelengths,spectralData);
 ylabel('intesity')
 xlabel('wavelength(nm)');
+
+%% Clean Up
+
+filename=fullfile(datadir,['green'])
+save(filename);
+
+disconnect(Ocean);
+delete(Ocean);
+
