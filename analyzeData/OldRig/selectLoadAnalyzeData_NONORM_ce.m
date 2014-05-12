@@ -18,11 +18,12 @@ DOFLYNORM=4; % These normalization options allow you to perform normalization on
 comment='noNorm';
 
 baseDir=uigetdir(pwd);
-[a,b]=fileparts(baseDir);
+[a,b1]=fileparts(baseDir);
+b = [baseDir,filesep, b1];
 bookName=[b,'_',datestr(now,30),'_',comment,'.pdf']
 F2Name=[b,'_',datestr(now,30),'_F2_',comment,'.csv']
-aFileName=[b,'_',datestr(now,30),'_AnalysisData_ ',comment,'.mat']
-
+aFileName=[b,'_',datestr(now,30),'_AnalysisData_',comment,'.mat']
+allDataName=[b,'_',datestr(now,30),'_AllData_',comment,'.mat']
 
 phenotypeList=fly_getDataDirectoriesOrig(baseDir); % This function generates the locations of all the directories..
 % Each fly sits in a separate subdirectory. We >want< top do a multivariate repeatedmeasures ANOVA. But we can't in MATLAB. We can in R...
@@ -292,7 +293,7 @@ for thisPhenotype=1:length(phenotypeList)
     %maxfig(gcf,1);
     
     % save this as an EPS file.
-    fname=[plotParams.ptypeName,'_NoERR_data.eps'];
+    fname=[b, plotParams.ptypeName,'_NoERR_data.eps'];
     
     print('-depsc','-r300', fname);
     % export_fig(bookName,'-pdf','-transparent','-append','-opengl');
@@ -332,10 +333,10 @@ c = multcompare(Mystats, 0.05)
 title(summaryStatisticName);
 set(gca,'XTickLabel',ptName);
 
-maxfig(gcf,1);
+%%maxfig(gcf,1);
 
-export_fig(bookName,'-pdf','-transparent','-append');
-save('allData');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%export_fig(bookName,'-pdf','-transparent','-append');
+save(allDataName);
 
 %{
 %% Look at some specific interactions - this just plots and compares 3 genotypes
@@ -365,9 +366,9 @@ boxplot([abs(totalList)],catType);
 anova1(abs(totalList),catType);
 title('Normalization values');
 set(gca,'XTickLabel',ptName);
-maxfig(gcf,1);
+%%%%maxfig(gcf,1);
 
-export_fig(bookName,'-pdf','-transparent','-append');
+%%%export_fig(bookName,'-pdf','-transparent','-append');
 
 
 
