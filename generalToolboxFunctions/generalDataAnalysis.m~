@@ -55,7 +55,7 @@ title('2F1 masked and unmasked c50');
 % plot the 1F1 data first
 
 plotColors=[0 0 0;1 0 0]; % Black and red (RGB) values determine the line colors for masked and unmasked
-frequencyComponent=1;
+frequencyComponent=2;
 lineContrasts=linspace(0,max(analysisStruct.contRange),100); % This is the range of contrasts for which we will plot the fitted lines.
 
 % Here we extract all the Rmax vals so that we know how to scale each yAxis
@@ -96,15 +96,20 @@ set(gcf,'Name','1F1 fits');
 
 
 %% Here.... we do the bootstrapping. It's not for the faint of heart: It can take quite a while....
-%% ***************** THIS IS AS SEPARATE
+%% If you install the parallel computing toolbox, it will use all your n cores and take and take 1/n as much time
+% It's really worth doing this!
 tic
-if(matlabpool('size') ~=0   ) 
-    matlabpool('open',4);
+if ( exist('matlabpool','builtin'))
+    if(matlabpool('size') ~=0   )
+        matlabpool('open',4);
+    end
+    
+    options=statset('UseParallel','always');
+    toc
+    disp('Assigned matlabpool - remember to close it later!');
+else
+    options = statset('UseParallel',0);
 end
-
-options=statset('UseParallel','always');
-toc
-disp('Assigned matlabpool - remember to close it later!');
 
 
 % Bootstrap RMax, c50,for 2F1 data...
@@ -115,35 +120,52 @@ for thisPhenotype=1:nPhenotypes
     
     for thisMaskType=1:2
         
-        thisFlyData=analysisStruct.allFlyDataCoh{thisPhenotype};
-        
-        dataToFit=(squeeze(thisFlyData(:,fComponentList(frequencyComponent),:,thisMaskType)));
-        contrasts=analysisStruct.contRange;
-        fprintf('\n%d phenotype',thisPhenotype);
-        
-        
-        tic
-        [confInt(thisPhenotype,thisMaskType,frequencyComponent,:,:),bootFitParams(thisPhenotype,thisMaskType,frequencyComponent,:,:)]=bootci(nBootstraps,{@fit_hyper_ratioNoErrMean,squeeze(dataToFit),5,0},'Options',options,'alpha',0.05);%,'type','cper');
-        toc
-        
-      end
+        for thisFrequencyComponentIndex=1:2 % Do fitting for the 1F1 and 2F1 components
+            
+            thisFlyData=analysisStruct.allFlyDataCoh{thisPhenotype};
+            
+            dataToFit=(squeeze(thisFlyData(:,fComponentList(thisFrequencyComponentIndex),:,thisMaskType)));
+            contrasts=analysisStruct.contRange;
+            fprintf('\n%d phenotype',thisPhenotype);
+            
+            
+            tic
+            [confInt(thisPhenotype,thisMaskType,thisFrequencyComponentIndex,:,:),bootFitParams(thisPhenotype,thisMaskType,thisFrequencyComponentIndex,:,:)]=bootci(nBootstraps,{@fit_hyper_ratioNoErrMean,squeeze(dataToFit),5,0},'Options',options,'alpha',0.05);%,'type','cper');
+            toc
+        end
+    end
     
 end
+if ( exist('matlabpool','builtin'))
+    matlabpool close % This command is very mportant. Once you've opened the 'matlab pool' you are controlling all the cores in your CPU. You cannot re-open the matlab pool until you close it...
+end
 
-matlabpool close % This command is very mportant. Once you've opened the 'matlab pool' you are controlling all the cores in your CPU. You cannot re-open the matlab pool until you close it...
-
+save fitTemp.mat
 %% ****************************
 % We now have some lovely bootstrapped parameters for all mask conditions
 % and all phenotypes. We can plot these in boxplots like this:
 figure(10);
-for thisMaskCondition=1:2
-subplot(2,1,thisMaskCondition);
-dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,frequencyComponent,:,1))';
 
-boxplot(dataToBoxplot,'notch','on','plotstyle','compact'); % The Rmax fits for both mask and unmasked
-grid on;
+for thisMaskCondition=1:2
+    subplot(2,1,thisMaskCondition);
+    dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,1,:,1))';
+    
+    boxplot(dataToBoxplot,'notch','on','plotstyle','compact'); % The Rmax fits for both mask and unmasked
+    grid on;
 end
-set(gcf,'Name','Rmax unmasked and masked');
+set(gcf,'Name','Rmax unmasked and masked 1F1');
+
+%% Look at 2F1 as well
+figure(11);
+
+for thisMaskCondition=1:2
+    subplot(2,1,thisMaskCondition);
+    dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,2,:,1))';
+    
+    boxplot(dataToBoxplot,'notch','on','plotstyle','compact'); % The Rmax fits for both mask and unmasked
+    grid on;
+end
+set(gcf,'Name','Rmax unmasked and masked 2F1');
 %%
 % And we can look at the raw histograms like this:
 figure(15);
@@ -163,9 +185,9 @@ conditionCodes=kron((1:nPhenotypes)',ones(nBootstraps,1));
 [p1,a1,s1]=anova1(dataToAnalyze(:),conditionCodes);
 
 
- % Multcompare is a nice way to look at these data:
- comparison=multcompare(s1);
- 
+% Multcompare is a nice way to look at these data:
+comparison=multcompare(s1);
+
 %.. here's the same trick doing a 2xway ANOVA on the 1F1 data looking for
 %   an effect of the mask as well as the phenotype
 dataToAnalyze=squeeze(bootFitParams(:,:,frequencyComponent,:,1)); % This will be nPhenotypes x nBootstrap samples. e.g. 5 x 300
