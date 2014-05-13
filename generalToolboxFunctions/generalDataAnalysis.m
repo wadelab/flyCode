@@ -23,9 +23,15 @@
 
 clear all;
 close all;
+
+
+
 IGNORE_PHOTODIODE_FLAG=1; % Normally we don't want to waste time processing the photodiode phenotype since it's a) not physiologically interesting and b) statistically different from everything else
 
 [fileToLoad,pathToLoad]=uigetfile('*analysis*.mat','Load analysis file');
+[pathstr, name, ext] = fileparts(fileToLoad);
+b = [pathToLoad,name, '_analysed_',datestr(now,30)];
+
 
 load(fullfile(pathToLoad,fileToLoad)); % This is the file you got from the directory analysis script. It will place a structure calles 'analysisStruct' in the workspace
 % ** Obviously you replace the filename above with the one that you saved
@@ -199,7 +205,8 @@ end
 
 % We have gone to a lot of trouble to do these fits so save them in a temp
 % file quickly!
-save fitTemp.mat
+fName= [b,'fitTemp.mat']
+save (fName);
 
 
 %% ****************************
@@ -280,5 +287,7 @@ factorCodes2=kron((1:maxPhenotypesToPlot)',ones(nBootstraps*2,1));
 
 [p,t,stats,terms]=anovan(dataToAnalyze(:),{factorCodes1,factorCodes2});
 
-
+%Save all...
+fName= [b,'fitDone.mat']
+save (fName);
 
