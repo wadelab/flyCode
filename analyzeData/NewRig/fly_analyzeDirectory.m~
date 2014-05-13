@@ -176,10 +176,6 @@ for thisPhenotype=1:length(ptypeList)
      analysisStruct.meanCompSpectrum{thisPhenotype}=[]; %phenotypeData{thisPhenotype}.meanCompSpectrum;
 end
 
-save(aFileName,'analysisStruct'); % You can stop here...
-
-
-
 %% Loop over all fly types
 disp('Fitting');
 tic

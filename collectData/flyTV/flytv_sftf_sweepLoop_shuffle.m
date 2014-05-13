@@ -1,7 +1,6 @@
 close all
 close all;
 clear all;
-clear mex;
 
 Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
 HideCursor % Hides the mouse cursor
@@ -20,12 +19,12 @@ ordered=1:(nTF*nSF); % This fully shuffles the order
 r=Shuffle(ordered); % Shuffle all the possible presentation conditions 
 
 
-for thisrun=1:1 % 5 repeats
+for thisrun=1:5 % 5 repeats
     for temporalFrequencyIndex=1:nTF
         for spatialFrequencyIndex=1:nSF
-            thisAction= r((temporalFrequencyIndex-1) * nTF + spatialFrequencyIndex)
-            t=ceil(thisAction/ nSF);
-            s=1+rem(thisAction, nTF); %  Should be 1+rem(thisAction-1,nTF)
+            thisaction= r((temporalFrequencyIndex-1) * nTF + spatialFrequencyIndex)
+            t=ceil(thisaction/ nSF);
+            s=1+rem(thisaction, nTF); %  Should be 1+rem(thisAction-1,nTF)
             thisTF=tfList(t);
             thisSF=sfList(s);
             fprintf('\nRunning tf %d, sf %d',thisTF,thisSF);
@@ -44,7 +43,7 @@ for thisrun=1:1 % 5 repeats
             finalData.TimeStamps=d.TimeStamps;
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
-            finalData.comment='Spatial_temporal_Sweep_W-2';
+            finalData.comment='WT fly - data sweep';
             finalData.thisTF=thisTF;
             finalData.thisSF=thisSF;
             finalData.thisTFIndex=t;
@@ -52,27 +51,13 @@ for thisrun=1:1 % 5 repeats
             finalData.now=now;
             finalData.r=r;
             
-            infoSet.thisTF=thisTF;
-            infoSet.thisSF=thisSF;
-            infoSet.thisTFIndex=t;
-            infoSet.thisSFIndex=s;
-            infoSet.r=r;
-            infoSet.nTF=nTF;
-            infoSet.nSF=nSF;
-            infoSet.thisAction=thisAction;
-            infoSet.tfList=tfList;
-            infoSet.sfList=sfList;
-            infoSet.now=now;
-            infoSet.comment= finalData.comment;
-            
        
-            
+       
             filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisrun),'_',datestr(flyTV_startTime,30),'.mat'])
             save(filename,'finalData');
-            
-            dataSet(temporalFrequencyIndex,spatialFrequencyIndex,thisrun,:)=finalData.Data(:); % Put the extracted data into an array tf x sf x nrepeats
-            metaData{temporalFrequencyIndex,spatialFrequencyIndex,thisrun}=infoSet; % Put the extracted data into an array tf x sf x nrepeats
-
+            dataSet{temporalFrequencyIndex,spatialFrequencyIndex,thisrun}=finalData; % Put the extracted data into an array tf x sf x nrepeats
+                                                                                     
+           
             
             
         end % Next spatial frequency
