@@ -329,9 +329,13 @@ gc1=categoryType(g);
 %%%figure(99);
 
 [Myp, Mytable, Mystats] = anova1(abs(gd1(:)),gc1)
+set(gca,'XTickLabel',(ptName));
+
+figure;
 c = multcompare(Mystats, 0.05)
 title(summaryStatisticName);
-set(gca,'XTickLabel',ptName);
+%%% the Ynames appear to be in reverse order
+set(gca,'YTickLabel',fliplr(ptName)); 
 
 %%maxfig(gcf,1);
 
@@ -361,11 +365,18 @@ for thisPhenotype=1:length(phenotypeList)
     
 end
 [dn,pn,sn]=manova1([real(totalList),imag(totalList)],catType);
-figure(99);
-boxplot([abs(totalList)],catType);
-anova1(abs(totalList),catType);
-title('Normalization values');
+% h99=figure(99);
+% %%boxplot([abs(totalList)],catType, 'XTickLabel',ptName);
+% set(gca,'XTickLabel',ptName);
+
+% draws the graph with notches
+[MyPh, MyPhtable, MyPhstats] = anova1(abs(totalList),catType)
 set(gca,'XTickLabel',ptName);
+
+figure;
+c = multcompare(MyPhstats, 0.05) 
+title('Normalization values');
+set(gca,'YTickLabel',fliplr(ptName));
 %%%%maxfig(gcf,1);
 
 %%%export_fig(bookName,'-pdf','-transparent','-append');
