@@ -4,19 +4,20 @@
 KbReleaseWait;
 
 s = daq.createSession('ni');
-s.DurationInSeconds = 10;
+s.DurationInSeconds = 200;
+s.Rate = 1000
 addAnalogInputChannel(s,'Dev3','ai0','Voltage')
-s.NumberOfScans = 500;
+s.NumberOfScans = 1000;
 s.NotifyWhenDataAvailableExceeds = s.NumberOfScans;
 myData=[];
 
 while ~KbCheck
+    
    
-    addlistener(s,'DataAvailable', @plotData);
-    axis([-inf,inf,-50,50])
+    lh = addlistener(s,'DataAvailable', @plotData);
     startBackground(s);
-    s.wait
-   
+    s.wait;
+    
 end
 
 delete (lh)
