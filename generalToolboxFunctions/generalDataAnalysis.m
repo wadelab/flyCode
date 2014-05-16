@@ -86,9 +86,17 @@ legend({'Unmasked','Masked'});
 set(gca,'XTickLabel',fittedNames);
 title('2F1 masked and unmasked Rmax');
 
+% And here we can look at a different parameter: The c50 for the 1F1
+c50=squeeze(fittedCRFParams(:,1,:,2))
+figure(3);
+bar(c50);
+legend({'Unmasked','Masked'});
+set(gca,'XTickLabel',fittedNames);
+title('1F1 masked and unmasked c50');
+
 % And here we can look at a different parameter: The c50 for the 2F1
 c50=squeeze(fittedCRFParams(:,2,:,2))
-figure(3);
+figure(4);
 bar(c50);
 legend({'Unmasked','Masked'});
 set(gca,'XTickLabel',fittedNames);
@@ -108,18 +116,20 @@ maxRmaxLevel=max(allRmaxParams(:));
 
 maxPhenotypesToPlot=phenotypeIndex; % We've already worked out which phenotypes to ignore and how many we have left.
 phenotypeIndex=0; % Reset this.
+[xwins,ywins] = count_subwins(maxPhenotypesToPlot);
 
+%% 
 % Make one plot per phenotype
 for thisPhenotype=1:nPhenotypes
-    figure(4);
+    figure(5);
     if (strcmp(analysisStruct.phenotypeName{thisPhenotype},'Photodiode') & (IGNORE_PHOTODIODE_FLAG))
         disp('Skipping photodiode');
     else
         phenotypeIndex=phenotypeIndex+1;
         
         
-        
-        subplot(maxPhenotypesToPlot,1,phenotypeIndex);
+        %% if wehave a lot of windows, this is very cumbersome....        
+        subplot(xwins, ywins, phenotypeIndex);
         
         hold off;
         
@@ -143,8 +153,10 @@ for thisPhenotype=1:nPhenotypes
             title(analysisStruct.phenotypeName{thisPhenotype});
         end % Next mask
     end % End check for Photodiode
+    %% 
 end % Nex subplot / phenotype
 set(gcf,'Name','2F1 fits');
+drawnow ;
 
 
 
