@@ -1,4 +1,4 @@
-function dataOut=flytv_PlaidDemo3(cyclespersecond, sfreq, contrast)
+function [dataOut]=flytv_runPlaid(dpy,stim)
 % function dataOut=flytv_PlaidDemo2(cyclespersecond, sfreq,contrast)
 % Generates a 2-component plaid 
 % Grating 1 is orthogonal to grating 2
@@ -52,16 +52,20 @@ function dataOut=flytv_PlaidDemo3(cyclespersecond, sfreq, contrast)
 global gl; % We make this a global variable so that it can be seen from the listener
 gl=[];
 
-% Initial stimulus parameters for the grating patch:
+%Initialise the ni daq:
 
-    internalRotation = 0; % Does the grating rotate within the envelope?
-    rotateMode = []; % rotation of mask grating (1= horizontal, 2= vertical, etc?)
-    res = [1920 1080]; % screen resoloution
-    sfreq = [8/1000, 8/1000];% Frequency of the grating in cycles per pixel: Here 0.01 cycles per pixel,,This should be specified in cycles per degree...
-    cyclespersecond = [0.5,0.5]; % temporal frequency
-    angle = [0 90]  ; % angle of gratings on screen
-    Duration=20; % how long to flicker for
-    contrast=[1,0]
+s = daq.createSession('ni');
+s.DurationInSeconds = 10;
+addAnalogInputChannel(s,'Dev3','ai0','Voltage')
+s.NumberOfScans = 11000;
+s.NotifyWhenDataAvailableExceeds = s.NumberOfScans;
+myData=[];
+
+lh = addlistener(s,'DataAvailable', @flytv_dumpData);
+
+
+
+% Initial stimulus parameters for the grating patch:
 
 % Amplitude of the grating in units of absolute display intensity range: A
 % setting of 0.5 means that the grating will extend over a range from -0.5
@@ -74,7 +78,7 @@ gl=[];
 % displayable range for your computers displays:
 
 
-
+%Now we run the Plaid
 
 Screen('Preference', 'SkipSyncTests', 1);
 
@@ -88,30 +92,44 @@ HideCursor % Hides the mouse cursor
 % color of 128 = gray, i.e. 50% max intensity:
 win = Screen('OpenWindow', WhichScreen, 128);
 
+% Set the gamma tables.
+% Set the CLUTS to the calibrated values
+oldClut = LoadIdentityClut(win, 1);
+Screen('LoadNormalizedGammaTable',win,dpy.gamma.inverse);
+
+
+
 % Make sure the GLSL shading language is supported:
 AssertGLSL;
 
 % Retrieve video redraw interval for later control of our animation timing:
 ifi = Screen('GetFlipInterval', win);
 
-% Phase is the phase shift in degrees (0-360 etc.)applied to the sine grating:
-phase=[0 0];
+
 
 % Compute increment of phase shift per redraw:
-phaseincrement = [cyclespersecond] * 360 * ifi;
+phaseincrement = [stim.temporal.frequency] * 360 * ifi;
 
 
 % Build a procedural sine grating texture for a grating with a support of
 % res(1) x res(2) pixels and a RGB color offset of 0.5 -- a 50% gray.
 
+% Begin data acquisition in the background
+disp('Running');
+startBackground(s);
+tic
+
 
 Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-% Compute the alpha and amplitudes that we will use
-[amps,alpha]=flytv_computeAlphaAmps(contrast);
+disp(stim.cont)
+toc
 
-gratingtex1 = CreateProceduralSineGrating(win, res(1), res(2),[.5,.5,.5, 1]); % Bottom grating
-gratingtex2 = CreateProceduralSineGrating(win, res(2), res(1),[.5 .5 .5 alpha]); % Top grating blend 50%
+% Compute the alpha and amplitudes that we will use
+[amps,alpha]=flytv_computeAlphaAmps(stim.cont);
+
+gratingtex1 = CreateProceduralSineGrating(win, dpy.res(1), dpy.res(2),[.5,.5,.5, 1]); % Bottom grating
+gratingtex2 = CreateProceduralSineGrating(win, dpy.res(2), dpy.res(1),[.5 .5 .5 alpha]); % Top grating blend 50%
 
 % Wait for release of all keys on keyboard, then sync us to retrace:
 
@@ -119,13 +137,15 @@ vbl = Screen('Flip', win);
 
 
 % We run at most 'movieDurationSecs' seconds if user doesn't abort via keypress.
- vblendtime = vbl + Duration;
+ vblendtime = vbl + stim.temporal.duration;
     i=0;
+   % Update some grating animation parameters:
+    phase=stim.spatial.phase;
 
-while (vbl < vblendtime)
+   
+    while (vbl < vblendtime)
     
-    % Update some grating animation parameters:
-    
+ 
     % Increment phase by the appropriate amount for this time period:
     phase = phase + phaseincrement;
     pMod = 180*(round(phase/180 ));
@@ -139,8 +159,8 @@ while (vbl < vblendtime)
     % vector with a number of components that is an integral multiple of 4,
     % i.e. in our case it must have 4 components:
 
-     Screen('DrawTexture', win, [gratingtex1], [], [], [angle(1)], [], [0], [], [], [rotateMode], [pMod(1),sfreq(1),amps(1),0]');
-     Screen('DrawTexture', win, [gratingtex2], [], [], [angle(2)], [], [0], [], [], [rotateMode], [pMod(2),sfreq(2),amps(2),0]');
+     Screen('DrawTexture', win, [gratingtex1], [], [], [stim.spatial.angle(1)], [], [0], [], [], [stim.rotateMode], [pMod(1),stim.spatial.frequency(1),amps(1),0]');
+     Screen('DrawTexture', win, [gratingtex2], [], [], [stim.spatial.angle(2)], [], [0], [], [], [stim.rotateMode], [pMod(2),stim.spatial.frequency(2),amps(2),0]');
 
 
     % Show it at next retrace:
@@ -149,6 +169,8 @@ end
 
 % We're done. Close the window. This will also release all other ressources:
 Screen('CloseAll');
+
+pause(4); % Wait for all the data acq to end
 
 % Bye bye!
 dataOut=gl;

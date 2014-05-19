@@ -13,7 +13,7 @@ disp(Ocean);
 
 %% acquisition parameters
 
-IntergrationTime= 1000 * 1000; % miliseconds?
+IntergrationTime= 100 * 1000; % miliseconds?
 spectrometerIndex=0;
 channelIndex=0
 enable=1

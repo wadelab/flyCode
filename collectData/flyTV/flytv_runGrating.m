@@ -1,4 +1,4 @@
-function dataOut=flytv_runGrating(cyclespersecond, sfreq)  
+function dataOut=flytv_runGrating(dpy,cyclespersecond, sfreq)  
 % Function dataOut=flytv_runGrating(cyclespersecond, sfreq)  
 % Acquires 10s of flicker data at
 % Data will be acquired from hardware channel 0
@@ -38,6 +38,9 @@ AssertGLSL;
 disp('Waiting for screen stability');
 pause(2);
 
+% Set the CLUTS to the calibrated values
+oldClut = LoadIdentityClut(win.id, 1);
+Screen('LoadNormalizedGammaTable',win.id,dpy.gamma.inverse);
 
 
 angle=0;

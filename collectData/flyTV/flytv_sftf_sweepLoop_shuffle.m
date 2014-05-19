@@ -1,9 +1,14 @@
-close all
+
 close all;
 clear all;
+jheapcl;
 
 Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
 HideCursor % Hides the mouse cursor
+
+
+% Get the calibration and compute the gamma table
+igt=fly_computeInverseGammaFromCalibFile('CalibrationData_190514.mat')
 
 datadir='C:\data\SSERG\data\';
 flyTV_startTime=now;
@@ -18,6 +23,7 @@ ordered=1:(nTF*nSF); % This fully shuffles the order
 
 r=Shuffle(ordered); % Shuffle all the possible presentation conditions 
 
+dpy.gamma.inverse=igt;
 
 for thisrun=1:5 % 5 repeats
     for temporalFrequencyIndex=1:nTF
@@ -31,7 +37,7 @@ for thisrun=1:5 % 5 repeats
             
           
         
-            d=flytv_runGrating(thisTF,thisSF);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
+            d=flytv_runGrating(dpy,thisTF,thisSF);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
             % We might not have to
             % open the screen each
             % time around.
@@ -43,7 +49,7 @@ for thisrun=1:5 % 5 repeats
             finalData.TimeStamps=d.TimeStamps;
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
-            finalData.comment='WT fly - data sweep';
+            finalData.comment='ORT_D_calibrated_screens data sweep';
             finalData.thisTF=thisTF;
             finalData.thisSF=thisSF;
             finalData.thisTFIndex=t;

@@ -52,16 +52,19 @@ function dataOut=flytv_PlaidDemo3(cyclespersecond, sfreq, contrast)
 global gl; % We make this a global variable so that it can be seen from the listener
 gl=[];
 
+% Get the calibration and compute the gamma table
+igt=fly_computeInverseGammaFromCalibFile('CalibrationData_190514.mat')
+
 % Initial stimulus parameters for the grating patch:
 
     internalRotation = 0; % Does the grating rotate within the envelope?
     rotateMode = []; % rotation of mask grating (1= horizontal, 2= vertical, etc?)
     res = [1920 1080]; % screen resoloution
     sfreq = [8/1000, 8/1000];% Frequency of the grating in cycles per pixel: Here 0.01 cycles per pixel,,This should be specified in cycles per degree...
-    cyclespersecond = [0.5,0.5]; % temporal frequency
+    cyclespersecond = [2 1]; % temporal frequency
     angle = [0 90]  ; % angle of gratings on screen
     Duration=20; % how long to flicker for
-    contrast=[1,0]
+    contrast=[.5 .5]
 
 % Amplitude of the grating in units of absolute display intensity range: A
 % setting of 0.5 means that the grating will extend over a range from -0.5
@@ -84,9 +87,13 @@ WhichScreen = 1
 Screen('Preference', 'VisualDebuglevel', 1)% disables welcome and warning screens
 HideCursor % Hides the mouse cursor
 
+
 % Open a fullscreen onscreen window on that display, choose a background
 % color of 128 = gray, i.e. 50% max intensity:
 win = Screen('OpenWindow', WhichScreen, 128);
+oldClut = LoadIdentityClut(win, 1);
+
+Screen('LoadNormalizedGammaTable',WhichScreen,igt);
 
 % Make sure the GLSL shading language is supported:
 AssertGLSL;
@@ -110,7 +117,7 @@ Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 % Compute the alpha and amplitudes that we will use
 [amps,alpha]=flytv_computeAlphaAmps(contrast);
 
-gratingtex1 = CreateProceduralSineGrating(win, res(1), res(2),[.5,.5,.5, 1]); % Bottom grating
+gratingtex1 = CreateProceduralSineGrating(win, res(1), res(2),[.5 .5 .5 1]); % Bottom grating
 gratingtex2 = CreateProceduralSineGrating(win, res(2), res(1),[.5 .5 .5 alpha]); % Top grating blend 50%
 
 % Wait for release of all keys on keyboard, then sync us to retrace:

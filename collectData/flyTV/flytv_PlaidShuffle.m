@@ -29,7 +29,7 @@ for thisrun=1:1 % 5 repeats
             
           
         
-            d=flytv_PlaidDemo2(thisTF,thisSF);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
+            d=flytv_PlaidDemo3(thisTF,thisSF);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
             % We might not have to
             % open the screen each
             % time around.
