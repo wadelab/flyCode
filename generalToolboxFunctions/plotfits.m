@@ -16,49 +16,46 @@ load(fullfile(pathToLoad,fileToLoad));
 % [phenotypeIndex, maskIndex, frequencyComponentIndex, bootStrapInstance, paramIndex]
 % The order of the param indices is the same as above: Rmax, c50, n, R0
 
+harmonicNames = {'F1','F2';'2F1','2F2'};
 
-%  We can plot these in boxplots like this:
-figure;
-
-for thisMaskCondition=1:2
-    sPlot = subplot(2,1,thisMaskCondition);
-    dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,1,:,1))';
+%% Plot Rmax ...
+for iFreqComponent =1:2
+    %  We can plot these in boxplots like this:
+    figure;
     
-    boxplot(dataToBoxplot,'notch','on','labels', fittedNames); % The Rmax fits for both mask and unmasked
+    for thisMaskCondition=1:2
+        sPlot = subplot(2,1,thisMaskCondition);
+        dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,iFreqComponent,:,1))';
+        
+        boxplot(dataToBoxplot,'notch','on','labels', fittedNames); % The Rmax fits for both mask and unmasked
+        %%If you have lots of data, you get a smaller plot...
+        %boxplot(dataToBoxplot,'notch','on','plotstyle','compact','labels', fittedNames);
+        
+    end
+    sTmp = strcat('Rmax unmasked and masked ', harmonicNames(iFreqComponent,1));
+    set(gcf,'Name',char(sTmp)); %% ] 1F1');
+    %%
+end ;
+
+%% Do the same for c50
+
+for iFreqComponent =1:2
+    %  We can plot these in boxplots like this:
+    figure;
     
-end
-
-set(gcf,'Name','Rmax unmasked and masked 1F1');
-%% 
-
-%% Look at 2F1 as well
-figure;
-
-for thisMaskCondition=1:2
-    subplot(2,1,thisMaskCondition);
-    dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,2,:,1))';
-    
-    boxplot(dataToBoxplot,'notch','on','plotstyle','compact','labels', fittedNames); % The Rmax fits for both mask and unmasked
-    grid on;
-end
-set(gcf,'Name','Rmax unmasked and masked 2F1');
-
-
-% % % %% In fact we can loop over both masks and components and plot everything in
-% % % one figure:
-% % 
-% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%This is not the right thing to plot - this has
-% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%3 values for each data bar ????
-% % figure;
-% % for thisFreqComponentIndex=1:2
-% %     
-% %     subplot(2,1,thisFreqComponentIndex);
-% %     dataToBoxplot=squeeze(bootFitParams(:,:,2,:,1));
-% %     
-% %     notBoxPlot(dataToBoxplot); % The Rmax fits for both mask and unmasked
-% %     grid on;
-% % end
-% % set(gcf,'Name','Rmax unmasked and masked 2F1');
+    for thisMaskCondition=1:2
+        sPlot = subplot(2,1,thisMaskCondition);
+        dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,iFreqComponent,:,2))';
+        
+        boxplot(dataToBoxplot,'colors','m','notch','on','labels', fittedNames); % The Rmax fits for both mask and unmasked
+        %%If you have lots of data, you get a smaller plot... by adding 'plotstyle','compact',
+        ymax = get(gca,'YLim');
+        set(gca,'YLim', [0,ymax(1,2)]);
+    end
+    sTmp = strcat('c50 unmasked and masked ', harmonicNames(iFreqComponent,1));
+    set(gcf,'Name',char(sTmp)); %% ] 1F1');
+    %%
+end ;
 
 
 
@@ -74,7 +71,7 @@ legend({'Unmasked','Masked'});
 
 
 
-%% Finally, we can do real statistics on these data using ANOVAs. Let's take a look at a simple 1-way ANOVA on the Rmax of the unmasked 1F1 response
+%% Finally, we can do real statistics on these data using ANOVAs. Let's take a look at a simple 1-way ANOVA on the Rmax of the unmasked 2F1 response
 dataToAnalyze=squeeze(bootFitParams(:,1,frequencyComponent,:,1))'; % This will be nPhenotypes x nBootstrap samples. e.g. 5 x 300
 conditionCodes=kron((1:maxPhenotypesToPlot)',ones(nBootstraps,1));
 
