@@ -16,7 +16,7 @@ load(fullfile(pathToLoad,fileToLoad));
 % [phenotypeIndex, maskIndex, frequencyComponentIndex, bootStrapInstance, paramIndex]
 % The order of the param indices is the same as above: Rmax, c50, n, R0
 
-harmonicNames = {'F1','F2';'2F1','2F2'};
+harmonicNames = {'1F1','1F2';'2F1','2F2'};
 
 %% Plot Rmax ...
 for iFreqComponent =1:2
@@ -61,30 +61,37 @@ end ;
 
 %%
 % And we can look at the raw histograms like this:
-figure;
-histDataToPlot=squeeze(bootFitParams(2,:,2,:,1));
-hist(histDataToPlot',20);
-xlabel(['Rmax - 2F1 - Phenotype: ', fittedNames{2}]);
-ylabel('Frequency');
-
-legend({'Unmasked','Masked'});
-
+%% 
+for iFreqComponent =1:2
+    for iPhenotypes = 1:length(fittedNames)
+        figure;
+        histDataToPlot=squeeze(bootFitParams(iPhenotypes,:,iFreqComponent,:,1));
+        hist(histDataToPlot',20);
+        xlabel(['Rmax -', harmonicNames(iFreqComponent,1) ,'- Phenotype: ', fittedNames{iPhenotypes}]);
+        ylabel('Frequency');
+        
+        legend({'Unmasked','Masked'});
+    end
+end
 
 
 %% Finally, we can do real statistics on these data using ANOVAs. Let's take a look at a simple 1-way ANOVA on the Rmax of the unmasked 2F1 response
-dataToAnalyze=squeeze(bootFitParams(:,1,frequencyComponent,:,1))'; % This will be nPhenotypes x nBootstrap samples. e.g. 5 x 300
+
+for iFreqComponent = 1:2;
+dataToAnalyze=squeeze(bootFitParams(:,1,iFreqComponent,:,1))'; % This will be nPhenotypes x nBootstrap samples. e.g. 5 x 300
 conditionCodes=kron((1:maxPhenotypesToPlot)',ones(nBootstraps,1));
 
-[p1,a1,s1]=anova1(dataToAnalyze(:),conditionCodes);
+[p1,a1,s1]=anova1(dataToAnalyze(:),conditionCodes)
 set(gcf,'Name','Anova: Rmax of the unmasked 1F1');
 
 % Multcompare is a nice way to look at these data:
 comparison=multcompare(s1);
-set(gcf,'Name','Rmax of the unmasked 1F1');
+set(gcf,'Name',char(strcat('Rmax of the unmasked', harmonicNames(iFreqComponent,1))));
 set(gca,'YTickLabel',fliplr(fittedNames));
+end ;
 %% 
-
-%.. here's the same trick doing a 2xway ANOVA on the 1F1 data looking for
+frequencyComponent  %% should be 2 
+%.. here's the same trick doing a 2xway ANOVA on the 2F1 data looking for
 %   an effect of the mask as well as the phenotype
 dataToAnalyze=squeeze(bootFitParams(:,:,frequencyComponent,:,1)); % This will be nPhenotypes x nBootstrap samples. e.g. 5 x 300
 % We have to shift the dimensions around a bit to get them ready ...
@@ -92,5 +99,6 @@ dataToAnalyze=shiftdim(dataToAnalyze,1);
 factorCodes1=repmat([1;2],maxPhenotypesToPlot*nBootstraps,1);
 factorCodes2=kron((1:maxPhenotypesToPlot)',ones(nBootstraps*2,1));
 
-[p,t,stats,terms]=anovan(dataToAnalyze(:),{factorCodes1,factorCodes2}, 'varnames',{'mask' 'phenotype'});
+[p,t,stats,terms]=anovan(dataToAnalyze(:),{factorCodes1,factorCodes2}, 'varnames',{'mask' 'phenotype'})
+set(gcf,'Name','Rmax of 2f2, with/without mask');
 
