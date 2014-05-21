@@ -2,9 +2,9 @@ startTime=now;
 close all;
 clear all;
 clear mex;
-DOCALIBRATION=1;
+DOCALIBRATION=0;
 
-nLevels=8; % How many luminance steps?
+nLevels=16; % How many luminance steps?
 %% Create MATLAB Instrument OmniDriver Object
 Ocean=icdevice('OceanOptics_OmniDriver.mdd');
 
@@ -138,7 +138,7 @@ Screen('Flip',win,[],1);
     
     
     % Save out the data
-    save('CalibrationData_190514.mat','sumPower','spectralData','meanSpectData','nLevels','contLevels');
+    save('CalibrationData_200514.mat','sumPower','spectralData','meanSpectData','nLevels','contLevels');
     
     
 else
