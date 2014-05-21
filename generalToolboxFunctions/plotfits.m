@@ -18,7 +18,7 @@ load(fullfile(pathToLoad,fileToLoad));
 
 harmonicNames = {'1F1','1F2';'2F1','2F2'};
 
-%% Plot Rmax ...   
+%% Plot Rmax non parametric version...   
 % to get the scale the same in each case... , and allow for headroom multiply by 1.2
     maxRMax = max(max(max(max(squeeze(bootFitParams(:,:,:,:,1)))))) ;
     maxRMax = maxRMax * 1.2 ;
@@ -36,9 +36,32 @@ harmonicNames = {'1F1','1F2';'2F1','2F2'};
         %boxplot(dataToBoxplot,'notch','on','plotstyle','compact','labels', fittedNames);
         set(gca,'YLim', [0, maxRMax]);
     end
-    sTmp = strcat('Rmax unmasked and masked ', harmonicNames(iFreqComponent,1));
+    sTmp = strcat('Rmax median unmasked and masked ', harmonicNames(iFreqComponent,1));
     set(gcf,'Name',char(sTmp)); %% ] 1F1');
     %
+    %notBoxPlot(dataToBoxplot); errorbar(mean(dataToBoxplot), std(dataToBoxplot));
+end ;
+
+
+%% Plot Rmax mean etc ...   
+
+    for iFreqComponent =1:2
+    %  We can plot these in boxplots like this:
+    figure;
+    
+    for thisMaskCondition=1:2
+        sPlot = subplot(2,1,thisMaskCondition);
+        dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,iFreqComponent,:,1))';
+        %notBoxPlot(dataToBoxplot); errorbar(mean(dataToBoxplot), std(dataToBoxplot));
+        notBoxPlot(dataToBoxplot,[0,1], 0.8) ;
+        set(gca,'XTickLabel',fittedNames);
+        
+        set(gca,'YLim', [0, maxRMax]);
+    end
+    sTmp = strcat('Rmax mean unmasked and masked ', harmonicNames(iFreqComponent,1));
+    set(gcf,'Name',char(sTmp)); %% ] 1F1');
+    %
+    
 end ;
 
 %% Do the same for c50
@@ -54,7 +77,7 @@ for iFreqComponent =1:2
         sPlot = subplot(2,1,thisMaskCondition);
         dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,iFreqComponent,:,2))';
         boxplot(dataToBoxplot,'colors','m','notch','on','labels', fittedNames); % The Rmax fits for both mask and unmasked
-        %%If you have lots of data, you get a smaller plot... by adding 'plotstyle','compact',
+       %%If you have lots of data, you get a smaller plot... by adding 'plotstyle','compact',
         %ymax = get(gca,'YLim');
         %set(gca,'YLim', [0,ymax(1,2)]);
         set(gca,'YLim', [0, maxc50]);
@@ -64,7 +87,26 @@ for iFreqComponent =1:2
     %
 end ;
 
+%% Plot c50 mean etc ...   
 
+    for iFreqComponent =1:2
+    %  We can plot these in boxplots like this:
+    figure;
+    
+    for thisMaskCondition=1:2
+        sPlot = subplot(2,1,thisMaskCondition);
+        dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,iFreqComponent,:,2))';
+        %notBoxPlot(dataToBoxplot); errorbar(mean(dataToBoxplot), std(dataToBoxplot));
+        notBoxPlot(dataToBoxplot,[0,1], 0.8) ;
+        set(gca,'XTickLabel',fittedNames);
+        
+        set(gca,'YLim', [0, maxc50]);
+    end
+    sTmp = strcat('c50 mean unmasked and masked ', harmonicNames(iFreqComponent,1));
+    set(gcf,'Name',char(sTmp)); %% ] 1F1');
+    %
+    
+end ;
 
 %%
 % And we can look at the raw histograms like this:
