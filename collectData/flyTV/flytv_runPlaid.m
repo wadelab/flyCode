@@ -1,6 +1,6 @@
 function [dataOut]=flytv_runPlaid(dpy,stim)
 % function dataOut=flytv_PlaidDemo2(cyclespersecond, sfreq,contrast)
-% Generates a 2-component plaid 
+% Generates a 2-component plaid
 % Grating 1 is orthogonal to grating 2
 % All the inputs are now 2 element vectors
 % that specify the parameters for rgating 1 and grating 2
@@ -55,9 +55,9 @@ gl=[];
 %Initialise the ni daq:
 
 s = daq.createSession('ni');
-s.DurationInSeconds = 10;
+s.DurationInSeconds = stim.temporal.duration;
 addAnalogInputChannel(s,'Dev3','ai0','Voltage')
-s.NumberOfScans = 11000;
+s.NumberOfScans = s.DurationInSeconds*1000;
 s.NotifyWhenDataAvailableExceeds = s.NumberOfScans;
 myData=[];
 
@@ -137,20 +137,27 @@ vbl = Screen('Flip', win);
 
 
 % We run at most 'movieDurationSecs' seconds if user doesn't abort via keypress.
- vblendtime = vbl + stim.temporal.duration;
-    i=0;
-   % Update some grating animation parameters:
-    phase=stim.spatial.phase;
+vblendtime = vbl + stim.temporal.duration;
+i=0;
+% Update some grating animation parameters:
+phase=stim.spatial.phase;
+degToRad=pi/180;
 
-   
-    while (vbl < vblendtime)
+pixelsPerMeter=dpy.res(1)/dpy.size(1);
+metersPerDegree=dpy.distance*tan(degToRad);
+
+pixPerDegree=pixelsPerMeter*metersPerDegree;
+
+stim.spatial.frequencyCPerPixel=stim.spatial.frequency/pixPerDegree;
+
+while (vbl < vblendtime)
     
- 
+    
     % Increment phase by the appropriate amount for this time period:
     phase = phase + phaseincrement;
     pMod = 180*(round(phase/180 ));
-        
-
+    
+    
     
     % Draw the grating, centered on the screen, with given rotation 'angle',
     % sine grating 'phase' shift and amplitude, rotating via set
@@ -158,11 +165,11 @@ vbl = Screen('Flip', win);
     % component, which is 0. This is required, as this argument must be a
     % vector with a number of components that is an integral multiple of 4,
     % i.e. in our case it must have 4 components:
-
-     Screen('DrawTexture', win, [gratingtex1], [], [], [stim.spatial.angle(1)], [], [0], [], [], [stim.rotateMode], [pMod(1),stim.spatial.frequency(1),amps(1),0]');
-     Screen('DrawTexture', win, [gratingtex2], [], [], [stim.spatial.angle(2)], [], [0], [], [], [stim.rotateMode], [pMod(2),stim.spatial.frequency(2),amps(2),0]');
-
-
+    
+    Screen('DrawTexture', win, [gratingtex1], [], [], [stim.spatial.angle(1)], [], [0], [], [], [stim.rotateMode], [pMod(1),stim.spatial.frequencyCPerPixel(1),amps(1),0]');
+    Screen('DrawTexture', win, [gratingtex2], [], [], [stim.spatial.angle(2)], [], [0], [], [], [stim.rotateMode], [pMod(2),stim.spatial.frequencyCPerPixel(2),amps(2),0]');
+    
+    
     % Show it at next retrace:
     vbl = Screen('Flip', win, vbl + 0.5 * ifi);
 end

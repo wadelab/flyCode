@@ -8,7 +8,7 @@ HideCursor % Hides the mouse cursor
 
 
 % Get the calibration and compute the gamma table
-igt=fly_computeInverseGammaFromCalibFile('CalibrationData_190514.mat')
+igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
 
 datadir='C:\data\SSERG\data\';
 flyTV_startTime=now;
@@ -49,7 +49,7 @@ for thisrun=1:5 % 5 repeats
             finalData.TimeStamps=d.TimeStamps;
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
-            finalData.comment='ORT_D_calibrated_screens data sweep';
+            finalData.comment='wapr_D_calibrated_screens data sweep';
             finalData.thisTF=thisTF;
             finalData.thisSF=thisSF;
             finalData.thisTFIndex=t;

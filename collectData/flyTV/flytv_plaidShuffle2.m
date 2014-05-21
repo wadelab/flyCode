@@ -15,29 +15,32 @@ flyTV_startTime=now;
 
 dpy.gamma.inverse=igt;
 dpy.res = [1920 1080]; % screen resoloution
+dpy.size = [.53 .3] % Meters
+dpy.distance = [.22]; % Meters
+
 % dpy will eventually contain all the info about the display e.g. size,
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) in it.
 
 stim.temporal.frequency=[5 7]; % Hz
-stim.spatial.frequency=[.003 .003]; % Cycles per pixel
+stim.spatial.frequency=[.1 .1]; % Cycles per degree
 
 stim.spatial.internalRotation = 0; % Does the grating rotate within the envelope?
 stim.rotateMode = []; % rotation of mask grating (1= horizontal, 2= vertical, etc?)
 
 stim.spatial.angle = [0 90]  ; % angle of gratings on screen
-stim.temporal.duration=10; % how long to flicker for
+stim.temporal.duration=11; % how long to flicker for
 
 % Loop over a set of contrast pair. All possible combinations of probe
 % (0,7,14,28,56 % contrast) and mask(0,40%);
-probeCont=[0 7 14 28 56 0 7 14 28 56]/100;
-maskCont =[0 0  0  0  0 40 40 40 40 40]/100;
+probeCont=[0 7 14 28 56 99 0 7 14 28 56]/100;
+maskCont =[0 0  0  0  0 0  40 40 40 40 40]/100;
 nConds=length(probeCont);
 condSeq=1:nConds;
 shuffleSeq=Shuffle(condSeq);
 
 
-for thisrun=1:1
+for thisRun=1:1
     for thisCond=1:nConds
         stim.cont=[probeCont(shuffleSeq(thisCond)) maskCont(shuffleSeq(thisCond))];
         % Phase is the phase shift in degrees (0-360 etc.)applied to the sine grating:
@@ -54,20 +57,19 @@ for thisrun=1:1
         
         
         finalData.triggerTime=d.TriggerTime; % Extract the data into a new struct because DAQ objects don't save nicely
-        finalData.Data=d.Data;
+        
         finalData.TimeStamps=d.TimeStamps;
         finalData.Source=d.Source;
         finalData.EventName=d.EventName;
         finalData.comment='ORT_D_calibrated_screens data sweep';
         finalData.stim=stim;
         finalData.now=now;
-       
+     
         
-        
-        
-       %filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisrun),'_',datestr(flyTV_startTime,30),'.mat'])
+        %filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisrun),'_',datestr(flyTV_startTime,30),'.mat'])
         %save(filename,'finalData');
-        %dataSet{temporalFrequencyIndex,spatialFrequencyIndex,thisrun}=finalData; % Put the extracted data into an array tf x sf x nrepeats
+        metaData{thisRun,thisCond}=finalData; % Put the extracted data into an array tf x sf x nrepeats
+        data(thisRun,thisCond,:)=d.Data;
         
         
         
