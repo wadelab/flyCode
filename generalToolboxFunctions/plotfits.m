@@ -18,8 +18,12 @@ load(fullfile(pathToLoad,fileToLoad));
 
 harmonicNames = {'1F1','1F2';'2F1','2F2'};
 
-%% Plot Rmax ...
-for iFreqComponent =1:2
+%% Plot Rmax ...   
+% to get the scale the same in each case... , and allow for headroom multiply by 1.2
+    maxRMax = max(max(max(max(squeeze(bootFitParams(:,:,:,:,1)))))) ;
+    maxRMax = maxRMax * 1.2 ;
+
+    for iFreqComponent =1:2
     %  We can plot these in boxplots like this:
     figure;
     
@@ -30,31 +34,34 @@ for iFreqComponent =1:2
         boxplot(dataToBoxplot,'notch','on','labels', fittedNames); % The Rmax fits for both mask and unmasked
         %%If you have lots of data, you get a smaller plot...
         %boxplot(dataToBoxplot,'notch','on','plotstyle','compact','labels', fittedNames);
-        
+        set(gca,'YLim', [0, maxRMax]);
     end
     sTmp = strcat('Rmax unmasked and masked ', harmonicNames(iFreqComponent,1));
     set(gcf,'Name',char(sTmp)); %% ] 1F1');
-    %%
+    %
 end ;
 
 %% Do the same for c50
-
+   % to get the scale the same in each case... , and allow for headroom multiply by 1.2
+    maxc50 = max(max(max(max(squeeze(bootFitParams(:,:,:,:,2)))))) ;
+    maxc50 = maxc50 * 1.2 ;
 for iFreqComponent =1:2
     %  We can plot these in boxplots like this:
     figure;
+ 
     
     for thisMaskCondition=1:2
         sPlot = subplot(2,1,thisMaskCondition);
         dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,iFreqComponent,:,2))';
-        
         boxplot(dataToBoxplot,'colors','m','notch','on','labels', fittedNames); % The Rmax fits for both mask and unmasked
         %%If you have lots of data, you get a smaller plot... by adding 'plotstyle','compact',
-        ymax = get(gca,'YLim');
-        set(gca,'YLim', [0,ymax(1,2)]);
+        %ymax = get(gca,'YLim');
+        %set(gca,'YLim', [0,ymax(1,2)]);
+        set(gca,'YLim', [0, maxc50]);
     end
     sTmp = strcat('c50 unmasked and masked ', harmonicNames(iFreqComponent,1));
     set(gcf,'Name',char(sTmp)); %% ] 1F1');
-    %%
+    %
 end ;
 
 
@@ -67,10 +74,12 @@ for iFreqComponent =1:2
         figure;
         histDataToPlot=squeeze(bootFitParams(iPhenotypes,:,iFreqComponent,:,1));
         hist(histDataToPlot',20);
-        xlabel(['Rmax -', harmonicNames(iFreqComponent,1) ,'- Phenotype: ', fittedNames{iPhenotypes}]);
+        sTmp = strcat('Rmax hist -', harmonicNames(iFreqComponent,1) ,'- Phenotype: ', fittedNames{iPhenotypes})
+        xlabel(sTmp);
         ylabel('Frequency');
-        
+        %set(gca,'XLim', [0, maxRMax]);
         legend({'Unmasked','Masked'});
+        set(gcf,'Name',char(sTmp));
     end
 end
 
@@ -78,12 +87,12 @@ end
 %% Finally, we can do real statistics on these data using ANOVAs. Let's take a look at a simple 1-way ANOVA on the Rmax of the unmasked 2F1 response
 
 for iFreqComponent = 1:2;
-    figure ;
+    %figure ;
     dataToAnalyze=squeeze(bootFitParams(:,1,iFreqComponent,:,1))'; % This will be nPhenotypes x nBootstrap samples. e.g. 5 x 300
     conditionCodes=kron((1:maxPhenotypesToPlot)',ones(nBootstraps,1));
     
     [p1,a1,s1]=anova1(dataToAnalyze(:),conditionCodes)
-    set(gcf,'Name','Anova: Rmax of the unmasked 1F1');
+    set(gcf,'Name',char(strcat('Rmax of the unmasked', harmonicNames(iFreqComponent,1))));
     
     % Multcompare is a nice way to look at these data:
     comparison=multcompare(s1);
