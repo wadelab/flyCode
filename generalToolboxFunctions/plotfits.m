@@ -17,6 +17,13 @@ load(fullfile(pathToLoad,fileToLoad));
 % The order of the param indices is the same as above: Rmax, c50, n, R0
 
 harmonicNames = {'1F1','1F2';'2F1','2F2'};
+xToPlot = linspace(0,length(fittedNames),length(fittedNames));
+if length(fittedNames) < 4
+    sStyle = 'horizontal' ;
+else
+   sStyle = 'inline' ; 
+end
+    
 
 %% Plot Rmax non parametric version...   
 % to get the scale the same in each case... , and allow for headroom multiply by 1.2
@@ -31,7 +38,7 @@ harmonicNames = {'1F1','1F2';'2F1','2F2'};
         sPlot = subplot(2,1,thisMaskCondition);
         dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,iFreqComponent,:,1))';
         
-        boxplot(dataToBoxplot,'notch','on','labels', fittedNames); % The Rmax fits for both mask and unmasked
+        boxplot(dataToBoxplot,'labelorientation',sStyle,'notch','on','labels', fittedNames); % The Rmax fits for both mask and unmasked
         %%If you have lots of data, you get a smaller plot...
         %boxplot(dataToBoxplot,'notch','on','plotstyle','compact','labels', fittedNames);
         set(gca,'YLim', [0, maxRMax]);
@@ -53,7 +60,7 @@ end ;
         sPlot = subplot(2,1,thisMaskCondition);
         dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,iFreqComponent,:,1))';
         %notBoxPlot(dataToBoxplot); errorbar(mean(dataToBoxplot), std(dataToBoxplot));
-        notBoxPlot(dataToBoxplot,[0,1], 0.8) ;
+        notBoxPlot(dataToBoxplot,xToPlot, 0.8) ;
         set(gca,'XTickLabel',fittedNames);
         
         set(gca,'YLim', [0, maxRMax]);
@@ -76,7 +83,7 @@ for iFreqComponent =1:2
     for thisMaskCondition=1:2
         sPlot = subplot(2,1,thisMaskCondition);
         dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,iFreqComponent,:,2))';
-        boxplot(dataToBoxplot,'colors','m','notch','on','labels', fittedNames); % The Rmax fits for both mask and unmasked
+        boxplot(dataToBoxplot,'labelorientation',sStyle,'colors','m','notch','on','labels', fittedNames); % The Rmax fits for both mask and unmasked
        %%If you have lots of data, you get a smaller plot... by adding 'plotstyle','compact',
         %ymax = get(gca,'YLim');
         %set(gca,'YLim', [0,ymax(1,2)]);
@@ -97,7 +104,7 @@ end ;
         sPlot = subplot(2,1,thisMaskCondition);
         dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,iFreqComponent,:,2))';
         %notBoxPlot(dataToBoxplot); errorbar(mean(dataToBoxplot), std(dataToBoxplot));
-        notBoxPlot(dataToBoxplot,[0,1], 0.8) ;
+        notBoxPlot(dataToBoxplot,xToPlot, 0.8) ;
         set(gca,'XTickLabel',fittedNames);
         
         set(gca,'YLim', [0, maxc50]);
@@ -126,10 +133,10 @@ for iFreqComponent =1:2
 end
 
 
-%% Finally, we can do real statistics on these data using ANOVAs. Let's take a look at a simple 1-way ANOVA on the Rmax of the unmasked 2F1 response
-
+%% Finally, we can do real statistics on these data using ANOVAs. First for the RMax
 for iFreqComponent = 1:2;
-    %figure ;
+    %figure ; % it does it for us..
+    disp (strcat('Anova of Rmax of the unmasked', harmonicNames(iFreqComponent,1)));
     dataToAnalyze=squeeze(bootFitParams(:,1,iFreqComponent,:,1))'; % This will be nPhenotypes x nBootstrap samples. e.g. 5 x 300
     conditionCodes=kron((1:maxPhenotypesToPlot)',ones(nBootstraps,1));
     
@@ -139,6 +146,23 @@ for iFreqComponent = 1:2;
     % Multcompare is a nice way to look at these data:
     comparison=multcompare(s1);
     set(gcf,'Name',char(strcat('Rmax of the unmasked', harmonicNames(iFreqComponent,1))));
+    set(gca,'YTickLabel',fliplr(fittedNames));
+end ;
+
+%% Now for the c50
+for iFreqComponent = 1:2;
+    %figure ;
+    disp (strcat('Anova of c50 of the unmasked', harmonicNames(iFreqComponent,1)))
+    
+    dataToAnalyze=squeeze(bootFitParams(:,1,iFreqComponent,:,2))'; % This will be nPhenotypes x nBootstrap samples. e.g. 5 x 300
+    conditionCodes=kron((1:maxPhenotypesToPlot)',ones(nBootstraps,1));
+    
+    [p1,a1,s1]=anova1(dataToAnalyze(:),conditionCodes)
+    set(gcf,'Name',char(strcat('c50 of the unmasked', harmonicNames(iFreqComponent,1))));
+    
+    % Multcompare is a nice way to look at these data:
+    comparison=multcompare(s1);
+    set(gcf,'Name',char(strcat('c50 of the unmasked', harmonicNames(iFreqComponent,1))));
     set(gca,'YTickLabel',fliplr(fittedNames));
 end ;
 %% 
