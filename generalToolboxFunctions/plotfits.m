@@ -16,14 +16,23 @@ load(fullfile(pathToLoad,fileToLoad));
 % [phenotypeIndex, maskIndex, frequencyComponentIndex, bootStrapInstance, paramIndex]
 % The order of the param indices is the same as above: Rmax, c50, n, R0
 
+%% housekeeping 
 harmonicNames = {'1F1','1F2';'2F1','2F2'};
 xToPlot = linspace(0,length(fittedNames),length(fittedNames));
-if length(fittedNames) < 4
+if length(fittedNames) < 4 % try 4
     sStyle = 'horizontal' ;
+    xAngle = 0 ;
 else
-   sStyle = 'inline' ; 
+    sStyle = 'inline' ; 
+    xAngle = 45 ;
 end
-    
+
+for phenotypeIndex=1:length(fittedNames)
+    tmpName = fittedNames{phenotypeIndex};
+    tmpName = strrep (tmpName,'all', '');
+    tmpName = strrep (tmpName,'_', ' ');
+    fittedNames{phenotypeIndex}= tmpName;
+end
 
 %% Plot Rmax non parametric version...   
 % to get the scale the same in each case... , and allow for headroom multiply by 1.2
@@ -62,7 +71,7 @@ end ;
         %notBoxPlot(dataToBoxplot); errorbar(mean(dataToBoxplot), std(dataToBoxplot));
         notBoxPlot(dataToBoxplot,xToPlot, 0.8) ;
         set(gca,'XTickLabel',fittedNames);
-        
+        rotateXLabels( gca, xAngle );
         set(gca,'YLim', [0, maxRMax]);
     end
     sTmp = strcat('Rmax mean unmasked and masked ', harmonicNames(iFreqComponent,1));
@@ -106,7 +115,7 @@ end ;
         %notBoxPlot(dataToBoxplot); errorbar(mean(dataToBoxplot), std(dataToBoxplot));
         notBoxPlot(dataToBoxplot,xToPlot, 0.8) ;
         set(gca,'XTickLabel',fittedNames);
-        
+        rotateXLabels( gca, xAngle );
         set(gca,'YLim', [0, maxc50]);
     end
     sTmp = strcat('c50 mean unmasked and masked ', harmonicNames(iFreqComponent,1));
