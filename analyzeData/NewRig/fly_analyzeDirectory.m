@@ -17,7 +17,8 @@ MAX_FREQ=100; % Maximum frequency to retain during F-domain analysis.
 comment='test';
 set(0, 'DefaulttextInterpreter', 'none');
 baseDir=uigetdir(pwd);
-[a,b]=fileparts(baseDir)
+[a,b1]=fileparts(baseDir);
+b = [baseDir,filesep, b1];
 bookName=[b,'_',datestr(now,30),'_',comment,'.pdf']
 aFileName=[b,'_',datestr(now,30),'_NewRAnalysisData_ ',comment,'.mat'];
 
@@ -255,7 +256,7 @@ for thisFlyTypeIndex=1:nUniqueFlies
         if (plotParams.doCartPlot)
         % Do some plotting
         figure(thisFlyTypeIndex*2-1);
-        set(gcf,'Renderer','OpenGL')
+        set(gcf,'Renderer','painters'); %%,'OpenGL')
         % The plotting routine assumes that data are nFreqs x nConts x 2
         % (masked, unmasked)
         dataToPlot=squeeze((meanFlyDataCoh(thisFlyTypeIndex,:,:)));
@@ -277,7 +278,7 @@ for thisFlyTypeIndex=1:nUniqueFlies
             disp('Cannot plot polar on 32bit windows');
         else
             figure(thisFlyTypeIndex*2);
-            set(gcf,'Renderer','OpenGL')
+            set(gcf,'Renderer','painters'); %%,'OpenGL')
             hp= fly_plotPolarData(dataToPlot,semToPlot,plotParams);
         end % End check for Win32 plotting
         end
@@ -285,7 +286,12 @@ for thisFlyTypeIndex=1:nUniqueFlies
 end % Next type
 %%
 return
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%
+%% This code is never executed
 %%
+%%
+
 clear dataToPlot
 clear semToPlot;
 
@@ -318,7 +324,7 @@ end
 
 figure(601);
 hc= fly_plotCartData(dataToPlot,semToPlot,plotParams);
-set(gcf,'Renderer','opengl');
+set(gcf,'Renderer','painters'); %%,'opengl');
 
 
 %%
@@ -377,7 +383,7 @@ semDataAll=semData1(cartDataExtract,:,:);
 
 
 hc= fly_plotCartData(cartDataAll,semDataAll,plotParams);
-set(gcf,'Renderer','opengl');
+set(gcf,'Renderer','painters'); %%,'opengl');
 
 
 %% Do some more plotting : Phase data from THw-, hLRRK2, G2019S: 2F1, 2F2, 2F2+2F1
@@ -416,7 +422,7 @@ for t=1:length(hc2(:))
     set(hc2,'LineWidth',4);
 end
 
-set(gcf,'Renderer','opengl');
+set(gcf,'Renderer','painters'); %%,'opengl');
 %%
 return
 %plotParams.subPlotIndices=[2:2:12]; % Odd- numbered subplots are phas    %hp= fly_plotPolarData(meanNormFlyResp{thisPhenotype},semNormFlyResp{thisPhenotype},plotParams);

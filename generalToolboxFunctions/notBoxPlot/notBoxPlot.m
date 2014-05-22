@@ -235,7 +235,7 @@ for k=1:length(X)
 
         
     h(k).data=plot(thisX+J, thisY, 'o', 'color', C,...
-                   'markerfacecolor', C+(1-C)*0.65);
+                   'markerfacecolor', C+(1-C)*0.65, 'MarkerSize',2);
 end
 
 if strcmp(style,'line') | strcmp(style,'sdline')

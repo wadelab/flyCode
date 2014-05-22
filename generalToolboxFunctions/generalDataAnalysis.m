@@ -23,9 +23,15 @@
 
 clear all;
 close all;
+
+
+
 IGNORE_PHOTODIODE_FLAG=1; % Normally we don't want to waste time processing the photodiode phenotype since it's a) not physiologically interesting and b) statistically different from everything else
 
 [fileToLoad,pathToLoad]=uigetfile('*analysis*.mat','Load analysis file');
+[pathstr, name, ext] = fileparts(fileToLoad);
+b = [pathToLoad,name, '_analysed_',datestr(now,30)];
+
 
 load(fullfile(pathToLoad,fileToLoad)); % This is the file you got from the directory analysis script. It will place a structure calles 'analysisStruct' in the workspace
 % ** Obviously you replace the filename above with the one that you saved
@@ -50,7 +56,10 @@ for thisPhenotype=1:nPhenotypes
                 thisPhenotypeMeanData=squeeze(mean(abs(analysisStruct.allFlyDataCoh{thisPhenotype}),1));
                 
                 [fittedCRFParams(phenotypeIndex,thisFComponentIndex,thisMaskType,:)]=fly_fitHyperData(analysisStruct.params,analysisStruct.contRange,squeeze(abs(thisPhenotypeMeanData(fComponentList(thisFComponentIndex),:,thisMaskType)))); % In fact inc or coh data are the same in this case since the fitting is done on magnitude
-                fittedNames{phenotypeIndex}=analysisStruct.phenotypeName{thisPhenotype};
+                tmpName = analysisStruct.phenotypeName{thisPhenotype}
+                tmpName = strrep (tmpName,'all', '');
+                tmpName = strrep (tmpName,'_', ' ');
+                fittedNames{phenotypeIndex}= tmpName;
                 
                 % The fitted params are Rmax, c50, n, R0 (which is fixed at 0)
                 toc
@@ -66,7 +75,7 @@ end % Next phenotype
 
 
 RmaxParam=squeeze(fittedCRFParams(:,1,:,1))
-figure(1);
+figure('Name', '1F1 masked and unmasked Rmax');
 bar(RmaxParam);
 legend({'Unmasked','Masked'});
 set(gca,'XTickLabel',fittedNames);
@@ -74,15 +83,23 @@ title('1F1 masked and unmasked Rmax');
 
 % Here's another example - look at the 2F1 Rmax...
 RmaxParam=squeeze(fittedCRFParams(:,2,:,1))
-figure(2);
+figure('Name', '2F1 masked and unmasked Rmax');
 bar(RmaxParam);
 legend({'Unmasked','Masked'});
 set(gca,'XTickLabel',fittedNames);
 title('2F1 masked and unmasked Rmax');
 
+% And here we can look at a different parameter: The c50 for the 1F1
+c50=squeeze(fittedCRFParams(:,1,:,2))
+figure('Name', '1F1 masked and unmasked c50');
+bar(c50);
+legend({'Unmasked','Masked'});
+set(gca,'XTickLabel',fittedNames);
+title('1F1 masked and unmasked c50');
+
 % And here we can look at a different parameter: The c50 for the 2F1
 c50=squeeze(fittedCRFParams(:,2,:,2))
-figure(3);
+figure('Name', '2F1 masked and unmasked c50');
 bar(c50);
 legend({'Unmasked','Masked'});
 set(gca,'XTickLabel',fittedNames);
@@ -102,18 +119,20 @@ maxRmaxLevel=max(allRmaxParams(:));
 
 maxPhenotypesToPlot=phenotypeIndex; % We've already worked out which phenotypes to ignore and how many we have left.
 phenotypeIndex=0; % Reset this.
+[xwins,ywins] = count_subwins(maxPhenotypesToPlot);
 
+%% 
 % Make one plot per phenotype
 for thisPhenotype=1:nPhenotypes
-    figure(4);
+    figure(55);
     if (strcmp(analysisStruct.phenotypeName{thisPhenotype},'Photodiode') & (IGNORE_PHOTODIODE_FLAG))
         disp('Skipping photodiode');
     else
         phenotypeIndex=phenotypeIndex+1;
         
         
-        
-        subplot(maxPhenotypesToPlot,1,phenotypeIndex);
+        %% if wehave a lot of windows, this is very cumbersome....        
+        subplot(xwins, ywins, phenotypeIndex);
         
         hold off;
         
@@ -134,11 +153,18 @@ for thisPhenotype=1:nPhenotypes
             set(gca,'XLim',[0.02 1]);
             set(gca,'YLim',[0 maxRmaxLevel]);
             set(fitHandle,'LineWidth',2);
-            title(analysisStruct.phenotypeName{thisPhenotype});
+            %%maybe we should only do this once...
+            % remove the underscrores which make it hard to read...
+            tmpName = analysisStruct.phenotypeName{thisPhenotype}
+            tmpName = strrep (tmpName,'all', '');
+            tmpName = strrep (tmpName,'_', ' ');
+            title(tmpName);
         end % Next mask
     end % End check for Photodiode
+    %% 
 end % Nex subplot / phenotype
 set(gcf,'Name','2F1 fits');
+drawnow ;
 
 
 
@@ -199,86 +225,100 @@ end
 
 % We have gone to a lot of trouble to do these fits so save them in a temp
 % file quickly!
-save fitTemp.mat
+fName= [b,'fitTemp.mat']
+save (fName);
 
-
-%% ****************************
-% We now have some lovely bootstrapped parameters for all mask conditions
-% % The indices into bootFitParams are
-% [phenotypeIndex, maskIndex, frequencyComponentIndex, bootStrapInstance, paramIndex]
-% The order of the param indices is the same as above: Rmax, c50, n, R0
-
-%  We can plot these in boxplots like this:
-figure(10);
-
-for thisMaskCondition=1:2
-    subplot(2,1,thisMaskCondition);
-    dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,1,:,1))';
-    
-    boxplot(dataToBoxplot,'notch','on','plotstyle','compact'); % The Rmax fits for both mask and unmasked
-    grid on;
-end
-set(gcf,'Name','Rmax unmasked and masked 1F1');
-
-%% Look at 2F1 as well
-figure(11);
-
-for thisMaskCondition=1:2
-    subplot(2,1,thisMaskCondition);
-    dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,2,:,1))';
-    
-    boxplot(dataToBoxplot,'notch','on','plotstyle','compact'); % The Rmax fits for both mask and unmasked
-    grid on;
-end
-set(gcf,'Name','Rmax unmasked and masked 2F1');
-
-
-%% In fact we can loop over both masks and components and plot everything in
-% one figure:
-figure(12);
-for thisFreqComponentIndex=1:2
-    
-    subplot(2,1,thisFreqComponentIndex);
-    dataToBoxplot=squeeze(bootFitParams(:,:,2,:,1));
-    
-    notBoxPlot(dataToBoxplot); % The Rmax fits for both mask and unmasked
-    grid on;
-end
-set(gcf,'Name','Rmax unmasked and masked 2F1');
-
-
-
-%%
-% And we can look at the raw histograms like this:
-figure(15);
-histDataToPlot=squeeze(bootFitParams(2,:,2,:,1));
-hist(histDataToPlot',20);
-xlabel('Rmax - 2F1 - Phenotype 2');
-ylabel('Frequency');
-
-legend({'Unmasked','Masked'});
-
-
-
-%% Finally, we can do real statistics on these data using ANOVAs. Let's take a look at a simple 1-way ANOVA on the Rmax of the unmasked 1F1 response
-dataToAnalyze=squeeze(bootFitParams(:,1,frequencyComponent,:,1))'; % This will be nPhenotypes x nBootstrap samples. e.g. 5 x 300
-conditionCodes=kron((1:maxPhenotypesToPlot)',ones(nBootstraps,1));
-
-[p1,a1,s1]=anova1(dataToAnalyze(:),conditionCodes);
-
-
-% Multcompare is a nice way to look at these data:
-comparison=multcompare(s1);
-
-%.. here's the same trick doing a 2xway ANOVA on the 1F1 data looking for
-%   an effect of the mask as well as the phenotype
-dataToAnalyze=squeeze(bootFitParams(:,:,frequencyComponent,:,1)); % This will be nPhenotypes x nBootstrap samples. e.g. 5 x 300
-% We have to shift the dimensions around a bit to get them ready ...
-dataToAnalyze=shiftdim(dataToAnalyze,1);
-factorCodes1=repmat([1;2],maxPhenotypesToPlot*nBootstraps,1);
-factorCodes2=kron((1:maxPhenotypesToPlot)',ones(nBootstraps*2,1));
-
-[p,t,stats,terms]=anovan(dataToAnalyze(:),{factorCodes1,factorCodes2});
-
-
+disp('You may want to run plotfits.m to see more graphs and ANOVAs');
+% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % %% Chop here
+% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % 
+% % %% ****************************
+% % % We now have some lovely bootstrapped parameters for all mask conditions
+% % % % The indices into bootFitParams are
+% % % [phenotypeIndex, maskIndex, frequencyComponentIndex, bootStrapInstance, paramIndex]
+% % % The order of the param indices is the same as above: Rmax, c50, n, R0
+% % 
+% % %  We can plot these in boxplots like this:
+% % figure(10);
+% % 
+% % for thisMaskCondition=1:2
+% %     subplot(2,1,thisMaskCondition);
+% %     dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,1,:,1))';
+% %     
+% %     boxplot(dataToBoxplot,'notch','on','plotstyle','compact'); % The Rmax fits for both mask and unmasked
+% %     set(gca,'XTickLabel',[fittedNames]);
+% %     grid on;
+% % end
+% % 
+% % set(gcf,'Name','Rmax unmasked and masked 1F1');
+% % 
+% % %% Look at 2F1 as well
+% % figure(11);
+% % 
+% % for thisMaskCondition=1:2
+% %     subplot(2,1,thisMaskCondition);
+% %     dataToBoxplot=squeeze(bootFitParams(:,thisMaskCondition,2,:,1))';
+% %     
+% %     boxplot(dataToBoxplot,'notch','on','plotstyle','compact'); % The Rmax fits for both mask and unmasked
+% %     grid on;
+% % end
+% % set(gcf,'Name','Rmax unmasked and masked 2F1');
+% % 
+% % 
+% % %% In fact we can loop over both masks and components and plot everything in
+% % % one figure:
+% % 
+% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%This is not the right thing to plot - this has
+% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%3 values for each data bar ????
+% % figure(12);
+% % for thisFreqComponentIndex=1:2
+% %     
+% %     subplot(2,1,thisFreqComponentIndex);
+% %     dataToBoxplot=squeeze(bootFitParams(:,:,2,:,1));
+% %     
+% %     notBoxPlot(dataToBoxplot); % The Rmax fits for both mask and unmasked
+% %     grid on;
+% % end
+% % set(gcf,'Name','Rmax unmasked and masked 2F1');
+% % 
+% % 
+% % 
+% % %%
+% % % And we can look at the raw histograms like this:
+% % figure(15);
+% % histDataToPlot=squeeze(bootFitParams(2,:,2,:,1));
+% % hist(histDataToPlot',20);
+% % xlabel(['Rmax - 2F1 - Phenotype: ', fittedNames{2}]);
+% % ylabel('Frequency');
+% % 
+% % legend({'Unmasked','Masked'});
+% % 
+% % 
+% % 
+% % %% Finally, we can do real statistics on these data using ANOVAs. Let's take a look at a simple 1-way ANOVA on the Rmax of the unmasked 1F1 response
+% % dataToAnalyze=squeeze(bootFitParams(:,1,frequencyComponent,:,1))'; % This will be nPhenotypes x nBootstrap samples. e.g. 5 x 300
+% % conditionCodes=kron((1:maxPhenotypesToPlot)',ones(nBootstraps,1));
+% % 
+% % [p1,a1,s1]=anova1(dataToAnalyze(:),conditionCodes);
+% % set(gcf,'Name','Anova: Rmax of the unmasked 1F1');
+% % 
+% % % Multcompare is a nice way to look at these data:
+% % comparison=multcompare(s1);
+% % set(gcf,'Name','Rmax of the unmasked 1F1');
+% % set(gca,'YTickLabel',fliplr(fittedNames));
+% % 
+% % %.. here's the same trick doing a 2xway ANOVA on the 1F1 data looking for
+% % %   an effect of the mask as well as the phenotype
+% % dataToAnalyze=squeeze(bootFitParams(:,:,frequencyComponent,:,1)); % This will be nPhenotypes x nBootstrap samples. e.g. 5 x 300
+% % % We have to shift the dimensions around a bit to get them ready ...
+% % dataToAnalyze=shiftdim(dataToAnalyze,1);
+% % factorCodes1=repmat([1;2],maxPhenotypesToPlot*nBootstraps,1);
+% % factorCodes2=kron((1:maxPhenotypesToPlot)',ones(nBootstraps*2,1));
+% % 
+% % [p,t,stats,terms]=anovan(dataToAnalyze(:),{factorCodes1,factorCodes2});
+% % 
+% % %Save all...
+% % fName= [b,'fitDone.mat']
+% % save (fName);
 
