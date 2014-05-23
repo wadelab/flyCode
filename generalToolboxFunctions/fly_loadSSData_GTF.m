@@ -1,4 +1,4 @@
-function [phenotypeData,params]=fly_loadSSData(subDirList,extractionParams)
+function [phenotypeData,params]=fly_loadSSData_GTF(subDirList,extractionParams)
 %  [phenotypeData,params]=fly_loadSSData(subDirList,extractionParams)
 %  Extracts data from files containing fly data. Returns summary data from
 % requested frequencies in phenotypeData and information about the

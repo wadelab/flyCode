@@ -1,4 +1,4 @@
-function outType=fly_parseGUIPhenotypeFields(tags)
+function outType=fly_parseGUIPhenotypeFields_old(tags)
 % function outType=fly_parseGUIPhenotypeFields(tags)
 % Takes a params struct with a set of fields extracted from the fly input
 % gui.
