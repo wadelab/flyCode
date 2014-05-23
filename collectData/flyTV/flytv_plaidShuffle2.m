@@ -8,7 +8,7 @@ HideCursor % Hides the mouse cursor
 
 
 % Get the calibration and compute the gamma table
-igt=fly_computeInverseGammaFromCalibFile('CalibrationData_190514.mat')
+igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
 
 datadir='C:\data\SSERG\data\';
 flyTV_startTime=now;
@@ -33,14 +33,14 @@ stim.temporal.duration=11; % how long to flicker for
 
 % Loop over a set of contrast pair. All possible combinations of probe
 % (0,7,14,28,56 % contrast) and mask(0,40%);
-probeCont=[0 7 14 28 56 99 0 7 14 28 56]/100;
-maskCont =[0 0  0  0  0 0  40 40 40 40 40]/100;
+probeCont=[0 14 28 56 80 99 0 7 14 28 56]/100;
+maskCont =[0 0 0 0 0 0  40 40 40 40 40]/100;
 nConds=length(probeCont);
 condSeq=1:nConds;
 shuffleSeq=Shuffle(condSeq);
 
 
-for thisRun=1:1
+for thisRun=1:5  % 5 repeats
     for thisCond=1:nConds
         stim.cont=[probeCont(shuffleSeq(thisCond)) maskCont(shuffleSeq(thisCond))];
         % Phase is the phase shift in degrees (0-360 etc.)applied to the sine grating:
@@ -61,7 +61,7 @@ for thisRun=1:1
         finalData.TimeStamps=d.TimeStamps;
         finalData.Source=d.Source;
         finalData.EventName=d.EventName;
-        finalData.comment='ORT_D_calibrated_screens data sweep';
+        finalData.comment='Orthagonal_Grating_W-_C_7DPE';
         finalData.stim=stim;
         finalData.now=now;
      
