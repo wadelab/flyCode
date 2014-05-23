@@ -142,7 +142,7 @@ Screen('Flip',win,[],1);
     
     
 else
-    load('CalibrationData_190514.mat');
+    load('CalibrationData_200514.mat');
 end
 
 %% Remaining to do: Fit a gamma function to the curves. The best thing to do here is look at the Psychtoolbox routines for calibration. They will do this last part in a function.
