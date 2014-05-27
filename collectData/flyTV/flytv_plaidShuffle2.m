@@ -33,8 +33,8 @@ stim.temporal.duration=11; % how long to flicker for
 
 % Loop over a set of contrast pair. All possible combinations of probe
 % (0,7,14,28,56 % contrast) and mask(0,40%);
-probeCont=[0 14 28 56 80 99 0 7 14 28 56]/100;
-maskCont =[0 0 0 0 0 0  40 40 40 40 40]/100;
+probeCont=[0 14 28 56 70 80 99 0 7 14 28 56]/100;
+maskCont =[0 0 0 0 0 0 0  40 40 40 40 40]/100;
 nConds=length(probeCont);
 condSeq=1:nConds;
 shuffleSeq=Shuffle(condSeq);
@@ -61,7 +61,7 @@ for thisRun=1:5  % 5 repeats
         finalData.TimeStamps=d.TimeStamps;
         finalData.Source=d.Source;
         finalData.EventName=d.EventName;
-        finalData.comment='Orthagonal_Grating_W-_C_7DPE';
+        finalData.comment='Orthagonal_Grating_Wapr_F_1DPE';
         finalData.stim=stim;
         finalData.now=now;
      
