@@ -43,7 +43,7 @@ for thisFly=1:nFlies
     
 end
 %%
-mvals=abs(squeeze(mean((mGoodComps))));
+mvals=abs(squeeze(mean(abs(mGoodComps))));
 stVals=squeeze(std((mGoodComps)));
 semVals=stVals/sqrt(nFlies);
 
@@ -65,6 +65,8 @@ set(h1,'LineWidth',2);
 set(h2,'LineWidth',2);
 
 grid on;
+title('2F1 responses');
+legend({'Unmasked','Masked'});
 
 % Also plot the mask response
 
@@ -81,6 +83,8 @@ set(h1,'LineWidth',2);
 set(h2,'LineWidth',2);
 
 grid on;
+title('2F2 responses');
+legend({'Unmasked','Masked'});
 
 return;
 %%
