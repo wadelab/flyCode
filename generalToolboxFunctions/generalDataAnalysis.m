@@ -25,7 +25,7 @@ clear all;
 close all;
 IGNORE_PHOTODIODE_FLAG=1; % Normally we don't want to waste time processing the photodiode phenotype since it's a) not physiologically interesting and b) statistically different from everything else
 
-[fileToLoad,pathToLoad]=uigetfile('*analysis*.mat','Load analysis file');
+[fileToLoad,pathToLoad]=uigetfile('*Analysis*.mat','Load analysis file');
 
 load(fullfile(pathToLoad,fileToLoad)); % This is the file you got from the directory analysis script. It will place a structure calles 'analysisStruct' in the workspace
 % ** Obviously you replace the filename above with the one that you saved
@@ -149,7 +149,7 @@ set(gcf,'Name','2F1 fits');
 %% If you install the parallel computing toolbox, it will use all your n cores and take and take 1/n as much time
 % It's really worth doing this!
 tic
-if ( exist('matlabpool','builtin')) % Check for the existence of the Parallel computing matlabpool function
+if ( exist('matlabpool') % Check for the existence of the Parallel computing matlabpool function
     if(matlabpool('size') ~=0   )
         matlabpool('open',4); % Open four cores. If your computer has more than 4 cores then you can get even better performance. I think GPUs are supported these days so with the right hardware you might be able to get x100 speedup!
     end
@@ -158,7 +158,7 @@ if ( exist('matlabpool','builtin')) % Check for the existence of the Parallel co
     toc
     disp('Assigned matlabpool - remember to close it later!');
 else
-    options = statset('UseParallel',0);
+    options = statset('UseParallel','never');
     disp('Not using parallel execution - consider installing the Matlab parallel computing toolbox');
 end
 
