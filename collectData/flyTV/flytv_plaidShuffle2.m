@@ -33,8 +33,8 @@ stim.temporal.duration=11; % how long to flicker for
 
 % Loop over a set of contrast pair. All possible combinations of probe
 % (0,14,28,56,70,80,99 % contrast) and mask(0,40%);
-probeCont=[0 14 28 56 70 80 99 0 7 14 28 56]/100;
-maskCont =[0 0 0 0 0 0 0  40 40 40 40 40]/100;
+probeCont=[0 14 28 56 70 80 99 0 14 28 56]/100;
+maskCont =[0 0 0 0 0 0 0  40 40 40 40]/100;
 nConds=length(probeCont);
 condSeq=1:nConds;
 shuffleSeq=Shuffle(condSeq);
