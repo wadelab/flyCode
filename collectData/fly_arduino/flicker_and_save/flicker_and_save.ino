@@ -35,13 +35,15 @@ black wire to GND, white wire to pin 1 of analog in
 const int chipSelect = 4;
 const int ledPin =  9;      // the number of the LED pin
 const int analogPin = 1 ;
-int freq = 5 ; // Hz
+double freq = 5.0 ; // Hz for stimulus
+const char comma = ',';
+const int max_data = 1024 ;
 
 String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
-long sampleCount = 0;        // will store number of A/D samples taken
-long interval = 20;           // interval (20ms) at which to
+unsigned int sampleCount = 0;        // will store number of A/D samples taken
+long interval = 10;           // interval (10 ms is ok) at which to sample
 unsigned long last_time = 0; 
 unsigned long now_time ;
 
@@ -119,7 +121,8 @@ void printDirectory(File dir, int numTabs) {
 }
 
 //***************************************************************************************************
-void ReadOutFile()
+
+void ReadOutFile1()
 {
     File ReadFile = SD.open("datalog.txt");
 
@@ -128,6 +131,77 @@ void ReadOutFile()
     while (ReadFile.available()) 
 	{
       Serial.write(ReadFile.read());
+    }
+    ReadFile.close();
+  }  
+  // if the file isn't open, pop up an error:
+  else 
+  {
+    Serial.println("error opening datalog.txt");
+  } 
+}
+
+unsigned int ReadInt (File f)
+{
+      union{
+       unsigned int i;
+       byte b[2];
+       } u;
+      for (int i = 0; i < 2; i++)
+       {
+          u.b[i] = f.read();
+       }        
+       f.read(); // swallow the comma
+       unsigned int myI = u.i;
+       return myI ;
+}
+
+unsigned long ReadUL (File f)
+{
+      union{
+       unsigned long i;
+       char b[4];
+       } u;
+      for (int i = 0; i < 4; i++)
+       {
+          u.b[i] = f.read();
+       }  
+       f.read(); // swallow he comma
+       unsigned long myI = u.i;
+       return myI ;
+}
+
+void ReadOutFile()
+{
+        
+   int lf = 10;
+    char hdr[80];
+    
+    File ReadFile = SD.open("datalog.txt");
+
+  // if the file is available, write to it:
+  if (ReadFile) {
+    //read the header
+
+    int iRead = ReadFile.readBytesUntil(lf, hdr, 80);
+    hdr[iRead] = '\0';
+   // ReadFile.seek(ReadFile.position());
+    
+    Serial.println(hdr);
+    // now read the rest of the file
+    while (ReadFile.available()) 
+	{
+          for (int i = 0; i <3; i++)
+            {
+         //hi, lo, comma
+         int iTmp = ReadInt (ReadFile);
+              Serial.print(iTmp);
+              Serial.print(comma);
+              }
+                 //hi, lo, hi, lo, comma 4 bytes...
+              Serial.print(ReadUL (ReadFile));
+              Serial.print(comma);      
+              Serial.println ();
     }
     ReadFile.close();
   }  
@@ -149,44 +223,63 @@ if (stringComplete)
   stringComplete = false ;
 }
 
-if (sampleCount >= 0) 
-{
-  unsigned long now_time = millis();
-  if (now_time > last_time + 20)
-  {
-  if (sampleCount < 1024)
-  {
-    // Initial test showed it could write this to the card at 12 ms intervals
-  sampleCount ++ ;
-  last_time = now_time ;
-    
-  // make a string for assembling the data to log:
-  String dataString = String(sampleCount);
-  dataString += ", ";
-  
-     
-    dataString += String(now_time);
-    dataString += ", ";
+if (sampleCount >= 0 && dataFile) //not really sure what to do if datafile has died...
+	{
+	  unsigned long now_time = millis();
+	  if (now_time >= last_time + interval)
+	  {
+	  if (sampleCount < max_data)
+		  {
+			// Initial test showed it could write this to the card at 12 ms intervals
+		  sampleCount ++ ;
+		  last_time = now_time ;
+			
+		  // make a string for assembling the data to log:
 
-  // read  sensor and append to the string:
-    int sensor = analogRead(analogPin);
-    dataString += String(sensor);
-    dataString += ", ";
-    
-    double brightness=sin((double(now_time)/1000.0)*PI*2*freq)*127+127;
-    dataString += String(int(brightness));
-    
-  // if the file is available, write to it:
-  if (dataFile) 
-  {
-   dataFile.println(dataString);
-   dataFile.flush();
-   }
-   
-   analogWrite(ledPin, brightness);
-  }
-  }
-  }
+                        union{
+                          unsigned int i;
+                          byte b[2];
+                        }u;
+                        
+                        union{
+                         unsigned long l;
+                         byte b[4];
+                         } o;  
+                         
+                        u.i = sampleCount;
+			dataFile.write(u.b, 2);
+		        dataFile.write(comma) ;
+			 
+			//dataString += String(now_time);
+			//dataString += ", ";
+
+		  // read  sensor and append to the string:
+			u.i = analogRead(analogPin);
+			dataFile.write(u.b, 2);
+			dataFile.write(comma) ;
+			
+			u.i=int(sin((double(now_time)/1000.0)*PI*2.0*freq)*127.0+127.0);
+			analogWrite(ledPin, u.i);
+			dataFile.write(u.b, 2);
+			dataFile.write(comma) ;
+        
+                         o.l = now_time ;
+                         dataFile.write(o.b, 4);
+			 dataFile.write(comma) ;
+			
+		         dataFile.flush();
+		   
+		  } //end of doing a sample
+	  if (sampleCount == max_data)
+                {
+                  sampleCount ++ ;
+                  dataFile.flush();
+                  analogWrite(ledPin, 127); // or whatever the intermediate value should be
+                  Serial.println("DAQ done") ;
+                }
+
+	  } 
+	}
 }
 
 /*
@@ -226,11 +319,12 @@ void serialEvent()
        freq = 8 ;
        break ;
        
-       case 'X':
+       case 'D':
        dataFile.close();
+       ReadOutFile1();
        stringComplete = false ;
        break ;
-       
+     
        case 'R':
        dataFile.close();
        ReadOutFile();
