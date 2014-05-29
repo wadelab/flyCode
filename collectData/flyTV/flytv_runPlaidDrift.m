@@ -77,7 +77,7 @@ lh = addlistener(s,'DataAvailable', @flytv_dumpData);
 % than 0.5 don't make sense, as parts of the grating would lie outside the
 % displayable range for your computers displays:
 
-
+%%
 %Now we run the Plaid
 
 Screen('Preference', 'SkipSyncTests', 1);
@@ -108,7 +108,13 @@ ifi = Screen('GetFlipInterval', win);
 
 
 % Compute increment of phase shift per redraw:
-phaseincrement = [stim.temporal.frequency] * 360 * ifi;
+for thisComp=1:2 % Assume no more than 2 components to the plaid!
+    if strcmp(stim.temporal.modulation.type(thisComp),'drift');
+        phaseincrement(thisComp) = [stim.temporal.speedDPS(thisComp).* stim.spatial.frequency(thisComp)] * 360 * ifi ;
+    else
+        phaseincrement(thisComp) = [stim.temporal.frequency(thisComp)] * 360 * ifi;
+    end
+end
 
 
 % Build a procedural sine grating texture for a grating with a support of
@@ -129,18 +135,18 @@ toc
 [amps,alpha]=flytv_computeAlphaAmps(stim.cont);
 
 gratingtex1 = CreateProceduralSineGrating(win, dpy.res(1), dpy.res(2),[.5,.5,.5, 1]); % Bottom grating
-gratingtex2 = CreateProceduralSineGrating(win, dpy.res(1), dpy.res(2),[.5 .5 .5 alpha]); % Top grating blend 50%
+gratingtex2 = CreateProceduralSineGrating(win, dpy.res(2), dpy.res(1),[.5 .5 .5 alpha]); % Top grating blend 50%
 
 % Wait for release of all keys on keyboard, then sync us to retrace:
 
-vbl = Screen('Flip', win);
-
+startTime = Screen('Flip', win);
+% This has returned the current 'system time' in the variable startTime
 
 % We run at most 'movieDurationSecs' seconds if user doesn't abort via keypress.
-vblendtime = vbl + stim.temporal.duration;
+vblendtime = startTime + stim.temporal.duration;
 i=0;
 % Update some grating animation parameters:
-phase=stim.spatial.phase;
+phase=stim.spatial.phase(:);
 degToRad=pi/180;
 
 pixelsPerMeter=dpy.res(1)/dpy.size(1);
@@ -149,13 +155,33 @@ metersPerDegree=dpy.distance*tan(degToRad);
 pixPerDegree=pixelsPerMeter*metersPerDegree;
 
 stim.spatial.frequencyCPerPixel=stim.spatial.frequency/pixPerDegree;
+currentTime=startTime;
+% Count VBLs and work out how many of them are in each alternation period.
+vblsPerAlternation=(1./stim.temporal.frequency)./ifi;
 
-while (vbl < vblendtime)
+f1Pol=sign(sin(linspace(0,2*pi*stim.temporal.frequency(1)*stim.temporal.duration,stim.temporal.duration/ifi+1)));
+f2Pol=sign(sin(linspace(0,2*pi*stim.temporal.frequency(2)*stim.temporal.duration,stim.temporal.duration/ifi+1)));
+
+phaseIncPolarity=[f1Pol;f2Pol];
+if stim.temporal.modulation.stopStart==1
     
+    phaseIncPolarity(phaseIncPolarity<0)=0;
+end
+
+ifiIndex=1;
+while (currentTime < vblendtime)
     
-    % Increment phase by the appropriate amount for this time period:
-    phase = phase + phaseincrement;
-    pMod = 180*(round(phase/180 ));
+    for thisComp=1:2 % Assume no more than 2 components to the plaid!
+        if strcmp(stim.temporal.modulation.type(thisComp),'drift');
+            % Increment phase by the appropriate amount for this time period:
+            phase(thisComp) = phase(thisComp) + phaseincrement(thisComp).*phaseIncPolarity(thisComp,ifiIndex);
+            pMod(thisComp) = phase(thisComp);
+        else
+            % Increment phase by the appropriate amount for this time period:
+            phase(thisComp) =  phase(thisComp) + phaseincrement(thisComp);
+            pMod(thisComp) = 180*(round(phase(thisComp)/180 ));
+        end
+    end % Next component
     
     
     
@@ -171,7 +197,9 @@ while (vbl < vblendtime)
     
     
     % Show it at next retrace:
-    vbl = Screen('Flip', win, vbl + 0.5 * ifi);
+    currentTime = Screen('Flip', win, currentTime + 0.5 * ifi);
+    ifiIndex=ifiIndex+1;
+    
 end
 
 % We're done. Close the window. This will also release all other ressources:
