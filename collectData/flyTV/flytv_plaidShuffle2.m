@@ -44,7 +44,7 @@ for thisRun=1:5  % 5 repeats
     for thisCond=1:nConds
         stim.cont=[probeCont(shuffleSeq(thisCond)) maskCont(shuffleSeq(thisCond))];
         % Phase is the phase shift in degrees (0-360 etc.)applied to the sine grating:
-        stim.spatial.phase=[rand(1)*360 rand(1)*360];
+        stim.spatial.phase=[0 0 ]; %[rand(1)*360 rand(1)*360];
         fprintf('\nRunning %d %d',stim.cont(1),stim.cont(2));
         
         
