@@ -26,10 +26,7 @@ black wire to GND, white wire to pin 1 of analog in
  // include the SD library:
 #include <SD.h>
 #include <Arduino.h>
-// set up variables using the SD utility library functions:
-Sd2Card card;
-SdVolume volume;
-SdFile root;
+
 
 // change this to match your SD shield or module;
 // Arduino Ethernet shield: pin 4
@@ -43,102 +40,33 @@ int freq = 5 ; // Hz
 String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
-int ledState = LOW;             // ledState used to set the LED
-long previousMillis = 0;        // will store last time LED was updated
-long interval = 30;           // interval at which to
+long sampleCount = 0;        // will store number of A/D samples taken
+long interval = 20;           // interval (20ms) at which to
+unsigned long last_time = 0; 
+unsigned long now_time ;
 
 File dataFile ;
 
 void setup()
 {
  // Open serial communications and wait for port to open:
-  Serial.begin(9600);
-   while (!Serial) {
+  Serial.begin(38400);
+   while (!Serial) 
+   {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
-
-/*
-  Serial.print("\nInitializing SD card...");
-  // On the Ethernet Shield, CS is pin 4. It's set as an output by default.
-  // Note that even if it's not used as the CS pin, the hardware SS pin
-  // (10 on most Arduino boards, 53 on the Mega) must be left as an output
-  // or the SD library functions will not work.
-  pinMode(10, OUTPUT);     // change this to 53 on a mega -- seems to be ok as we can read the card
-  digitalWrite(10, HIGH); // Add this line
-
-  // we'll use the initialization code from the utility libraries
-  // since we're just testing if the card is working!
-  if (!card.init(SPI_HALF_SPEED, chipSelect)) {
-    Serial.println("initialization failed. Things to check:");
-    Serial.println("* is a card is inserted?");
-    Serial.println("* Is your wiring correct?");
-    Serial.println("* did you change the chipSelect pin to match your shield or module?");
-    return;
-  } 
-  else 
-  {
-   Serial.println("Wiring is correct and a card is present.");
-  }
-
-  // print the type of card
-  Serial.print("\nCard type: ");
-  switch(card.type()) {
-    case SD_CARD_TYPE_SD1:
-      Serial.println("SD1");
-      break;
-    case SD_CARD_TYPE_SD2:
-      Serial.println("SD2");
-      break;
-    case SD_CARD_TYPE_SDHC:
-      Serial.println("SDHC");
-      break;
-    default:
-      Serial.println("Unknown");
-  }
-
-  // Now we will try to open the 'volume'/'partition' - it should be FAT16 or FAT32
-  if (!volume.init(card)) {
-    Serial.println("Could not find FAT16/FAT32 partition.\nMake sure you've formatted the card");
-    return;
-  }
-
-  // print the type and size of the first FAT-type volume
-  uint32_t volumesize;
-  Serial.print("\nVolume type is FAT");
-  Serial.println(volume.fatType(), DEC);
-  Serial.println();
-
-  volumesize = volume.blocksPerCluster();    // clusters are collections of blocks
-  volumesize *= volume.clusterCount();       // we'll have a lot of clusters
-  volumesize *= 512;                            // SD card blocks are always 512 bytes
-  Serial.print("Volume size (bytes): ");
-  Serial.println(volumesize);
-  Serial.print("Volume size (Kbytes): ");
-  volumesize /= 1024;
-  Serial.println(volumesize);
-  Serial.print("Volume size (Mbytes): ");
-  volumesize /= 1024;
-  Serial.println(volumesize);
-
-  Serial.println("\nFiles found on the card (name, date and size in bytes): ");
-  root.openRoot(volume);
-
-  // list all files in the card with date and size
-  root.ls(LS_R | LS_DATE | LS_SIZE);
-
-  // set the digital pin as output:
-  pinMode(ledPin, OUTPUT); */
  
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
-  Serial.print("Initializing SD card...");
+  Serial.println("Initializing SD card...");
   // On the Ethernet Shield, CS is pin 4. It's set as an output by default.
   // Note that even if it's not used as the CS pin, the hardware SS pin 
   // (10 on most Arduino boards, 53 on the Mega) must be left as an output 
   // or the SD library functions will not work. 
    pinMode(10, OUTPUT);
    
-  if (!SD.begin(4)) {
+  if (!SD.begin(4)) 
+  {
     Serial.println("initialization failed!");
     return;
   }
@@ -146,15 +74,16 @@ void setup()
  File root = SD.open("/");
   printDirectory(root, 0);
   root.close();
+  Serial.println("directrory tree done!");
   
-  Serial.println("done!");
-  
-  Serial.println("initialization done.");
-   dataFile = SD.open("datalog.txt", FILE_WRITE);
+  // if file exists this will append to it
+  SD.remove("datalog.txt");
+  dataFile = SD.open("datalog.txt", FILE_WRITE);
 
   if (dataFile)
   {
     Serial.println("opened file successfully");
+    dataFile.println("No, time, analog in, brightness");
   }
   // if the file isn't open, pop up an error:
   else 
@@ -196,13 +125,15 @@ void ReadOutFile()
 
   // if the file is available, write to it:
   if (ReadFile) {
-    while (ReadFile.available()) {
+    while (ReadFile.available()) 
+	{
       Serial.write(ReadFile.read());
     }
     ReadFile.close();
   }  
   // if the file isn't open, pop up an error:
-  else {
+  else 
+  {
     Serial.println("error opening datalog.txt");
   } 
 }
@@ -214,26 +145,37 @@ void loop(void)
 {
 if (stringComplete)
 {
-  previousMillis = 0; // so run it all again  
+  sampleCount = 0; // so run it all again  
   stringComplete = false ;
 }
 
-  while (previousMillis < 1024)
+if (sampleCount >= 0) 
+{
+  unsigned long now_time = millis();
+  if (now_time > last_time + 20)
   {
-  previousMillis ++ ;
-
+  if (sampleCount < 1024)
+  {
+    // Initial test showed it could write this to the card at 12 ms intervals
+  sampleCount ++ ;
+  last_time = now_time ;
+    
   // make a string for assembling the data to log:
-  String dataString = String(previousMillis);
-  dataString += ",";
+  String dataString = String(sampleCount);
+  dataString += ", ";
+  
+     
+    dataString += String(now_time);
+    dataString += ", ";
 
   // read  sensor and append to the string:
     int sensor = analogRead(analogPin);
     dataString += String(sensor);
-    dataString += ",";
-
-      double value=sin((double(millis())/1000)*PI*2*freq)*127+127;
-      dataString += String(int(value));
-    //  Serial.println(dataString  );
+    dataString += ", ";
+    
+    double brightness=sin((double(now_time)/1000.0)*PI*2*freq)*127+127;
+    dataString += String(int(brightness));
+    
   // if the file is available, write to it:
   if (dataFile) 
   {
@@ -241,7 +183,9 @@ if (stringComplete)
    dataFile.flush();
    }
    
-   analogWrite(ledPin, value);
+   analogWrite(ledPin, brightness);
+  }
+  }
   }
 }
 
@@ -251,7 +195,6 @@ if (stringComplete)
  time loop() runs, so using delay inside loop can delay
  response.  Multiple bytes of data may be available.
  */
- 
  // It reads up to a newline...
 void serialEvent() 
 {
@@ -261,7 +204,7 @@ void serialEvent()
     char inChar = (char)Serial.read();
     // add it to the inputString:
     inputString += inChar;
-        // if the incoming character is a newline, set a flag
+    // if the incoming character is a newline, set a flag
     // so the main loop can do something about it:    
     stringComplete = true;
 
@@ -285,6 +228,7 @@ void serialEvent()
        
        case 'X':
        dataFile.close();
+       stringComplete = false ;
        break ;
        
        case 'R':
