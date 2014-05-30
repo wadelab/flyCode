@@ -36,22 +36,23 @@ const int chipSelect = 4;
 const int ledPin =  9;      // the number of the LED pin
 const int analogPin = 1 ;
 int freq = 5 ; // Hz
-const int max_data = 1024;
+const int max_data = 150;
 
-// this version compiles, but fails to start
+// this version compiles, but fails to start if max_data > 150
 // see http://forum.arduino.cc/index.php/topic,41062.0.html
 // out of memory error
-unsigned long time_stamp [max_data] ;
-int brightness [max_data] ;
+unsigned int time_stamp [max_data] ;
 int erg_in [max_data];
 
 String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
 long sampleCount = 0;        // will store number of A/D samples taken
-long interval = 20;           // interval (20ms) at which to
+long interval = 5;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0; 
+unsigned long loop_start_time = 0; 
 unsigned long now_time ;
+unsigned long timing_too_fast = 0 ;
 
 File dataFile ;
 
@@ -66,7 +67,7 @@ void setup()
  
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
-  Serial.println("Initializing SD card...");
+  Serial.println("Init SD.");
   // On the Ethernet Shield, CS is pin 4. It's set as an output by default.
   // Note that even if it's not used as the CS pin, the hardware SS pin 
   // (10 on most Arduino boards, 53 on the Mega) must be left as an output 
@@ -75,14 +76,14 @@ void setup()
    
   if (!SD.begin(4)) 
   {
-    Serial.println("initialization failed!");
+    Serial.println("bad SD!");
     return;
   }
   
  File root = SD.open("/");
   printDirectory(root, 0);
   root.close();
-  Serial.println("directrory tree done!");
+  Serial.println("dir tree done!");
   
   // if file exists this will append to it
   SD.remove("datalog.txt");
@@ -90,7 +91,7 @@ void setup()
 
   if (dataFile)
   {
-    Serial.println("opened file successfully");
+    Serial.println("opened datafile");
     dataFile.println("No, time, analog in, brightness");
   }
   // if the file isn't open, pop up an error:
@@ -154,15 +155,20 @@ void loop(void)
 if (stringComplete)
 {
   sampleCount = 0; // so run it all again  
+  loop_start_time = 0;
   stringComplete = false ;
 }
 
 if (sampleCount >= 0) 
     {
       unsigned long now_time = millis();
-      if (now_time > last_time + 20)
+      if (now_time < last_time + interval)
+      {
+        timing_too_fast ++ ;
+      }
+      else
           {
-          if (sampleCount < 1024)
+          if (sampleCount < max_data)
               {
               // Initial test showed it could write this to the card at 12 ms intervals
                sampleCount ++ ;
@@ -170,14 +176,15 @@ if (sampleCount >= 0)
                 
               // read  sensor 
                 erg_in[sampleCount] = analogRead(analogPin);  
-                time_stamp[sampleCount] = now_time ;
-                double intensity =sin((double(now_time)/1000.0)*PI*2.0*freq)*127.0+127.0;
-                brightness[sampleCount] = int(intensity) ;
+                time_stamp[sampleCount] = (now_time - loop_start_time) ;
+                int intensity =int(sin((double(now_time)/1000.0)*PI*2.0*freq)*127.0)+127;
+                //brightness[sampleCount] = int(intensity) ;
                 analogWrite(ledPin, intensity);
               }
-          if (sampleCount == 1024)
+          if (sampleCount == max_data)
               {
               sampleCount ++ ;  
+              analogWrite(ledPin, 127);
               for (int i = 0; i < max_data; i++)
               {
                   // make a string for assembling the data to log:
@@ -191,7 +198,7 @@ if (sampleCount >= 0)
                 dataString += String(erg_in[i]);
                 dataString += ", ";
                 
-                dataString += String(brightness[i]);
+                dataString += String(int(sin((double(time_stamp[i])/1000.0)*PI*2.0*freq)*127.0)+127);
                 
               // if the file is available, write to it:
                   if (dataFile) 
@@ -203,6 +210,9 @@ if (sampleCount >= 0)
                   {
                   dataFile.flush();
                   }
+              String sTmp = "DAQ done : timing stats ";
+              sTmp += timing_too_fast ;    
+              Serial.println (sTmp);
               } // end of writing data to file
            
           } // end of if we've had enough time elapse
