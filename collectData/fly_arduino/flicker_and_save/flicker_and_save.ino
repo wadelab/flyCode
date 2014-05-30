@@ -43,10 +43,29 @@ String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
 unsigned int sampleCount = 0;        // will store number of A/D samples taken
-long interval = 10;           // interval (10 ms is ok) at which to sample
+unsigned int timing_errors = 0;
+long interval = 10;                   // interval (10 ms is ok) at which to sample
 unsigned long last_time = 0; 
 unsigned long now_time ;
 
+		  // make a structure for assembling the data to log:
+struct data_struct 
+{
+  unsigned int iCount;      // bytes 2
+  char c1  ;         // 1
+  unsigned int analog_data; // 2
+  char c2  ;         // 1
+  unsigned int brightness;  // 2
+  char c3  ;         // 1
+  unsigned long event_time; // 4 
+  char c4  ;         // 1 total 14
+};
+
+union{
+        data_struct data;
+        byte b[14];
+      } uData;
+      
 File dataFile ;
 
 void setup()
@@ -92,6 +111,11 @@ void setup()
   {
     Serial.println("error opening datalog.txt");
   } 
+// store commas only once  
+uData.data.c1 = comma ;
+uData.data.c2 = comma ;
+uData.data.c3 = comma ;
+uData.data.c4 = comma ;
 }
 
 //***********************************************************************************************************
@@ -226,47 +250,29 @@ if (stringComplete)
 if (sampleCount >= 0 && dataFile) //not really sure what to do if datafile has died...
 	{
 	  unsigned long now_time = millis();
-	  if (now_time >= last_time + interval)
-	  {
+	  if (now_time < last_time + interval)
+          {
+            timing_errors ++ ;
+          }
+          else
+          {
 	  if (sampleCount < max_data)
 		  {
 			// Initial test showed it could write this to the card at 12 ms intervals
 		  sampleCount ++ ;
 		  last_time = now_time ;
 			
-		  // make a string for assembling the data to log:
 
-                        union{
-                          unsigned int i;
-                          byte b[2];
-                        }u;
-                        
-                        union{
-                         unsigned long l;
-                         byte b[4];
-                         } o;  
                          
-                        u.i = sampleCount;
-			dataFile.write(u.b, 2);
-		        dataFile.write(comma) ;
-			 
-			//dataString += String(now_time);
-			//dataString += ", ";
+                        uData.data.iCount = sampleCount;			
+		  // read  sensor and append to the structure:
+			uData.data.analog_data = analogRead(analogPin);
+	
+			uData.data.brightness=int(sin((double(now_time)/1000.0)*PI*2.0*freq)*127.0+127.0);
+			analogWrite(ledPin, uData.data.brightness);
+                        uData.data.event_time = now_time ;
 
-		  // read  sensor and append to the string:
-			u.i = analogRead(analogPin);
-			dataFile.write(u.b, 2);
-			dataFile.write(comma) ;
-			
-			u.i=int(sin((double(now_time)/1000.0)*PI*2.0*freq)*127.0+127.0);
-			analogWrite(ledPin, u.i);
-			dataFile.write(u.b, 2);
-			dataFile.write(comma) ;
-        
-                         o.l = now_time ;
-                         dataFile.write(o.b, 4);
-			 dataFile.write(comma) ;
-			
+                         dataFile.write(uData.b, 14);
 		         dataFile.flush();
 		   
 		  } //end of doing a sample
@@ -274,8 +280,10 @@ if (sampleCount >= 0 && dataFile) //not really sure what to do if datafile has d
                 {
                   sampleCount ++ ;
                   dataFile.flush();
-                  analogWrite(ledPin, 127); // or whatever the intermediate value should be
-                  Serial.println("DAQ done") ;
+                  analogWrite(ledPin, 127); // or whatever the intermediate value should be    
+                  String sTmp = "DAQ done, timin errors were " ;
+                  sTmp += timing_errors ;
+                  Serial.println(sTmp) ;
                 }
 
 	  } 
