@@ -21,41 +21,37 @@ dpy.distance = [.22]; % Meters
 % dpy will eventually contain all the info about the display e.g. size,
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) in it.
-
-stim.temporal.frequency=[5 7]; % Hz
+stim.temporal.speedDPS = [100 100]; % how fast the gratings drift in degrees per second.
+stim.temporal.modulation.type={'drift','drift'};
+stim.temporal.modulation.stopStart=1;
+stim.temporal.frequency=[5 7]; % Hz - this is the alternation frequency (flicker or drift reversal)
 stim.spatial.frequency=[.1 .1]; % Cycles per degree
 
 stim.spatial.internalRotation = 0; % Does the grating rotate within the envelope?
 stim.rotateMode = []; % rotation of mask grating (1= horizontal, 2= vertical, etc?)
 
-stim.spatial.angle = [0 0]  ; % angle of gratings on screen
+stim.spatial.angle = [0 90]  ; % angle of gratings on screen
 stim.temporal.duration=11; % how long to flicker for
 
 % Loop over a set of contrast pair. All possible combinations of probe
-<<<<<<< HEAD
-% (0,7,14,28,56 % contrast) and mask(0,40%);
-probeCont=[0 14 28 56 70 80 99 0 7 14 28 56]/100;
-maskCont =[0 0 0 0 0 0 0  40 40 40 40 40]/100;
-=======
 % (0,14,28,56,70,80,99 % contrast) and mask(0,40%);
-probeCont=[0 14 28 56 70 80 99 0 14 28 56]/100;
-maskCont =[0 0 0 0 0 0 0  40 40 40 40]/100;
->>>>>>> FETCH_HEAD
+probeCont=[0 10 20 40 69 0 10 20 40 69]/100;
+maskCont =[0 0  0   0  0 30 30 30 30 30]/100;
+
 nConds=length(probeCont);
 condSeq=1:nConds;
 shuffleSeq=Shuffle(condSeq);
-
 
 for thisRun=1:5  % 5 repeats
     for thisCond=1:nConds
         stim.cont=[probeCont(shuffleSeq(thisCond)) maskCont(shuffleSeq(thisCond))];
         % Phase is the phase shift in degrees (0-360 etc.)applied to the sine grating:
-        stim.spatial.phase=[0 0 ]; %[rand(1)*360 rand(1)*360];
+        stim.spatial.phase=[rand(1)*360 rand(1)*360];
         fprintf('\nRunning %d %d',stim.cont(1),stim.cont(2));
         
         
         
-        d=flytv_runPlaid(dpy,stim);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
+        d=flytv_runPlaidDrift(dpy,stim);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
         % We might not have to
         % open the screen each
         % time around.
@@ -67,17 +63,14 @@ for thisRun=1:5  % 5 repeats
         finalData.TimeStamps=d.TimeStamps;
         finalData.Source=d.Source;
         finalData.EventName=d.EventName;
-<<<<<<< HEAD
-        finalData.comment='Orthagonal_Grating_Wapr_F_1DPE';
-=======
-        finalData.comment='Paralell_Grating_Wapr_2_7DPE';
->>>>>>> FETCH_HEAD
+        finalData.comment='Orthagonal_Grating_DriftTest_driftdrift200_Wapr1d';
         finalData.stim=stim;
         finalData.now=now;
-     
+        
         
         %filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisrun),'_',datestr(flyTV_startTime,30),'.mat'])
         %save(filename,'finalData');
+        
         metaData{thisRun,thisCond}=finalData; % Put the extracted data into an array tf x sf x nrepeats
         data(thisRun,thisCond,:)=d.Data;
         

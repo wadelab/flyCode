@@ -1,4 +1,9 @@
 /*
+fly test : grey wire to GND, purple to pin 9
+black wire to GND, white wire to pin 1 of analog in
+*/
+
+/*
   SD card test
 
  This example shows how use the utility libraries on which the'
@@ -31,17 +36,12 @@ SdFile root;
 // Adafruit SD shields and modules: pin 10
 // Sparkfun SD shield: pin 8
 const int chipSelect = 4;
-//const int ledPin =  13;      // the number of the LED pin
-const int PWMPin1 = 2;
-const int PWMPin2 = 3;
-const int PWMPin3 = 4;
-const int PWMPin4 = 5;
-const int PWMPin5 = 6;
-const int PWMPin6 = 7;
-const int PWMPin7 = 8;
-const int freq = 1; //Hz
-int PWMPins[] = {PWMPin1,PWMPin2,PWMPin3,PWMPin4,PWMPin5,PWMPin6,PWMPin7};
+const int ledPin =  9;      // the number of the LED pin
+const int analogPin = 1 ;
+int freq = 5 ; // Hz
 
+String inputString = "";         // a string to hold incoming data
+boolean stringComplete = false;  // whether the string is complete
 
 int ledState = LOW;             // ledState used to set the LED
 long previousMillis = 0;        // will store last time LED was updated
@@ -126,22 +126,22 @@ void setup()
   root.ls(LS_R | LS_DATE | LS_SIZE);
 
   // set the digital pin as output:
- // pinMode(ledPin, OUTPUT);
-  pinMode(PWMPin1, OUTPUT);
-  pinMode(PWMPin2, OUTPUT);
-  pinMode(PWMPin3, OUTPUT);
-  pinMode(PWMPin4, OUTPUT);
-  pinMode(PWMPin5, OUTPUT);
-  pinMode(PWMPin6, OUTPUT);
-  pinMode(PWMPin7, OUTPUT);
-
+  pinMode(ledPin, OUTPUT);
+ 
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
    dataFile = SD.open("datalog1.txt", FILE_WRITE);
 
 }
 
-void loop(void) {
+void loop(void) 
+{
+if (stringComplete)
+{
+  previousMillis = 0; // so run it all again  
+  stringComplete = false ;
+}
+
   while (previousMillis < 1024)
   {
   previousMillis ++ ;
@@ -150,23 +150,17 @@ void loop(void) {
   String dataString = String(previousMillis);
   dataString += ",";
 
-  // read three sensors and append to the string:
-  for (int analogPin = 0; analogPin < 3; analogPin++) 
-  {
+  // read  sensor and append to the string:
     int sensor = analogRead(analogPin);
     dataString += String(sensor);
-    if (analogPin < 2) 
-    {
-      dataString += ",";
-    } // end if
-  } // end for
+    dataString += ",";
 
   // if the file is available, write to it:
   //if (dataFile) {
   // dataFile.println(dataString);
   // dataFile.close();
     // print to the serial port too:
-    Serial.println(dataString);
+    //Serial.println(dataString);
 // }
   // if the file isn't open, pop up an error:
   //else {
@@ -174,11 +168,50 @@ void loop(void) {
 //  } // end if
 
 
-      double value=sin((double(millis())/1000)*PI*2*freq/10)*127+127;
-      Serial.println(String(int(100.0*value)));
-  // digitalWrite(ledPin, ledState);
-    analogWrite(PWMPins[1], value);
+      double value=sin((double(millis())/1000)*PI*2*freq)*127+127;
+      dataString += String(int(value));
+      Serial.println(dataString  );
+     analogWrite(ledPin, value);
   }
 }
 
+/*
+  SerialEvent occurs whenever a new data comes in the
+ hardware serial RX.  This routine is run between each
+ time loop() runs, so using delay inside loop can delay
+ response.  Multiple bytes of data may be available.
+ */
+void serialEvent() 
+{
+  while (Serial.available()) 
+  {
+    // get the new byte:
+    char inChar = (char)Serial.read();
+    // add it to the inputString:
+    inputString += inChar;
+    // if the incoming character is a newline, set a flag
+    // so the main loop can do something about it:
+    switch (inChar) 
+    {
+       case '1':
+       freq = 1 ;
+       break ;
+       
+       case '2':
+       freq = 2 ;
+       break ;
+       
+       case '3':
+       freq = 4 ;
+       break ;
+       
+       case '4':
+       freq = 8 ;
+       break ;
+      
+      
+    }
+    stringComplete = true;
+  }
+}
 
