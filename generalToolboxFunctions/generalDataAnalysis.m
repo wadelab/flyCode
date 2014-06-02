@@ -28,12 +28,8 @@ close all;
 
 IGNORE_PHOTODIODE_FLAG=1; % Normally we don't want to waste time processing the photodiode phenotype since it's a) not physiologically interesting and b) statistically different from everything else
 
-<<<<<<< HEAD
-[fileToLoad,pathToLoad]=uigetfile('*analysis*.mat','Load analysis file');
-=======
 
 [fileToLoad,pathToLoad]=uigetfile('*Analysis*.mat','Load analysis file');
->>>>>>> FETCH_HEAD
 [pathstr, name, ext] = fileparts(fileToLoad);
 b = [pathToLoad,name, '_analysed_',datestr(now,30)];
 
