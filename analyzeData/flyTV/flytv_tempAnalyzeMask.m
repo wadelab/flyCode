@@ -28,7 +28,7 @@ for thisFly=1:nFlies
     end
     
     % Extract the responses at the modulation frequencies
-    cyclesPerData=[(dur-1)*freqs(1)*2,;(dur-1)*(freqs(2)*2)];
+    cyclesPerData=[(dur-1)*freqs(1)*2;(dur-1)*((freqs(2)+freqs(1)))];
     rawData=thisD.data(:,:,(1001:end));
     fRaw=fft(rawData,[],3); % Ft down time
     goodComps=(fRaw(:,:,cyclesPerData+1));
