@@ -1,4 +1,4 @@
-load('/Users/alexwade/Downloads/Sweep1 08.04.14.mat') % it is possible to browse files using uigetfile
+%load('/Users/alexwade/Downloads/Sweep1 08.04.14.mat') % it is possible to browse files using uigetfile
 [fName,pName]=uigetfile('*.mat','Load flyTV data');
 dataSet=fullfile(pName,fName); % Fullfile generates a legal filename on any platform
 

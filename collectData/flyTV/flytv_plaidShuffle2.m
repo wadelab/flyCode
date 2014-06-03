@@ -61,7 +61,7 @@ for thisRun=1:5  % 5 repeats
         finalData.TimeStamps=d.TimeStamps;
         finalData.Source=d.Source;
         finalData.EventName=d.EventName;
-        finalData.comment='Paralell_Grating_Wapr_2_7DPE';
+        finalData.comment='Parallel_Grating_Wapr_D_7DPE';
         finalData.stim=stim;
         finalData.now=now;
      

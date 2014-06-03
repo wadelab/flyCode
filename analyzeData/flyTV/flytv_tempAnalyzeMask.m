@@ -44,7 +44,7 @@ for thisFly=1:nFlies
 end
 %%
 pc1=1:7
-pc2=8:12;
+pc2=8:11;
 
 mvals=abs(squeeze(mean(abs(mGoodComps))));
 % allAng=angle(mGoodComps)-repmat(angle(mGoodComps(:,7,1)),[1 12 2]);
