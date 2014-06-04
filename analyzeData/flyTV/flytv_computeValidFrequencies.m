@@ -32,3 +32,4 @@ sampleRateHz=1000; % This is fixed for now.
 validFrameSets=4:2:monitorRateHz;
 
 validFrequenciesHz=1000./(validFrameSets*10)
+ 

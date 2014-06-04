@@ -10,7 +10,7 @@ monitorRateHz=dpy.frameRate; % Hz
 
 % We sample at 1000Hz
 sampleRateHz=1000; % This is fixed for now.
-
+ 
 % We need to have an even, integer number of frames in a single stim cycle.
 % The minumum number of frames that makes sense is 4 frames = 40ms.
 % So the maximum stim tag frequency is 100/4 = 25Hz
