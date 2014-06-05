@@ -129,7 +129,7 @@ toc
 [amps,alpha]=flytv_computeAlphaAmps(stim.cont);
 
 gratingtex1 = CreateProceduralSineGrating(win, dpy.res(1), dpy.res(2),[.5,.5,.5, 1]); % Bottom grating
-gratingtex2 = CreateProceduralSineGrating(win, dpy.res(1), dpy.res(2),[.5 .5 .5 alpha]); % Top grating blend 50%
+gratingtex2 = CreateProceduralSineGrating(win, dpy.res(2), dpy.res(1),[.5 .5 .5 alpha]); % Top grating blend 50%
 
 % Wait for release of all keys on keyboard, then sync us to retrace:
 
