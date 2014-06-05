@@ -1,4 +1,4 @@
-function totalAnalysisDurationSecs = flytv_maxAnalysisDuration(dpy,freq,maxAcquisitionLengthSecs)
+function [totalAnalysisDurationSecs,maxNumberCycles] = flytv_maxAnalysisDuration(dpy,freq,maxAcquisitionLengthSecs)
 % function totalSampleDuration = flytv_maxAnalysisDuration(dpy,freq,maxAcquisitionLengthSecs)
 %
 %For a given frequency (that is validfor the current frame rate: see
