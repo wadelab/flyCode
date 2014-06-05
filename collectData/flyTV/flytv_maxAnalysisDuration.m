@@ -18,7 +18,12 @@ sampleRateHz=1000; % This is fixed for now.
 
 % Check to make sure that this frequency is allowed...
 [validFrequencies]=flytv_computeValidFrequencies(dpy);
-if (~ismember(freq,validFrequencies))
+if (~ismember(round(freq*10),round(validFrequencies*10)))
+   fprintf('\nError:');
+   
+    disp(freq);
+    disp(validFrequencies);
+    
     error('Invalid input frequency for this monitor - must be even number of frames');
 end
 
