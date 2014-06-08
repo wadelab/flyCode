@@ -1,6 +1,6 @@
 
 close all;
-clear all;
+clear all; 
 jheapcl;
 
 Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
@@ -22,25 +22,19 @@ dpy.distance = [.22]; % Meters
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) in it.
 
-stim.temporal.frequency=[5 7]; % Hz
+stim.temporal.frequency=[12 15]; % Hz
 stim.spatial.frequency=[.1 .1]; % Cycles per degree
 
 stim.spatial.internalRotation = 0; % Does the grating rotate within the envelope?
 stim.rotateMode = []; % rotation of mask grating (1= horizontal, 2= vertical, etc?)
 
-stim.spatial.angle = [0 0]  ; % angle of gratings on screen
+stim.spatial.angle = [0 90]  ; % angle of gratings on screen
 stim.temporal.duration=11; % how long to flicker for
 
 % Loop over a set of contrast pair. All possible combinations of probe
-<<<<<<< HEAD
-% (0,7,14,28,56 % contrast) and mask(0,40%);
-probeCont=[0 14 28 56 70 80 99 0 7 14 28 56]/100;
-maskCont =[0 0 0 0 0 0 0  40 40 40 40 40]/100;
-=======
-% (0,14,28,56,70,80,99 % contrast) and mask(0,40%);
-probeCont=[0 14 28 56 70 80 99 0 14 28 56]/100;
-maskCont =[0 0 0 0 0 0 0  40 40 40 40]/100;
->>>>>>> FETCH_HEAD
+% (0,14,28,56,70,80,99 % contrast) and mask(0,30%);
+probeCont=[0 14 28 56 70 80 99 0 14 28 56 70]/100;
+maskCont =[0 0 0 0 0 0 0  30 30 30 30 30]/100;
 nConds=length(probeCont);
 condSeq=1:nConds;
 shuffleSeq=Shuffle(condSeq);
@@ -67,11 +61,7 @@ for thisRun=1:5  % 5 repeats
         finalData.TimeStamps=d.TimeStamps;
         finalData.Source=d.Source;
         finalData.EventName=d.EventName;
-<<<<<<< HEAD
-        finalData.comment='Orthagonal_Grating_Wapr_F_1DPE';
-=======
-        finalData.comment='Paralell_Grating_Wapr_2_7DPE';
->>>>>>> FETCH_HEAD
+        finalData.comment='Orthagonal_12_15Hz_Wapr_G_7DPE';
         finalData.stim=stim;
         finalData.now=now;
      

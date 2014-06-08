@@ -1,21 +1,29 @@
 %load('/Users/alexwade/Downloads/Sweep1 08.04.14.mat') % it is possible to browse files using uigetfile
-%[fName,pName]=uigetfile('*.mat','Load flyTV data');
-%dataSet=fullfile(pName,fName); % Fullfile generates a legal filename on any platform
-dataDir=uigetdir;
-fList=dir(fullfile(dataDir,'flyTV_*.mat'))
-
+[fName,pName]=uigetfile('*.mat','Load flyTV data');
+dataSet=fullfile(pName,fName); % Fullfile generates a legal filename on any platform
 
 [nTF,nSF]=size(dataSet);
+preBinSecs=1;
 nSecs=20;
+nAnalysisSecs=nSecs-preBinSecs;
+
 
 for thisTF=1:nTF
     for thisSF=1:nSF
         allRespData=dataSet{thisTF,thisSF};
-        timeSeriesData=allRespData.Data(1001:end);
-        fTSData=fft(timeSeriesData);
+        
+        % Compute the appropriate analysis duration for this frequency...
+        dpy.frameRate=100;
+        
+        [totalAnalysisDurationSecs,maxNumberCycles] = flytv_maxAnalysisDuration(dpy,tfList(thisTF),nAnalysisSecs);
+        totalAnalysisSamples=totalAnalysisDurationSecs*1000;
+        
+        
+        timeSeriesData=allRespData.Data(1001:(totalAnalysisSamples+1000));
+        fTSData=fft(timeSeriesData)/totalAnalysisSamples;
         inputFreq=tfList(thisTF);
-        outAmplitude2F1(thisTF,thisSF)=fTSData(inputFreq*2*nSecs+1); % Remember, adding 1 to allow for 0 freq in FFT
-        outAmplitude1F1(thisTF,thisSF)=fTSData(inputFreq*1*nSecs+1); % Remember, adding 1 to allow for 0 freq in FFT
+        outAmplitude2F1(thisTF,thisSF)=fTSData(maxNumberCycles*2+1); % Remember, adding 1 to allow for 0 freq in FFT
+        outAmplitude1F1(thisTF,thisSF)=fTSData(maxNumberCycles+1); % Remember, adding 1 to allow for 0 freq in FFT
         outNoise(thisTF,thisSF)=sqrt(sum(abs(fTSData(2:1000).^2)));
     end
 end
