@@ -70,7 +70,7 @@ for thisTFIndex=1:nTF
         
         tds=ds(:,(1001:round((totalAnalysisSamples+1000))));
         
-        ftds=fft(tds,[],2);%
+        ftds=fft(tds,[],2)/totalAnalysisSamples;%
 %         
 %         
 %         tds=ds(:,(sampleFreq*nPreBin+1):(end-sampleFreq*nPostBin));
