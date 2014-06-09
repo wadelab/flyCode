@@ -35,8 +35,8 @@ black wire to GND, white wire to pin 1 of analog in
 const int chipSelect = 4;
 const int ledPin =  9;      // the number of the LED pin
 const int analogPin = 1 ;
-int freq = 5 ; // Hz
-const int max_data = 150;
+int freq = 5 ; // flicker of LED Hz
+const int max_data = 1024;
 
 // this version compiles, but fails to start if max_data > 150
 // see http://forum.arduino.cc/index.php/topic,41062.0.html
@@ -48,7 +48,7 @@ String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
 long sampleCount = 0;        // will store number of A/D samples taken
-long interval = 5;           // interval (5ms) at which to - 2 ms is also ok in this version
+long interval = 2;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0; 
 unsigned long loop_start_time = 0; 
 unsigned long now_time ;
@@ -205,6 +205,11 @@ if (sampleCount >= 0)
                   {
                    dataFile.println(dataString);
                   }
+                  else 
+                  {
+                  Serial.println (dataString);
+                  }
+                  
                } // end of for i
                 if (dataFile) 
                   {
@@ -255,6 +260,10 @@ void serialEvent()
        
        case '4':
        freq = 8 ;
+       break ;
+       
+       case '5':
+       freq = 16 ;
        break ;
        
        case 'X':
