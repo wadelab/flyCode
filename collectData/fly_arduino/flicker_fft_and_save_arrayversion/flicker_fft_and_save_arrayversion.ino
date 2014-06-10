@@ -73,7 +73,7 @@ void setup()
   // Note that even if it's not used as the CS pin, the hardware SS pin 
   // (10 on most Arduino boards, 53 on the Mega) must be left as an output 
   // or the SD library functions will not work. 
-   pinMode(10, OUTPUT);
+   pinMode(53, OUTPUT);
    
   if (!SD.begin(4)) 
   {
@@ -85,22 +85,9 @@ void setup()
   printDirectory(root, 0);
   root.close();
   Serial.println("dir tree done!");
-  
-  // if file exists this will append to it
-  SD.remove("datalog.txt");
-  dataFile = SD.open("datalog.txt", FILE_WRITE);
-
-  if (dataFile)
-  {
-    Serial.println("opened datafile");
-    dataFile.println("No, time, analog in, brightness");
-  }
-  // if the file isn't open, pop up an error:
-  else 
-  {
-    Serial.println("error opening datalog.txt");
-  } 
 }
+  
+
 
 //***********************************************************************************************************
 void printDirectory(File dir, int numTabs) {
@@ -129,9 +116,9 @@ void printDirectory(File dir, int numTabs) {
 }
 
 //***************************************************************************************************
-void ReadOutFile()
+void ReadOutFile(char * cFile)
 {
-    File ReadFile = SD.open("datalog.txt");
+    File ReadFile = SD.open(cFile);
 
   // if the file is available, write to it:
   if (ReadFile) {
@@ -149,10 +136,66 @@ void ReadOutFile()
 }
 
 //***************************************************************************************************
-
-void writeFile()
+void writeFFT (char * cFile)
 {
-for (int i = 0; i < max_data; i++)
+    // if file exists this will append to it
+  if(SD.exists(cFile))
+  {
+    SD.remove(cFile);
+  }
+  dataFile = SD.open(cFile, FILE_WRITE);
+
+  if (dataFile)
+  {
+    Serial.print("opened fft file");
+    Serial.println(cFile);
+    
+    for (int i = 0 ; i < FFT_N/2 ; i += 2)
+    {
+        dataFile.print(i);
+        dataFile.print(",");
+        dataFile.println(fft_log_out[i]); // send out the data
+    }
+    dataFile.close();
+    Serial.println("written fft file");
+    Serial.println(cFile);
+  }  
+  else 
+  {
+    Serial.print("error opening ");
+    for (int i = 0 ; i < FFT_N/2 ; i += 2)
+    {
+        Serial.print(i);
+        Serial.print(",");
+        Serial.println(fft_log_out[i]); // send out the data
+    }
+  } 
+}
+void writeFile(char * cFile)
+{
+    // if file exists this will append to it
+  if (SD.exists(cFile))
+  {
+    SD.remove(cFile);
+  }
+  dataFile = SD.open(cFile, FILE_WRITE);
+
+  if (dataFile)
+  {
+    Serial.print("opened datafile datalatot");
+    Serial.println (cFile);
+    int bytesWritten = dataFile.println("No, time, analog in, brightness");
+    Serial.print("Now written headeer of file with bytes:");
+    Serial.println(bytesWritten);
+  }    
+  
+    else 
+  {
+    Serial.print("error opening ");
+      Serial.println (cFile);
+  
+  }
+    for (int i = 0; i < max_data; i++)
     {
       // make a string for assembling the data to log:
       String dataString = String(i);
@@ -165,22 +208,21 @@ for (int i = 0; i < max_data; i++)
       dataString += ", ";
 
       dataString += String(erg_in[i]);
-                      
-      // if the file is available, write to it:
-      if (dataFile) 
-        {
+      if (dataFile)
+      {
          dataFile.println(dataString);
-        }
-        else 
-        {
-        Serial.println (dataString);
-        }
-        
+      }   
+      else 
+      {
+        Serial.println(dataString);
+      }
      } // end of for i
-     if (dataFile) 
-        {
+    if (dataFile)
+      {
         dataFile.flush();
-        }
+        dataFile.close();
+      }
+        
     String sTmp = "DAQ done : timing stats ";
     sTmp += timing_too_fast ;    
     Serial.println (sTmp);
@@ -201,12 +243,8 @@ void do_fft()
     fft_reorder(); // reorder the data before doing the fft
     fft_run(); // process the data in the fft
     fft_mag_log(); // take the output of the fft
-    for (int i = 0 ; i < FFT_N/2 ; i += 2)
-    {
-        Serial.print(i);
-        Serial.print(",");
-        Serial.println(fft_log_out[i]); // send out the data
-    }
+    // data now in fft_log_out
+
 }
 
 //***************************************************************************************************
@@ -248,8 +286,9 @@ if (sampleCount >= 0)
               {
               sampleCount ++ ;  
               analogWrite(ledPin, 127);
-              writeFile();
+              writeFile("datalog.txt");
               do_fft() ;
+              writeFFT("datalog.fft");
               }
           } // end of if we've had enough time elapse
       } // end of samplecount > 0
@@ -297,14 +336,13 @@ void serialEvent()
        freq = 16 ;
        break ;
        
-       case 'X':
-       dataFile.close();
+       case 'F':       
+       writeFFT("datalog.fft");
        stringComplete = false ;
        break ;
        
        case 'R':
-       dataFile.close();
-       ReadOutFile();
+       ReadOutFile("datalog.txt");
        stringComplete = false ;
        break ;
             
