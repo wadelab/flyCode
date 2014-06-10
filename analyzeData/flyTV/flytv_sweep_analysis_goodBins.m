@@ -94,8 +94,8 @@ set(gca,'XTick',[1 2 3 4 5 6] );
 set(gca,'XTickLabel',uniqueSF );
 set(gca,'YTick',[1 2 3 4 5 6] );
 set(gca,'YTickLabel',uniqueTF);
-xlabel('Spatial Frequency (Hz)')
-ylabel('Temporal Frequency (CPD)')
+xlabel('Spatial Frequency (CPD)')
+ylabel('Temporal Frequency (Hz)')
 colorbar;
 subplot(3,1,2);
 imagesc(rAmp2);
@@ -103,8 +103,8 @@ set(gca,'XTick',[1 2 3 4 5 6] );
 set(gca,'XTickLabel',uniqueSF );
 set(gca,'YTick',[1 2 3 4 5 6] );
 set(gca,'YTickLabel',uniqueTF);
-xlabel('Spatial Frequency (Hz)')
-ylabel('Temporal Frequency (CPD)')
+xlabel('Spatial Frequency (CPD)')
+ylabel('Temporal Frequency (Hz)')
 colormap hot;
 colorbar;
 subplot(3,1,3);
@@ -113,8 +113,8 @@ set(gca,'XTick',[1 2 3 4 5 6] );
 set(gca,'XTickLabel',uniqueSF );
 set(gca,'YTick',[1 2 3 4 5 6] );
 set(gca,'YTickLabel',uniqueTF);
-xlabel('Spatial Frequency (Hz)')
-ylabel('Temporal Frequency (CPD)')
+xlabel('Spatial Frequency (CPD)')
+ylabel('Temporal Frequency (Hz)')
 colormap hot;
 colorbar;
  print(gcf, '-dpdf', '-opengl', 'output.pdf')
