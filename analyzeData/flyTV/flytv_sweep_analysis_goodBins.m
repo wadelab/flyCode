@@ -6,7 +6,7 @@ fList=dir(fullfile(dataDir,'*.mat'))
 
 nTrials=length(fList);
 
-
+% This loads in the individual trials
 for thisTrial=1:nTrials
     fName=fullfile(dataDir,fList(thisTrial).name)
     
@@ -65,18 +65,11 @@ for thisTFIndex=1:nTF
         
         [totalAnalysisDurationSecs,respFreq] = flytv_maxAnalysisDuration(dpy,uniqueTF(thisTFIndex),nSecs);
         totalAnalysisSamples=totalAnalysisDurationSecs*1000;
-        
-        % timeSeriesData=allRespData.Data(1001:(totalAnalysisSamples+1000));
-        
+                
         tds=ds(:,(1001:round((totalAnalysisSamples+1000))));
         
-        ftds=fft(tds,[],2)/totalAnalysisSamples;%
+        ftds=fft(tds,[],2)/totalAnalysisSamples;% Cmpute the FT, divide by nSamples to maintain units
 %         
-%         
-%         tds=ds(:,(sampleFreq*nPreBin+1):(end-sampleFreq*nPostBin));
-%         ftds=fft(tds,[],2);%
-        
-       % respFreq=nSecs*uniqueTF(thisTFIndex);
         
         rAmp(thisTFIndex,thisSFIndex)=mean(squeeze(abs(ftds(:,respFreq+1))));
         rAmp2(thisTFIndex,thisSFIndex)=mean(squeeze(abs(ftds(:,respFreq*2+1))));
@@ -101,8 +94,8 @@ set(gca,'XTick',[1 2 3 4 5 6] );
 set(gca,'XTickLabel',[1 2 4 8.3 16.67 25] );
 set(gca,'YTick',[1 2 3 4 5 6] );
 set(gca,'YTickLabel',[0.014 0.028 0.056 0.11 0.22 0.44]);
-xlabel('Temporal Frequency (Hz)')
-ylabel('Spatial Frequency (CPD)')
+xlabel('Spatial Frequency (Hz)')
+ylabel('Temporal Frequency (CPD)')
 colorbar;
 subplot(3,1,2);
 imagesc(rAmp2);
@@ -110,8 +103,8 @@ set(gca,'XTick',[1 2 3 4 5 6] );
 set(gca,'XTickLabel',[1 2 4 8.3 16.67 25] );
 set(gca,'YTick',[1 2 3 4 5 6] );
 set(gca,'YTickLabel',[0.014 0.028 0.056 0.11 0.22 0.44]);
-xlabel('Temporal Frequency (Hz)')
-ylabel('Spatial Frequency (CPD)')
+xlabel('Spatial Frequency (Hz)')
+ylabel('Temporal Frequency (CPD)')
 colormap hot;
 colorbar;
 subplot(3,1,3);
@@ -120,8 +113,8 @@ set(gca,'XTick',[1 2 3 4 5 6] );
 set(gca,'XTickLabel',[1 2 4 8.3 16.67 25] );
 set(gca,'YTick',[1 2 3 4 5 6] );
 set(gca,'YTickLabel',[0.014 0.028 0.056 0.11 0.22 0.44]);
-xlabel('Temporal Frequency (Hz)')
-ylabel('Spatial Frequency (CPD)')
+xlabel('Spatial Frequency (Hz)')
+ylabel('Temporal Frequency (CPD)')
 colormap hot;
 colorbar;
  print(gcf, '-dpdf', '-opengl', 'output.pdf')
