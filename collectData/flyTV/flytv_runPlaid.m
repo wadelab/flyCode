@@ -97,7 +97,7 @@ win = Screen('OpenWindow', WhichScreen, 128);
 oldClut = LoadIdentityClut(win, 1);
 Screen('LoadNormalizedGammaTable',win,dpy.gamma.inverse);
 
-
+hz=Screen('FrameRate', win,[],dpy.frameRate);
 
 % Make sure the GLSL shading language is supported:
 AssertGLSL;

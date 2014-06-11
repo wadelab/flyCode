@@ -1,4 +1,8 @@
-
+% This version of the code sweeps over tf and sf space with no mask. It's
+% just to generate the sftf sensitivity surfaces that we like so much...
+% It replaces the original 'sweep' code and makes sure that everything is
+% specified in the same units (in particular sf). 
+% 
 close all;
 clear all;
 jheapcl;
@@ -18,7 +22,7 @@ dpy.gamma.inverse=igt;
 dpy.res = [1920 1080]; % screen resoloution
 dpy.size = [.53 .3] % Meters
 dpy.distance = [.22]; % Meters
-
+dpy.frameRate=144;
 % dpy will eventually contain all the info about the display e.g. size,
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) in it.
