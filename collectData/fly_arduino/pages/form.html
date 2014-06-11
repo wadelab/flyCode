@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<Head>
+<script>
+// function myFunction() {
+// 
+// var today = new Date();
+//     document.getElementById("demo").innerHTML = 
+// }
+
+function startTime() {
+    var today=new Date();
+    var h=today.getHours();
+    var m=today.getMinutes();
+    m = checkTime(m);
+
+    document.getElementById('txt').innerHTML = h+"h"+m+"m";
+    var t = setTimeout(function(){startTime()},500);
+}
+
+function checkTime(i) {
+    if (i<10) {i = "0" + i};  // add zero in front of numbers < 10
+    return i;
+}
+
+function changeText() {
+    var today=new Date();
+    var h=today.getHours();
+    var m=today.getMinutes();
+    x = document.getElementById("FileID");
+    x.value = h+"h"+m+"m";
+}
+</script>
+</head>
+
+<body onload="startTime()">
+
+<div id="txt"></div>
+<BR><BR>
+
+<form action="http://biolpc2973.york.ac.uk/">
+Genotype: <BR>
+<select name="genotype" size = 4>
+<option value="w">w-</option>
+<option value="CS">CS</option>
+<option value="TH" selected>TH</option>
+<option value="G2019S">G2019S</option>
+</select>
+
+
+<BR><BR> Sex: <BR>
+<input type="radio" name="sex" value="male">Male<br>
+<input type="radio" checked name="sex" value="female">Female
+<BR><BR>
+File name: <input id="FileID" type="text" name="filename"> 
+<button onclick="changeText()" type="button">Auto</button><br>
+
+<BR><BR>
+<input type="submit" value="Submit">
+
+</form>
+
+</body>
+</html>
