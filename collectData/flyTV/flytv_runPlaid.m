@@ -166,8 +166,8 @@ while (vbl < vblendtime)
     % vector with a number of components that is an integral multiple of 4,
     % i.e. in our case it must have 4 components:
     
-    Screen('DrawTexture', win, [gratingtex1], [], [], [stim.spatial.angle(1)], [], [0], [], [], [stim.rotateMode], [pMod(1),stim.spatial.frequencyCPerPixel(1),amps(1),0]');
-    Screen('DrawTexture', win, [gratingtex2], [], [], [stim.spatial.angle(2)], [], [0], [], [], [stim.rotateMode], [pMod(2),stim.spatial.frequencyCPerPixel(2),amps(2),0]');
+    Screen('DrawTexture', win, [gratingtex1], [], [], [stim.spatial.angle(1)], [], [0], [], [], [stim.rotateMode], [pMod(1)+stim.spatial.pOffset(1),stim.spatial.frequencyCPerPixel(1),amps(1),0]');
+    Screen('DrawTexture', win, [gratingtex2], [], [], [stim.spatial.angle(2)], [], [0], [], [], [stim.rotateMode], [pMod(2)+stim.spatial.pOffset(2),stim.spatial.frequencyCPerPixel(2),amps(2),0]');
     
     
     % Show it at next retrace:
