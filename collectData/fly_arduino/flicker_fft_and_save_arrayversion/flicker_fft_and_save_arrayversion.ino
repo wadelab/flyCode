@@ -150,6 +150,7 @@ void writeFFT (char * cFile)
     Serial.print("opened fft file");
     Serial.println(cFile);
     
+    dataFile.println("Data sampled at " + String(interval) + " ms; Flickered at " + String(freq) + " Hz");
     for (int i = 0 ; i < FFT_N/2 ; i += 2)
     {
         dataFile.print(i);
@@ -163,6 +164,8 @@ void writeFFT (char * cFile)
   else 
   {
     Serial.print("error opening ");
+    Serial.println(cFile);
+    Serial.println("Data sampled at " + String(interval) + " ms; Flickered at " + String(freq) + " Hz");
     for (int i = 0 ; i < FFT_N/2 ; i += 2)
     {
         Serial.print(i);
