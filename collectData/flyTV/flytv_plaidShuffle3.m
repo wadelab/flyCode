@@ -2,6 +2,7 @@
 % just to generate the sftf sensitivity surfaces that we like so much...
 % It replaces the original 'sweep' code and makes sure that everything is
 % specified in the same units (in particular sf). 
+% ARW June 11 2014
 % 
 close all;
 clear all;
