@@ -1,3 +1,4 @@
+
 close all;
 clear all;
 jheapcl;
@@ -12,8 +13,8 @@ igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
 datadir='C:\data\SSERG\data\';
 flyTV_startTime=now;
 
-tfList=[1,2,4.17,8.3,16.67,25]; % This is in Hz.
-sfList=[1 2 4 8 16 32]/1000; % We don't know what units this is in
+tfList=[1, 2.25, 4.5, 9, 18, 24]; % This is in Hz.
+sfList=[1, 2, 4, 8, 16, 32]/1000; % We don't know what units this is in (cycles per pixel), converted to CPD later
 
 nTF=length(tfList);
 nSF=length(sfList);
@@ -49,7 +50,7 @@ for thisrun=1:5 % 5 repeats
             finalData.TimeStamps=d.TimeStamps;
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
-            finalData.comment='wapr_O_calibrated_Extended_Sweep';
+            finalData.comment='wapr_test144hz1_24_calibrated_Extended_Sweep2';
             finalData.thisTF=thisTF;
             finalData.thisSF=thisSF;
             finalData.thisTFIndex=t;

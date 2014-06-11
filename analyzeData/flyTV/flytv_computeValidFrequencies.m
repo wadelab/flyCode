@@ -1,5 +1,5 @@
 function [validFrequenciesHz]=flytv_computeValidFreqs(dpy)
-% flytv_computeSampleLengthAndCycles(dpy,freq)
+% [validFrequenciesHz]=flytv_computeValidFreqs(dpy)
 % For (currently) a single input frequency, computes the duration over
 % which the analysis must be performed and the number of cycles expected in
 % that duration.
@@ -17,6 +17,7 @@ function [validFrequenciesHz]=flytv_computeValidFreqs(dpy)
 % 1Hz.
 % 
 
+
 monitorRateHz=dpy.frameRate; % Hz
 
 % We sample at 1000Hz
@@ -30,6 +31,9 @@ sampleRateHz=1000; % This is fixed for now.
 % We can compute the other valid stim tags as follows
 
 validFrameSets=4:2:monitorRateHz;
+validPeriods=validFrameSets*(1/monitorRateHz);
 
-validFrequenciesHz=1000./(validFrameSets*10)
+
+validFrequenciesHz=1./validPeriods;
+
  

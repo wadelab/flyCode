@@ -55,7 +55,7 @@ end
 ds=zeros(6,6,nr,nt);
 tds=zeros(6,6,nr,nt-2000);
 % Compute the appropriate analysis duration for this frequency...
-dpy.frameRate=100;
+dpy.frameRate=144;
 for thisTFIndex=1:nTF
     for thisSFIndex=1:nSF
         disp(thisTFIndex)
@@ -98,7 +98,7 @@ figure(1);
 subplot(3,1,1);
 imagesc(rAmp);
 set(gca,'XTick',[1 2 3 4 5 6] );
-set(gca,'XTickLabel',[1 2 4 8.3 16.67 25] );
+set(gca,'XTickLabel',[2.25 4.5 9 18 24 36] );
 set(gca,'YTick',[1 2 3 4 5 6] );
 set(gca,'YTickLabel',[0.014 0.028 0.056 0.11 0.22 0.44]);
 xlabel('Temporal Frequency (Hz)')
@@ -107,7 +107,7 @@ colorbar;
 subplot(3,1,2);
 imagesc(rAmp2);
 set(gca,'XTick',[1 2 3 4 5 6] );
-set(gca,'XTickLabel',[1 2 4 8.3 16.67 25] );
+set(gca,'XTickLabel',[2.25 4.5 9 18 24 36] );
 set(gca,'YTick',[1 2 3 4 5 6] );
 set(gca,'YTickLabel',[0.014 0.028 0.056 0.11 0.22 0.44]);
 xlabel('Temporal Frequency (Hz)')
@@ -117,7 +117,7 @@ colorbar;
 subplot(3,1,3);
 imagesc(rAmp2./rAmp);
 set(gca,'XTick',[1 2 3 4 5 6] );
-set(gca,'XTickLabel',[1 2 4 8.3 16.67 25] );
+set(gca,'XTickLabel',[2.25 4.5 9 18 24 36] );
 set(gca,'YTick',[1 2 3 4 5 6] );
 set(gca,'YTickLabel',[0.014 0.028 0.056 0.11 0.22 0.44]);
 xlabel('Temporal Frequency (Hz)')

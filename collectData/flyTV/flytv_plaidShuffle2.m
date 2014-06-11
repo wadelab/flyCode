@@ -22,8 +22,8 @@ dpy.distance = [.22]; % Meters
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) in it.
 
-stim.temporal.frequency=[12 15]; % Hz
-stim.spatial.frequency=[.1 .1]; % Cycles per degree
+stim.temporal.frequency=[5.14 7.2]; % Hz
+stim.spatial.frequency=[.44 .44]; % Cycles per degree
 
 stim.spatial.internalRotation = 0; % Does the grating rotate within the envelope?
 stim.rotateMode = []; % rotation of mask grating (1= horizontal, 2= vertical, etc?)
@@ -33,8 +33,8 @@ stim.temporal.duration=11; % how long to flicker for
 
 % Loop over a set of contrast pair. All possible combinations of probe
 % (0,14,28,56,70,80,99 % contrast) and mask(0,30%);
-probeCont=[0 14 28 56 70 80 99 0 14 28 56 70]/100;
-maskCont =[0 0 0 0 0 0 0  30 30 30 30 30]/100;
+probeCont=[0 14 28 56 70 80 99 0 14 28 56]/100;
+maskCont =[0 0 0 0 0 0 0  40 40 40 40]/100;
 nConds=length(probeCont);
 condSeq=1:nConds;
 shuffleSeq=Shuffle(condSeq);
@@ -45,6 +45,8 @@ for thisRun=1:5  % 5 repeats
         stim.cont=[probeCont(shuffleSeq(thisCond)) maskCont(shuffleSeq(thisCond))];
         % Phase is the phase shift in degrees (0-360 etc.)applied to the sine grating:
         stim.spatial.phase=[0 0 ]; %[rand(1)*360 rand(1)*360];
+        stim.spatial.pOffset=rand(2,1)*360;
+        
         fprintf('\nRunning %d %d',stim.cont(1),stim.cont(2));
         
         
@@ -61,7 +63,7 @@ for thisRun=1:5  % 5 repeats
         finalData.TimeStamps=d.TimeStamps;
         finalData.Source=d.Source;
         finalData.EventName=d.EventName;
-        finalData.comment='Orthagonal_12_15Hz_Wapr_G_7DPE';
+        finalData.comment='Orthagonal_5.14_7.2Hz_.44CPD_40mask_Wapr_A_7DPE';
         finalData.stim=stim;
         finalData.now=now;
      
