@@ -153,7 +153,7 @@ void ReadOutFile()
 int br_now (unsigned long t)
 {
   if ( t < max_data/8) return 0;
-  if ( t > (3*max_data)/2) return 0;
+  if ( t > (3*max_data)/4) return 0;
   return 255 ;
 }
 
@@ -178,15 +178,15 @@ if (sampleCount >= 0)
           if (sampleCount < max_data)
               {
               // Initial test showed it could write this to the card at 12 ms intervals
-               sampleCount ++ ;
                last_time = now_time ;
                 
               // read  sensor 
-                erg_in[sampleCount] = analogRead(analogPin);  
+                erg_in[sampleCount] = -1 * analogRead(analogPin);  
                 time_stamp[sampleCount] = (now_time - loop_start_time) ;
                 int intensity =br_now(sampleCount);
                 //brightness[sampleCount] = int(intensity) ;
                 analogWrite(ledPin, intensity);
+                sampleCount ++ ;
               }
           if (sampleCount == max_data)
               {
@@ -199,7 +199,7 @@ if (sampleCount >= 0)
                   dataString += ", ";
               
                  
-                dataString += String(time_stamp[i]);
+                dataString += String(time_stamp[i]-time_stamp[0]);
                 dataString += ", ";
     
                 dataString += String(br_now(i));
