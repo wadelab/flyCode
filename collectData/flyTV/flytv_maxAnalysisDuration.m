@@ -6,6 +6,7 @@ function [totalAnalysisDurationSecs,maxNumberCycles] = flytv_maxAnalysisDuration
 %window is. The critical thing is to have an integer number of frequencies
 %in there....
 
+dpy.frameRate = 144
 monitorRateHz=dpy.frameRate; % Hz
 
 % We sample at 1000Hz
