@@ -7,7 +7,7 @@
 close all;
 clear all;
 jheapcl;
-DUMMYRUN=0;
+DUMMYRUN=1;
 
 Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
 HideCursor % Hides the mouse cursor
@@ -52,9 +52,9 @@ maskCont =[0];
 
 nConds=length(ordered);
 
-nRepeats=1;
+nRepeats=3;
 
-for thisRun=1:nRepeats  % 5 repeats
+for thisRun=1:nRepeats  % 3 repeats
     for thisCond=1:nConds
         stim.cont=[probeCont(1) maskCont(1)];
         % Phase is the phase shift in degrees (0-360 etc.)applied to the sine grating:
@@ -64,8 +64,8 @@ for thisRun=1:nRepeats  % 5 repeats
         fprintf('\nRunning %d %d',stim.cont(1),stim.cont(2));
         
         thisaction= shuffleSeq(thisCond);
-        t=ceil(thisaction/ nTF);
-        s=1+rem(thisaction, nSF); %  Should be 1+rem(thisAction-1,nTF)
+        t=ceil(thisaction/ nSF);
+        s=1+rem(thisaction, nTF); %  Should be 1+rem(thisAction-1,nTF)
         stim.spatial.frequency=sfList(s,:)
         stim.temporal.frequency=tfList(t,:)
         
@@ -85,7 +85,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
            
-            finalData.comment='Orthagonal_5.14_7.2Hz_.44CPD_40mask_Wapr_A_7DPE';
+            finalData.comment='Wapr_I_7DPE';
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;
