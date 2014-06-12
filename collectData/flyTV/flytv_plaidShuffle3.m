@@ -7,7 +7,7 @@
 close all;
 clear all;
 jheapcl;
-DUMMYRUN=0;
+DUMMYRUN=1;
 
 Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
 HideCursor % Hides the mouse cursor
@@ -64,8 +64,8 @@ for thisRun=1:nRepeats  % 5 repeats
         fprintf('\nRunning %d %d',stim.cont(1),stim.cont(2));
         
         thisaction= shuffleSeq(thisCond);
-        t=ceil(thisaction/ nTF);
-        s=1+rem(thisaction, nSF); %  Should be 1+rem(thisAction-1,nTF)
+        t=ceil(thisaction/ nSF);
+        s=1+rem(thisaction, nTF); %  Should be 1+rem(thisAction-1,nTF)
         stim.spatial.frequency=sfList(s,:)
         stim.temporal.frequency=tfList(t,:)
         
