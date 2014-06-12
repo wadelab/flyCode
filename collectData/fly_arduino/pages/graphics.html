@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<HEAD>
+
+</HEAD>
+<body>
+
+<canvas id="myCanvas" width="800" height="600" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<script>
+
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+
+for (var i=0; i < 1000; i++)
+{
+ctx.moveTo(i,100 * Math.sin(i/20) + 125 );
+ctx.lineTo(i+1,100 * Math.sin((i+1)/20) + 125);
+ctx.stroke();
+}
+
+</script> 
+
+</body>
+</html>
