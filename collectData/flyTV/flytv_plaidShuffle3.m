@@ -1,25 +1,32 @@
 % This version of the code sweeps over tf and sf space with no mask. It's
 % just to generate the sftf sensitivity surfaces that we like so much...
 % It replaces the original 'sweep' code and makes sure that everything is
-% specified in the same units (in particular sf). 
+% specified in the same units (in particular sf).
 % ARW June 11 2014
-% 
+%
 close all;
 clear all;
-jheapcl;
+
 DUMMYRUN=1;
 
-Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
-HideCursor % Hides the mouse cursor
+if (~DUMMYRUN)
+    jheapcl;
+    
+    Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
+    HideCursor % Hides the mouse cursor
+    
+    
+    % Get the calibration and compute the gamma table
+    
+    igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
+    dpy.gamma.inverse=igt;
+end
 
-
-% Get the calibration and compute the gamma table
-igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
 
 datadir='C:\data\SSERG\data\';
 flyTV_startTime=now;
 
-dpy.gamma.inverse=igt;
+
 dpy.res = [1920 1080]; % screen resoloution
 dpy.size = [.53 .3] % Meters
 dpy.distance = [.22]; % Meters
@@ -64,8 +71,12 @@ for thisRun=1:nRepeats  % 5 repeats
         fprintf('\nRunning %d %d',stim.cont(1),stim.cont(2));
         
         thisaction= shuffleSeq(thisCond);
-        t=ceil(thisaction/ nSF);
-        s=1+rem(thisaction, nTF); %  Should be 1+rem(thisAction-1,nTF)
+        t=ceil(thisaction/ nSF)
+        s=1+rem(thisaction, nSF) %  Should be 1+rem(thisAction-1,nTF)
+        
+        tt(thisRun,thisCond)=t;
+        ss(thisRun,thisCond)=s;
+        
         stim.spatial.frequency=sfList(s,:)
         stim.temporal.frequency=tfList(t,:)
         
@@ -84,7 +95,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.TimeStamps=d.TimeStamps;
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
-           
+            
             finalData.comment='Orthagonal_5.14_7.2Hz_.44CPD_40mask_Wapr_A_7DPE';
             finalData.stim=stim;
             finalData.now=now;
@@ -114,7 +125,7 @@ if (~DUMMYRUN)
     
     
 end
-  
+
 
 
 
