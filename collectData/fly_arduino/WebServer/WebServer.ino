@@ -37,6 +37,7 @@ byte mac[] = {
 // with the IP address and port you want to use 
 // (port 80 is default for HTTP):
 EthernetServer server(80);
+EthernetClient client ;
 
 void setup() {
 
@@ -64,10 +65,86 @@ void setup() {
   Serial.println(Ethernet.localIP());
 }
 
+void run_graph()
+{
+  // send a standard http response header
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/html");
+  client.println("Connection: close");  // the connection will be closed after completion of the response
+  client.println("Refresh: 0.5");  // refresh the page automatically every 5 sec
+  client.println();
+  client.println("<!DOCTYPE HTML>");
+  client.println("<html>");
+  client.println("<body>");
+
+  client.println("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+  client.println("Your browser does not support the HTML5 canvas tag.</canvas>");
+
+  client.println("<script>");
+
+  client.println("var c = document.getElementById(\"myCanvas\");");
+  client.println("var ctx = c.getContext(\"2d\");");
+  // output the value of each analog input pin
+  for (int analogChannel = 1; analogChannel < 2; analogChannel++) {
+    int sensorReading = analogRead(analogChannel);
+    myData[iIndex] = sensorReading ;
+    iIndex ++ ;
+    if (iIndex > max_data /10 && iIndex < max_data/2)
+    {
+      analogWrite(ledPin, 255);
+    }
+    else
+    {
+      analogWrite(ledPin, 0);
+    }
+    if (iIndex >= max_data) iIndex = 0;
+    for (int i=0; i < max_data-2; i++)
+    {
+      //            client.print("analog input ");
+      //            client.print(analogChannel);
+      //            client.print(" is ");
+      //            client.print(myData[i]);
+      //            
+
+
+      client.print("ctx.moveTo("); 
+      client.print(i*20); 
+      client.print(","); 
+      client.print(myData[i]/2); 
+      client.println(");");
+      client.print("ctx.lineTo("); 
+      client.print((i+1)*20); 
+      client.print(","); 
+      client.print(myData[i+1]/2); 
+      client.println(");");
+      client.println("ctx.stroke();");
+    }
+     //draw stimulus...
+    client.print("ctx.moveTo(");
+    client.print((max_data /10)*20);
+    client.print(",");
+    client.print(30);
+    client.println(");");
+
+    client.print("ctx.lineTo(");
+    client.print(max_data /2*20);
+    client.print(",");
+    client.print(30);
+    client.println(");");
+
+    client.println("ctx.strokeStyle=\"blue\";");
+    //              client.println("ctx.lineWidth=5;");
+    client.println("ctx.stroke();");
+
+  }
+  client.println("</script>");
+  client.println("</body></html>");
+
+}
 
 void loop() {
   // listen for incoming clients
-  EthernetClient client = server.available();
+  client = server.available();
   if (client) {
     Serial.println("new client");
     // an http request ends with a blank line
@@ -79,81 +156,13 @@ void loop() {
         // if you've gotten to the end of the line (received a newline
         // character) and the line is blank, the http request has ended,
         // so you can send a reply
-        if (c == '\n' && currentLineIsBlank) {
-          // send a standard http response header
-          client.println("HTTP/1.1 200 OK");
-          client.println("Content-Type: text/html");
-          client.println("Connection: close");  // the connection will be closed after completion of the response
-          client.println("Refresh: 0.5");  // refresh the page automatically every 5 sec
-          client.println();
-          client.println("<!DOCTYPE HTML>");
-          client.println("<html>");
-          client.println("<body>");
-
-          client.println("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
-          client.println("Your browser does not support the HTML5 canvas tag.</canvas>");
-
-          client.println("<script>");
-
-          client.println("var c = document.getElementById(\"myCanvas\");");
-          client.println("var ctx = c.getContext(\"2d\");");
-          // output the value of each analog input pin
-          for (int analogChannel = 1; analogChannel < 2; analogChannel++) {
-            int sensorReading = analogRead(analogChannel);
-            myData[iIndex] = sensorReading ;
-            iIndex ++ ;
-            if (iIndex > max_data /10 && iIndex < max_data/2)
-            {
-              analogWrite(ledPin, 255);
-            }
-            else
-            {
-              analogWrite(ledPin, 0);
-            }
-            if (iIndex >= max_data) iIndex = 0;
-            for (int i=0; i < max_data-2; i++)
-            {
-              //            client.print("analog input ");
-              //            client.print(analogChannel);
-              //            client.print(" is ");
-              //            client.print(myData[i]);
-              //            
-
-
-              client.print("ctx.moveTo("); 
-              client.print(i*20); 
-              client.print(","); 
-              client.print(myData[i]/2); 
-              client.println(");");
-              client.print("ctx.lineTo("); 
-              client.print((i+1)*20); 
-              client.print(","); 
-              client.print(myData[i+1]/2); 
-              client.println(");");
-              client.println("ctx.stroke();");
-            }
-            -  //draw stimulus...
-            client.print("ctx.moveTo(");
-            client.print((max_data /10)*20);
-            client.print(",");
-            client.print(30);
-            client.println(");");
-
-            client.print("ctx.lineTo(");
-            client.print(max_data /2*20);
-            client.print(",");
-            client.print(30);
-            client.println(");");
-
-            client.println("ctx.strokeStyle=\"blue\";");
-            //              client.println("ctx.lineWidth=5;");
-            client.println("ctx.stroke();");
-
-          }
-          client.println("</script>");
-          client.println("</body></html>");
-          break;
+        if (c == '\n' && currentLineIsBlank) 
+        {
+          run_graph() ;
+          break ;
         }
+
+
         if (c == '\n') {
           // you're starting a new line
           currentLineIsBlank = true;
@@ -171,6 +180,7 @@ void loop() {
     Serial.println("client disonnected");
   }
 } 
+
 
 
 
