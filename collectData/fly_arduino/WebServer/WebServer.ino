@@ -26,6 +26,7 @@ NB - take the SD card out for this to work !!!
 const int max_data = 32 ;
 int myData [max_data];
 int iIndex = 0 ;
+const int ledPin =  9;
 
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
@@ -101,6 +102,14 @@ client.println("var ctx = c.getContext(\"2d\");");
             int sensorReading = analogRead(analogChannel);
             myData[iIndex] = sensorReading ;
             iIndex ++ ;
+            if (iIndex > max_data /10 && iIndex < max_data/2)
+            {
+              analogWrite(ledPin, 255);
+            }
+            else
+            {
+              analogWrite(ledPin, 0);
+            }
             if (iIndex >= max_data) iIndex = 0;
             for (int i=0; i < max_data-2; i++)
             {
