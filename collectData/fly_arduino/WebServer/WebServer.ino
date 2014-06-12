@@ -1,7 +1,7 @@
 /*
 NB - take the SD card out for this to work !!!
-
-  Web Server
+ 
+ Web Server
  
  A simple web server that shows the value of the analog input pins.
  using an Arduino Wiznet Ethernet shield. 
@@ -39,24 +39,24 @@ byte mac[] = {
 EthernetServer server(80);
 
 void setup() {
-  
-      // ...
-    pinMode(SS_SD_CARD, OUTPUT);
-    pinMode(SS_ETHERNET, OUTPUT);
-    digitalWrite(SS_SD_CARD, HIGH);  // HIGH means SD Card not active
-    digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
-    
-    
- // Open serial communications and wait for port to open:
+
+  // ...
+  pinMode(SS_SD_CARD, OUTPUT);
+  pinMode(SS_ETHERNET, OUTPUT);
+  digitalWrite(SS_SD_CARD, HIGH);  // HIGH means SD Card not active
+  digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
+
+
+  // Open serial communications and wait for port to open:
   Serial.begin(38400);
-   while (!Serial) {
+  while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
   for (int i =0; i < max_data; i++)
   {
     myData[i] = 0;    
   }
-  
+
   // start the Ethernet connection and the server:
   Ethernet.begin(mac);
   server.begin();
@@ -84,19 +84,19 @@ void loop() {
           client.println("HTTP/1.1 200 OK");
           client.println("Content-Type: text/html");
           client.println("Connection: close");  // the connection will be closed after completion of the response
-	  client.println("Refresh: 0.5");  // refresh the page automatically every 5 sec
+          client.println("Refresh: 0.5");  // refresh the page automatically every 5 sec
           client.println();
           client.println("<!DOCTYPE HTML>");
           client.println("<html>");
           client.println("<body>");
 
-client.println("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
-client.println("Your browser does not support the HTML5 canvas tag.</canvas>");
+          client.println("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+          client.println("Your browser does not support the HTML5 canvas tag.</canvas>");
 
-client.println("<script>");
+          client.println("<script>");
 
-client.println("var c = document.getElementById(\"myCanvas\");");
-client.println("var ctx = c.getContext(\"2d\");");
+          client.println("var c = document.getElementById(\"myCanvas\");");
+          client.println("var ctx = c.getContext(\"2d\");");
           // output the value of each analog input pin
           for (int analogChannel = 1; analogChannel < 2; analogChannel++) {
             int sensorReading = analogRead(analogChannel);
@@ -113,20 +113,45 @@ client.println("var ctx = c.getContext(\"2d\");");
             if (iIndex >= max_data) iIndex = 0;
             for (int i=0; i < max_data-2; i++)
             {
-//            client.print("analog input ");
-//            client.print(analogChannel);
-//            client.print(" is ");
-//            client.print(myData[i]);
-//            
-     
+              //            client.print("analog input ");
+              //            client.print(analogChannel);
+              //            client.print(" is ");
+              //            client.print(myData[i]);
+              //            
 
-client.print("ctx.moveTo("); client.print(i*20); client.print(","); client.print(myData[i]/2); client.println(");");
-client.print("ctx.lineTo("); client.print((i+1)*20); client.print(","); client.print(myData[i+1]/2); client.println(");");
-client.println("ctx.stroke();");
-          }
+
+              client.print("ctx.moveTo("); 
+              client.print(i*20); 
+              client.print(","); 
+              client.print(myData[i]/2); 
+              client.println(");");
+              client.print("ctx.lineTo("); 
+              client.print((i+1)*20); 
+              client.print(","); 
+              client.print(myData[i+1]/2); 
+              client.println(");");
+              client.println("ctx.stroke();");
+            }
+            -  //draw stimulus...
+            client.print("ctx.moveTo(");
+            client.print((max_data /10)*20);
+            client.print(",");
+            client.print(30);
+            client.println(");");
+
+            client.print("ctx.lineTo(");
+            client.print(max_data /2*20);
+            client.print(",");
+            client.print(30);
+            client.println(");");
+
+            client.println("ctx.strokeStyle=\"blue\";");
+            //              client.println("ctx.lineWidth=5;");
+            client.println("ctx.stroke();");
 
           }
-          client.println("</script></body></html>");
+          client.println("</script>");
+          client.println("</body></html>");
           break;
         }
         if (c == '\n') {
@@ -145,5 +170,7 @@ client.println("ctx.stroke();");
     client.stop();
     Serial.println("client disonnected");
   }
-}
+} 
+
+
 
