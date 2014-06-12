@@ -52,9 +52,9 @@ maskCont =[0];
 
 nConds=length(ordered);
 
-nRepeats=1;
+nRepeats=3;
 
-for thisRun=1:nRepeats  % 5 repeats
+for thisRun=1:nRepeats  % 3 repeats
     for thisCond=1:nConds
         stim.cont=[probeCont(1) maskCont(1)];
         % Phase is the phase shift in degrees (0-360 etc.)applied to the sine grating:
@@ -85,7 +85,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
            
-            finalData.comment='Orthagonal_5.14_7.2Hz_.44CPD_40mask_Wapr_A_7DPE';
+            finalData.comment='Wapr_I_7DPE';
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;
