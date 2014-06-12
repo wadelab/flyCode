@@ -6,20 +6,26 @@
 % 
 close all;
 clear all;
-jheapcl;
+
 DUMMYRUN=0;
 
-Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
-HideCursor % Hides the mouse cursor
-
-
-% Get the calibration and compute the gamma table
-igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
+if (~DUMMYRUN)
+    jheapcl;
+    
+    
+    Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
+    HideCursor % Hides the mouse cursor
+    
+    
+    % Get the calibration and compute the gamma table
+    igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
+    dpy.gamma.inverse=igt;
+end
 
 datadir='C:\data\SSERG\data\';
 flyTV_startTime=now;
 
-dpy.gamma.inverse=igt;
+
 dpy.res = [1920 1080]; % screen resoloution
 dpy.size = [.53 .3] % Meters
 dpy.distance = [.22]; % Meters
@@ -65,9 +71,11 @@ for thisRun=1:nRepeats  % 3 repeats
         
         thisaction= shuffleSeq(thisCond);
         t=ceil(thisaction/ nSF);
-        s=1+rem(thisaction, nTF); %  Should be 1+rem(thisAction-1,nTF)
+        s=1+rem(thisaction, nSF); %  Should be 1+rem(thisAction-1,nTF)
         stim.spatial.frequency=sfList(s,:)
         stim.temporal.frequency=tfList(t,:)
+        ss(thisRun,thisCond)=s;
+        tt(thisRun,thisCond)=t;
         
         disp(thisRun)
         disp(thisCond)
