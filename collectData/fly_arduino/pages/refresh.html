@@ -1,14 +1,23 @@
+<!DOCTYPE html>
 <html>
-<head>
-<script>
-function newDoc() {
-    window.location.assign("http://biolpc22.york.ac.uk/")
-}
-</script>
-</head>
 <body>
 
-<input type="button" value="Load new document" onclick="newDoc()">
+<p>A script on this page starts this clock:</p>
+<p id="demo"></p>
+
+<button onclick="myStopFunction()">Stop time</button>
+
+<script>
+var myVar = setInterval(function(){myTimer()}, 1000);
+
+function myTimer() {
+location.reload(true);
+}
+
+function myStopFunction() {
+    clearInterval(myVar);
+}
+</script>
 
 </body>
 </html>
