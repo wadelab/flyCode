@@ -95,17 +95,12 @@ void USE_ETHERNET()
   digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
 }
 
-void sendHeader (float f)
+void sendHeader ()
 {
   // send a standard http response header
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: text/html");
   client.println("Connection: close");  // the connection will be closed after completion of the response
-  if (f > 0.0)
-  {
-    client.print("Refresh: ");
-    client.println(f);  // refresh the page automatically every f sec
-  }
   client.println();
   client.println("<!DOCTYPE HTML>");
   client.println("<html>");
@@ -133,19 +128,31 @@ void serve_dir ()
   root.close();
 
   USE_ETHERNET();
-  sendHeader(-1.0);
+  sendHeader();
   client.println(s);
   sendFooter();
 }
 
 void run_graph()
 {
-  sendHeader (0.5) ;
+  sendHeader () ;
 
   client.println("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
   client.println("Your browser does not support the HTML5 canvas tag.</canvas>");
 
   client.println("<script>");
+
+  // script to reload ...
+  client.println("var myVar = setInterval(function(){myTimer()}, 400);"); //mu sec
+  client.println("function myTimer() {");
+  client.println("location.reload(true);");
+  client.println("};");
+
+  client.println("function myStopFunction() {");
+  client.println("clearInterval(myVar); }");
+  client.println("");
+
+
 
   client.println("var c = document.getElementById(\"myCanvas\");");
   client.println("var ctx = c.getContext(\"2d\");");
@@ -196,6 +203,9 @@ void run_graph()
 
   }
   client.println("</script>");
+  client.println("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
+  client.println("To run a flicker test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
+
   sendFooter();
 
 }
@@ -228,14 +238,14 @@ String printDirectory(File dir, int numTabs) {
 
 void serve_dummy()
 {
-  sendHeader(-1.0);
-  client.println("Dummy page");
+  sendHeader();
+  client.println("Dummy page; <BR> To run a flicker test please load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
   sendFooter() ;
 }
 
 int br_Now(double t)
 {
- return int(sin((t/1000.0)*PI*2.0*double(freq))*127.0)+127;
+  return int(sin((t/1000.0)*PI*2.0*double(freq))*127.0)+127;
 }
 
 void collectData ()
@@ -272,11 +282,9 @@ void collectData ()
 
 void flickerPage(String sCommand)
 {
-  float f = 5.0 ;
-  if (sampleCount > max_data) f = -1.0;
   Serial.println ("Sampling at :" + String(sampleCount));
-  sendHeader(f);
-  if (f > 0) 
+  sendHeader();
+  if (sampleCount < max_data) 
   {
     client.println("Acquiring, <BR> " + sCommand + "<BR> please wait....");
     collectData(); // FIXME : make this happen on the next loop....
@@ -345,7 +353,13 @@ void loop() {
           //            serve_dir() ;
           //            pageServed = true ;
           //          }          
-
+          fPOS = MyInputString.indexOf("QQQ");
+          Serial.println("  Position of file was:" + String(fPOS));
+          if (fPOS > 0)
+          {
+            serve_dummy() ;
+            pageServed = true ;
+          }
           if (!pageServed)
           {
             run_graph() ;
@@ -374,6 +388,8 @@ void loop() {
     //Serial.println("client disonnected: Input now:" + MyInputString + "::::");
   }
 } 
+
+
 
 
 
