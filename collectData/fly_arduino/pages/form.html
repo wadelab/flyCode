@@ -11,6 +11,8 @@ function getTimeString() {
     var h=today.getHours();
     var m=today.getMinutes();
     m = checkTime(m);
+	mo = checkTime(mo);
+	h = checkTime(h);
     return d + "_" + mo + "_" + h+"h"+m;
     }
     
