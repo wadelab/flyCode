@@ -5,6 +5,7 @@ dataDir=uigetdir;
 fList=dir(fullfile(dataDir,'*.mat'))
 
 nFlies=length(fList);
+% Generate an empty matrix of NaNs 
 
 %%
 for thisFly=1:nFlies
@@ -29,47 +30,88 @@ for thisFly=1:nFlies
             [sSeq,i]=sort(shuffleSeq(thisRep,:));
             
         end
-            datStruct(thisFly,thisRep,:,:)=thisD.data(thisRep,i,:);
-            sortedTfList(thisFly,thisRep,:)=tf(thisRep,i);
-            sortedSfList(thisFly,thisRep,:)=sf(thisRep,i);
-
+            datStruct(thisFly,thisRep,:,:)=thisD.data(thisRep,:,:);
+            tfList(thisFly,thisRep,:)=tf(thisRep,:);
+            sfList(thisFly,thisRep,:)=sf(thisRep,:);
 
     end
     
-    
-    
-    
 end
 
+
+%% For each fly, we now have a set of unsorted data (nReps * nConditions x nsamples x nSecs)
+% And a corresponding sf and tf for each one.
+% Using unique we can assign an x and y index to each condition
+ for thisFly=1:nFlies
+     for thisRep=1:nRepeats
+         thisSfList=sfList(thisFly,thisRep,:);
+         thisTfList=tfList(thisFly,thisRep,:);
+         [uniqueSF,sfIndexOut,sfIndexIn]=unique(thisSfList);
+         [uniqueTF,tfIndexOut,tfIndexIn]=unique(thisTfList);
+         nTrials=length(tfIndexIn);
+         for thisTrial=1:nTrials
+         fullDat(thisFly,thisRep,tfIndexIn(thisTrial),sfIndexIn(thisTrial),:)=datStruct(thisFly,thisRep,thisTrial,:);
+         end
+         
+     end
+ end
+
+%%
 % Now do some (coherent) averaging. Also crop out the right size of analysis time. NOTE: For the frequencies used
 % here, we have all integers so we can use any set of 1Sec periods
 durSecs=10;
-meanAcrossReps=squeeze(mean(datStruct(:,:,:,1001:(durSecs*1000+1000)),2));
+croppedDat=fullDat(:,:,:,:,1001:(durSecs*1000+1000));
 
 
 % Compute the FT
-fMeanAcrossReps=(fft(meanAcrossReps,[],3)/(durSecs*1000));
+ftAcrossReps=(fft(croppedDat,[],5)/(durSecs*1000));
+
+fMeanAcrossReps=(squeeze(mean(ftAcrossReps,2)));
+
+
+freqsToExtract=(uniqueTF*durSecs);
+for thisFly=1:nFlies
+    for thisTF=1:length(uniqueTF)
+        for thisSF=1:length(uniqueSF)
+            
+            for thisHarmonic=1:2
+                
+                currF=freqsToExtract(thisTF)*thisHarmonic+1;
+                extractedAmps(thisFly,thisTF,thisSF,thisHarmonic)=fMeanAcrossReps(thisFly,thisTF,thisSF,currF); %,freqsToExtract(thisTrial));
+                ampPower(thisFly,thisTF,thisSF,thisHarmonic)=sqrt(sum(fMeanAcrossReps(thisFly,thisTF,thisSF,:).^2,4));
+                coh(thisFly,thisTF,thisSF,thisHarmonic)=abs(extractedAmps(thisFly,thisTF,thisSF,thisHarmonic))./ampPower(thisFly,thisTF,thisSF,thisHarmonic);
+         
+            end % Next harmonic
+        end % Next sf
+    end % Next TF
+end % Next Fly
 
 %%
-freqsToExtract=squeeze(sortedTfList(1,1,:))*2*durSecs+1;
 
-for thisTrial=1:nTrials
-    for thisFly=1:nFlies
-        extractedAmps(thisFly,thisTrial)=fMeanAcrossReps(thisFly,thisTrial,freqsToExtract(thisTrial));
-    end
-end
-
-
-mExtracted=abs(squeeze(mean(extractedAmps)));
+mExtracted=abs(squeeze(mean(abs(extractedAmps))));
 figure(10);
 hold off;
-;
-imagesc(reshape(mExtracted,7,8));colorbar;
-ylabel('SpatialFrequency');
-xlabel('TemporalFrequency');
-
-axis image;
-colormap hot;
+subtightplot(1,3,1,.03);
+imagesc(squeeze(mExtracted(:,:,1)));colorbar;
+ylabel('TF Hz');
+xlabel('SF cpd');
+set(gca,'YTickLabel',uniqueTF );
+set(gca,'XTickLabel',uniqueSF);
+colormap hot; colorbar;
+subtightplot(1,3,2,.03);
+imagesc(squeeze(mExtracted(:,:,2)));colorbar;
+ylabel('TF Hz');
+xlabel('SF cpd');
+set(gca,'YTickLabel',uniqueTF );
+set(gca,'XTickLabel',uniqueSF);
+    colormap hot; colorbar;
+subtightplot(1,3,3,.03);
+    imagesc(squeeze(mExtracted(:,:,2)./squeeze(mExtracted(:,:,1))));colorbar;
+ylabel('TF Hz');
+xlabel('SF cpd');
+set(gca,'YTickLabel',uniqueTF );
+set(gca,'XTickLabel',uniqueSF);
+    colormap hot; colorbar;
 return;
 %%
 

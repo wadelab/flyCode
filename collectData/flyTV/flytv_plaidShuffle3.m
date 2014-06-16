@@ -1,26 +1,27 @@
 % This version of the code sweeps over tf and sf space with no mask. It's
 % just to generate the sftf sensitivity surfaces that we like so much...
 % It replaces the original 'sweep' code and makes sure that everything is
-% specified in the same units (in particular sf). 
+% specified in the same units (in particular sf).
 % ARW June 11 2014
-% 
+%
 close all;
 clear all;
 
-DUMMYRUN=0;
+DUMMYRUN=1;
 
 if (~DUMMYRUN)
     jheapcl;
-    
     
     Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
     HideCursor % Hides the mouse cursor
     
     
     % Get the calibration and compute the gamma table
+    
     igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
     dpy.gamma.inverse=igt;
 end
+
 
 datadir='C:\data\SSERG\data\';
 flyTV_startTime=now;
@@ -58,9 +59,9 @@ maskCont =[0];
 
 nConds=length(ordered);
 
-nRepeats=3;
+nRepeats=1;
 
-for thisRun=1:nRepeats  % 3 repeats
+for thisRun=1:nRepeats  % 5 repeats
     for thisCond=1:nConds
         stim.cont=[probeCont(1) maskCont(1)];
         % Phase is the phase shift in degrees (0-360 etc.)applied to the sine grating:
@@ -70,12 +71,14 @@ for thisRun=1:nRepeats  % 3 repeats
         fprintf('\nRunning %d %d',stim.cont(1),stim.cont(2));
         
         thisaction= shuffleSeq(thisCond);
-        t=ceil(thisaction/ nSF);
-        s=1+rem(thisaction, nSF); %  Should be 1+rem(thisAction-1,nTF)
+        t=ceil(thisaction/ nSF)
+        s=1+rem(thisaction, nSF) %  Should be 1+rem(thisAction-1,nTF)
+        
+        tt(thisRun,thisCond)=t;
+        ss(thisRun,thisCond)=s;
+        
         stim.spatial.frequency=sfList(s,:)
         stim.temporal.frequency=tfList(t,:)
-        ss(thisRun,thisCond)=s;
-        tt(thisRun,thisCond)=t;
         
         disp(thisRun)
         disp(thisCond)
@@ -92,8 +95,8 @@ for thisRun=1:nRepeats  % 3 repeats
             finalData.TimeStamps=d.TimeStamps;
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
-           
-            finalData.comment='Wapr_I_7DPE';
+            
+            finalData.comment='Orthagonal_5.14_7.2Hz_.44CPD_40mask_Wapr_A_7DPE';
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;
@@ -122,7 +125,7 @@ if (~DUMMYRUN)
     
     
 end
-  
+
 
 
 
