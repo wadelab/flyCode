@@ -11,6 +11,8 @@ function getTimeString() {
     var h=today.getHours();
     var m=today.getMinutes();
     m = checkTime(m);
+	mo = checkTime(mo);
+	h = checkTime(h);
     return d + "_" + mo + "_" + h+"h"+m;
     }
     
@@ -51,14 +53,14 @@ cellspacing="2">
 </tr>
 <tr>
 <td style="vertical-align: top;">
-<select name="genotype" size = 4>
+<select name="GAL4" size = 4>
 <option value="w">w-        </option>
 <option value="CS">CS</option>
 <option value="TH" selected>TH</option>
 </select><br>
 </td>
 <td style="vertical-align: top;">
-<select name="genotype" size = 4>
+<select name="UAS" size = 4>
 <option value="homoz">homozygote</option>
 <option value="w">w-</option>
 <option value="w_apr">w^apr</option>
