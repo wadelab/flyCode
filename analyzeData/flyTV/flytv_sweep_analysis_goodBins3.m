@@ -64,9 +64,9 @@ croppedDat=fullDat(:,:,:,:,1001:(durSecs*1000+1000));
 
 
 % Compute the FT
-ftAcrossReps=abs(fft(croppedDat,[],5)/(durSecs*1000));
+ftAcrossReps=(fft(croppedDat,[],5)/(durSecs*1000));
 
-fMeanAcrossReps=squeeze(mean(ftAcrossReps,2));
+fMeanAcrossReps=(squeeze(mean(ftAcrossReps,2)));
 
 
 freqsToExtract=(uniqueTF*durSecs);
@@ -88,7 +88,7 @@ end % Next Fly
 
 %%
 
-mExtracted=abs(squeeze(mean(abs(coh))));
+mExtracted=abs(squeeze(mean(abs(extractedAmps))));
 figure(10);
 hold off;
 subtightplot(1,3,1,.03);
