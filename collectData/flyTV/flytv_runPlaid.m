@@ -100,11 +100,18 @@ Screen('LoadNormalizedGammaTable',win,dpy.gamma.inverse);
 hz=Screen('FrameRate', win,[],dpy.frameRate);
 
 % Make sure the GLSL shading language is supported:
-AssertGLSL;
+% AssertGLSL;
 
 % Retrieve video redraw interval for later control of our animation timing:
 ifi = Screen('GetFlipInterval', win);
 
+
+if (round(ifi*1000)~=round(1000/dpy.frameRate))
+    disp(ifi);
+    disp(1000/dpy.frameRate);
+    sca
+    error('Framerate incorrect');
+end
 
 
 % Compute increment of phase shift per redraw:
