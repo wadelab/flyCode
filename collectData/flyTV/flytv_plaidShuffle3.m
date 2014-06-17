@@ -38,7 +38,6 @@ dpy.frameRate=144;
 tfList=[1,2,4,6,8,12,18,36;1,2,4,6,8,12,18,36]'; % This is in Hz.
 sfList=[.014,.028,.056,.11,.22,.44,.88,1.76;.014,.028,.056,.11,.22,.44,.88,1.76]'; % Cycles per degree
 
-
 nTF=size(tfList,1);
 nSF=size(sfList,1);
 
