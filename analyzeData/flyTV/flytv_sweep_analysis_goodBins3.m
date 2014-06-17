@@ -88,7 +88,7 @@ end % Next Fly
 
 %%
 
-mExtracted=abs(squeeze(mean(abs(extractedAmps))));
+mExtracted=abs(squeeze(mean((extractedAmps))));
 figure(10);
 hold off;
 subtightplot(1,3,1,.03);

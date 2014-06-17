@@ -7,7 +7,7 @@
 close all;
 clear all;
 
-DUMMYRUN=1;
+DUMMYRUN=0;
 
 if (~DUMMYRUN)
     jheapcl;
@@ -59,7 +59,7 @@ maskCont =[0];
 
 nConds=length(ordered);
 
-nRepeats=1;
+nRepeats=3;
 
 for thisRun=1:nRepeats  % 5 repeats
     for thisCond=1:nConds
@@ -96,7 +96,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
             
-            finalData.comment='Orthagonal_5.14_7.2Hz_.44CPD_40mask_Wapr_A_7DPE';
+            finalData.comment='w-_7DPE_1';
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;
