@@ -6,7 +6,7 @@
 %
 close all;
 clear all;
-
+startTime=tic;
 DUMMYRUN=0;
 
 if (~DUMMYRUN)
@@ -117,7 +117,7 @@ for thisRun=1:nRepeats  % 5 repeats
         
     end % Next contrast pair
 end % Next repetition
-
+totalSessionTime=toc;
 if (~DUMMYRUN)
     filename=fullfile(datadir,['flyTV_',datestr(flyTV_startTime,30),'.mat'])
     save(filename);
