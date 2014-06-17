@@ -95,12 +95,17 @@ void USE_ETHERNET()
   digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
 }
 
-void sendHeader ()
+void sendHeader (float f)
 {
   // send a standard http response header
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: text/html");
   client.println("Connection: close");  // the connection will be closed after completion of the response
+  if (f > 0.0)
+  {
+    client.print("Refresh: ");
+    client.println(f);  // refresh the page automatically every f sec
+  }
   client.println();
   client.println("<!DOCTYPE HTML>");
   client.println("<html>");
@@ -128,14 +133,14 @@ void serve_dir ()
   root.close();
 
   USE_ETHERNET();
-  sendHeader();
+  sendHeader(-1.0);
   client.println(s);
   sendFooter();
 }
 
 void run_graph()
 {
-  sendHeader () ;
+  sendHeader (-1.0) ;
 
   client.println("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
   client.println("Your browser does not support the HTML5 canvas tag.</canvas>");
@@ -238,7 +243,7 @@ String printDirectory(File dir, int numTabs) {
 
 void serve_dummy()
 {
-  sendHeader();
+  sendHeader(-1.0);
   client.println("Dummy page; <BR> To run a flicker test please load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
   sendFooter() ;
 }
@@ -250,7 +255,7 @@ int br_Now(double t)
 
 void collectData ()
 {
-  sampleCount = 0 ;
+  sampleCount = -102 ;
   while (sampleCount < max_data)
   {
     unsigned long now_time = millis();
@@ -263,10 +268,12 @@ void collectData ()
       // Initial test showed it could write this to the card at 12 ms intervals
       last_time = now_time ;
 
+      if (sampleCount >=0)
+      {
       // read  sensor 
       erg_in[sampleCount] = analogRead(analogPin);  
-
       time_stamp[sampleCount] = (now_time) ;
+      }
       int intensity = br_Now(now_time) ;
       //brightness[sampleCount] = int(intensity) ;
       analogWrite(ledPin, intensity);
@@ -282,12 +289,14 @@ void collectData ()
 
 void flickerPage(String sCommand)
 {
+  float f = 5.0 ;
+  if (sampleCount > max_data) f = -1.0;
   Serial.println ("Sampling at :" + String(sampleCount));
-  sendHeader();
+  sendHeader(f);
   if (sampleCount < max_data) 
   {
-    client.println("Acquiring, <BR> " + sCommand + "<BR> please wait....");
-    collectData(); // FIXME : make this happen on the next loop....
+    client.println("Acquiring, " + String(sampleCount) + " samples so far <BR>"  + sCommand + "<BR> please wait....");
+    sampleCount = -102 ; //implies collectData(); 
   }
   else
   {
@@ -318,6 +327,10 @@ void flickerPage(String sCommand)
 
 
 void loop() {
+  if (sampleCount < 0) 
+  {
+    collectData();
+  }
   // listen for incoming clients
   client = server.available();
   if (client) {
@@ -343,16 +356,17 @@ void loop() {
           Serial.println("  Position of file was:" + String(fPOS));
           if (fPOS > 0)
           {
+            
             flickerPage(MyInputString); // serve_dummy() ;
             pageServed = true ;
           }
-          //          fPOS = MyInputString.indexOf("dir=");
-          //          Serial.println("  Position of dir was:" + String(fPOS));
-          //          if (fPOS > 0)
-          //          {
-          //            serve_dir() ;
-          //            pageServed = true ;
-          //          }          
+          fPOS = MyInputString.indexOf("dir=");
+          Serial.println("  Position of dir was:" + String(fPOS));
+          if (fPOS > 0)
+          {
+            serve_dir() ;
+            pageServed = true ;
+          }          
           fPOS = MyInputString.indexOf("QQQ");
           Serial.println("  Position of file was:" + String(fPOS));
           if (fPOS > 0)
