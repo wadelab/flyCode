@@ -1,3 +1,5 @@
+#include <FixFFT.h>
+
 /*
 NB - take the SD card out for this to work !!!
  
@@ -30,11 +32,18 @@ int iIndex = 0 ;
 const int ledPin =  9;
 const int analogPin = 1 ;
 
-const int myContrast = 100 ; // %
+const int maxContrasts = 9 ;
+const float F1contrast[] = {
+  5.0, 10.0, 30.0, 70.0, 100.0,  5.0, 10.0, 30.0, 70.0 }; 
+const float F2contrast[] = {
+  0.0,  0.0,  0.0,  0.0,   0.0, 30.0, 30.0, 30.0, 30.0 };
+bool unUsedContrasts [maxContrasts] ;
+int randomnumber ;
 
-int freq = 12 ; // flicker of LED Hz
-const int waitTime = 32 ; // start FFTs after 32 x interval ms ;
-const int max_data = 1024 + waitTime ;
+int freq1 = 12 ; // flicker of LED Hz
+int freq2 = 15 ; // flicker of LED Hz
+// as of 18 June, maxdata of 2048 is too big for the mega....
+const int max_data = 1024  ;
 unsigned int time_stamp [max_data] ;
 int erg_in [max_data];
 long sampleCount = 0;        // will store number of A/D samples taken
@@ -46,6 +55,7 @@ unsigned long timing_too_fast = 0 ;
 
 const int MaxInputStr = 230 ;
 String MyInputString = String(MaxInputStr+1);
+String MyOldInputString = String(MaxInputStr+1);
 
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
@@ -82,6 +92,10 @@ void setup() {
   server.begin();
   Serial.print("server is at ");
   Serial.println(Ethernet.localIP());
+
+  randomSeed(analogRead(analogPin));
+  randomnumber = random(maxContrasts);
+
 }
 
 void USE_SDCARD()
@@ -95,17 +109,12 @@ void USE_ETHERNET()
   digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
 }
 
-void sendHeader (float f)
+void sendHeader ()
 {
   // send a standard http response header
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: text/html");
   client.println("Connection: close");  // the connection will be closed after completion of the response
-  if (f > 0.0)
-  {
-    client.print("Refresh: ");
-    client.println(f);  // refresh the page automatically every f sec
-  }
   client.println();
   client.println("<!DOCTYPE HTML>");
   client.println("<html>");
@@ -133,14 +142,14 @@ void serve_dir ()
   root.close();
 
   USE_ETHERNET();
-  sendHeader(-1.0);
+  sendHeader();
   client.println(s);
   sendFooter();
 }
 
 void run_graph()
 {
-  sendHeader (-1.0) ;
+  sendHeader () ;
 
   client.println("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
   client.println("Your browser does not support the HTML5 canvas tag.</canvas>");
@@ -243,19 +252,30 @@ String printDirectory(File dir, int numTabs) {
 
 void serve_dummy()
 {
-  sendHeader(-1.0);
+  sendHeader();
   client.println("Dummy page; <BR> To run a flicker test please load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
   sendFooter() ;
 }
 
 int br_Now(double t)
 {
-  return int(sin((t/1000.0)*PI*2.0*double(freq))*127.0)+127;
+  return int(sin((t/1000.0)*PI*2.0*double(freq1))*1.270 * F1contrast[randomnumber] + sin((t/1000.0)*PI*2.0*double(freq2))*1.270 * F1contrast[randomnumber])+127;
 }
+
+
 
 void collectData ()
 {
-  sampleCount = -102 ;
+  const long presamples = 102;
+  long mean = 0;
+  // first we have to assign the flicker contrasts...
+  for (int i = 0; i < maxContrasts; i++)
+  {
+    unUsedContrasts[i] = true ;
+  }
+  unUsedContrasts[randomnumber] = false ;
+
+  sampleCount = -presamples ;
   while (sampleCount < max_data)
   {
     unsigned long now_time = millis();
@@ -267,13 +287,21 @@ void collectData ()
     {
       // Initial test showed it could write this to the card at 12 ms intervals
       last_time = now_time ;
-
+      if (sampleCount ==0)
+      {
+        mean = mean / presamples ;
+      }
       if (sampleCount >=0)
       {
-      // read  sensor 
-      erg_in[sampleCount] = analogRead(analogPin);  
-      time_stamp[sampleCount] = (now_time) ;
+        // read  sensor 
+        erg_in[sampleCount] = analogRead(analogPin) - mean ; // subtract 512 so we get it in the range... 
+        time_stamp[sampleCount] = (now_time) ;
       }
+      else
+      {
+        mean = mean + long(analogRead(analogPin));
+      }
+
       int intensity = br_Now(now_time) ;
       //brightness[sampleCount] = int(intensity) ;
       analogWrite(ledPin, intensity);
@@ -281,26 +309,38 @@ void collectData ()
       sampleCount ++ ;
     }
   }
+  // now done with sampling....
   sampleCount ++ ;  
   analogWrite(ledPin, 127);
   //writeFile("datalog.dat");
-
+  randomnumber = random(maxContrasts);
 }
 
-void flickerPage(String sCommand)
+void flickerPage(String sCommand, bool RedoPage)
 {
-  float f = 5.0 ;
-  if (sampleCount > max_data) f = -1.0;
   Serial.println ("Sampling at :" + String(sampleCount));
-  sendHeader(f);
-  if (sampleCount < max_data) 
+  sendHeader();
+  if (!RedoPage) 
   {
+    client.println("<script>");
+
+    // script to reload ...
+    client.println("var myVar = setInterval(function(){myTimer()}, 4500);"); //mu sec
+    client.println("function myTimer() {");
+    client.println("location.reload(true);");
+    client.println("};");
+
+    client.println("function myStopFunction() {");
+    client.println("clearInterval(myVar); }");
+    client.println("");
+    client.println("</script>");
     client.println("Acquiring, " + String(sampleCount) + " samples so far <BR>"  + sCommand + "<BR> please wait....");
     sampleCount = -102 ; //implies collectData(); 
   }
   else
   {
-    client.println("Data acquired at " + String(freq) + " Hz with contrast " + String(myContrast) + " % <BR> " + sCommand + "<BR>");
+    client.println("Data acquired at " + String(freq1) + " Hz with contrast " + String(int(F1contrast[randomnumber])) + 
+      " and " + String(freq2) + " Hz with contrast " + String(int(F2contrast[randomnumber])) +" % <BR> " + sCommand + "<BR>");
     client.println("No, time, brightness, analog in <BR>");
     for (int i = 0; i < max_data; i++)
     {
@@ -356,8 +396,7 @@ void loop() {
           Serial.println("  Position of file was:" + String(fPOS));
           if (fPOS > 0)
           {
-            
-            flickerPage(MyInputString); // serve_dummy() ;
+            flickerPage(MyInputString, MyInputString.equals(MyOldInputString)); // serve_dummy() ;
             pageServed = true ;
           }
           fPOS = MyInputString.indexOf("dir=");
@@ -378,6 +417,7 @@ void loop() {
           {
             run_graph() ;
           }
+          MyOldInputString = MyInputString ;
           MyInputString = "";
           break ;
         }
@@ -402,6 +442,8 @@ void loop() {
     //Serial.println("client disonnected: Input now:" + MyInputString + "::::");
   }
 } 
+
+
 
 
 
