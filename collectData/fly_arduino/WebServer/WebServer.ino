@@ -37,8 +37,8 @@ const float F1contrast[] = {
   5.0, 10.0, 30.0, 70.0, 100.0,  5.0, 10.0, 30.0, 70.0 }; 
 const float F2contrast[] = {
   0.0,  0.0,  0.0,  0.0,   0.0, 30.0, 30.0, 30.0, 30.0 };
-bool unUsedContrasts [maxContrasts] ;
-int randomnumber ;
+int contrastOrder[ maxContrasts ]; 
+int iThisContrast = 0 ;
 
 int freq1 = 12 ; // flicker of LED Hz
 int freq2 = 15 ; // flicker of LED Hz
@@ -93,9 +93,23 @@ void setup() {
   Serial.print("server is at ");
   Serial.println(Ethernet.localIP());
 
-  randomSeed(analogRead(analogPin));
-  randomnumber = random(maxContrasts);
+doShuffle();
+}
 
+void doShuffle()
+{
+for (int i = 0; i < maxContrasts; i++)
+{
+contrastOrder[i] = i ;
+}
+
+///Knuth-Fisher-Yates shuffle algorithm.
+
+for (int i = maxContrasts - 1; i > 0; i--)
+{
+int n = random(i + 1);
+Swap(contrastOrder[i], contrastOrder[n]);
+}
 }
 
 void USE_SDCARD()
@@ -259,6 +273,7 @@ void serve_dummy()
 
 int br_Now(double t)
 {
+int randomnumber = contrastOrder[iThisContrast];
   return int(sin((t/1000.0)*PI*2.0*double(freq1))*1.270 * F1contrast[randomnumber] + sin((t/1000.0)*PI*2.0*double(freq2))*1.270 * F1contrast[randomnumber])+127;
 }
 
@@ -268,12 +283,7 @@ void collectData ()
 {
   const long presamples = 102;
   long mean = 0;
-  // first we have to assign the flicker contrasts...
-  for (int i = 0; i < maxContrasts; i++)
-  {
-    unUsedContrasts[i] = true ;
-  }
-  unUsedContrasts[randomnumber] = false ;
+
 
   sampleCount = -presamples ;
   while (sampleCount < max_data)
@@ -313,7 +323,8 @@ void collectData ()
   sampleCount ++ ;  
   analogWrite(ledPin, 127);
   //writeFile("datalog.dat");
-  randomnumber = random(maxContrasts);
+  iThisContrast ++;
+  if (iThisContrast > maxContrasts) iThisContrast = 0 ;
 }
 
 void flickerPage(String sCommand, bool RedoPage)
@@ -339,6 +350,9 @@ void flickerPage(String sCommand, bool RedoPage)
   }
   else
   {
+     
+    // retrieve the flicker rates we sampled with...
+    int randomnumber = contrastOrder[iThisContrast];
     client.println("Data acquired at " + String(freq1) + " Hz with contrast " + String(int(F1contrast[randomnumber])) + 
       " and " + String(freq2) + " Hz with contrast " + String(int(F2contrast[randomnumber])) +" % <BR> " + sCommand + "<BR>");
     client.println("No, time, brightness, analog in <BR>");
