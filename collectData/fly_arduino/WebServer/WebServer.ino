@@ -41,6 +41,12 @@ const float F2contrast[] = {
 int contrastOrder[ maxContrasts ]; 
 int iThisContrast = 0 ;
 
+boolean has_filesystem = true;
+Sd2Card card;
+SdVolume volume;
+SdFile root;
+SdFile file;
+
 
 int freq1 = 12 ; // flicker of LED Hz
 int freq2 = 15 ; // flicker of LED Hz
@@ -92,6 +98,30 @@ void setup() {
   {
     myGraphData[i] = 0;    
   }
+
+
+  pinMode(10, OUTPUT); // set the SS pin as an output (necessary!)
+  digitalWrite(10, HIGH); // but turn off the W5100 chip!
+  // initialize the SD card
+  
+  Serial.println F("Setting up SD card...\n");
+
+  if (!card.init(SPI_FULL_SPEED, 4)) {
+    Serial.println F("card failed\n");
+    has_filesystem = false;
+  }
+  // initialize a FAT volume
+  if (!volume.init(&card)) {
+    Serial.println F("vol.init failed!\n");
+    has_filesystem = false;
+  }
+  if (!root.openRoot(&volume)) {
+    Serial.println F("openRoot failed");
+    has_filesystem = false;
+  }
+
+  Serial.println F("Setting up the Ethernet card...\n");
+
 
   // start the Ethernet connection and the server:
   Ethernet.begin(mac);
@@ -165,21 +195,21 @@ void sendFooter()
 
 void serve_dir ()
 {
-  USE_SDCARD();
-  Serial.println("Init SD.");
-  if (!SD.begin(4)) 
-  {
-    Serial.println("bad SD!");
-    return;
-  }
-  File root = SD.open("/");
-  String s = printDirectory(root, 0);
-  Serial.println(s);
-  root.close();
-
-  USE_ETHERNET();
+////  USE_SDCARD();
+////  Serial.println("Init SD.");
+////  if (!SD.begin(4)) 
+////  {
+////    Serial.println("bad SD!");
+////    return;
+////  }
+////  File root = SD.open("/");
+//  String s = printDirectory(root, 0);
+//  Serial.println(s);
+////  root.close();
+//
+////  USE_ETHERNET();
   sendHeader();
-  client.println(s);
+  printDirectory(0) ; //LS_SIZE);
   sendFooter();
 }
 
@@ -260,29 +290,51 @@ void run_graph()
 
 }
 
-String printDirectory(File dir, int numTabs) {
-  while(true) {
-    String sDIR ;
-    File entry =  dir.openNextFile();
-    if (! entry) {
-      // no more files
-      sDIR += ("**nomorefiles**");
-      break;
+void printDirectory(uint8_t flags) {
+  // This code is just copied from SdFile.cpp in the SDFat library
+  // and tweaked to print to the client output in html!
+  dir_t p;
+ 
+  root.rewind();
+  while (root.readDir(p) > 0) {
+    // done if past last used entry
+    if (p.name[0] == DIR_NAME_FREE) break;
+ 
+    // skip deleted entry and entries for . and  ..
+    if (p.name[0] == DIR_NAME_DELETED || p.name[0] == '.') continue;
+ 
+    // only list subdirectories and files
+    if (!DIR_IS_FILE_OR_SUBDIR(&p)) continue;
+ 
+ 
+    // print file name with possible blank fill
+    //root.printDirName(*p, flags & (LS_DATE | LS_SIZE) ? 14 : 0);
+ 
+ 
+    for (uint8_t i = 0; i < 11; i++) {
+      if (p.name[i] == ' ') continue;
+      if (i == 8) {
+        client.print('.');
+      }
+      client.print(char(p.name[i]));
+      //client.print(" ");
     }
-    for (uint8_t i=0; i<numTabs; i++) {
-      sDIR +=('\t');
+    if (DIR_IS_SUBDIR(&p)) {
+      client.print('/');
     }
-    Serial.print(entry.name());
-    if (entry.isDirectory()) {
-      sDIR +=("/");
-      sDIR += printDirectory(entry, numTabs+1);
-    } 
-    else {
-      // files have sizes, directories do not
-      sDIR +=("\t\t");
-      sDIR +=(entry.size(), DEC);
+ 
+    // print modify date/time if requested
+    if (flags & LS_DATE) {
+       root.printFatDate(p.lastWriteDate);
+       client.print(' ');
+       root.printFatTime(p.lastWriteTime);
     }
-    entry.close();
+    // print size if requested
+    if (!DIR_IS_SUBDIR(&p) && (flags & LS_SIZE)) {
+      client.print(' ');
+      client.print(p.fileSize);
+    }
+    client.println("<br>");
   }
 }
 
