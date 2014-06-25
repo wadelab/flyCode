@@ -103,7 +103,7 @@ void setup() {
   pinMode(10, OUTPUT); // set the SS pin as an output (necessary!)
   digitalWrite(10, HIGH); // but turn off the W5100 chip!
   // initialize the SD card
-  
+
   Serial.println F("Setting up SD card...\n");
 
   if (!card.init(SPI_FULL_SPEED, 4)) {
@@ -162,7 +162,7 @@ void USE_SDCARD()
 }
 void USE_ETHERNET()
 {
-    pinMode(SS_SD_CARD, OUTPUT);
+  pinMode(SS_SD_CARD, OUTPUT);
   pinMode(SS_ETHERNET, OUTPUT);
   digitalWrite(SS_SD_CARD, HIGH);  // HIGH means SD Card not active
   digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
@@ -174,7 +174,7 @@ void sendHeader (bool isText = true)
   client.println("HTTP/1.1 200 OK");
   if (isText)
   {
-  client.println("Content-Type: text/html");
+    client.println("Content-Type: text/html");
   }
   else
   {
@@ -195,19 +195,6 @@ void sendFooter()
 
 void serve_dir ()
 {
-////  USE_SDCARD();
-////  Serial.println("Init SD.");
-////  if (!SD.begin(4)) 
-////  {
-////    Serial.println("bad SD!");
-////    return;
-////  }
-////  File root = SD.open("/");
-//  String s = printDirectory(root, 0);
-//  Serial.println(s);
-////  root.close();
-//
-////  USE_ETHERNET();
   sendHeader();
   printDirectory(0) ; //LS_SIZE);
   sendFooter();
@@ -242,7 +229,7 @@ void run_graph()
   client.println("clearInterval(myVar); }");
   client.println("");
   client.println("</script>");
-// now do the graph...
+  // now do the graph...
   client.println("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
   client.println("Your browser does not support the HTML5 canvas tag.</canvas>");
 
@@ -294,49 +281,61 @@ void printDirectory(uint8_t flags) {
   // This code is just copied from SdFile.cpp in the SDFat library
   // and tweaked to print to the client output in html!
   dir_t p;
- 
+
   root.rewind();
+  client.println("<ul>");
   while (root.readDir(p) > 0) {
     // done if past last used entry
     if (p.name[0] == DIR_NAME_FREE) break;
- 
+
     // skip deleted entry and entries for . and  ..
     if (p.name[0] == DIR_NAME_DELETED || p.name[0] == '.') continue;
- 
+
     // only list subdirectories and files
     if (!DIR_IS_FILE_OR_SUBDIR(&p)) continue;
- 
- 
-    // print file name with possible blank fill
-    //root.printDirName(*p, flags & (LS_DATE | LS_SIZE) ? 14 : 0);
- 
- 
+
+    // print any indent spaces
+    client.print("<li><a href=\"");
     for (uint8_t i = 0; i < 11; i++) {
       if (p.name[i] == ' ') continue;
       if (i == 8) {
         client.print('.');
       }
       client.print(char(p.name[i]));
-      //client.print(" ");
     }
+    client.print("\">");
+
+    // print file name with possible blank fill
+    for (uint8_t i = 0; i < 11; i++) {
+      if (p.name[i] == ' ') continue;
+      if (i == 8) {
+        client.print('.');
+      }
+      client.print(char(p.name[i]));
+    }
+
+    client.print("</a>");
+
     if (DIR_IS_SUBDIR(&p)) {
       client.print('/');
     }
- 
+
     // print modify date/time if requested
     if (flags & LS_DATE) {
-       root.printFatDate(p.lastWriteDate);
-       client.print(' ');
-       root.printFatTime(p.lastWriteTime);
+      root.printFatDate(p.lastWriteDate);
+      client.print(' ');
+      root.printFatTime(p.lastWriteTime);
     }
     // print size if requested
     if (!DIR_IS_SUBDIR(&p) && (flags & LS_SIZE)) {
       client.print(' ');
       client.print(p.fileSize);
     }
-    client.println("<br>");
+    client.println("</li>");
   }
+  client.println("</ul>");
 }
+
 
 void serve_dummy()
 {
@@ -449,6 +448,81 @@ int fix_fft(int fr[], int fi[], int m, int inverse) {
   return scale;
 }
 
+void writeFile(char * c)
+{ 
+  if (file.isOpen()) file.close();
+  //overwrite any similar file
+  if ( !file.open(root, "tmp.dat" /*myName*/  , O_CREAT | O_APPEND | O_WRITE))
+  {
+    Serial.println ("Error in opening file");
+    return ;
+  }
+  int16_t iBytesWritten ;
+  //    unsigned int time_stamp [max_data] ;
+  //    int erg_in [max_data];
+  iBytesWritten = file.write(erg_in, max_data * sizeof(int));
+  if (iBytesWritten < 0)
+  {
+    Serial.println ("Error in writing erg data to file");
+  }
+  else
+  {
+    Serial.println("File success: written bytes " + String(iBytesWritten));
+    iBytesWritten = file.write(time_stamp, max_data * sizeof(unsigned int));
+    if (iBytesWritten < 0)
+    {
+      Serial.println ("Error in writing timing data to file");
+    }
+  }
+  file.close();
+}
+
+void doreadFile (char * c)
+{
+  sendHeader();
+  if (file.isOpen()) file.close();
+  file.open(root, c, O_READ);
+  int iBytesRequested = max_data * sizeof(int);
+  int iBytesRead = file.read(erg_in, iBytesRequested);
+  if (iBytesRead < iBytesRequested)
+  {
+    client.println("Error reading ERG data in file ");
+    client.println(c);
+  }
+  else
+  {
+    iBytesRequested = max_data * sizeof(unsigned int);
+    iBytesRead = file.read (time_stamp, iBytesRequested );
+    file.close();
+    if (iBytesRead < iBytesRequested)
+    {
+      client.println("Error reading Timing data in file ");
+      client.println(c);
+    } 
+    else
+    {
+      for (int i = 0; i < max_data; i++)
+      {
+        // make a string for assembling the data to log:
+        String dataString = String(i);
+        dataString += ", ";
+
+        dataString += String(time_stamp[i]-time_stamp[0]);
+        dataString += ", ";
+
+        dataString += String(br_Now(time_stamp[i]));
+        dataString += ", ";
+
+        dataString += String(erg_in[i]);
+        dataString += "<BR>";
+
+        client.println(dataString);
+      } //for
+    } // timing data ok
+  } //erg data ok
+  sendFooter();
+}
+
 void collectData ()
 {
   const long presamples = 102;
@@ -493,23 +567,23 @@ void collectData ()
   analogWrite(ledPin, 127);
   iThisContrast ++;
   if (iThisContrast >= maxContrasts) iThisContrast = 0;
-  //writeFile("datalog.dat");
-  //destructive in place fft
-  int imag_in [max_data];
-  int real_in [max_data];
-  for (int i=0; i < max_data; i++)
-  {
-    imag_in [i] = 0;
-    real_in [i] = erg_in[i] ;
-  }
-  //  int iResult = fix_fft(real_in, imag_in, 10, 0 ); //2 ^ 10 1024
+  writeFile("datalog.dat");
+  //  //destructive in place fft
+  //  int imag_in [max_data];
+  //  int real_in [max_data];
+  //  for (int i=0; i < max_data; i++)
+  //  {
+  //    imag_in [i] = 0;
+  //    real_in [i] = erg_in[i] ;
+  //  }
+  //  //  int iResult = fix_fft(real_in, imag_in, 10, 0 ); //2 ^ 10 1024
 
 }
 
-void flickerPage(String sCommand, bool RedoPage)
+void flickerPage(bool RedoPage)
 {
   Serial.println ("Sampling at :" + String(sampleCount));
-  
+
   if (!RedoPage) 
   {
     sendHeader();
@@ -525,7 +599,7 @@ void flickerPage(String sCommand, bool RedoPage)
     client.println("clearInterval(myVar); }");
     client.println("");
     client.println("</script>");
-    client.println("Acquiring, " + String(sampleCount) + " samples so far <BR>"  + sCommand + "<BR> please wait....");
+    client.println("Acquiring, " + String(sampleCount) + " samples so far <BR>"  + MyInputString + "<BR> please wait....");
     sampleCount = -102 ; //implies collectData(); 
   }
   else
@@ -533,8 +607,11 @@ void flickerPage(String sCommand, bool RedoPage)
     sendHeader();// false);
     // retrieve the flicker rates we sampled with...
     int randomnumber = contrastOrder[iThisContrast];
-    client.println("Data acquired at " + String(freq1) + " Hz with contrast " + String(int(F1contrast[randomnumber])) + 
-      " and " + String(freq2) + " Hz with contrast " + String(int(F2contrast[randomnumber])) +" % <BR> " + sCommand + "<BR>");
+    int F1 = int(F1contrast[randomnumber]);
+    int F2 = int(F2contrast[randomnumber]);
+    client.println("Data acquired at " + String(freq1) + " Hz with contrast " + String(F1) + 
+      " and " + String(freq2) + " Hz with contrast " + String(F1) +" % <BR> " ); 
+    client.println(MyInputString + "<BR>");
     client.println("No, time, brightness, analog in <BR>");
     for (int i = 0; i < max_data; i++)
     {
@@ -558,6 +635,8 @@ void flickerPage(String sCommand, bool RedoPage)
 
 
 }
+
+
 
 
 void loop() {
@@ -587,25 +666,46 @@ void loop() {
           bool pageServed = false ;
           Serial.print(MyInputString); 
           int fPOS = MyInputString.indexOf("filename=");
+          // asking for new sample
           Serial.println("  Position of file was:" + String(fPOS));
           if (fPOS > 0)
           {
-            flickerPage(MyInputString, MyInputString.equals(MyOldInputString)); // serve_dummy() ;
+            flickerPage(MyInputString.equals(MyOldInputString)); // serve_dummy() ;
             pageServed = true ;
           }
+          // show directory
           fPOS = MyInputString.indexOf("dir=");
           Serial.println("  Position of dir was:" + String(fPOS));
           if (fPOS > 0)
           {
             serve_dir() ;
             pageServed = true ;
-          }          
-          fPOS = MyInputString.indexOf("QQQ");
-          Serial.println("  Position of file was:" + String(fPOS));
-          if (fPOS > 0)
-          {
-            serve_dummy() ;
-            pageServed = true ;
+          }   
+          else
+          {       
+            fPOS = MyInputString.indexOf(".");
+            Serial.println("  Position of dot was:" + String(fPOS));
+            if (fPOS > 0)
+            {
+              // requested a file...
+              fPOS = MyInputString.indexOf("/");
+              String sFile = MyInputString.substring(fPOS+1); // ignore the leading /
+              Serial.println(" Proposed filename " + sFile );
+              fPOS = sFile.indexOf(" ");
+              sFile = sFile .substring(0, fPOS);
+              Serial.println(" Proposed filename now" + sFile + ";");
+              char cFile [30];
+              sFile.toCharArray(cFile, 30); // adds terminating null
+              doreadFile(cFile) ;
+              pageServed = true ;
+            }
+            fPOS = MyInputString.indexOf("QQQ");
+            Serial.println("  Position of file was:" + String(fPOS));
+            if (fPOS > 0)
+            {
+              serve_dummy() ;
+              pageServed = true ;
+            }
           }
           if (!pageServed)
           {
@@ -792,6 +892,9 @@ int getSinewave(int index) {
 int fix_mpy(int a, int b) {
   return ((long)(a) * (long)(b))>>15;
 }
+
+
+
 
 
 
