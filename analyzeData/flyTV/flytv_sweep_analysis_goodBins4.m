@@ -78,7 +78,7 @@ for thisFly=1:nFlies
                 
                 currF=freqsToExtract(thisTF)*thisHarmonic+1;
                 extractedAmps(thisFly,thisTF,thisSF,thisHarmonic)=fMeanAcrossReps(thisFly,thisTF,thisSF,currF); %,freqsToExtract(thisTrial));
-                ampPower(thisFly,thisTF,thisSF,thisHarmonic)=sqrt(sum(fMeanAcrossReps(thisFly,thisTF,thisSF,:).^2,4));
+                ampPower(thisFly,thisTF,thisSF,thisHarmonic)=sqrt(sum(fMeanAcrossReps(thisFly,thisTF,thisSF,1:50).^2,4));
                 coh(thisFly,thisTF,thisSF,thisHarmonic)=abs(extractedAmps(thisFly,thisTF,thisSF,thisHarmonic))./ampPower(thisFly,thisTF,thisSF,thisHarmonic);
          
             end % Next harmonic
@@ -99,14 +99,15 @@ set(gca,'YTickLabel',uniqueTF );
 set(gca,'XTickLabel',uniqueSF);
 colormap hot; colorbar;
 subtightplot(1,3,2,.03);
-imagesc(squeeze(mExtracted(:,:,2)));colorbar;
+imagesc(squeeze(mExtracted(:,:,2)),[0 2.5e-3]);colorbar;
 ylabel('TF Hz');
 xlabel('SF cpd');
 set(gca,'YTickLabel',uniqueTF );
 set(gca,'XTickLabel',uniqueSF);
     colormap hot; colorbar;
 subtightplot(1,3,3,.03);
-    imagesc(squeeze(mExtracted(:,:,2)./squeeze(mExtracted(:,:,1))));colorbar;
+    imagesc(squeeze(mExtracted(:,:,2)./squeeze((mExtracted(:,:,1)+mExtracted(:,:,2)))),[0 1]);
+    colorbar;
 ylabel('TF Hz');
 xlabel('SF cpd');
 set(gca,'YTickLabel',uniqueTF );
@@ -114,6 +115,8 @@ set(gca,'XTickLabel',uniqueSF);
     colormap hot; colorbar;
 return;
 %%
+surfc(squeeze(mExtracted(:,:,2)));colorbar;
+
 
 [uniqueTF,d,tfInds]=unique(tf);
 [uniqueSF,d,sfInds]=unique(sf);
