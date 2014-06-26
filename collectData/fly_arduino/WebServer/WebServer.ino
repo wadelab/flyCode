@@ -67,6 +67,7 @@ unsigned long timing_too_fast = 0 ;
 
 const int MaxInputStr = 230 ;
 String MyInputString = String(MaxInputStr+1);
+char cFile [30];
 
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
@@ -152,20 +153,6 @@ void doShuffle()
   }
 }
 
-void USE_SDCARD()
-{
-  pinMode(SS_SD_CARD, OUTPUT);
-  pinMode(SS_ETHERNET, OUTPUT);
-  digitalWrite(SS_SD_CARD, LOW);  // HIGH means SD Card not active
-  digitalWrite(SS_ETHERNET, HIGH); // HIGH means Ethernet not active
-}
-void USE_ETHERNET()
-{
-  pinMode(SS_SD_CARD, OUTPUT);
-  pinMode(SS_ETHERNET, OUTPUT);
-  digitalWrite(SS_SD_CARD, HIGH);  // HIGH means SD Card not active
-  digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
-}
 
 void sendHeader (bool isText = true)
 {
@@ -359,6 +346,7 @@ void writeFile(const char * c)
   if ( !file.open(root, c /*myName*/  , O_CREAT | O_APPEND | O_WRITE))
   {
     Serial.println ("Error in opening file");
+    Serial.println (c);
     return ;
   }
   int16_t iBytesWritten ;
@@ -379,6 +367,14 @@ void writeFile(const char * c)
     }
   }
   file.close();
+}
+
+bool fileExists(const char * c)
+{
+  if (file.isOpen()) file.close();
+  bool bExixsts = file.open(root, c, O_READ);
+  if (bExixsts) file.close();
+  return bExixsts ;
 }
 
 void doreadFile (const char * c)
@@ -471,7 +467,8 @@ void collectData ()
   analogWrite(ledPin, 127);
   iThisContrast ++;
   if (iThisContrast >= maxContrasts) iThisContrast = 0;
-  writeFile("datalog.SVP");
+
+  writeFile(cFile);
   //  //destructive in place fft
   //  int imag_in [max_data];
   //  int real_in [max_data];
@@ -490,7 +487,7 @@ void flickerPage()
 
   sendHeader();
 
-  if (sampleCount <= max_data)
+  if (sampleCount < max_data)
   {
     client.println("<script>");
 
@@ -590,8 +587,31 @@ void loop() {
           Serial.println("  Position of file was:" + String(fPOS));
           if (fPOS > 0)
           {
-            flickerPage(); // serve_dummy() ;
-            sampleCount = -102 ; //implies collectData(); 
+
+
+            ///  Serial.println("saving ???");
+            String sFile = MyInputString.substring(fPOS+15); // ignore the leading / should be 9
+            // Serial.println("  Position of filename= was:" + String(fPOS));
+            // Serial.println(" Proposed saving filename " + sFile );
+            fPOS = sFile.indexOf(" ");  // or  & id filename is not the last paramtere
+            // Serial.println("  Position of blankwas:" + String(fPOS));
+            sFile = sFile.substring(0, fPOS);
+            sFile = sFile + ".SVP";
+            // Serial.println(" Proposed filename now" + sFile + ";");
+            // if file exists... ????
+            sFile.toCharArray(cFile, 29); // adds terminating null
+            if (fileExists(cFile))
+            {
+              sendHeader ();
+              client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Exists <BR>");
+              client.println( "<A HREF= \"dir=\"  > Full directory</A> <BR>");
+              sendFooter ();
+            }
+            else
+            {
+              flickerPage(); 
+              sampleCount = -102 ; //implies collectData(); 
+            }
             pageServed = true ;
           }
           // show directory
@@ -613,9 +633,8 @@ void loop() {
               String sFile = MyInputString.substring(fPOS+1); // ignore the leading /
               Serial.println(" Proposed filename " + sFile );
               fPOS = sFile.indexOf(" ");
-              sFile = sFile .substring(0, fPOS);
+              sFile = sFile.substring(0, fPOS);
               Serial.println(" Proposed filename now" + sFile + ";");
-              char cFile [30];
               sFile.toCharArray(cFile, 29); // adds terminating null
               doreadFile(cFile) ;
               pageServed = true ;
@@ -908,6 +927,7 @@ void loop() {
 //
 //
 //
+
 
 
 
