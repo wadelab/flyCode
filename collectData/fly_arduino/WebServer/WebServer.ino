@@ -350,20 +350,41 @@ void writeFile(const char * c)
     return ;
   }
   int16_t iBytesWritten ;
+  // file format
+  //    MyInputString viz. char cInput [MaxInputStr+2];
+  //    int contrastOrder[ maxContrasts ]; 
   //    unsigned int time_stamp [max_data] ;
   //    int erg_in [max_data];
-  iBytesWritten = file.write(erg_in, max_data * sizeof(int));
+  char cInput [MaxInputStr+2];
+  MyInputString.toCharArray(cInput, MaxInputStr+2);
+  iBytesWritten = file.write(cInput, MaxInputStr+2);
   if (iBytesWritten < 0)
   {
-    Serial.println ("Error in writing erg data to file");
+    Serial.println ("Error in writing header to file");
   }
   else
   {
-    // Serial.println("File success: written bytes " + String(iBytesWritten));
-    iBytesWritten = file.write(time_stamp, max_data * sizeof(unsigned int));
+    iBytesWritten = file.write(contrastOrder, maxContrasts * sizeof(int));
     if (iBytesWritten < 0)
     {
-      Serial.println ("Error in writing timing data to file");
+      Serial.println ("Error in writing contrast data to file");
+    }
+    else
+    {
+      iBytesWritten = file.write(erg_in, max_data * sizeof(int));
+      if (iBytesWritten < 0)
+      {
+        Serial.println ("Error in writing erg data to file");
+      }
+      else
+      {
+        // Serial.println("File success: written bytes " + String(iBytesWritten));
+        iBytesWritten = file.write(time_stamp, max_data * sizeof(unsigned int));
+        if (iBytesWritten < 0)
+        {
+          Serial.println ("Error in writing timing data to file");
+        }
+      }
     }
   }
   file.close();
@@ -379,47 +400,94 @@ bool fileExists(const char * c)
 
 void doreadFile (const char * c)
 {
+  String dataString ;
+  char * cPtr;
+
   sendHeader();
   if (file.isOpen()) file.close();
   file.open(root, c, O_READ);
-  int iBytesRequested = max_data * sizeof(int);
-  int iBytesRead = file.read(erg_in, iBytesRequested);
+  int iBytesRequested, iBytesRead;
+  // note this overwrites any data already in memeory...
+  //first read the header string ...
+  iBytesRequested = MaxInputStr+2;
+  iBytesRead = file.read(erg_in, iBytesRequested);
   if (iBytesRead < iBytesRequested)
   {
-    client.println("Error reading ERG data in file ");
+    client.println("Error reading header data in file ");
     client.println(c);
   }
   else
   {
-    iBytesRequested = max_data * sizeof(unsigned int);
-    iBytesRead = file.read (time_stamp, iBytesRequested );
-    file.close();
+    // write out the string ....
+    cPtr = (char *) erg_in ;
+    client.println(cPtr);
+
+    // now try the contrast table
+    iBytesRequested = maxContrasts * sizeof(int);
+    iBytesRead = file.read(erg_in, iBytesRequested);
     if (iBytesRead < iBytesRequested)
     {
-      client.println("Error reading Timing data in file ");
+      client.println("Error reading contrast data in file ");
       client.println(c);
-    } 
+    }
     else
     {
-      for (int i = 0; i < max_data; i++)
+      // write out the contast table
+      for (int i=0; i < maxContrasts; i++)
       {
-        // make a string for assembling the data to log:
-        String dataString = String(i);
+        cPtr = (char *) time_stamp ;
+        // save space, put the floats as strings in the time_stamp buffer
+        dataString = String(i);
         dataString += ", ";
-
-        dataString += String(time_stamp[i]-time_stamp[0]);
+        dataString += String(dtostrf(F1contrast[i], 10, 2, cPtr));
         dataString += ", ";
-
-        dataString += String(br_Now(time_stamp[i]));
-        dataString += ", ";
-
-        dataString += String(erg_in[i]);
+        dataString += String(dtostrf(F2contrast[i], 10, 2, cPtr));
         dataString += "<BR>";
 
         client.println(dataString);
-      } //for
-    } // timing data ok
-  } //erg data ok
+      }
+
+      // now on to the data
+      int iBytesRequested = max_data * sizeof(int);
+      int iBytesRead = file.read(erg_in, iBytesRequested);
+      if (iBytesRead < iBytesRequested)
+      {
+        client.println("Error reading ERG data in file ");
+        client.println(c);
+      }
+      else
+      {
+        iBytesRequested = max_data * sizeof(unsigned int);
+        iBytesRead = file.read (time_stamp, iBytesRequested );
+        file.close();
+        if (iBytesRead < iBytesRequested)
+        {
+          client.println("Error reading Timing data in file ");
+          client.println(c);
+        } 
+        else
+        {
+          for (int i = 0; i < max_data; i++)
+          {
+            // make a string for assembling the data to log:
+            dataString = String(i);
+            dataString += ", ";
+
+            dataString += String(time_stamp[i]-time_stamp[0]);
+            dataString += ", ";
+
+            dataString += String(br_Now(time_stamp[i]));
+            dataString += ", ";
+
+            dataString += String(erg_in[i]);
+            dataString += "<BR>";
+
+            client.println(dataString);
+          } //for
+        } // timing data ok
+      } //erg data ok
+    } // contrasts ok
+  }// header ok
   sendFooter();
 }
 
@@ -927,6 +995,12 @@ void loop() {
 //
 //
 //
+
+
+
+
+
+
 
 
 
