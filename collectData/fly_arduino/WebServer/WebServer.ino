@@ -320,14 +320,17 @@ void printDirectory(uint8_t flags) {
       root.printFatTime(p.lastWriteTime);
     }
     // print size if requested
-    if (!DIR_IS_SUBDIR(&p) && (flags & LS_SIZE)) {
+    /*if (!DIR_IS_SUBDIR(&p) && (flags & LS_SIZE))*/ {
       client.print(' ');
       client.print(p.fileSize);
     }
     client.println F("</li>");
   }
   client.println F("</ul>");
+
+
 }
+
 
 
 void serve_dummy()
