@@ -1,7 +1,6 @@
 
 
 /*
-NB - take the SD card out for this to work !!!
  
  Web Server
  
@@ -28,16 +27,17 @@ NB - take the SD card out for this to work !!!
 //#include <FixFFT.h>
 
 const int max_graph_data = 32 ;
-int myGraphData [max_graph_data];
+int * myGraphData ;  // will share erg_in space, see below
 int iIndex = 0 ;
 const int ledPin =  9;
 const int analogPin = 1 ;
 
-const int maxContrasts = 9 ;
+const byte maxContrasts = 9 ;
+const byte F2contrastchange = 4; 
 const float F1contrast[] = {
   5.0, 10.0, 30.0, 70.0, 100.0,  5.0, 10.0, 30.0, 70.0 }; 
-const float F2contrast[] = {
-  0.0,  0.0,  0.0,  0.0,   0.0, 30.0, 30.0, 30.0, 30.0 };
+const float F2contrast[] = {  
+  0.0, 30.0 };
 int contrastOrder[ maxContrasts ]; 
 int iThisContrast = 0 ;
 
@@ -60,14 +60,17 @@ unsigned long last_time = 0;
 unsigned long timing_too_fast = 0 ;
 
 
-#define N_WAVE          1024    /* dimension of Sinewave[] */
-#define LOG2_N_WAVE     10      /* log2(N_WAVE) */
-#define N_LOUD          100     /* dimension of Loudampl[] */
+//#define N_WAVE          1024    /* dimension of Sinewave[] */
+//#define LOG2_N_WAVE     10      /* log2(N_WAVE) */
+//#define N_LOUD          100     /* dimension of Loudampl[] */
 
 
-const int MaxInputStr = 230 ;
+const int MaxInputStr = 130 ;
 String MyInputString = String(MaxInputStr+1);
 char cFile [30];
+char cInput [MaxInputStr+2] = "";
+
+
 
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
@@ -94,6 +97,7 @@ void setup() {
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
+  myGraphData = erg_in ;
   for (int i =0; i < max_graph_data; i++)
   {
     myGraphData[i] = 0;    
@@ -126,7 +130,7 @@ void setup() {
   // start the Ethernet connection and the server:
   Ethernet.begin(mac);
   server.begin();
-  Serial.print("server is at ");
+  Serial.print F("server is at ");
   Serial.println(Ethernet.localIP());
 
   doShuffle();
@@ -154,28 +158,31 @@ void doShuffle()
 }
 
 
-void sendHeader (bool isText = true)
+void sendHeader (bool isHTML = true)
 {
   // send a standard http response header
-  client.println("HTTP/1.1 200 OK");
-  if (isText)
+  client.println F("HTTP/1.1 200 OK");
+  if (isHTML)
   {
-    client.println("Content-Type: text/html");
+    client.println F("Content-Type: text/html");
   }
   else
   {
-    client.println("Content-Type: application/octet-stream");
+    client.println F("Content-Type: text/plain");
   }
-  client.println("Connection: close");  // the connection will be closed after completion of the response
+  client.println F("Connection: close");  // the connection will be closed after completion of the response
   client.println();
-  client.println("<!DOCTYPE HTML>");
-  client.println("<html>");
-  client.println("<body>");
+  if (isHTML)
+  {
+    client.println F("<!DOCTYPE HTML>");
+    client.println F("<html>");
+    client.println F("<body>");
+  }
 }
 
 void sendFooter()
 {
-  client.println("</body></html>");
+  client.println F("</body></html>");
 }
 
 
@@ -206,22 +213,22 @@ void run_graph()
   client.println("<script>");
 
   // script to reload ...
-  client.println("var myVar = setInterval(function(){myTimer()}, 400);"); //mu sec
-  client.println("function myTimer() {");
-  client.println("location.reload(true);");
-  client.println("};");
+  client.println F("var myVar = setInterval(function(){myTimer()}, 400);"); //mu sec
+  client.println F("function myTimer() {");
+  client.println F("location.reload(true);");
+  client.println F("};");
 
-  client.println("function myStopFunction() {");
-  client.println("clearInterval(myVar); }");
-  client.println("");
-  client.println("</script>");
+  client.println F("function myStopFunction() {");
+  client.println F("clearInterval(myVar); }");
+  client.println F("");
+  client.println F("</script>");
   // now do the graph...
-  client.println("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
-  client.println("Your browser does not support the HTML5 canvas tag.</canvas>");
+  client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+  client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
 
-  client.println("<script>");
-  client.println("var c = document.getElementById(\"myCanvas\");");
-  client.println("var ctx = c.getContext(\"2d\");");
+  client.println F("<script>");
+  client.println F("var c = document.getElementById(\"myCanvas\");");
+  client.println F("var ctx = c.getContext(\"2d\");");
 
   if (iIndex >= max_graph_data) iIndex = 0;
   for (int i=0; i < max_graph_data-2; i++)
@@ -230,34 +237,34 @@ void run_graph()
     client.print(i*20); 
     client.print(","); 
     client.print(myGraphData[i]/2); 
-    client.println(");");
+    client.println F(");");
     client.print("ctx.lineTo("); 
     client.print((i+1)*20); 
     client.print(","); 
     client.print(myGraphData[i+1]/2); 
-    client.println(");");
-    client.println("ctx.stroke();");
+    client.println F(");");
+    client.println F("ctx.stroke();");
   }
   //draw stimulus...
   client.print("ctx.moveTo(");
   client.print((max_graph_data /10)*20);
   client.print(",");
   client.print(30);
-  client.println(");");
+  client.println F(");");
 
   client.print("ctx.lineTo(");
   client.print(max_graph_data /2*20);
   client.print(",");
   client.print(30);
-  client.println(");");
+  client.println F(");");
 
-  client.println("ctx.strokeStyle=\"blue\";");
+  client.println F("ctx.strokeStyle=\"blue\";");
   //              client.println("ctx.lineWidth=5;");
-  client.println("ctx.stroke();");
+  client.println F("ctx.stroke();");
 
-  client.println("</script>");
-  client.println("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
-  client.println("To run a flicker test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
+  client.println F("</script>");
+  client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
+  client.println F("To run a flicker test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
 
   sendFooter();
 
@@ -269,7 +276,7 @@ void printDirectory(uint8_t flags) {
   dir_t p;
 
   root.rewind();
-  client.println("<ul>");
+  client.println F("<ul>");
   while (root.readDir(p) > 0) {
     // done if past last used entry
     if (p.name[0] == DIR_NAME_FREE) break;
@@ -317,23 +324,25 @@ void printDirectory(uint8_t flags) {
       client.print(' ');
       client.print(p.fileSize);
     }
-    client.println("</li>");
+    client.println F("</li>");
   }
-  client.println("</ul>");
+  client.println F("</ul>");
 }
 
 
 void serve_dummy()
 {
   sendHeader();
-  client.println("Dummy page; <BR> To run a flicker test please load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
+  client.println F("Dummy page; <BR> To run a flicker test please load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
   sendFooter() ;
 }
 
 int br_Now(double t)
 {
   int randomnumber = contrastOrder[iThisContrast];
-  return int(sin((t/1000.0)*PI*2.0*double(freq1))*1.270 * F1contrast[randomnumber] + sin((t/1000.0)*PI*2.0*double(freq2))*1.270 * F1contrast[randomnumber])+127;
+  int F2index = 0 ;
+  if (randomnumber > F2contrastchange) F2index = 1;
+  return int(sin((t/1000.0)*PI*2.0*double(freq1))*1.270 * F1contrast[randomnumber] + sin((t/1000.0)*PI*2.0*double(freq2))*1.270 * F2contrast[F2index])+127;
 }
 
 
@@ -345,7 +354,7 @@ void writeFile(const char * c)
   //overwrite any similar file
   if ( !file.open(root, c /*myName*/  , O_CREAT | O_APPEND | O_WRITE))
   {
-    Serial.println ("Error in opening file");
+    Serial.println F ("Error in opening file");
     Serial.println (c);
     return ;
   }
@@ -355,26 +364,25 @@ void writeFile(const char * c)
   //    int contrastOrder[ maxContrasts ]; 
   //    unsigned int time_stamp [max_data] ;
   //    int erg_in [max_data];
-  char cInput [MaxInputStr+2];
-  MyInputString.toCharArray(cInput, MaxInputStr+2);
+
   iBytesWritten = file.write(cInput, MaxInputStr+2);
   if (iBytesWritten < 0)
   {
-    Serial.println ("Error in writing header to file");
+    Serial.println F ("Error in writing header to file");
   }
   else
   {
     iBytesWritten = file.write(contrastOrder, maxContrasts * sizeof(int));
     if (iBytesWritten < 0)
     {
-      Serial.println ("Error in writing contrast data to file");
+      Serial.println F ("Error in writing contrast data to file");
     }
     else
     {
       iBytesWritten = file.write(erg_in, max_data * sizeof(int));
       if (iBytesWritten < 0)
       {
-        Serial.println ("Error in writing erg data to file");
+        Serial.println F ("Error in writing erg data to file");
       }
       else
       {
@@ -382,7 +390,7 @@ void writeFile(const char * c)
         iBytesWritten = file.write(time_stamp, max_data * sizeof(unsigned int));
         if (iBytesWritten < 0)
         {
-          Serial.println ("Error in writing timing data to file");
+          Serial.println F ("Error in writing timing data to file");
         }
       }
     }
@@ -402,32 +410,33 @@ void doreadFile (const char * c)
 {
   String dataString ;
   char * cPtr;
+  cPtr = (char *) erg_in ;
 
-  sendHeader();
+  sendHeader(false);
   if (file.isOpen()) file.close();
   file.open(root, c, O_READ);
   int iBytesRequested, iBytesRead;
   // note this overwrites any data already in memeory...
   //first read the header string ...
   iBytesRequested = MaxInputStr+2;
-  iBytesRead = file.read(erg_in, iBytesRequested);
+  iBytesRead = file.read(cPtr, iBytesRequested);
   if (iBytesRead < iBytesRequested)
   {
-    client.println("Error reading header data in file ");
+    client.println F("Error reading header data in file ");
     client.println(c);
   }
   else
   {
     // write out the string ....
-    cPtr = (char *) erg_in ;
-    client.println(cPtr);
+    client.print(cPtr);
+    //    client.println F("<BR>");
 
     // now try the contrast table
     iBytesRequested = maxContrasts * sizeof(int);
     iBytesRead = file.read(erg_in, iBytesRequested);
     if (iBytesRead < iBytesRequested)
     {
-      client.println("Error reading contrast data in file ");
+      client.println F("Error reading contrast data in file ");
       client.println(c);
     }
     else
@@ -441,8 +450,15 @@ void doreadFile (const char * c)
         dataString += ", ";
         dataString += String(dtostrf(F1contrast[i], 10, 2, cPtr));
         dataString += ", ";
-        dataString += String(dtostrf(F2contrast[i], 10, 2, cPtr));
-        dataString += "<BR>";
+        if (i > F2contrastchange)
+        {
+          dataString += String(dtostrf(F2contrast[1], 10, 2, cPtr));
+        }
+        else
+        {
+          dataString += String(dtostrf(F2contrast[0], 10, 2, cPtr));
+        }
+        //      dataString += "<BR>";
 
         client.println(dataString);
       }
@@ -452,7 +468,7 @@ void doreadFile (const char * c)
       int iBytesRead = file.read(erg_in, iBytesRequested);
       if (iBytesRead < iBytesRequested)
       {
-        client.println("Error reading ERG data in file ");
+        client.println F("Error reading ERG data in file ");
         client.println(c);
       }
       else
@@ -462,7 +478,7 @@ void doreadFile (const char * c)
         file.close();
         if (iBytesRead < iBytesRequested)
         {
-          client.println("Error reading Timing data in file ");
+          client.println F("Error reading Timing data in file ");
           client.println(c);
         } 
         else
@@ -480,7 +496,7 @@ void doreadFile (const char * c)
             dataString += ", ";
 
             dataString += String(erg_in[i]);
-            dataString += "<BR>";
+            //            dataString += "<BR>";
 
             client.println(dataString);
           } //for
@@ -488,7 +504,7 @@ void doreadFile (const char * c)
       } //erg data ok
     } // contrasts ok
   }// header ok
-  sendFooter();
+ // sendFooter();
 }
 
 void collectData ()
@@ -557,33 +573,33 @@ void flickerPage()
 
   if (sampleCount < max_data)
   {
-    client.println("<script>");
+    client.println F("<script>");
 
     // script to reload ...
-    client.println("var myVar = setInterval(function(){myTimer()}, 4500);"); //mu sec
-    client.println("function myTimer() {");
-    client.println("location.reload(true);");
-    client.println("};");
+    client.println F("var myVar = setInterval(function(){myTimer()}, 4500);"); //mu sec
+    client.println F("function myTimer() {");
+    client.println F("location.reload(true);");
+    client.println F("};");
 
-    client.println("function myStopFunction() {");
-    client.println("clearInterval(myVar); }");
-    client.println("");
-    client.println("</script>");
-    client.println("Acquiring, " + String(sampleCount) + " samples so far <BR>"  + MyInputString + "<BR> please wait....");
-
-  }
-  else
-  {
-    client.println("Acquired, " +  MyInputString + "<BR> Saved to ");
-
-    //    // retrieve the flicker rates we sampled with...
-    int randomnumber = contrastOrder[iThisContrast];
-    int F1 = int(F1contrast[randomnumber]);
-    int F2 = int(F2contrast[randomnumber]);
-    client.println("Data acquired at " + String(freq1) + " Hz with contrast " + String(F1) + 
-      " and " + String(freq2) + " Hz with contrast " + String(F1) +" % <BR> " ); 
+    client.println F("function myStopFunction() {");
+    client.println F("clearInterval(myVar); }");
+    client.println F("");
+    client.println F("</script>");
+    client.println ("Acquiring, " + String(sampleCount) + " samples so far <BR>"  + MyInputString + "<BR> please wait....");
 
   }
+  //  else
+  //  {
+  //    client.println("Acquired, " +  MyInputString + "<BR> Saved to ");
+  //
+  //    //    // retrieve the flicker rates we sampled with...
+  //    int randomnumber = contrastOrder[iThisContrast];
+  //    int F1 = int(F1contrast[randomnumber]);
+  //    int F2 = int(F2contrast[randomnumber]);
+  //    client.println("Data acquired at " + String(freq1) + " Hz with contrast " + String(F1) + 
+  //      " and " + String(freq2) + " Hz with contrast " + String(F1) +" % <BR> " ); 
+  //
+  //  }
 
 
   //  }
@@ -632,7 +648,7 @@ void loop() {
   // listen for incoming clients
   client = server.available();
   if (client) {
-    Serial.println("new client");
+    Serial.println F("new client");
     // an http request ends with a blank line
     while (client.connected()) {
       if (client.available()) {
@@ -655,24 +671,25 @@ void loop() {
           Serial.println("  Position of file was:" + String(fPOS));
           if (fPOS > 0)
           {
+            // save the commandline....
+            MyInputString.toCharArray(cInput, MaxInputStr+2);
 
-
-            ///  Serial.println("saving ???");
+            //Serial.println F("saving ???");
             String sFile = MyInputString.substring(fPOS+15); // ignore the leading / should be 9
-            // Serial.println("  Position of filename= was:" + String(fPOS));
-            // Serial.println(" Proposed saving filename " + sFile );
+            //Serial.println("  Position of filename= was:" + String(fPOS));
+            //Serial.println(" Proposed saving filename " + sFile );
             fPOS = sFile.indexOf(" ");  // or  & id filename is not the last paramtere
-            // Serial.println("  Position of blankwas:" + String(fPOS));
+            //Serial.println("  Position of blankwas:" + String(fPOS));
             sFile = sFile.substring(0, fPOS);
             sFile = sFile + ".SVP";
-            // Serial.println(" Proposed filename now" + sFile + ";");
-            // if file exists... ????
+            //Serial.println(" Proposed filename now" + sFile + ";");
+            //if file exists... ????
             sFile.toCharArray(cFile, 29); // adds terminating null
             if (fileExists(cFile))
             {
               sendHeader ();
               client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Exists <BR>");
-              client.println( "<A HREF= \"dir=\"  > Full directory</A> <BR>");
+              client.println F( "<A HREF= \"dir=\"  > Full directory</A> <BR>");
               sendFooter ();
             }
             else
@@ -995,6 +1012,8 @@ void loop() {
 //
 //
 //
+
+
 
 
 
