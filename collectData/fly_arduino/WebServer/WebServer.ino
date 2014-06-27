@@ -151,7 +151,7 @@ void doShuffle()
   {
     int n = random(i + 1);
     //Swap(contrastOrder[i], contrastOrder[n]);
-    tmp = contrastOrder[i];
+    tmp = contrastOrder[n];
     contrastOrder[n] = contrastOrder[i];
     contrastOrder[i] = tmp ;
   }
@@ -350,52 +350,73 @@ int br_Now(double t)
 
 void writeFile(const char * c)
 { 
-  if (file.isOpen()) file.close();
-  //overwrite any similar file
-  if ( !file.open(root, c /*myName*/  , O_CREAT | O_APPEND | O_WRITE))
-  {
-    Serial.println F ("Error in opening file");
-    Serial.println (c);
-    return ;
-  }
-  int16_t iBytesWritten ;
   // file format
   //    MyInputString viz. char cInput [MaxInputStr+2];
   //    int contrastOrder[ maxContrasts ]; 
   //    unsigned int time_stamp [max_data] ;
   //    int erg_in [max_data];
 
-  iBytesWritten = file.write(cInput, MaxInputStr+2);
-  if (iBytesWritten < 0)
+  int16_t iBytesWritten ;
+
+  if (!fileExists(c)) 
   {
-    Serial.println F ("Error in writing header to file");
-  }
-  else
-  {
+
+    if ( !file.open(root, c /*myName*/,   O_CREAT | O_APPEND | O_WRITE))
+    {
+      Serial.println F ("Error in opening file");
+      Serial.println (c);
+      return ;
+    }
+
+    iBytesWritten = file.write(cInput, MaxInputStr+2);
+    if (iBytesWritten <= 0)
+    {
+      Serial.println F ("Error in writing header to file");
+      file.close();
+      return ;
+    }
+
     iBytesWritten = file.write(contrastOrder, maxContrasts * sizeof(int));
-    if (iBytesWritten < 0)
+    if (iBytesWritten <= 0)
     {
       Serial.println F ("Error in writing contrast data to file");
+      file.close();
+      return ;
     }
-    else
-    {
-      iBytesWritten = file.write(erg_in, max_data * sizeof(int));
-      if (iBytesWritten < 0)
-      {
-        Serial.println F ("Error in writing erg data to file");
-      }
-      else
-      {
-        // Serial.println("File success: written bytes " + String(iBytesWritten));
-        iBytesWritten = file.write(time_stamp, max_data * sizeof(unsigned int));
-        if (iBytesWritten < 0)
-        {
-          Serial.println F ("Error in writing timing data to file");
-        }
-      }
-    }
+
   }
-  file.close();
+  else // file exists, so just append...
+  {
+    if ( !file.open(root, c /*myName*/,  O_APPEND | O_WRITE))
+    {
+      Serial.println F ("Error in opening file");
+      Serial.println (c);
+      return ;
+    }
+
+  }
+
+
+  // always write the erg and time data
+  iBytesWritten = file.write(erg_in, max_data * sizeof(int));
+  if (iBytesWritten <= 0)
+  {
+    Serial.println F ("Error in writing erg data to file");
+    file.close();
+    return ;
+  }
+
+  // Serial.println("File success: written bytes " + String(iBytesWritten));
+  iBytesWritten = file.write(time_stamp, max_data * sizeof(unsigned int));
+  if (iBytesWritten <= 0)
+  {
+    Serial.println F ("Error in writing timing data to file");
+  }
+  Serial.print F(" More bytes writen to file.........");
+  Serial.print  (c);
+  Serial.print F(" size now ");
+  Serial.println (file.fileSize());
+  file.sync();
 }
 
 bool fileExists(const char * c)
@@ -411,6 +432,7 @@ void doreadFile (const char * c)
   String dataString ;
   char * cPtr;
   cPtr = (char *) erg_in ;
+  int iOldContrast ;
 
   sendHeader(false);
   if (file.isOpen()) file.close();
@@ -448,9 +470,10 @@ void doreadFile (const char * c)
         // save space, put the floats as strings in the time_stamp buffer
         dataString = String(i);
         dataString += ", ";
-        dataString += String(dtostrf(F1contrast[i], 10, 2, cPtr));
+        iOldContrast = erg_in [i];
+        dataString += String(dtostrf(F1contrast[iOldContrast], 10, 2, cPtr));
         dataString += ", ";
-        if (i > F2contrastchange)
+        if (iOldContrast > F2contrastchange)
         {
           dataString += String(dtostrf(F2contrast[1], 10, 2, cPtr));
         }
@@ -462,55 +485,60 @@ void doreadFile (const char * c)
 
         client.println(dataString);
       }
-
-      // now on to the data
-      int iBytesRequested = max_data * sizeof(int);
-      int iBytesRead = file.read(erg_in, iBytesRequested);
-      if (iBytesRead < iBytesRequested)
+      for (int iC = 0; iC < maxContrasts; iC++)
       {
-        client.println F("Error reading ERG data in file ");
-        client.println(c);
-      }
-      else
-      {
-        iBytesRequested = max_data * sizeof(unsigned int);
-        iBytesRead = file.read (time_stamp, iBytesRequested );
-        file.close();
+        // now on to the data
+        int iBytesRequested = max_data * sizeof(int);
+        int iBytesRead = file.read(erg_in, iBytesRequested);
         if (iBytesRead < iBytesRequested)
         {
-          client.println F("Error reading Timing data in file ");
+          client.println F("Error reading ERG data in file ");
           client.println(c);
-        } 
+        }
         else
         {
-          for (int i = 0; i < max_data; i++)
+          iBytesRequested = max_data * sizeof(unsigned int);
+          iBytesRead = file.read (time_stamp, iBytesRequested );
+          if (iBytesRead < iBytesRequested)
           {
-            // make a string for assembling the data to log:
-            dataString = String(i);
-            dataString += ", ";
+            client.println F("Error reading Timing data in file ");
+            client.println(c);
+          } 
+          else
+          {
+            for (int i = 0; i < max_data; i++)
+            {
+              // make a string for assembling the data to log:
+              dataString = String(i);
+              dataString += ", ";
 
-            dataString += String(time_stamp[i]-time_stamp[0]);
-            dataString += ", ";
+              dataString += String(time_stamp[i]-time_stamp[0]);
+              dataString += ", ";
 
-            dataString += String(br_Now(time_stamp[i]));
-            dataString += ", ";
+              dataString += String(br_Now(time_stamp[i]));
+              dataString += ", ";
 
-            dataString += String(erg_in[i]);
-            //            dataString += "<BR>";
+              dataString += String(erg_in[i]);
+              //            dataString += "<BR>";
 
-            client.println(dataString);
-          } //for
-        } // timing data ok
-      } //erg data ok
+              client.println(dataString);
+            } //for
+          } // timing data ok
+        } //erg data ok
+      }
     } // contrasts ok
   }// header ok
- // sendFooter();
+file.close();
+  // sendFooter();
 }
 
 void collectData ()
 {
   const long presamples = 102;
   long mean = 0;
+  if (iThisContrast == 0 && file.isOpen()) file.close();
+
+  if (iThisContrast >= maxContrasts) iThisContrast = 0;
 
   sampleCount = -presamples ;
   while (sampleCount < max_data)
@@ -550,7 +578,6 @@ void collectData ()
   sampleCount ++ ;  
   analogWrite(ledPin, 127);
   iThisContrast ++;
-  if (iThisContrast >= maxContrasts) iThisContrast = 0;
 
   writeFile(cFile);
   //  //destructive in place fft
@@ -571,7 +598,7 @@ void flickerPage()
 
   sendHeader();
 
-  if (sampleCount < max_data)
+  if (iThisContrast < maxContrasts)
   {
     client.println F("<script>");
 
@@ -585,7 +612,14 @@ void flickerPage()
     client.println F("clearInterval(myVar); }");
     client.println F("");
     client.println F("</script>");
-    client.println ("Acquiring, " + String(sampleCount) + " samples so far <BR>"  + MyInputString + "<BR> please wait....");
+    client.println ("Acquiring, " + String(sampleCount * iThisContrast) + " samples so far <BR>" );
+    client.println (cInput);
+    client.println F( "<BR> ");// retrieve the flicker rates we sampled with...
+    int randomnumber = contrastOrder[iThisContrast];
+    int F1 = int(F1contrast[randomnumber]);
+    int F2 = int(F2contrast[randomnumber]);
+    client.println("Data flickered at " + String(freq1) + " Hz with contrast " + String(F1) + 
+      " and " + String(freq2) + " Hz with contrast " + String(F1) +" % <BR> please wait...." ); 
 
   }
   //  else
@@ -685,8 +719,12 @@ void loop() {
             //Serial.println(" Proposed filename now" + sFile + ";");
             //if file exists... ????
             sFile.toCharArray(cFile, 29); // adds terminating null
-            if (fileExists(cFile))
+            if (fileExists(cFile) &&  iThisContrast >= maxContrasts) 
             {
+              // done so tidy up
+              iThisContrast = 0 ; // ready to start again
+              file.close();
+
               sendHeader ();
               client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Exists <BR>");
               client.println F( "<A HREF= \"dir=\"  > Full directory</A> <BR>");
@@ -710,16 +748,16 @@ void loop() {
           else
           {       
             fPOS = MyInputString.indexOf(".SVP");
-            Serial.println("  Position of .SVP was:" + String(fPOS));
+            //Serial.println("  Position of .SVP was:" + String(fPOS));
             if (fPOS > 0)
             {
               // requested a file...
               fPOS = MyInputString.indexOf("/");
               String sFile = MyInputString.substring(fPOS+1); // ignore the leading /
-              Serial.println(" Proposed filename " + sFile );
+              //Serial.println(" Proposed filename " + sFile );
               fPOS = sFile.indexOf(" ");
               sFile = sFile.substring(0, fPOS);
-              Serial.println(" Proposed filename now" + sFile + ";");
+              //Serial.println(" Proposed filename now" + sFile + ";");
               sFile.toCharArray(cFile, 29); // adds terminating null
               doreadFile(cFile) ;
               pageServed = true ;
@@ -1012,6 +1050,12 @@ void loop() {
 //
 //
 //
+
+
+
+
+
+
 
 
 
