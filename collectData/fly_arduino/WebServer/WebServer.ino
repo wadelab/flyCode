@@ -528,7 +528,7 @@ void doreadFile (const char * c)
       }
     } // contrasts ok
   }// header ok
-file.close();
+  file.close();
   // sendFooter();
 }
 
@@ -615,59 +615,52 @@ void flickerPage()
     client.println ("Acquiring, " + String(sampleCount * iThisContrast) + " samples so far <BR>" );
     client.println (cInput);
     client.println F( "<BR> ");// retrieve the flicker rates we sampled with...
-    int randomnumber = contrastOrder[iThisContrast];
-    int F1 = int(F1contrast[randomnumber]);
-    int F2 = int(F2contrast[randomnumber]);
-    client.println("Data flickered at " + String(freq1) + " Hz with contrast " + String(F1) + 
-      " and " + String(freq2) + " Hz with contrast " + String(F1) +" % <BR> please wait...." ); 
+    for (int i=0; i < iThisContrast; i++)
+    {
+      int randomnumber = contrastOrder[i];
+      int F1 = int(F1contrast[randomnumber]);
+      int F2 = int(F2contrast[randomnumber]);
+      client.println("Data flickered at " + String(freq1) + " Hz with contrast " + String(F1) + 
+        " and " + String(freq2) + " Hz with contrast " + String(F1) +" % <BR> " ); 
+      client.println("please wait....<BR>");
+    }
+    client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+    client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
 
+    client.println F("<script>");
+    client.println F("var c = document.getElementById(\"myCanvas\");");
+    client.println F("var ctx = c.getContext(\"2d\");");
+
+    for (int i=0; i < 5 * max_graph_data-2; i++)
+    {
+      client.print("ctx.moveTo("); 
+      client.print(i*4); 
+      client.print(","); 
+      client.print(myGraphData[i] + 350); 
+      client.println F(");");
+      client.print("ctx.lineTo("); 
+      client.print((i+1)*4); 
+      client.print(","); 
+      client.print(myGraphData[i+1] + 350); 
+      client.println F(");");
+      client.println F("ctx.stroke();");
+      
+            client.print("ctx.moveTo("); 
+      client.print(i*4); 
+      client.print(","); 
+      client.print(br_Now(time_stamp[i]) ); 
+      client.println F(");");
+      client.print("ctx.lineTo("); 
+      client.print((i+1)*4); 
+      client.print(","); 
+      client.print(br_Now(time_stamp[i+1])); 
+      client.println F(");");
+      client.println F("ctx.stroke();");
+    }
+    client.println F("</script>");    
   }
-  //  else
-  //  {
-  //    client.println("Acquired, " +  MyInputString + "<BR> Saved to ");
-  //
-  //    //    // retrieve the flicker rates we sampled with...
-  //    int randomnumber = contrastOrder[iThisContrast];
-  //    int F1 = int(F1contrast[randomnumber]);
-  //    int F2 = int(F2contrast[randomnumber]);
-  //    client.println("Data acquired at " + String(freq1) + " Hz with contrast " + String(F1) + 
-  //      " and " + String(freq2) + " Hz with contrast " + String(F1) +" % <BR> " ); 
-  //
-  //  }
 
-
-  //  }
-  //  else
-  //  {
-  //    sendHeader();// false);
-  //    // retrieve the flicker rates we sampled with...
-  //    int randomnumber = contrastOrder[iThisContrast];
-  //    int F1 = int(F1contrast[randomnumber]);
-  //    int F2 = int(F2contrast[randomnumber]);
-  //    client.println("Data acquired at " + String(freq1) + " Hz with contrast " + String(F1) + 
-  //      " and " + String(freq2) + " Hz with contrast " + String(F1) +" % <BR> " ); 
-  //    client.println(MyInputString + "<BR>");
-  //    client.println("No, time, brightness, analog in <BR>");
-  //    for (int i = 0; i < max_data; i++)
-  //    {
-  //      // make a string for assembling the data to log:
-  //      String dataString = String(i);
-  //      dataString += ", ";
-  //
-  //      dataString += String(time_stamp[i]-time_stamp[0]);
-  //      dataString += ", ";
-  //
-  //      dataString += String(br_Now(time_stamp[i]));
-  //      dataString += ", ";
-  //
-  //      dataString += String(erg_in[i]);
-  //      dataString += "<BR>";
-  //
-  //      client.println(dataString);
-  //    }
-  //  }
   sendFooter() ;
-
 
 }
 
@@ -1050,6 +1043,10 @@ void loop() {
 //
 //
 //
+
+
+
+
 
 
 
