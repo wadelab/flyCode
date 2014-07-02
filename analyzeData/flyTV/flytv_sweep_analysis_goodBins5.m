@@ -168,4 +168,27 @@ colormap hot; colorbar;
 box('off')
 whitebg('black')
 set(gcf, 'color', [0 0 0])
+
+%%
+%plot TF's against Response for Individual SF's
+
+mExtracted=abs(squeeze(mean(abs(extractedAmps))));
+figure(8);
+plot(mExtracted(:,:,2));
+set(gcf, 'color', [0 0 0])
+xlabel('Temporal Frequency (Hz)');
+ylabel('Response Amplitude');
+box('off')
+set(gca,'XTickLabel',uniqueTF);
+
+% and plot SF's against Response for Individual TF's
+TransExtracted=transpose(mExtracted(:,:,2))
+figure(9);
+plot(TransExtracted);
+set(gcf, 'color', [0 0 0])
+set(gca,'XTickLabel',uniqueSF);
+xlabel('Spatial Frequency (cpd)');
+ylabel('Response Amplitude');
+box('off')
+
 return;
