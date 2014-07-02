@@ -180,6 +180,11 @@ xlabel('Temporal Frequency (Hz)');
 ylabel('Response Amplitude');
 box('off')
 set(gca,'XTickLabel',uniqueTF);
+SFleg=num2str(uniqueSF);
+hleg=legend(SFleg,'location','NorthEastOutside');
+htitle=get(hleg,'title');
+set(htitle,'String','Spatial Frequency (cpd)');
+set(hleg, 'EdgeColor', [0,0,0]);
 
 % and plot SF's against Response for Individual TF's
 TransExtracted=transpose(mExtracted(:,:,2))
@@ -190,5 +195,11 @@ set(gca,'XTickLabel',uniqueSF);
 xlabel('Spatial Frequency (cpd)');
 ylabel('Response Amplitude');
 box('off')
+TFleg=num2str(uniqueTF);
+hleg2=legend(TFleg,'location','NorthEastOutside');
+htitle=get(hleg2,'title');
+set(htitle,'String','Temporal Frequency (Hz)');
+set(hleg2, 'EdgeColor', [0,0,0]);
+
 
 return;
