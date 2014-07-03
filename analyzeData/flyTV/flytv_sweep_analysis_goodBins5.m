@@ -174,7 +174,7 @@ set(gcf, 'color', [0 0 0])
 
 mExtracted=abs(squeeze(mean(abs(extractedAmps))));
 figure(8);
-plot(mExtracted(:,:,2));
+subplot(2,1,1);plot(mExtracted(:,:,2));
 set(gcf, 'color', [0 0 0])
 xlabel('Temporal Frequency (Hz)');
 ylabel('Response Amplitude');
@@ -188,8 +188,7 @@ set(hleg, 'EdgeColor', [0,0,0]);
 
 % and plot SF's against Response for Individual TF's
 TransExtracted=transpose(mExtracted(:,:,2))
-figure(9);
-plot(TransExtracted);
+subplot(2,1,2);plot(TransExtracted);
 set(gcf, 'color', [0 0 0])
 set(gca,'XTickLabel',uniqueSF);
 xlabel('Spatial Frequency (cpd)');
