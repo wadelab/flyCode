@@ -12,3 +12,8 @@ Thu*.d*
 
 
 *.pdf
+analyzeData/flyTV/prototype_ContModNoise.m
+
+collectData/flyTV/flytv_runSOMDrift.m
+
+collectData/flyTV/flytv_runSOMDriftNoDAQ.m
