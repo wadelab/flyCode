@@ -65,8 +65,13 @@ croppedDat=fullDat(:,:,:,:,1001:(durSecs*1000+1000));
 
 % Compute the FT
 ftAcrossReps=(fft(croppedDat,[],5)/(durSecs*1000));
+[nFlies,nReps,nTFs,nSFs,nSamps]=size(ftAcrossReps);
 
-fMeanAcrossReps=(squeeze(mean(ftAcrossReps,2)));
+
+tm=mean(ftAcrossReps,2);
+
+fMeanAcrossReps=reshape(tm,[nFlies,nTFs,nSFs,nSamps]);
+
 
 
 freqsToExtract=(uniqueTF*durSecs);
@@ -89,7 +94,14 @@ end % Next Fly
 %%
 %plot 3D temporal landscapes
 
-mExtracted=abs(squeeze(mean(abs(extractedAmps))));
+mExtracted=abs((mean(abs(extractedAmps))));
+mExtracted=reshape(mExtracted,[nTFs,nSFs,2]);
+
+
+if (sum(size(mExtracted)==1)==0) % Check to make sure that all dimensions have at least 2 entries - else you can't make a surface you have to just plot the data...
+    
+    
+
 figure(10);
 hold off;
 subtightplot(1,3,1,.03);
@@ -171,8 +183,9 @@ set(gcf, 'color', [0 0 0])
 
 %%
 %plot TF's against Response for Individual SF's
+end
 
-mExtracted=abs(squeeze(mean(abs(extractedAmps))));
+%mExtracted=abs(squeeze(mean(abs(extractedAmps))));
 figure(8);
 subplot(2,1,1);plot(mExtracted(:,:,2));
 set(gcf, 'color', [0 0 0])
