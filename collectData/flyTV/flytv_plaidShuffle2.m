@@ -10,19 +10,21 @@ HideCursor % Hides the mouse cursor
 % Get the calibration and compute the gamma table
 igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
 
-datadir='C:\data\SSERG\data\';
+datadir='C:\data\SSERG\data\Masking\';
 flyTV_startTime=now;
 
 dpy.gamma.inverse=igt;
 dpy.res = [1920 1080]; % screen resoloution
 dpy.size = [.53 .3] % Meters
 dpy.distance = [.22]; % Meters
+dpy.frameRate=144;
+
 
 % dpy will eventually contain all the info about the display e.g. size,
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) in it.
 
-stim.temporal.frequency=[5.14 7.2]; % Hz
+stim.temporal.frequency=[3 8]; % Hz
 stim.spatial.frequency=[.44 .44]; % Cycles per degree
 
 stim.spatial.internalRotation = 0; % Does the grating rotate within the envelope?
@@ -63,7 +65,7 @@ for thisRun=1:5  % 5 repeats
         finalData.TimeStamps=d.TimeStamps;
         finalData.Source=d.Source;
         finalData.EventName=d.EventName;
-        finalData.comment='Orthagonal_5.14_7.2Hz_.44CPD_40mask_Wapr_A_7DPE';
+        finalData.comment='Orthagonal_3_8Hz_.88CPD_40mask_Wapr_A_1DPE';
         finalData.stim=stim;
         finalData.now=now;
      

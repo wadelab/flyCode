@@ -17,7 +17,7 @@ function [validFrequenciesHz]=flytv_computeValidFreqs(dpy)
 % 1Hz.
 % 
 
-
+dpy.frameRate=144
 monitorRateHz=dpy.frameRate; % Hz
 
 % We sample at 1000Hz
