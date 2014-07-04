@@ -183,7 +183,20 @@ set(gcf, 'color', [0 0 0])
 
 %%
 %plot TF's against Response for Individual SF's
-end
+
+%mExtracted=abs(squeeze(mean(abs(extractedAmps))));
+figure(8);
+subplot(2,1,1);plot(mExtracted(:,:,2));
+set(gcf, 'color', [0 0 0])
+xlabel('Temporal Frequency (Hz)');
+ylabel('Response Amplitude');
+box('off')
+set(gca,'XTickLabel',uniqueTF);
+SFleg=num2str(uniqueSF);
+hleg=legend(SFleg,'location','NorthEastOutside');
+htitle=get(hleg,'title');
+set(htitle,'String','Spatial Frequency (cpd)');
+set(hleg, 'EdgeColor', [0,0,0]);
 
 %mExtracted=abs(squeeze(mean(abs(extractedAmps))));
 figure(8);
@@ -213,5 +226,37 @@ htitle=get(hleg2,'title');
 set(htitle,'String','Temporal Frequency (Hz)');
 set(hleg2, 'EdgeColor', [0,0,0]);
 
+end
+
+if not (sum(size(mExtracted)==1)==0)
+
+% and plot SF's against Response for Individual TF's
+TransExtracted=transpose(mExtracted(:,:,2))
+subplot(2,1,1);plot(TransExtracted);
+set(gcf, 'color', [0 0 0])
+set(gca,'XTickLabel',uniqueSF);
+xlabel('Spatial Frequency (cpd)');
+ylabel('Response Amplitude');
+box('off')
+TFleg=num2str(uniqueTF);
+hleg2=legend(TFleg,'location','NorthEastOutside');
+htitle=get(hleg2,'title');
+set(htitle,'String','Temporal Frequency (Hz)');
+set(hleg2, 'EdgeColor', [0,0,0]);
+
+%plot 2D temporal plot
+%mExtracted=abs(squeeze(mean(abs(TransExtracted))));
+
+
+TTransExtracted=transpose(TransExtracted);
+subplot(2,1,2);imagesc(squeeze(TTransExtracted));colorbar;
+ylabel('Temporal Frequency (Hz)');
+xlabel('Spatial Frequency (cpd)');
+set(gca,'YTickLabel',uniqueTF );
+set(gca,'XTickLabel',uniqueSF);
+colormap hot; colorbar;
+box('off')
+
+end
 
 return;
