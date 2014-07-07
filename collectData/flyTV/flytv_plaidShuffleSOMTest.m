@@ -10,7 +10,7 @@ startTime=tic;
 DUMMYRUN=0;
 
 if (~DUMMYRUN)
- %   jheapcl;
+    jheapcl;
     
     Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
     HideCursor % Hides the mouse cursor
@@ -27,16 +27,16 @@ datadir='C:\data\SSERG\data\';
 flyTV_startTime=now;
 
 
-dpy.res = [1920 1200]; % screen resoloution
+dpy.res = [1920 1080]; % screen resoloution
 dpy.size = [.53 .3] % Meters
-dpy.distance = [.7]; % Meters
+dpy.distance = [.22]; % Meters
 dpy.frameRate=144;
 % dpy will eventually contain all the info about the display e.g. size,
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) insc it.
 
-tfList=[1;3]'; % This is in Hz.
-sfList=[.1;1.76]'; % Cycles per degree
+tfList=[4;3]'; % This is in Hz.
+sfList=[.05,.44;0.05,.88;0.1,.44;.1,.88]; % Cycles per degree Modulator, Carrier
 
 nTF=size(tfList,1);
 nSF=size(sfList,1);
@@ -59,7 +59,7 @@ maskCont =[50]/100;
 
 nConds=length(ordered);
 
-nRepeats=1;
+nRepeats=5;
 
 for thisRun=1:nRepeats  % 5 repeats
     for thisCond=1:nConds
@@ -85,32 +85,32 @@ for thisRun=1:nRepeats  % 5 repeats
         
         
         if (~DUMMYRUN)
-            d=flytv_runPlaidSOM2(dpy,stim);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
+            d=flytv_runPlaidSOM2FlickerFast(dpy,stim);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
             % We might not have to
             % open the screen each
             % time around.
              
-            % finalData.triggerTime=d.TriggerTime; % Extracu    t the data into a new struct because DAQ objects don't save nicely
+            finalData.triggerTime=d.TriggerTime; % Extracu    t the data into a new struct because DAQ objects don't save nicely
             
-            % finalData.TimeStamps=d.TimeStamps;
-            % finalData.Source=d.Source;
-            % finalData.EventName=d.EventName;
+            finalData.TimeStamps=d.TimeStamps;
+            finalData.Source=d.Source;
+            finalData.EventName=d.EventName;
             
-           % finalData.comment='w-_7DPE_1';
-           % finalData.stim=stim;
-           % finalData.now=now;
-           % finalData.nRepeats=nRepeats;
-           % finalData.thisRun=thisRun;
-           % finalData.thisCond=thisCond;
-           % finalData.shuffleSeq=shuffleSeq;
-           % finalData.tfList=tfList;
-           % finalData.sfList=sfList;
+           finalData.comment='w-_7DPE_1';
+           finalData.stim=stim;
+           finalData.now=now;
+           finalData.nRepeats=nRepeats;
+           finalData.thisRun=thisRun;
+           finalData.thisCond=thisCond;
+           finalData.shuffleSeq=shuffleSeq;
+           finalData.tfList=tfList;
+           finalData.sfList=sfList;
             
             
-            %filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisRun),'_',datestr(flyTV_startTime,30),'.mat'])
-            %save(filename,'finalData','d');
-            %metaData{thisRun,thisCond}=finalData; % Put the extracted data into an array tf x sf x nrepeats
-            %data(thisRun,thisCond,:)=d.Data;
+            filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisRun),'_',datestr(flyTV_startTime,30),'.mat'])
+            save(filename,'finalData','d');
+            metaData{thisRun,thisCond}=finalData; % Put the extracted data into an array tf x sf x nrepeats
+            data(thisRun,thisCond,:)=d.Data;
             
             
         end % End check on dummy run
@@ -121,12 +121,12 @@ end % Next repetition
 totalSessionTime=toc;
 return;
 % 
-% if (~DUMMYRUN)
-%     filename=fullfile(datadir,['flyTV_',datestr(flyTV_startTime,30),'.mat'])
-%     save(filename);
-%     
-%     
-% end
+if (~DUMMYRUN)
+    filename=fullfile(datadir,['flyTV_',datestr(flyTV_startTime,30),'.mat'])
+    save(filename);
+    
+    
+end
 
 
 

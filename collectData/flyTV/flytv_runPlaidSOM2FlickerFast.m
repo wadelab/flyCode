@@ -51,7 +51,7 @@ function [dataOut]=flytv_runPlaid(dpy,stim)
 
 global gl; % We make this a global variable so that it can be seen from the listener
 gl=[];
-DAQ_PRESENT=0;
+DAQ_PRESENT=1;
 
 %Initialise the ni daq:
 if (DAQ_PRESENT)
@@ -114,7 +114,7 @@ if (round(ifi*1000)~=round(1000/dpy.frameRate))
     sca
     error('Framerate incorrect');
 end
-
+% ifi is in seconds. So a typical value might be 1/144 = .0069
 
 % Compute increment of phase shift per redraw:
 disp('PI?');
@@ -138,22 +138,39 @@ tic
 
 disp(stim.cont)
 toc
+% Update some grating animation parameters:
+phase=stim.spatial.phase;
+degToRad=pi/180;
 
+pixelsPerMeter=dpy.res(1)/dpy.size(1);
+metersPerDegree=dpy.distance*tan(degToRad);
+
+pixPerDegree=pixelsPerMeter*metersPerDegree;
+
+stim.spatial.frequencyCPerPixel=stim.spatial.frequency/pixPerDegree;
+
+pixelsPerScreen=dpy.res(1)
+degreesPerScreen=pixelsPerScreen./pixPerDegree
+
+cyclesPerScreen=degreesPerScreen.*stim.spatial.frequency
 % Compute the alpha and amplitudes that we will use
 [amps,alpha]=flytv_computeAlphaAmps(stim.cont);
+
 % We have to make our own sine wave grating for the modulator because we
 % only want it to modulate the alpha channel...
-angleList1=linspace(0,2*pi*10,dpy.res(1)); % This resolution is not set correctly!
+angleList1=linspace(0,2*pi*cyclesPerScreen(1),dpy.res(1)); % 
 [xx_mod,yy_mod]=meshgrid(angleList1,[1:dpy.res(2)]);
 gt1=(((sin(xx_mod))));
+
+
 meanBG=ones([size(gt1,1),size(gt1,2),3])*0;
 fullText=cat(3,meanBG,gt1);
 
-modText  = Screen('MakeTexture', win, fullText, [], [], 1);
+%modText  = Screen('MakeTexture', win, fullText, [], [], 1);
 
 
 
-angleList2=linspace(0,2*pi*80,dpy.res(1)); % This resultion also not set correctly
+angleList2=linspace(0,2*pi*cyclesPerScreen(2),dpy.res(1)); % This resultion also not set correctly
 
 
 [xx_car,yy_car]=meshgrid(angleList2,[1:dpy.res(2)]);
@@ -171,60 +188,52 @@ vbl = Screen('Flip', win);
 % We run at most 'movieDurationSecs' seconds if user doesn't abort via keypress.
 vblendtime = vbl + stim.temporal.duration;
 i=0;
-% Update some grating animation parameters:
-phase=stim.spatial.phase;
-degToRad=pi/180;
 
-pixelsPerMeter=dpy.res(1)/dpy.size(1);
-metersPerDegree=dpy.distance*tan(degToRad);
-
-pixPerDegree=pixelsPerMeter*metersPerDegree;
-
-stim.spatial.frequencyCPerPixel=stim.spatial.frequency/pixPerDegree;
     % Fill the whole onscreen window with a neutral 50% intensity
     % background color and an alpha channel value of 'bgcontrast'.
     % This becomes the clear color. After each Screen('Flip'), the
     % backbuffer will be cleared to this neutral 50% intensity gray
     % and a default 'bgcontrast' background noise contrast level:
     carrText=0; % Initilize this
-    gCarr=(sin(xx_car));
+    gCarr=(sin(xx_car+stim.spatial.pOffset(2)));
+    Screen('Blendfunction', win, GL_ONE, GL_ZERO);
+    
+    % Problem: I don't think we can compute the multiplied gratings in real
+    % time. It missed VBLs when we do this, causing the timing to be in
+    % error.
+    %
+    % We want to get going on the SOM stimuli so for now let's just check
+    % flicker. We will make two sets of stimuli corresponding to the two
+    % flicker conditions and just alternate between them
+        gt1p1=(sin(xx_mod+stim.spatial.pOffset(1))+1)/2;
+        gt1p2=(sin(xx_mod+pi+stim.spatial.pOffset(1))+1)/2;
+
+        % Make two textures
+      
+    gt2p1=(gCarr.*gt1p1)/2+.5;
+    gt2p2=(gCarr.*gt1p2)/2+.5;
+    
+   
+    carrTextP1  = Screen('MakeTexture', win, gt2p1, [], [], 1);
+    carrTextP2  = Screen('MakeTexture', win, gt2p2, [], [], 1);
+
 while (vbl < vblendtime)
     
     
     % Increment phase by the appropriate amount for this time period:
     phase = phase + phaseincrement;
+    
     pMod = (pi)*(round(phase/(pi)));
     
-    gt1=(sin(xx_mod+pMod(1))+1)/2;
-    
-   
-   Screen('Blendfunction', win, GL_ONE, GL_ZERO);
+    if (sin(phase(1))>0)
+        % Render the first texture
         
-        % Now we overdraw some regions of the onscreen windows alpha-channel
-        % with our "modulation" image - a image that contains alpha values
-        % which encode a different contrast 'fgcontrast'. After this drawing op,
-        % the alpha-channel will contain the final "contrast modulation landscape":
-       % Screen('DrawDots', win, [x y], 50, [0.5 0.5 0.5 fgcontrast], [], 1);
+    Screen('DrawTexture', win, carrTextP1, [], [], [], 0);
 
-
-    
-    
-
-    gt2=(gCarr.*gt1)/2+.5;
-    if (carrText)
-        Screen('Close',carrText);
+    else
+            Screen('DrawTexture', win, carrTextP2, [], [], [], 0);
     end
     
-    carrText  = Screen('MakeTexture', win, gt2, [], [], 1);
-
-        % The extra zero at the end forcefully disables bilinear filtering. This is
-        % not strictly neccessary on correctly working hardware, but an extra
-        % precaution to make sure that the noise values are blitted
-        % one-to-one into the offscreen window:
-    %Screen('DrawTexture', win, [gratingtex2], [], [], [stim.spatial.angle(2)], [], [0], [], [], [stim.rotateMode], [pMod(2),stim.spatial.frequencyCPerPixel(2),1,0]');
-     Screen('DrawTexture', win, carrText, [], [], [], 0);
-
-
     
     % This will draw the first (modulating) grating into the display
  
