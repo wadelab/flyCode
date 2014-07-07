@@ -30,7 +30,7 @@ flyTV_startTime=now;
 dpy.res = [1920 1200]; % screen resoloution
 dpy.size = [.53 .3] % Meters
 dpy.distance = [.7]; % Meters
-dpy.frameRate=60;
+dpy.frameRate=144;
 % dpy will eventually contain all the info about the display e.g. size,
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) insc it.

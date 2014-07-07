@@ -95,7 +95,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
             
-            finalData.comment='wapr_1DPE_8Hz_1';
+            finalData.comment='wapr_1DPE_8Hz_5';
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;
