@@ -96,7 +96,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
             
-           finalData.comment='w-_7DPE_1';
+           finalData.comment='w-_7DPE_1_SO';
            finalData.stim=stim;
            finalData.now=now;
            finalData.nRepeats=nRepeats;
@@ -122,7 +122,7 @@ totalSessionTime=toc;
 return;
 % 
 if (~DUMMYRUN)
-    filename=fullfile(datadir,['flyTV_',datestr(flyTV_startTime,30),'.mat'])
+    filename=fullfile(datadir,['flyTV_SO_',datestr(flyTV_startTime,30),'.mat'])
     save(filename);
     
     
