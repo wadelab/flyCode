@@ -23,7 +23,7 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\';
+datadir='C:\data\SSERG\data\SOM\';
 flyTV_startTime=now;
 
 
@@ -35,8 +35,8 @@ dpy.frameRate=144;
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) insc it.
 
-tfList=[4;3]'; % This is in Hz.
-sfList=[.05,.44;0.05,.88;0.1,.44;.1,.88]; % Cycles per degree Modulator, Carrier
+tfList=[2,3]'; % This is in Hz.
+sfList=[.05,.22;.05,.44;0.05,.88;.1,.22;0.1,.44;.1,.88]; % Cycles per degree Modulator, Carrier
 
 nTF=size(tfList,1);
 nSF=size(sfList,1);
@@ -59,7 +59,7 @@ maskCont =[50]/100;
 
 nConds=length(ordered);
 
-nRepeats=5;
+nRepeats=15;
 
 for thisRun=1:nRepeats  % 5 repeats
     for thisCond=1:nConds
@@ -96,7 +96,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
             
-           finalData.comment='w-_7DPE_1_SO';
+           finalData.comment='wapr_1DPE_SOM_A';
            finalData.stim=stim;
            finalData.now=now;
            finalData.nRepeats=nRepeats;
@@ -105,10 +105,11 @@ for thisRun=1:nRepeats  % 5 repeats
            finalData.shuffleSeq=shuffleSeq;
            finalData.tfList=tfList;
            finalData.sfList=sfList;
-            
+           finalData.data=d.Data;
+           
             
             filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisRun),'_',datestr(flyTV_startTime,30),'.mat'])
-            save(filename,'finalData','d');
+           save(filename,'finalData','d');
             metaData{thisRun,thisCond}=finalData; % Put the extracted data into an array tf x sf x nrepeats
             data(thisRun,thisCond,:)=d.Data;
             
@@ -119,7 +120,7 @@ for thisRun=1:nRepeats  % 5 repeats
     end % Next contrast pair
 end % Next repetition
 totalSessionTime=toc;
-return;
+
 % 
 if (~DUMMYRUN)
     filename=fullfile(datadir,['flyTV_SO_',datestr(flyTV_startTime,30),'.mat'])
@@ -127,7 +128,7 @@ if (~DUMMYRUN)
     
     
 end
-
+return;
 
 
 
