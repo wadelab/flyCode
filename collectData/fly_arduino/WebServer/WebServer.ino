@@ -621,8 +621,10 @@ void flickerPage()
     for (int i=0; i < iThisContrast; i++)
     {
       int randomnumber = contrastOrder[i];
+      int F2index = 0 ;
+      if (randomnumber > F2contrastchange) F2index = 1;
       int F1 = int(F1contrast[randomnumber]);
-      int F2 = int(F2contrast[randomnumber]);
+      int F2 = int(F2contrast[F2index]);
       client.println("Data flickered at " + String(freq1) + " Hz with contrast " + String(F1) + 
         " and " + String(freq2) + " Hz with contrast " + String(F2) +" % <BR> " ); 
       client.println("please wait....<BR>");
