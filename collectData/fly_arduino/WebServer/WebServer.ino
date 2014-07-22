@@ -624,7 +624,7 @@ void flickerPage()
       int F1 = int(F1contrast[randomnumber]);
       int F2 = int(F2contrast[randomnumber]);
       client.println("Data flickered at " + String(freq1) + " Hz with contrast " + String(F1) + 
-        " and " + String(freq2) + " Hz with contrast " + String(F1) +" % <BR> " ); 
+        " and " + String(freq2) + " Hz with contrast " + String(F2) +" % <BR> " ); 
       client.println("please wait....<BR>");
     }
     client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
