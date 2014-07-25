@@ -10,10 +10,12 @@ function getTimeString() {
     var d=today.getDate();
     var h=today.getHours();
     var m=today.getMinutes();
+    var s = today.getSeconds()
     m = checkTime(m);
 	mo = checkTime(mo);
 	h = checkTime(h);
-    return d + "_" + mo + "_" + h+"h"+m ;
+	s = checkTime(s);
+    return d + "_" + mo + "_" + h + "h" + m + "_" + s ;
     }
     
 function startTime()
@@ -47,14 +49,15 @@ function changeText()
 cellspacing="2">
 <tbody>
 <tr>
-<td style="vertical-align: top;">GAL4:</td>
-<td style="vertical-align: top;">UAS:</td>
-<td style="vertical-align: top;">Age:</td>
+<td style="vertical-align: top; width = 33%">GAL4:</td>
+<td style="vertical-align: top; width = 33%">UAS:</td>
+<td style="vertical-align: top; width = 33%">Age:</td>
 </tr>
 <tr>
 <td style="vertical-align: top;">
 <select name="GAL4" size = 4>
-<option value="w">w-        </option>
+<option value="w">w-</option>
+<option value="w_apr">w^apr</option>
 <option value="CS">CS</option>
 <option value="TH" selected>TH</option>
 </select><br>
@@ -78,22 +81,40 @@ cellspacing="2">
 <option value="7">7</option>
 <option value="14">14</option>
 <option value="21">21</option>
+<option value="-1">unknown</option>
 </select><br>
 </td>
 </tr>
+</tbody>
+</table>
+<BR>
+<table style="text-align: left; width: 50%;" border="1" cellpadding="2"
+cellspacing="2">
+<tbody >
 <tr>
-<td style="vertical-align: top;"><BR><BR> Sex: <BR>
+<td style="vertical-align: top; width = 33%"><BR> Sex: <BR></td>
+<td style="vertical-align: top; width = 33%"><BR>Organism: <BR></td>
+<td style="vertical-align: top; width = 33%"><BR>Colour</td>
+</tr>
+<tr>
+<td style="vertical-align: top;"><BR>
 <input type="radio" name="sex" value="male">Male<br>
 <input type="radio" checked name="sex" value="female">Female
 <BR><br>
 </td>
-<td style="vertical-align: top;"><BR> Organism: <BR>
+<td style="vertical-align: top;"><BR> 
 <input type="radio" name="organism" value="fly" checked>fly<br>
 <input type="radio" name="organism" value="zfish">zebrafish<br>
 <input type="radio" name="organism" value="mouse">mouse<br>
+<input type="radio" name="organism" value="locust">locust<br>
 <BR><br>
-</td></td>
-<td style="vertical-align: top;">
+</td>
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="colour" value="blue" checked>blue<br>
+<input type="radio" name="colour" value="blue_K">blue (K)<br>
+<input type="radio" name="colour" value="green">green<br>
+<input type="radio" name="colour" value="red">red<br>
+</td>
 </tr>
 </tbody>
 </table>
