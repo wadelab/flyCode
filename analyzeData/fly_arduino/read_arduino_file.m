@@ -1,6 +1,14 @@
 [f,p]=uigetfile('*.csv');
 fName=fullfile(p,f);
 
+%% read header line
+fid = fopen(fName, 'rt');
+line1a = fgets(fid);
+fclose(fid);
+line1b=strrep(line1a, 'GET /?'  ,'');
+line1c=strrep(line1b, 'HTTP/1.1','');
+
+line = strsplit(line1c, '&');
 
 
 %% read the table of contrasts
