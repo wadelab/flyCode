@@ -340,9 +340,9 @@ void serve_dummy()
   sendFooter() ;
 }
 
-int br_Now(double t)
+int br_Now(double t, int contr)
 {
-  int randomnumber = contrastOrder[iThisContrast];
+  int randomnumber = contrastOrder[contr];
   int F2index = 0 ;
   if (randomnumber > F2contrastchange) F2index = 1;
   return int(sin((t/1000.0)*PI*2.0*double(freq1))*1.270 * F1contrast[randomnumber] + sin((t/1000.0)*PI*2.0*double(freq2))*1.270 * F2contrast[F2index])+127;
@@ -518,7 +518,7 @@ void doreadFile (const char * c)
               dataString += String(time_stamp[i]-time_stamp[0]);
               dataString += ", ";
 
-              dataString += String(br_Now(time_stamp[i]));
+              dataString += String(br_Now(time_stamp[i], iC));
               dataString += ", ";
 
               dataString += String(erg_in[i]);
@@ -570,7 +570,7 @@ void collectData ()
         mean = mean + long(analogRead(analogPin));
       }
 
-      int intensity = br_Now(now_time) ;
+      int intensity = br_Now(now_time, iThisContrast) ;
       //brightness[sampleCount] = int(intensity) ;
       analogWrite(ledPin, intensity);
 
@@ -653,12 +653,12 @@ void flickerPage()
             client.print("ctx.moveTo("); 
       client.print(i*4); 
       client.print(","); 
-      client.print(br_Now(time_stamp[i]) ); 
+      client.print(br_Now(time_stamp[i]), iThisContrast ); 
       client.println F(");");
       client.print("ctx.lineTo("); 
       client.print((i+1)*4); 
       client.print(","); 
-      client.print(br_Now(time_stamp[i+1])); 
+      client.print(br_Now(time_stamp[i+1]), iThisContrast); 
       client.println F(");");
       client.println F("ctx.stroke();");
     }
