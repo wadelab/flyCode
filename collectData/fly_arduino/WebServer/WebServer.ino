@@ -653,12 +653,12 @@ void flickerPage()
             client.print("ctx.moveTo("); 
       client.print(i*4); 
       client.print(","); 
-      client.print(br_Now(time_stamp[i]), iThisContrast ); 
+      client.print(br_Now(time_stamp[i], iThisContrast )); 
       client.println F(");");
       client.print("ctx.lineTo("); 
       client.print((i+1)*4); 
       client.print(","); 
-      client.print(br_Now(time_stamp[i+1]), iThisContrast); 
+      client.print(br_Now(time_stamp[i+1], iThisContrast)); 
       client.println F(");");
       client.println F("ctx.stroke();");
     }
