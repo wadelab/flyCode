@@ -545,7 +545,7 @@ void collectData ()
   if (iThisContrast >= maxContrasts) 
   {
      iThisContrast = 0;
-     do_shuffle():
+     doShuffle();
   }
   
   sampleCount = -presamples ;
