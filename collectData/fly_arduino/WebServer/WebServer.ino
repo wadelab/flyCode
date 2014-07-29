@@ -144,7 +144,7 @@ void doShuffle()
     contrastOrder[i] = i ;
   }
   ///Knuth-Fisher-Yates shuffle algorithm.
-  
+
   int randomnumber = random(maxContrasts);
   int tmp ;
 
@@ -321,7 +321,7 @@ void printDirectory(uint8_t flags) {
       root.printFatTime(p.lastWriteTime);
     }
     // print size if requested
-    /*if (!DIR_IS_SUBDIR(&p) && (flags & LS_SIZE))*/ {
+    /*if (!DIR_IS_SUBDIR(&p) && (flags & LS_SIZE))*/    {
       client.print(' ');
       client.print(p.fileSize);
     }
@@ -544,10 +544,13 @@ void collectData ()
 
   if (iThisContrast >= maxContrasts) 
   {
-     iThisContrast = 0;
-     doShuffle();
+    iThisContrast = 0;
   }
-  
+  if (iThisContrast ==0)
+  {
+    doShuffle(); 
+  }
+
   sampleCount = -presamples ;
   while (sampleCount < max_data)
   {
@@ -654,8 +657,8 @@ void flickerPage()
       client.print(myGraphData[i+1] + 350); 
       client.println F(");");
       client.println F("ctx.stroke();");
-      
-            client.print("ctx.moveTo("); 
+
+      client.print("ctx.moveTo("); 
       client.print(i*4); 
       client.print(","); 
       client.print(br_Now(time_stamp[i], iThisContrast )); 
@@ -1053,6 +1056,7 @@ void loop() {
 //
 //
 //
+
 
 
 
