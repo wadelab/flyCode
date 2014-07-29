@@ -133,6 +133,7 @@ void setup() {
   Serial.print F("server is at ");
   Serial.println(Ethernet.localIP());
 
+  randomSeed(analogRead(analogPin));
   doShuffle();
 }
 
@@ -143,7 +144,7 @@ void doShuffle()
     contrastOrder[i] = i ;
   }
   ///Knuth-Fisher-Yates shuffle algorithm.
-  randomSeed(analogRead(analogPin));
+  
   int randomnumber = random(maxContrasts);
   int tmp ;
 
@@ -541,8 +542,12 @@ void collectData ()
   long mean = 0;
   if (iThisContrast == 0 && file.isOpen()) file.close();
 
-  if (iThisContrast >= maxContrasts) iThisContrast = 0;
-
+  if (iThisContrast >= maxContrasts) 
+  {
+     iThisContrast = 0;
+     do_shuffle():
+  }
+  
   sampleCount = -presamples ;
   while (sampleCount < max_data)
   {
