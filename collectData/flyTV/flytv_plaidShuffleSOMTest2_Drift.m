@@ -35,7 +35,7 @@ dpy.frameRate=60;
 % For now if just has the gamma function (inverse) insc it.
 
 tfList=[4;3]'; % This is in Hz.
-sfList=[.05,.44;0.05,.88;0.1,.44;.1,.88]; % Cycles per degree Modulator, Carrier
+sfList=[.1,.1;.44,.88]'; % Cycles per degree Carrier,Modulator, 
 
 nTF=size(tfList,1);
 nSF=size(sfList,1);
@@ -50,6 +50,8 @@ stim.rotateMode = []; % rotation of mask grating (1= horizontal, 2= vertical, et
 stim.spatial.angle = [0 0]  ; % angle of gratings on screen
 stim.temporal.duration=11; % how long to flicker for
 
+stim.temporal.modulation.type='drift';
+stim.temporal.modulation.stopStart=0;
 
 % Loop over a set of contrast pair. All possible combinations of probe
 % (0,14,28,56,70,80,99 % contrast) and mask(0,30%);
@@ -58,7 +60,7 @@ maskCont =[50]/100;
 
 nConds=length(ordered);
 
-nRepeats=5;
+nRepeats=1;
 
 for thisRun=1:nRepeats  % 5 repeats
     for thisCond=1:nConds
@@ -84,33 +86,33 @@ for thisRun=1:nRepeats  % 5 repeats
         
         
         if (~DUMMYRUN)
-            d=flytv_runPlaidSOM2FlickerFast(dpy,stim);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
+            d=flytv_runPlaidSOM2FlickerFastTestDrift(dpy,stim);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
             % We might not have to
             % open the screen each
             % time around.
-             
+            
             if (isfield(d,'triggerTime'))
                 
-           finalData.triggerTime=d.TriggerTime; % Extracu    t the data into a new struct because DAQ objects don't save nicely
-           finalData.TimeStamps=d.TimeStamps;
-           finalData.Source=d.Source;
-           finalData.EventName=d.EventName;
-            
-           finalData.comment='w-_7DPE_1_SO';
-           finalData.stim=stim;
-           finalData.now=now;
-           finalData.nRepeats=nRepeats;
-           finalData.thisRun=thisRun;
-           finalData.thisCond=thisCond;
-           finalData.shuffleSeq=shuffleSeq;
-           finalData.tfList=tfList;
-           finalData.sfList=sfList;
-           finalData.data=d.data; % I'm nervous that d (because it's some sort of special object) doesn't get converted properly
-            
-            filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisRun),'_',datestr(flyTV_startTime,30),'.mat'])
-            save(filename,'finalData','d');
-            metaData{thisRun,thisCond}=finalData; % Put the extracted data into an array tf x sf x nrepeats
-            data(thisRun,thisCond,:)=d.Data;
+                finalData.triggerTime=d.TriggerTime; % Extracu    t the data into a new struct because DAQ objects don't save nicely
+                finalData.TimeStamps=d.TimeStamps;
+                finalData.Source=d.Source;
+                finalData.EventName=d.EventName;
+                
+                finalData.comment='w-_7DPE_1_SO';
+                finalData.stim=stim;
+                finalData.now=now;
+                finalData.nRepeats=nRepeats;
+                finalData.thisRun=thisRun;
+                finalData.thisCond=thisCond;
+                finalData.shuffleSeq=shuffleSeq;
+                finalData.tfList=tfList;
+                finalData.sfList=sfList;
+                finalData.data=d.data; % I'm nervous that d (because it's some sort of special object) doesn't get converted properly
+                
+                filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisRun),'_',datestr(flyTV_startTime,30),'.mat'])
+                save(filename,'finalData','d');
+                metaData{thisRun,thisCond}=finalData; % Put the extracted data into an array tf x sf x nrepeats
+                data(thisRun,thisCond,:)=d.Data;
             end
             
         end % End check on dummy run
@@ -120,8 +122,8 @@ for thisRun=1:nRepeats  % 5 repeats
 end % Next repetition
 totalSessionTime=toc;
 return;
-% 
-if (~DUMMYRUN)
+%
+if ((~DUMMYRUN) && (isfield(d,'triggerTime')))
     filename=fullfile(datadir,['flyTV_SO_',datestr(flyTV_startTime,30),'.mat'])
     save(filename);
     
