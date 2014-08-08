@@ -459,7 +459,7 @@ void doreadFile (const char * c)
 
     // now try the contrast table
     iBytesRequested = maxContrasts * sizeof(int);
-    iBytesRead = file.read(erg_in, iBytesRequested);
+    iBytesRead = file.read(contrastOrder, iBytesRequested);
     if (iBytesRead < iBytesRequested)
     {
       client.println F("Error reading contrast data in file ");
@@ -474,7 +474,7 @@ void doreadFile (const char * c)
         // save space, put the floats as strings in the time_stamp buffer
         dataString = String(i);
         dataString += ", ";
-        iOldContrast = erg_in [i];
+        iOldContrast = contrastOrder [i];
         dataString += String(dtostrf(F1contrast[iOldContrast], 10, 2, cPtr));
         dataString += ", ";
         if (iOldContrast > F2contrastchange)
