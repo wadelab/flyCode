@@ -38,7 +38,7 @@ maskmax = 2 ;
 freqmax = nFreqs;
 genotypemax = length(analysisStruct.phenotypeName) ;
 
-fprintf (fileID,'fly, mask, freq, max response, genotype \n');
+fprintf (fileID,'fly, mask, freq, max response, max/masked F2[1], genotype \n');
 for genotype = 1 : genotypemax
     flymax = analysisStruct.nFlies{genotype};
     for freq = 1 : freqmax
@@ -56,6 +56,7 @@ for genotype = 1 : genotypemax
                     if (response > max_response)
                         max_response = response ;
                     end ;
+                    
                     %%convert the indexes to humean friendly forms...
                     genotype_str = analysisStruct.phenotypeName{genotype} ;
                     if mask == 1
@@ -66,8 +67,13 @@ for genotype = 1 : genotypemax
                     
                     freq_str= plotParams.labelList{freq} ;
                     end % contrast
+                    
+                    %%calculate the max_response as a ratio of the masked F2
+                    F2_response = abs(analysisStruct.allFlyDataCoh{1,genotype}(fly,2,1,2));
+                    ratio_response = max_response / F2_response ;
+                    
                     %%write the line
-                    fprintf (fileID, '%d,  %s, %s,%0.3e, %s \n', fly, mask_str, freq_str,  max_response, genotype_str);
+                    fprintf (fileID, '%d,  %s, %s, %0.3e, %0.3e, %s \n', fly, mask_str, freq_str,  max_response, ratio_response, genotype_str);
                     
                 end %  fly
             end  %% if
