@@ -90,4 +90,9 @@ for thisPhenotype=1:length(xlParams.phenotypeList)
     flyCount (thisPhenotype) = cellstr(strNN) ;
 end
 [status]=xlwrite(filename, flyCount,'fly count','A2')
+%% write a page with the contrast table
+
+[status]=xlwrite(filename, {'contrasts'},'contrasts','A1')
+[status]=xlwrite(filename, transpose(xlParams.contRange),'contrasts','A2')
+
 
