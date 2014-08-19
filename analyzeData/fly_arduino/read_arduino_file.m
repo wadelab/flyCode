@@ -1,6 +1,9 @@
-nContrasts = 9 ; %fixed for this fist version of the arduino stimuli
+close all
+clear all
 
-[f,p]=uigetfile('*.csv');
+nContrasts = 9 ; %fixed for this first version of the arduino stimuli
+
+[f,p]=uigetfile('*.SVP');
 fName=fullfile(p,f);
 
 %% read header line
@@ -20,24 +23,26 @@ contrasts=csvread(fName, 1,0, [1,0,nContrasts,2]);
 
 %% read the SSVEP data - 9 contrasts of 1024 data points
 
-r=zeros(nContrasts,1024);
+rawdata=zeros(nContrasts,1024);
 for i = 0:nContrasts-1
     iStart = 10+1024*i
     iEnd = 1033+1024*i
-    r(i+1,:)=csvread(fName, iStart,3, [iStart,3,iEnd,3]);
+    rawdata(i+1,:)=csvread(fName, iStart,3, [iStart,3,iEnd,3]);
 end;
 
 
 
 %% subtract mean and do fft
 figure();
+fftData= zeros(nContrasts,99);
 for i = 1:nContrasts
     
-    r(i,:)=r(i,:)-mean(r(i,:));
+    rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
     subplot(9,1,i);
-    fData=fft(r(i,:));
-    bar(abs(fData(2:100)));
-    axis([0 100 0 5000]);
+    complx_fftData=fft(rawdata(i,:));
+    fftData(i,:) = abs(complx_fftData(2:100));
+    bar(fftData(i,:));
+    axis([0 100 0 5000]); % plot to 25Hz
     set(gca,'XTickLabel',''); % no tick labels (unless bottom row, see below)
     
     yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
@@ -46,6 +51,28 @@ for i = 1:nContrasts
 end;
 % label bottom row
 set(gca,'XTickLabel',{'0',' ','5',' ','10',' ','15',' ','20',' ','25'});
-    
 xlabel('Hz');
+
+%% Plot CRF for this fly
+figure();
+
+xData = contrasts(:,2);
+y12Data = fftData(:,50);
+%y15Data = fftData(:,max(60:63));
+
+plot(xData, y12Data, 'LineStyle','none', 'marker', 'o');
+
+%% Sort the data
+CRF=zeros(nContrasts,3);
+
+CRF(:,1:2)= contrasts(:,2:3);
+CRF(:,3)= yData;
+sortrows(CRF);
+
+plot (CRF(:,1), CRF(:,3), '*');
+
+% CRF(:,3) has dat for this fly run
+
+
+
 
