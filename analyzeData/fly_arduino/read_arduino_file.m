@@ -1,13 +1,16 @@
-close all
-clear all
+% close all
+% clear all
+
+function myCRF = read_arduino_file (fName)
 
 nContrasts = 9 ; %fixed for this first version of the arduino stimuli
 
-[f,p]=uigetfile('*.SVP');
-fName=fullfile(p,f);
+% [f,p]=uigetfile('*.SVP');
+% fName=fullfile(p,f);
+[pathstr, fileName, ext] = fileparts(fName) ; 
 
 %% read header line
-fid = fopen(fName, 'rt');
+[fid, msg] = fopen(fName, 'rt');
 line1a = fgets(fid);
 fclose(fid);
 line1b=strrep(line1a, 'GET /?'  ,'');
@@ -25,15 +28,15 @@ contrasts=csvread(fName, 1,0, [1,0,nContrasts,2]);
 
 rawdata=zeros(nContrasts,1024);
 for i = 0:nContrasts-1
-    iStart = 10+1024*i
-    iEnd = 1033+1024*i
+    iStart = 10+1024*i ;
+    iEnd = 1033+1024*i ;
     rawdata(i+1,:)=csvread(fName, iStart,3, [iStart,3,iEnd,3]);
 end;
 
 
 
 %% subtract mean and do fft
-figure();
+figure('Name', strcat('FFT of: ',fileName));
 fftData= zeros(nContrasts,99);
 for i = 1:nContrasts
     
@@ -54,7 +57,7 @@ set(gca,'XTickLabel',{'0',' ','5',' ','10',' ','15',' ','20',' ','25'});
 xlabel('Hz');
 
 %% Plot CRF for this fly
-figure();
+figure('Name', strcat('CRF of: ',fileName));
 
 xData = contrasts(:,2);
 y12Data = fftData(:,50);
@@ -66,10 +69,12 @@ plot(xData, y12Data, 'LineStyle','none', 'marker', 'o');
 CRF=zeros(nContrasts,3);
 
 CRF(:,1:2)= contrasts(:,2:3);
-CRF(:,3)= yData;
-sortrows(CRF);
-
+CRF(:,3)= y12Data;
 plot (CRF(:,1), CRF(:,3), '*');
+% return the sorted array
+myCRF = sortrows(CRF);
+
+
 
 % CRF(:,3) has dat for this fly run
 
