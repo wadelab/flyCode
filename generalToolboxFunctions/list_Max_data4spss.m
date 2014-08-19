@@ -99,4 +99,4 @@ for i =1:cSize(1)
 end
         
 
-disp (['file written', outfile]);
+disp (['file written ', outfile]);
