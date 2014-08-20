@@ -1,10 +1,9 @@
- % This version of the code sweeps over tf and sf space with no mask. It's
+% This version of the code sweeps over tf and sf space with no mask. It's
 % just to generate the sftf sensitivity surfaces that we like so much...
 % It replaces the original 'sweep' code and makes sure that everything is
 % specified in the same units (in particular sf).
 % ARW June 11 2014
-% ARW August 2015 - This version drifts a single bar across the screen at a particular repetition rate.
-
+%
 close all;
 clear all;
 startTime=tic;
@@ -35,8 +34,8 @@ dpy.frameRate=60;
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) insc it.
 
-tfList=[5,5]'; % This is in Hz. Its the number of times a single bar is swept across the screen in 1s
-sfList=[.05,.05;.44 .88]'; % Cycles per degree Modulator,Carrier,: Carrier is simple, modulator now is the width of the single bar in degs.
+tfList=[4;3]'; % This is in Hz.
+sfList=[.05,.05;.44,.88]'; % Cycles per degree Carrier,Modulator, 
 
 nTF=size(tfList,1);
 nSF=size(sfList,1);
@@ -52,7 +51,7 @@ stim.spatial.angle = [0 0]  ; % angle of gratings on screen
 stim.temporal.duration=11; % how long to flicker for
 
 stim.temporal.modulation.type='drift';
-stim.temporal.modulation.stopStart=0;
+stim.temporal.modulation.stopStart=2;
 
 % Loop over a set of contrast pair. All possible combinations of probe
 % (0,14,28,56,70,80,99 % contrast) and mask(0,30%);
@@ -87,7 +86,7 @@ for thisRun=1:nRepeats  % 5 repeats
         
         
         if (~DUMMYRUN)
-            d=flytv_runPlaidSOM2FlickerFastTestDrift(dpy,stim);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
+            d=flytv_runSOMDriftReverse(dpy,stim);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
             % We might not have to
             % open the screen each
             % time around.

@@ -48,10 +48,10 @@ function [dataOut]=flytv_runPlaid(dpy,stim)
 
 % Make sure this is running on OpenGL Psychtoolbox:
 %AssertOpenGL;
-dataOut=0;
+dataOut=0;    global gl; % We make this a global variable so that it can be seen from the listener
+
 try
     
-    global gl; % We make this a global variable so that it can be seen from the listener
     gl=[];
     DAQ_PRESENT=0;
     
@@ -119,7 +119,7 @@ try
     % ifi is in seconds. So a typical value might be 1/144 = .0069
     
     % Compute increment of phase shift per redraw:
-    disp('PI?');
+    disp('Phase Incr?');
     phaseincrement = [stim.temporal.frequency] * 2*pi * ifi
     disp('s.t.f');
     disp(stim.temporal.frequency);
@@ -128,13 +128,7 @@ try
     
     % Build a procedural sine grating texture for a grating with a support of
     % res(1) x res(2) pixels and a RGB color offset of 0.5 -- a 50% gray.
-    if (DAQ_PRESENT)
-        
-        % Begin data acquisition in the background
-        disp('Running');
-        startBackground(s);
-        
-    end
+    
     tic
     
     
@@ -161,16 +155,6 @@ try
     % Compute the alpha and amplitudes that we will use
     [amps,alpha]=flytv_computeAlphaAmps(stim.cont);
     
-    
-    % The modulator will be a single gaussian (sine wave?) profile that is
-    % swept across the field. Alternatively, we could just compute the
-    % strip beforehand using a multiply and sweep it using the srect and
-    % drects...
-    
-    
-    
-    
-    
     % We have to make our own sine wave grating for the modulator because we
     % only want it to modulate the alpha channel...
     angleList1=linspace(0,2*pi*cyclesPerScreen(1),dpy.res(1)+pixelsPerCycle1*2); %
@@ -183,7 +167,6 @@ try
     meanBG=ones([size(gt1,1),size(gt1,2),3])*0;
     fullText=cat(3,meanBG,gt1);
     
-    %modText  = Screen('MakeTexture', win, fullText, [], [], 1);
     
     angleList2=linspace(0,2*pi*cyclesPerScreen(2),dpy.res(1)); % This resultion also not set correctly
     
@@ -191,14 +174,6 @@ try
     [xx_car,yy_car]=meshgrid(angleList2,[1:dpy.res(2)]);
     
     
-    % Wait for release of all keys on keyboard, then sync us to retrace:
-    
-    vbl = Screen('Flip', win);
-    
-    
-    % We run at most 'movieDurationSecs' seconds if user doesn't abort via keypress.
-    vblendtime = vbl + stim.temporal.duration;
-    i=0;
     
     % Fill the whole onscreen window with a neutral 50% intensity
     % background color and an alpha channel value of 'bgcontrast'.
@@ -234,11 +209,71 @@ try
     ModTextP1  = Screen('MakeTexture', win, gt1p1);
     %  ModTextP2  = Screen('MakeTexture', win, gt1p2);
     
+    % If the stim.temporal.modulation.stopStart=2
+    % then the stim reverses drift direction several times a secondl.
+    % This reversal rate is set by  stim.temporal.modulation.reversalRate
+    % (e.g. 5)
+    
+    % We pre-compute the phase vector for all times so that we don't
+    % compute it inside the loop.
+    % For standard drift, it's just 0....2*pi*cyclesPerSecond*nSeconds (mod
+    % 2*pi): In other words a sawtooth
+    % For reversal it's a triangle waveform
+    % For stop/start it's a triangle wave with gaps in between
+    % The matlab command 'sawtooth' is handy here - with the second
+    % parameter providing  the option to make a triangle wave
+    framesPerDuration=ceil(stim.temporal.duration*dpy.frameRate);
+    thisPhase(:,1)=linspace(0,2*pi*stim.temporal.frequency(1)*stim.temporal.duration,framesPerDuration);
+    thisPhase(:,2)=linspace(0,2*pi*stim.temporal.frequency(2)*stim.temporal.duration,framesPerDuration);
+    
+    switch stim.temporal.modulation.stopStart
+        case 0
+            % This is a continuously moving thing in one direction: A
+            % sawtooth
+            
+            thisPhase=rem(thisPhase,2*pi);
+            
+            
+        case 1
+            % This stops and starts : a sawtooth with gaps
+        case 2
+            % This reverses: A triangle wave (sawtooth(xxxxxx, .5)
+            thisPhase(:,1)=sawtooth(thisPhase(:,1),.5)*pi;
+            thisPhase(:,2)=sawtooth(thisPhase(:,2),.5)*pi;
+            
+    end
+    
+    figure(1);
+    plot(thisPhase);
+    
+    
+    % Start data acqisotion, then get ready to enter the loop...
+    
+    if (DAQ_PRESENT)
+        
+        % Begin data acquisition in the background
+        disp('Running');
+        startBackground(s);
+        
+    end
+    vbl = Screen('Flip', win);
+    
+    
+    % We run at most 'movieDurationSecs' seconds if user doesn't abort via keypress.
+    vblendtime = vbl + stim.temporal.duration;
+    vblStart=vbl;
+    
+    i=0;
+    
+    disp('Entering loop');
+    
+    
     while (vbl < vblendtime)
         
+        thisFrame=(round((vbl-vblStart)*dpy.frameRate))+1;
         
         % Increment phase by the appropriate amount for this time period:
-        phase = phase + phaseincrement;
+        phase = thisPhase(thisFrame);
         
         Screen('DrawTexture', win, carrierText, [], []);
         
@@ -254,7 +289,7 @@ try
         
         Screen('DrawTexture', win, ModTextP1, sRect, []);
         
-  
+        
         
         % Show it at next retrace:
         vbl = Screen('Flip', win, vbl + 0.5 * ifi);
@@ -271,15 +306,17 @@ try
     else
         dataOut=-1;
     end
+    
+    
 catch ME
     
-    le=lasterr;
-    fprintf('\n\n*********\n** ERROR: %s\n',le);
+    %le=lasterr;
+   % fprintf('\n\n*********\n** ERROR: %s\n',le);
     sca
     disp(ME);
     disp(ME.stack(1));
     
     disp(ME.stack(2));
-    fprintf('\n\n*********\n** ERROR: %s\n',le);
-    
+%    fprintf('\n\n*********\n** ERROR: %s\n',le);
+    ME.rethrow
 end
