@@ -28,7 +28,7 @@ for thisFly=1:nFlies
     end
     
     % Extract the responses at the modulation frequencies
-    cyclesPerData=[(dur-1)*freqs(1)*2,;(dur-1)*(freqs(2)*2);(dur-1)*(freqs(2)+freqs(1)) ];
+    cyclesPerData=[(dur-1)*freqs(1)*2,;(dur-1)*(freqs(2)*2)];
     rawData=thisD.data(:,:,(1001:end));
     fRaw=fft(rawData,[],3); % Ft down time
     goodComps=(fRaw(:,:,cyclesPerData+1));
@@ -43,7 +43,6 @@ end
 mvals=abs(squeeze(mean((mGoodComps)))); % This is the incoherent (abs) mean between animals
 stVals=squeeze(std((mGoodComps)));
 semVals=stVals/sqrt(nFlies);
-aVals=angle(squeeze(mean(mGoodComps)));
 
 umInds=1:7;
 mInds=8:11;
@@ -51,12 +50,12 @@ mInds=8:11;
 figure(10);
 cLevels1=thisD.probeCont(umInds);
 cLevels2=thisD.probeCont(mInds);
-subplot(4,1,1);
+subplot(3,1,1);
 
 imagesc(abs(mGoodComps(:,:,1)));
 colormap hot;
 
-subplot(4,1,2);
+subplot(3,1,2);
 hold off;
 
 
@@ -73,7 +72,7 @@ legend({'Unmasked','Masked'});
 % Also plot the mask response
 
 
-subplot(4,1,3);
+subplot(3,1,3);
 
 hold off;
 
@@ -87,27 +86,6 @@ set(h2,'LineWidth',2);
 grid on;
 title('2F2 responses');
 legend({'Unmasked','Masked'});
-
-
-% Also plot the IM 
-
-
-subplot(4,1,4);
-
-hold off;
-
-
-h1=errorbar(cLevels1+.01,mvals(umInds,3),semVals(umInds,3),'k');
-hold on;
-h2=errorbar(cLevels2+.01,mvals(mInds,3),semVals(mInds,3),'r');set(gca,'XScale','Log');
-set(h1,'LineWidth',2);
-set(h2,'LineWidth',2);
-
-grid on;
-title('1F1+1F2 responses');
-legend({'Unmasked','Masked'});
-
-
 
 return;
 %%
