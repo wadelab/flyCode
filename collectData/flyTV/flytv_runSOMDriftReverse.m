@@ -136,17 +136,18 @@ try
     toc
     % Update some grating animation parameters:
     phase=stim.spatial.phase;
-    degToRad=pi/180;
+    radPerDegree=pi/180; % Radians per degree
     
-    pixelsPerMeter=dpy.res(1)/dpy.size(1);
-    metersPerDegree=dpy.distance*tan(degToRad);
+    radiansPerScreen=atan(dpy.size(1)/(2*dpy.distance))*2;
+    degreesPerScreen=radiansPerScreen/radPerDegree;
     
-    pixPerDegree=pixelsPerMeter*metersPerDegree;
+    pixelsPerMeter=dpy.res(1)/dpy.size(1); % Pixels per horizontal screen meter. Should be somethign like 4000
+    
+    pixPerDegree=dpy.res(1)/degreesPerScreen;
     
     stim.spatial.frequencyCPerPixel=stim.spatial.frequency/pixPerDegree;
     
     pixelsPerScreen=dpy.res(1)
-    degreesPerScreen=pixelsPerScreen./pixPerDegree
     
     cyclesPerScreen=degreesPerScreen.*stim.spatial.frequency;
     
