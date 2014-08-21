@@ -23,7 +23,7 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\';
+datadir='C:\data\SSERG\data\NewSweep\PINK1\w-male\';
 flyTV_startTime=now;
 
 
@@ -95,7 +95,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
             
-            finalData.comment='w-_7DPE_1';
+            finalData.comment='w-male_1DPE_12';
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;

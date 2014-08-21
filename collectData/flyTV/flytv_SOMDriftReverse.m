@@ -29,13 +29,15 @@ flyTV_startTime=now;
 dpy.res = [1920 1080]; % screen resoloution
 dpy.size = [.53 .3] % Meters
 dpy.distance = [.22]; % Meters
-dpy.frameRate=60;
+dpy.frameRate=144;
+dpy.defaultScreen=1;
+
 % dpy will eventually contain all the info about the display e.g. size,
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) insc it.
 
 tfList=[4;3]'; % This is in Hz.
-sfList=[.05,.05;.44,.88]'; % Cycles per degree Carrier,Modulator, 
+sfList=[.05,.05,.05,.05,.05,.05;.11,.22,.44,.88,1.76,3.25]'; % Cycles per degree Carrier,Modulator, 
 
 nTF=size(tfList,1);
 nSF=size(sfList,1);

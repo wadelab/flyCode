@@ -87,7 +87,7 @@ try
     Screen('Preference', 'SkipSyncTests', 1);
     
     % Select Screen
-    WhichScreen = 0
+    WhichScreen = dpy.defaultScreen;
     
     Screen('Preference', 'VisualDebuglevel', 1)% disables welcome and warning screens
     HideCursor % Hides the mouse cursor
@@ -236,6 +236,7 @@ try
             
         case 1
             % This stops and starts : a sawtooth with gaps
+            error('Stop start not implemented yet');
         case 2
             % This reverses: A triangle wave (sawtooth(xxxxxx, .5)
             thisPhase(:,1)=sawtooth(thisPhase(:,1),.5)*pi;
@@ -243,8 +244,9 @@ try
             
     end
     
-    figure(1);
-    plot(thisPhase);
+    % Uncomment below to see the phase waveform 
+%     figure(1);
+%     plot(thisPhase);
     
     
     % Start data acqisotion, then get ready to enter the loop...
@@ -282,7 +284,7 @@ try
         
         % This source rectangle is chosen from a different bit of the
         % modulating texture each time so that you see a drifting overlay
-        sRect=[sModRectX1,0,sModRectX2,dpy.res(2)]
+        sRect=[sModRectX1,0,sModRectX2,dpy.res(2)];
         
         
         % Render the second (modulating) texture
