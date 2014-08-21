@@ -59,7 +59,7 @@ try
     if (DAQ_PRESENT)
         s = daq.createSession('ni');
         s.DurationInSeconds = stim.temporal.duration;
-        addAnalogInputChannel(s,'Dev3','ai0','Voltage')
+        addAnalogInputChannel(s,'Dev3','ai0','Voltage');
         s.NumberOfScans = s.DurationInSeconds*1000;
         s.NotifyWhenDataAvailableExceeds = s.NumberOfScans;
         myData=[];
@@ -147,7 +147,7 @@ try
     
     stim.spatial.frequencyCPerPixel=stim.spatial.frequency/pixPerDegree;
     
-    pixelsPerScreen=dpy.res(1)
+    pixelsPerScreen=dpy.res(1);
     
     cyclesPerScreen=degreesPerScreen.*stim.spatial.frequency;
     
@@ -161,8 +161,6 @@ try
     angleList1=linspace(0,2*pi*cyclesPerScreen(1),dpy.res(1)+pixelsPerCycle1*2); %
     [xx_mod,yy_mod]=meshgrid(angleList1,[1:dpy.res(2)]);
     gt1=(((sin(xx_mod))));
-    
-    size(xx_mod)
     
     
     meanBG=ones([size(gt1,1),size(gt1,2),3])*0;

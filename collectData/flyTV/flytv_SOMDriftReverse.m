@@ -10,7 +10,10 @@ startTime=tic;
 DUMMYRUN=0;
 
 if (~DUMMYRUN)
-    %jheapcl;
+    if (strcmp(computer,'PCWIN64'))
+        jheapcl; % For some reason this is required on PCWin64 arch
+    end
+    
     
     Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
     HideCursor % Hides the mouse cursor
@@ -30,14 +33,18 @@ dpy.res = [1920 1080]; % screen resoloution
 dpy.size = [.53 .3] % Meters
 dpy.distance = [.22]; % Meters
 dpy.frameRate=144;
-dpy.defaultScreen=1;
-
+ if (strcmp(computer,'PCWIN64'))
+    dpy.defaultScreen=1;
+ else
+     dpy.defaultScreen=0;
+ end
+ 
 % dpy will eventually contain all the info about the display e.g. size,
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) insc it.
 
 tfList=[4;3]'; % This is in Hz.
-sfList=[.05,.05,.05,.05,.05,.05;.11,.22,.44,.88,1.76,3.25]'; % Cycles per degree Carrier,Modulator, 
+sfList=[.05,.05,.05,.05,.05;.22,.44,.88,1.76,3.25]'; % Cycles per degree Carrier,Modulator, 
 
 nTF=size(tfList,1);
 nSF=size(sfList,1);
@@ -74,14 +81,14 @@ for thisRun=1:nRepeats  % 5 repeats
         fprintf('\nRunning %d %d',stim.cont(1),stim.cont(2));
         
         thisaction= shuffleSeq(thisCond);
-        t=ceil(thisaction/ nSF)
-        s=1+rem(thisaction, nSF) %  Should be 1+rem(thisAction-1,nTF)
+        t=ceil(thisaction/ nSF);
+        s=1+rem(thisaction, nSF); %  Should be 1+rem(thisAction-1,nTF)
         
         tt(thisRun,thisCond)=t;
         ss(thisRun,thisCond)=s;
         
-        stim.spatial.frequency=sfList(s,:)
-        stim.temporal.frequency=tfList(t,:)
+        stim.spatial.frequency=sfList(s,:);
+        stim.temporal.frequency=tfList(t,:);
         
         disp(thisRun)
         disp(thisCond)
