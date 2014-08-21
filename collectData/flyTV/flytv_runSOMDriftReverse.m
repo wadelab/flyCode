@@ -53,7 +53,12 @@ dataOut=0;    global gl; % We make this a global variable so that it can be seen
 try
     
     gl=[];
-    DAQ_PRESENT=0;
+    if (strcmp(computer,'PCWIN64'))
+        DAQ_PRESENT=1;
+    else
+        DAQ_PRESENT=0;
+    end
+    
     
     %Initialise the ni daq:
     if (DAQ_PRESENT)
@@ -83,14 +88,14 @@ try
     
     
     %Now we run the Plaid
-    
-    Screen('Preference', 'SkipSyncTests', 1);
-    
+     Screen('Preference', 'VisualDebuglevel', 1);% disables welcome and warning screens
+    %Screen('Preference', 'SkipSyncTests', 1);
+    Screen('Preference', 'SuppressAllWarnings', 1);
     % Select Screen
     WhichScreen = dpy.defaultScreen;
     
-    Screen('Preference', 'VisualDebuglevel', 1)% disables welcome and warning screens
-    HideCursor % Hides the mouse cursor
+   
+    HideCursor; % Hides the mouse cursor
     
     % Open a fullscreen onscreen window on that display, choose a background
     % color of 128 = gray, i.e. 50% max intensity:
@@ -118,13 +123,13 @@ try
     end
     % ifi is in seconds. So a typical value might be 1/144 = .0069
     
-    % Compute increment of phase shift per redraw:
-    disp('Phase Incr?');
-    phaseincrement = [stim.temporal.frequency] * 2*pi * ifi
-    disp('s.t.f');
-    disp(stim.temporal.frequency);
-    disp('ifi');
-    disp(ifi);
+    %     % Compute increment of phase shift per redraw:
+    %     disp('Phase Incr?');
+    phaseincrement = [stim.temporal.frequency] * 2*pi * ifi;
+    %     disp('s.t.f');
+    %     disp(stim.temporal.frequency);
+    %     disp('ifi');
+    %     disp(ifi);
     
     % Build a procedural sine grating texture for a grating with a support of
     % res(1) x res(2) pixels and a RGB color offset of 0.5 -- a 50% gray.
@@ -132,8 +137,8 @@ try
     tic
     
     
-    disp(stim.cont)
-    toc
+    %disp(stim.cont);
+    
     % Update some grating animation parameters:
     phase=stim.spatial.phase;
     radPerDegree=pi/180; % Radians per degree
@@ -243,9 +248,9 @@ try
             
     end
     
-    % Uncomment below to see the phase waveform 
-%     figure(1);
-%     plot(thisPhase);
+    % Uncomment below to see the phase waveform
+    %     figure(1);
+    %     plot(thisPhase);
     
     
     % Start data acqisotion, then get ready to enter the loop...
@@ -295,7 +300,7 @@ try
         % Show it at next retrace:
         vbl = Screen('Flip', win, vbl + 0.5 * ifi);
     end
-    
+    toc
     % We're done. Close the window. This will also release all other ressources:
     Screen('CloseAll');
     if (DAQ_PRESENT)
@@ -308,16 +313,16 @@ try
         dataOut=-1;
     end
     
-    
 catch ME
     
     %le=lasterr;
-   % fprintf('\n\n*********\n** ERROR: %s\n',le);
+    % fprintf('\n\n*********\n** ERROR: %s\n',le);
     sca
+    ME.rethrow
     disp(ME);
     disp(ME.stack(1));
     
     disp(ME.stack(2));
-%    fprintf('\n\n*********\n** ERROR: %s\n',le);
+    %    fprintf('\n\n*********\n** ERROR: %s\n',le);
     ME.rethrow
 end

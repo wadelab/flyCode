@@ -8,18 +8,18 @@ close all;
 clear all;
 startTime=tic;
 DUMMYRUN=0;
+commentFromHeader='w-_7DPE_1_SO';
 
 if (~DUMMYRUN)
+    
     if (strcmp(computer,'PCWIN64'))
         jheapcl; % For some reason this is required on PCWin64 arch
     end
-    
-    
+        
     Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
     HideCursor % Hides the mouse cursor
     
     % Get the calibration and compute the gamma table
-    
     igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
     dpy.gamma.inverse=igt;
 end
@@ -28,11 +28,11 @@ end
 datadir='C:\data\SSERG\data\';
 flyTV_startTime=now;
 
-
 dpy.res = [1920 1080]; % screen resoloution
 dpy.size = [.53 .3] % Meters
 dpy.distance = [.22]; % Meters
 dpy.frameRate=144;
+
  if (strcmp(computer,'PCWIN64'))
     dpy.defaultScreen=1;
  else
@@ -73,12 +73,17 @@ nRepeats=1;
 
 for thisRun=1:nRepeats  % 5 repeats
     for thisCond=1:nConds
+        
+            if (strcmp(computer,'PCWIN64'))
+                jheapcl; % For some reason this is required on PCWin64 arch
+            end
+    
         stim.cont=[probeCont(1) maskCont(1)];
         % Phase is the phase shift in degrees (0-360 etc.)applied to the sine gratiscng:
         stim.spatial.phase=[0 0 ]; %[rand(1)*360 rand(1)*360];
         stim.spatial.pOffset=rand(2,1)*360;
         
-        fprintf('\nRunning %d %d',stim.cont(1),stim.cont(2));
+        fprintf('\nRunning cont1 %.2f cont2 %.2f',stim.cont(1),stim.cont(2));
         
         thisaction= shuffleSeq(thisCond);
         t=ceil(thisaction/ nSF);
@@ -100,14 +105,14 @@ for thisRun=1:nRepeats  % 5 repeats
             % open the screen each
             % time around.
             
-            if (isfield(d,'triggerTime'))
+            if (isprop(d,'TriggerTime'))
                 
                 finalData.triggerTime=d.TriggerTime; % Extracu    t the data into a new struct because DAQ objects don't save nicely
                 finalData.TimeStamps=d.TimeStamps;
                 finalData.Source=d.Source;
                 finalData.EventName=d.EventName;
                 
-                finalData.comment='w-_7DPE_1_SO';
+                finalData.comment=commentFromHeader;
                 finalData.stim=stim;
                 finalData.now=now;
                 finalData.nRepeats=nRepeats;
@@ -116,7 +121,7 @@ for thisRun=1:nRepeats  % 5 repeats
                 finalData.shuffleSeq=shuffleSeq;
                 finalData.tfList=tfList;
                 finalData.sfList=sfList;
-                finalData.data=d.data; % I'm nervous that d (because it's some sort of special object) doesn't get converted properly
+                finalData.data=d.Data; % I'm nervous that d (because it's some sort of special object) doesn't get converted properly
                 
                 filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisRun),'_',datestr(flyTV_startTime,30),'.mat'])
                 save(filename,'finalData','d');
@@ -130,15 +135,17 @@ for thisRun=1:nRepeats  % 5 repeats
     end % Next contrast pair
 end % Next repetition
 totalSessionTime=toc;
-return;
+
 %
-if ((~DUMMYRUN) && (isfield(d,'triggerTime')))
-    filename=fullfile(datadir,['flyTV_SO_',datestr(flyTV_startTime,30),'.mat'])
+if ((~DUMMYRUN) && (isprop(d,'TriggerTime')))
+  
+    filename=fullfile(datadir,['flyTV_SOM_',datestr(flyTV_startTime,30),'.mat']);
+      fprintf('\nSaving all data in %s',filename);
     save(filename);
     
     
 end
-
+return
 
 
 
