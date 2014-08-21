@@ -1,7 +1,14 @@
 %load('/Users/alexwade/Downloads/Sweep1 08.04.14.mat') % it is possible to browse files using uigetfile
+% This is a first pass at code to analyze mask/probe paradigms in a situation where the frequencies are non-integer Hz
+% This happens because of issues with the monitor refresh rate: we enforce
+% an even, integer number of frames per contrast reversal period (1/f)
+% At the moment we're using 25Hz (mask) and 16.666Hz probe based on sweep
+% experiments. That means that we can analyze 9s of data = 150 cycles of
+% probe and 225 cycles of mask
 clear all
 close all;
 dataDir=uigetdir
+%%
 fList=dir(fullfile(dataDir,'*.mat'))
 
 nFlies=length(fList);
@@ -14,13 +21,14 @@ for thisFly=1:nFlies
     thisD=load(dataSetName);
     [nReps,nContCombos]=size(thisD.metaData);
     freqs=thisD.stim.temporal.frequency;
-    dur=thisD.stim.temporal.duration;
+    dur=9;
+    ;
     disp thisFly
     
     for thisRep=1:nReps
         for thisCombo=1:nContCombos
-    fprintf('\n%d,%d\n',thisRep,thisCombo);
-    
+            fprintf('\n%d,%d\n',thisRep,thisCombo);
+            
             thisMD=thisD.metaData{thisRep,thisCombo};
             probeCont(thisRep,thisCombo)=thisMD.stim.cont(1);
             maskCont(thisRep,thisCombo)=thisMD.stim.cont(2);
@@ -28,14 +36,16 @@ for thisFly=1:nFlies
     end
     
     % Extract the responses at the modulation frequencies
-    cyclesPerData=(dur-1)*freqs*2;
-    rawData=thisD.data(:,:,(1001:end));
-    fRaw=fft(rawData,[],3); % Ft down time
+    cyclesPerData=round(dur*freqs*2);
+    rawData=thisD.data(:,:,(1001:10000));
+    fRaw=fft(rawData,[],3)/(dur*1000); % Ft down time
+   mRaw=squeeze(mean(fRaw,1));
+   
     goodComps=(fRaw(:,:,cyclesPerData+1));
     [seq,ishuffleSeq]=sort(thisD.shuffleSeq);
     
     mGoodComps(thisFly,thisD.shuffleSeq,:)=(mean((goodComps(:,:,:))));
-
+    
     
     
     
@@ -44,10 +54,11 @@ for thisFly=1:nFlies
 end
 %%
 pc1=1:7
-pc2=8:12;
+pc2=8:11;
 
-mvals=abs(squeeze(mean(abs(mGoodComps))));
-avals=angle(squeeze(mean((mGoodComps))));
+mvals=abs(squeeze(mean((mGoodComps))));
+% allAng=angle(mGoodComps)-repmat(angle(mGoodComps(:,7,1)),[1 12 2]);
+% avals=squeeze(mean((allAng)));
 
 stVals=squeeze(std((mGoodComps)));
 semVals=stVals/sqrt(nFlies);
@@ -87,18 +98,17 @@ set(h2,'LineWidth',2);
 
 grid on;
 dataDir
-
-figure(11);
-hold off;
-cLevels1=thisD.probeCont(pc1);
-cLevels2=thisD.probeCont(pc2);
-subplot(3,1,2);
-
-polar(cLevels1+.01,(180/pi)*unwrap(avals(pc1,1))','k');
-hold on;
-
-polar(cLevels2+.01,(180/pi)*unwrap(avals(pc2,1))','r');
-subplot(3,1,2);
-hold off;
-return;
+%
+% figure(11);
+% hold off;
+% cLevels1=thisD.probeCont(pc1);
+% cLevels2=thisD.probeCont(pc2);
+%
+%
+% polar((180/pi)*(avals(pc1,1))',cLevels1+.01,'k');
+% hold on;
+%
+% polar((180/pi)*(avals(pc2,1))',cLevels2+.01,'r');
+% hold off;
+% return;
 %%

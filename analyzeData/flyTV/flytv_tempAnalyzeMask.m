@@ -1,8 +1,8 @@
 %load('/Users/alexwade/Downloads/Sweep1 08.04.14.mat') % it is possible to browse files using uigetfile
 clear all
 close all;
-dataDir=uigetdir;
-fList=dir(fullfile(dataDir,'flyTV_*.mat'))
+dataDir=uigetdir
+fList=dir(fullfile(dataDir,'*.mat'))
 
 nFlies=length(fList);
 
@@ -19,7 +19,7 @@ for thisFly=1:nFlies
     
     for thisRep=1:nReps
         for thisCombo=1:nContCombos
-   % fprintf('\n%d,%d\n',thisRep,thisCombo);
+    fprintf('\n%d,%d\n',thisRep,thisCombo);
     
             thisMD=thisD.metaData{thisRep,thisCombo};
             probeCont(thisRep,thisCombo)=thisMD.stim.cont(1);
@@ -28,46 +28,49 @@ for thisFly=1:nFlies
     end
     
     % Extract the responses at the modulation frequencies
-    cyclesPerData=[(dur-1)*freqs(1)*2,;(dur-1)*(freqs(2)*2)];
+    cyclesPerData=(dur-1)*freqs*2;
     rawData=thisD.data(:,:,(1001:end));
     fRaw=fft(rawData,[],3); % Ft down time
     goodComps=(fRaw(:,:,cyclesPerData+1));
     [seq,ishuffleSeq]=sort(thisD.shuffleSeq);
     
-    mGoodComps(thisFly,thisD.shuffleSeq,:)=(mean((goodComps(:,:,:)))); % This is the complex (coherent) mean within a single animal
+    mGoodComps(thisFly,thisD.shuffleSeq,:)=(mean((goodComps(:,:,:))));
+
     
- 
+    
+    
+    
     
 end
 %%
-mvals=abs(squeeze(mean((mGoodComps)))); % This is the incoherent (abs) mean between animals
+pc1=1:7
+pc2=8:11;
+
+mvals=abs(squeeze(mean(abs(mGoodComps))));
+% allAng=angle(mGoodComps)-repmat(angle(mGoodComps(:,7,1)),[1 12 2]);
+% avals=squeeze(mean((allAng)));
+
 stVals=squeeze(std((mGoodComps)));
 semVals=stVals/sqrt(nFlies);
 
-umInds=1:7;
-mInds=8:11;
-
 figure(10);
-cLevels1=thisD.probeCont(umInds);
-cLevels2=thisD.probeCont(mInds);
+cLevels1=thisD.probeCont(pc1);
+cLevels2=thisD.probeCont(pc2);
 subplot(3,1,1);
 
 imagesc(abs(mGoodComps(:,:,1)));
-colormap hot;
 
 subplot(3,1,2);
 hold off;
 
 
-h1=errorbar(cLevels1+.01,mvals(umInds),semVals(umInds),'k');
+h1=errorbar(cLevels1+.01,mvals(pc1),semVals(pc1),'k');
 hold on;
-h2=errorbar(cLevels2+.01,mvals(mInds),semVals(mInds),'r');set(gca,'XScale','Log');
+h2=errorbar(cLevels2+.01,mvals(pc2),semVals(pc2),'r');set(gca,'XScale','Log');
 set(h1,'LineWidth',2);
 set(h2,'LineWidth',2);
 
 grid on;
-title('2F1 responses');
-legend({'Unmasked','Masked'});
 
 % Also plot the mask response
 
@@ -77,15 +80,25 @@ subplot(3,1,3);
 hold off;
 
 
-h1=errorbar(cLevels1+.01,mvals(umInds,2),semVals(umInds,2),'k');
+h1=errorbar(cLevels1+.01,mvals(pc1,2),semVals(pc1,2),'k');
 hold on;
-h2=errorbar(cLevels2+.01,mvals(mInds,2),semVals(mInds,2),'r');set(gca,'XScale','Log');
+h2=errorbar(cLevels2+.01,mvals(pc2,2),semVals(pc2,2),'r');set(gca,'XScale','Log');
 set(h1,'LineWidth',2);
 set(h2,'LineWidth',2);
 
 grid on;
-title('2F2 responses');
-legend({'Unmasked','Masked'});
-
-return;
+dataDir
+% 
+% figure(11);
+% hold off;
+% cLevels1=thisD.probeCont(pc1);
+% cLevels2=thisD.probeCont(pc2);
+% 
+% 
+% polar((180/pi)*(avals(pc1,1))',cLevels1+.01,'k');
+% hold on;
+% 
+% polar((180/pi)*(avals(pc2,1))',cLevels2+.01,'r');
+% hold off;
+% return;
 %%
