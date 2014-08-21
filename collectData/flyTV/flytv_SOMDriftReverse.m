@@ -6,7 +6,7 @@
 %
 close all;
 clear all;
-startTime=tic;
+startTime=clock;
 DUMMYRUN=0;
 commentFromHeader='w-_7DPE_1_SO';
 
@@ -43,8 +43,8 @@ dpy.frameRate=144;
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) insc it.
 
-tfList=[4;3]'; % This is in Hz.
-sfList=[.05,.05,.05,.05,.05;.22,.44,.88,1.76,3.25]'; % Cycles per degree Carrier,Modulator, 
+tfList=[4;4]'; % This is in Hz.
+sfList=[.05,.05,.05,.05,.05,.05;.005,.22,.44,.88,1.76,3.25]'; % Cycles per degree Carrier,Modulator, 
 
 nTF=size(tfList,1);
 nSF=size(sfList,1);
@@ -69,7 +69,7 @@ maskCont =[50]/100;
 
 nConds=length(ordered);
 
-nRepeats=1;
+nRepeats=20;
 
 for thisRun=1:nRepeats  % 5 repeats
     for thisCond=1:nConds
@@ -145,6 +145,8 @@ if ((~DUMMYRUN) && (isprop(d,'TriggerTime')))
     
     
 end
+disp('Total elapsed time (s) for this experiment:');
+etime(clock,startTime)
 return
 
 
