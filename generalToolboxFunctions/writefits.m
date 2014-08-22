@@ -3,12 +3,12 @@
 close all;
 clear all;
 
-%[fileToLoad,pathToLoad]=uigetfile('*fitTemp*.mat','Load fit file');
-%[pathstr, name, ext] = fileparts(fileToLoad);
-%b = [pathToLoad,name, '_fitted_',datestr(now,30)];
+[fileToLoad,pathToLoad]=uigetfile('*fitTemp*.mat','Load fit file');
+[pathstr, name, ext] = fileparts(fileToLoad);
+filebaseName = [pathToLoad,name, '_fitted_Bootf'];
+load(fullfile(pathToLoad,fileToLoad));
 
-
-load(fullfile('work.mat'));
+%%load(fullfile('work.mat'));
 %% 
 %% ****************************
 % We now have some lovely bootstrapped parameters for all mask conditions
@@ -18,6 +18,8 @@ load(fullfile('work.mat'));
 
 %% housekeeping 
 harmonicNames = {'1F1','1F2';'2F1','2F2'};
+paramNames = {'Rmax', 'c50', 'n', 'R0'}; %R0 is always zero
+
 xToPlot = linspace(0,length(fittedNames),length(fittedNames));
 if length(fittedNames) < 4 % try 4
     sStyle = 'horizontal' ;
@@ -38,18 +40,18 @@ end
 
 % in this case we just write out the last bit (rows 24-35) of the masked
 % data ( thisMaskCondition = 2:2 )
-fID = fopen('work.csv', 'w+');
-fprintf(fID,' Freq, RMax BP, Phenotype\n');
+fID = fopen([filebaseName,'.csv'], 'w+');
 
-bf_size = size(bootFitParams) ;
+
+fprintf(fID,' Freq, Param, CI1, CI2, Phenotype\n');
+
 for iPhenotype=24:35
     for iFreq = 1:2
-        for thisMaskCondition = 2:2
-            for iBoot = 1:bf_size(4); 
-                fprintf(fID,'%s, %0.5e, %s \n',  harmonicNames{iFreq},  bootFitParams(iPhenotype,thisMaskCondition,iFreq,iBoot,1),fittedNames{iPhenotype});
-            end %iBoot
-        end % mask
+        for iParam = 1:2 % just write RMax and c50
+            for thisMaskCondition = 2:2
+                fprintf(fID,'%s, %s, %0.5e, %0.5e, %0.5e, %s \n',  harmonicNames{iFreq},  paramNames{iParam},  confInt(iPhenotype,thisMaskCondition,iFreq,1,iParam),  mean(bootFitParams(iPhenotype,thisMaskCondition,iFreq,:,iParam)),confInt(iPhenotype,thisMaskCondition,iFreq,2,iParam), fittedNames{iPhenotype});
+            end % mask
+        end  % iParam
     end % iFreq
 end %iPhen
-
 %quit
