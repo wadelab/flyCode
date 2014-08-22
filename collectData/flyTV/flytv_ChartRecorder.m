@@ -1,4 +1,4 @@
-%Basic Chart Recorder for flyTV
+close %Basic Chart Recorder for flyTV
 %Written by RJHW 15.05.14
 
 KbReleaseWait;

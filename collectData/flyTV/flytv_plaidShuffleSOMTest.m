@@ -96,7 +96,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
             
-           finalData.comment='wapr_1DPE_SOM_A';
+           finalData.comment='wapr_3DPE_SOM_10';
            finalData.stim=stim;
            finalData.now=now;
            finalData.nRepeats=nRepeats;
