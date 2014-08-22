@@ -31,7 +31,7 @@ IGNORE_PHOTODIODE_FLAG=1; % Normally we don't want to waste time processing the 
 
 [fileToLoad,pathToLoad]=uigetfile('*Analysis*.mat','Load analysis file');
 [pathstr, name, ext] = fileparts(fileToLoad);
-b = [pathToLoad,name, '_analysed_',datestr(now,30)];
+b1 = [pathToLoad,name, '_analysed_',datestr(now,30)];
 
 
 load(fullfile(pathToLoad,fileToLoad)); % This is the file you got from the directory analysis script. It will place a structure calles 'analysisStruct' in the workspace
@@ -226,7 +226,7 @@ end
 
 % We have gone to a lot of trouble to do these fits so save them in a temp
 % file quickly!
-fName= [b,'fitTemp.mat']
+fName= [b1,'fitTemp.mat']
 save (fName);
 
 disp('You may want to run plotfits.m to see more graphs and ANOVAs');
