@@ -150,43 +150,12 @@ void ReadOutFile()
 
 //***************************************************************************************************
 
-void writeFile()
+int br_now (unsigned long t)
 {
-for (int i = 0; i < max_data; i++)
-    {
-        // make a string for assembling the data to log:
-        String dataString = String(i);
-        dataString += ", ";
-    
-       
-      dataString += String(time_stamp[i]);
-      dataString += ", ";
-
-      dataString += String(int(sin((double(time_stamp[i])/1000.0)*PI*2.0*freq)*127.0)+127);
-      dataString += ", ";
-
-      dataString += String(erg_in[i]);
-                      
-      // if the file is available, write to it:
-      if (dataFile) 
-        {
-         dataFile.println(dataString);
-        }
-        else 
-        {
-        Serial.println (dataString);
-        }
-        
-     } // end of for i
-     if (dataFile) 
-        {
-        dataFile.flush();
-        }
-    String sTmp = "DAQ done : timing stats ";
-    sTmp += timing_too_fast ;    
-    Serial.println (sTmp);
-} // end of writing data to file
-
+  if ( t < max_data/8) return 0;
+  if ( t > (3*max_data)/4) return 0;
+  return 255 ;
+}
 
 void loop(void) 
 {
@@ -209,21 +178,54 @@ if (sampleCount >= 0)
           if (sampleCount < max_data)
               {
               // Initial test showed it could write this to the card at 12 ms intervals
-               sampleCount ++ ;
                last_time = now_time ;
                 
               // read  sensor 
-                erg_in[sampleCount] = analogRead(analogPin);  
+                erg_in[sampleCount] = -1 * analogRead(analogPin);  
                 time_stamp[sampleCount] = (now_time - loop_start_time) ;
-                int intensity =int(sin((double(now_time)/1000.0)*PI*2.0*freq)*127.0)+127;
+                int intensity =br_now(sampleCount);
                 //brightness[sampleCount] = int(intensity) ;
                 analogWrite(ledPin, intensity);
+                sampleCount ++ ;
               }
           if (sampleCount == max_data)
               {
               sampleCount ++ ;  
-              analogWrite(ledPin, 127);
-              writeFile();
+              analogWrite(ledPin, 0);
+              for (int i = 0; i < max_data; i++)
+              {
+                  // make a string for assembling the data to log:
+                  String dataString = String(i);
+                  dataString += ", ";
+              
+                 
+                dataString += String(time_stamp[i]-time_stamp[0]);
+                dataString += ", ";
+    
+                dataString += String(br_now(i));
+                dataString += ", ";
+
+                dataString += String(erg_in[i]);
+                                
+              // if the file is available, write to it:
+                  if (dataFile) 
+                  {
+                   dataFile.println(dataString);
+                  }
+                  else 
+                  {
+                  Serial.println (dataString);
+                  }
+                  
+               } // end of for i
+                if (dataFile) 
+                  {
+                  dataFile.flush();
+                  }
+              String sTmp = "DAQ done : timing stats ";
+              sTmp += timing_too_fast ;    
+              Serial.println (sTmp);
+              } // end of writing data to file
            
           } // end of if we've had enough time elapse
       } // end of samplecount > 0
