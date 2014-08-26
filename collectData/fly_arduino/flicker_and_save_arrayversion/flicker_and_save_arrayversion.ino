@@ -1,4 +1,3 @@
-
 /*
 fly test : grey wire to GND, purple to pin 9
 black wire to GND, white wire to pin 1 of analog in
@@ -36,8 +35,8 @@ black wire to GND, white wire to pin 1 of analog in
 const int chipSelect = 4;
 const int ledPin =  9;      // the number of the LED pin
 const int analogPin = 1 ;
-int freq = 16 ; // flicker of LED Hz
-const int max_data = 1024;
+int freq = 5 ; // Hz
+const int max_data = 150;
 
 // this version compiles, but fails to start if max_data > 150
 // see http://forum.arduino.cc/index.php/topic,41062.0.html
@@ -49,7 +48,7 @@ String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
 long sampleCount = 0;        // will store number of A/D samples taken
-long interval = 2;           // interval (5ms) at which to - 2 ms is also ok in this version
+long interval = 5;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0; 
 unsigned long loop_start_time = 0; 
 unsigned long now_time ;
@@ -150,43 +149,6 @@ void ReadOutFile()
 
 //***************************************************************************************************
 
-void writeFile()
-{
-for (int i = 0; i < max_data; i++)
-    {
-        // make a string for assembling the data to log:
-        String dataString = String(i);
-        dataString += ", ";
-    
-       
-      dataString += String(time_stamp[i]);
-      dataString += ", ";
-
-      dataString += String(int(sin((double(time_stamp[i])/1000.0)*PI*2.0*freq)*127.0)+127);
-      dataString += ", ";
-
-      dataString += String(erg_in[i]);
-                      
-      // if the file is available, write to it:
-      if (dataFile) 
-        {
-         dataFile.println(dataString);
-        }
-        else 
-        {
-        Serial.println (dataString);
-        }
-        
-     } // end of for i
-     if (dataFile) 
-        {
-        dataFile.flush();
-        }
-    String sTmp = "DAQ done : timing stats ";
-    sTmp += timing_too_fast ;    
-    Serial.println (sTmp);
-} // end of writing data to file
-
 
 void loop(void) 
 {
@@ -223,7 +185,35 @@ if (sampleCount >= 0)
               {
               sampleCount ++ ;  
               analogWrite(ledPin, 127);
-              writeFile();
+              for (int i = 0; i < max_data; i++)
+              {
+                  // make a string for assembling the data to log:
+                  String dataString = String(i);
+                  dataString += ", ";
+              
+                 
+                dataString += String(time_stamp[i]);
+                dataString += ", ";
+
+                dataString += String(erg_in[i]);
+                dataString += ", ";
+                
+                dataString += String(int(sin((double(time_stamp[i])/1000.0)*PI*2.0*freq)*127.0)+127);
+                
+              // if the file is available, write to it:
+                  if (dataFile) 
+                  {
+                   dataFile.println(dataString);
+                  }
+               } // end of for i
+                if (dataFile) 
+                  {
+                  dataFile.flush();
+                  }
+              String sTmp = "DAQ done : timing stats ";
+              sTmp += timing_too_fast ;    
+              Serial.println (sTmp);
+              } // end of writing data to file
            
           } // end of if we've had enough time elapse
       } // end of samplecount > 0
@@ -265,10 +255,6 @@ void serialEvent()
        
        case '4':
        freq = 8 ;
-       break ;
-       
-       case '5':
-       freq = 16 ;
        break ;
        
        case 'X':

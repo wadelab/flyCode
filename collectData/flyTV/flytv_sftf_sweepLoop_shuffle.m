@@ -1,3 +1,4 @@
+
 close all;
 clear all;
 jheapcl;
@@ -9,11 +10,11 @@ HideCursor % Hides the mouse cursor
 % Get the calibration and compute the gamma table
 igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
 
-datadir='C:\data\SSERG\data\NewSweep\1DPEcs\';
+datadir='C:\data\SSERG\data\';
 flyTV_startTime=now;
 
-tfList=[1,2,4.17,8.3,16.67,25]; % This is in Hz.
-sfList=[1 2 4 8 16 32]/1000; % We don't know what units this is in
+tfList=[1,2,4,8,16]; % This is in Hz.
+sfList=[1 2 4 8 16]/1000; % We don't know what units this is in
 
 nTF=length(tfList);
 nSF=length(sfList);
@@ -25,7 +26,6 @@ r=Shuffle(ordered); % Shuffle all the possible presentation conditions
 dpy.gamma.inverse=igt;
 
 for thisrun=1:5 % 5 repeats
-    jheapcl;
     for temporalFrequencyIndex=1:nTF
         for spatialFrequencyIndex=1:nSF
             thisaction= r((temporalFrequencyIndex-1) * nTF + spatialFrequencyIndex)
@@ -49,7 +49,7 @@ for thisrun=1:5 % 5 repeats
             finalData.TimeStamps=d.TimeStamps;
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
-            finalData.comment='CS_1DPE_1';
+            finalData.comment='wapr_D_calibrated_screens data sweep';
             finalData.thisTF=thisTF;
             finalData.thisSF=thisSF;
             finalData.thisTFIndex=t;

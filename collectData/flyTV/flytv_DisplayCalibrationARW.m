@@ -63,7 +63,7 @@ win=PsychImaging('Openwindow', WhichScreen, 1);
 %Screen('TextSize', win, 48);
 
 HideCursor;
-oldClut = LoadIdentityClut(win);
+oldClut = LoadIdentityClut(win, 1);
 
 
 r1=[0 0 3000 2000]
@@ -78,13 +78,9 @@ Screen('Flip',win,[],1);
 
     
     for thisGunSet=1:4
-        oldClut = LoadIdentityClut(win);
-
         Screen('FillRect', win, gunSet(thisGunSet,:)*contLevels(1));
         Screen('Flip',win,[],1);
         for thisContLevelIndex=1:nLevels
-            oldClut = LoadIdentityClut(win);
-
             fprintf('\nGun %d level %d\n',thisGunSet,thisContLevelIndex);
             Screen('FillRect', win, gunSet(thisGunSet,:)*contLevels(thisContLevelIndex));
             Screen('Flip',win,[],1)
@@ -142,7 +138,7 @@ Screen('Flip',win,[],1);
     
     
     % Save out the data
-    save('CalibrationData_090614x3.mat','sumPower','spectralData','meanSpectData','nLevels','contLevels');
+    save('CalibrationData_200514.mat','sumPower','spectralData','meanSpectData','nLevels','contLevels');
     
     
 else

@@ -97,21 +97,14 @@ win = Screen('OpenWindow', WhichScreen, 128);
 oldClut = LoadIdentityClut(win, 1);
 Screen('LoadNormalizedGammaTable',win,dpy.gamma.inverse);
 
-hz=Screen('FrameRate', win,[],dpy.frameRate);
+
 
 % Make sure the GLSL shading language is supported:
-% AssertGLSL;
+AssertGLSL;
 
 % Retrieve video redraw interval for later control of our animation timing:
 ifi = Screen('GetFlipInterval', win);
 
-
-if (round(ifi*1000)~=round(1000/dpy.frameRate))
-    disp(ifi);
-    disp(1000/dpy.frameRate);
-    sca
-    error('Framerate incorrect');
-end
 
 
 % Compute increment of phase shift per redraw:
@@ -136,7 +129,7 @@ toc
 [amps,alpha]=flytv_computeAlphaAmps(stim.cont);
 
 gratingtex1 = CreateProceduralSineGrating(win, dpy.res(1), dpy.res(2),[.5,.5,.5, 1]); % Bottom grating
-gratingtex2 = CreateProceduralSineGrating(win, dpy.res(2), dpy.res(1),[.5 .5 .5 alpha]); % Top grating blend 50%
+gratingtex2 = CreateProceduralSineGrating(win, dpy.res(1), dpy.res(2),[.5 .5 .5 alpha]); % Top grating blend 50%
 
 % Wait for release of all keys on keyboard, then sync us to retrace:
 
@@ -173,8 +166,8 @@ while (vbl < vblendtime)
     % vector with a number of components that is an integral multiple of 4,
     % i.e. in our case it must have 4 components:
     
-    Screen('DrawTexture', win, [gratingtex1], [], [], [stim.spatial.angle(1)], [], [0], [], [], [stim.rotateMode], [pMod(1)+stim.spatial.pOffset(1),stim.spatial.frequencyCPerPixel(1),amps(1),0]');
-    Screen('DrawTexture', win, [gratingtex2], [], [], [stim.spatial.angle(2)], [], [0], [], [], [stim.rotateMode], [pMod(2)+stim.spatial.pOffset(2),stim.spatial.frequencyCPerPixel(2),amps(2),0]');
+    Screen('DrawTexture', win, [gratingtex1], [], [], [stim.spatial.angle(1)], [], [0], [], [], [stim.rotateMode], [pMod(1),stim.spatial.frequencyCPerPixel(1),amps(1),0]');
+    Screen('DrawTexture', win, [gratingtex2], [], [], [stim.spatial.angle(2)], [], [0], [], [], [stim.rotateMode], [pMod(2),stim.spatial.frequencyCPerPixel(2),amps(2),0]');
     
     
     % Show it at next retrace:

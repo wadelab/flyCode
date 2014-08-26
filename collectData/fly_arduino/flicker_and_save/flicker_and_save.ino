@@ -1,5 +1,3 @@
-#include <Time.h>
-
 /*
 fly test : grey wire to GND, purple to pin 9
 black wire to GND, white wire to pin 1 of analog in
@@ -26,10 +24,9 @@ black wire to GND, white wire to pin 1 of analog in
  by Tom Igoe
  */
  // include the SD library:
-
-#include <Arduino.h>
-#include <Time.h>
 #include <SD.h>
+#include <Arduino.h>
+
 
 // change this to match your SD shield or module;
 // Arduino Ethernet shield: pin 4
@@ -40,7 +37,6 @@ const int ledPin =  9;      // the number of the LED pin
 const int analogPin = 1 ;
 double freq = 5.0 ; // Hz for stimulus
 const char comma = ',';
-const char underscore = '_';
 const int max_data = 1024 ;
 
 String inputString = "";         // a string to hold incoming data
@@ -51,7 +47,6 @@ unsigned int timing_errors = 0;
 long interval = 10;                   // interval (10 ms is ok) at which to sample
 unsigned long last_time = 0; 
 unsigned long now_time ;
-char sFileName [14] ;
 
 		  // make a structure for assembling the data to log:
 struct data_struct 
@@ -72,25 +67,6 @@ union{
       } uData;
       
 File dataFile ;
-
-void sFileNow()
-{
-  // this time is always zero...
-  time_t tt = now();
-  String sTime ;
-  sTime += month(tt);
-  sTime += underscore ;
-  sTime += day(tt);
-  sTime += underscore ;
-  sTime += hour(tt);
-  sTime += 'h' ;
-  sTime += minute(tt);
-  sTime += "m.dat" ;
-  sTime.toCharArray(sFileName,13);
-  sFileName[sTime.length()+1] = 0;
-  Serial.println (sTime);
-  return ;
-  }
 
 void setup()
 {
@@ -120,25 +96,20 @@ void setup()
   printDirectory(root, 0);
   root.close();
   Serial.println("directrory tree done!");
-  Serial.print("File will be : ");
-  Serial.println(sFileName);
-
   
-  
-  sFileNow();
   // if file exists this will append to it
-  SD.remove(sFileName);
-  dataFile = SD.open(sFileName, FILE_WRITE);
+  SD.remove("datalog.txt");
+  dataFile = SD.open("datalog.txt", FILE_WRITE);
 
   if (dataFile)
   {
     Serial.println("opened file successfully");
-    dataFile.println("No, analog in, brightness, time");
+    dataFile.println("No, time, analog in, brightness");
   }
   // if the file isn't open, pop up an error:
   else 
   {
-    Serial.println("error opening file");
+    Serial.println("error opening datalog.txt");
   } 
 // store commas only once  
 uData.data.c1 = comma ;
@@ -177,7 +148,7 @@ void printDirectory(File dir, int numTabs) {
 
 void ReadOutFile1()
 {
-    File ReadFile = SD.open(sFileName);
+    File ReadFile = SD.open("datalog.txt");
 
   // if the file is available, write to it:
   if (ReadFile) {
@@ -230,7 +201,7 @@ void ReadOutFile()
    int lf = 10;
     char hdr[80];
     
-    File ReadFile = SD.open(sFileName);
+    File ReadFile = SD.open("datalog.txt");
 
   // if the file is available, write to it:
   if (ReadFile) {

@@ -28,10 +28,14 @@ close all;
 
 IGNORE_PHOTODIODE_FLAG=1; % Normally we don't want to waste time processing the photodiode phenotype since it's a) not physiologically interesting and b) statistically different from everything else
 
+<<<<<<< HEAD
+[fileToLoad,pathToLoad]=uigetfile('*analysis*.mat','Load analysis file');
+=======
 
 [fileToLoad,pathToLoad]=uigetfile('*Analysis*.mat','Load analysis file');
+>>>>>>> FETCH_HEAD
 [pathstr, name, ext] = fileparts(fileToLoad);
-filebaseName = [pathToLoad,name, '_analysed_',datestr(now,30)];
+b = [pathToLoad,name, '_analysed_',datestr(now,30)];
 
 
 load(fullfile(pathToLoad,fileToLoad)); % This is the file you got from the directory analysis script. It will place a structure calles 'analysisStruct' in the workspace
@@ -226,7 +230,7 @@ end
 
 % We have gone to a lot of trouble to do these fits so save them in a temp
 % file quickly!
-fName= [filebaseName,'fitTemp.mat']
+fName= [b,'fitTemp.mat']
 save (fName);
 
 disp('You may want to run plotfits.m to see more graphs and ANOVAs');

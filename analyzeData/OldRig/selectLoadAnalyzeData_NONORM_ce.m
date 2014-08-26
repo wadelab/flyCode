@@ -435,7 +435,7 @@ set(gca,'YTickLabel',fliplr(ptName));
 signalBinMultiples=[1 0;0 1;2 0; 0 2;1 1; 1 -1; 2 -2; 2 2];
 signalFs=abs(signalBinMultiples(:,1)*params.F(1)+signalBinMultiples(:,2)*params.F(2));
 noiseFs=setdiff(1:99,signalFs);
-binBoundaries=[1,10;11,20;21,30;31,48;52,90 ]
+binBoundaries=[1,10;11,20;21,30;31,40]
 for thisPhenotype=1:length(phenotypeList)
     for thisBin=1:size(binBoundaries,1)
         validFs=intersect((binBoundaries(thisBin,1):binBoundaries(thisBin,2)),noiseFs);
