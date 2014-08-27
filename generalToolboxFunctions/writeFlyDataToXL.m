@@ -33,13 +33,11 @@ javaaddpath(fullfile(a,'poi_library/stax-api-1.0.1.jar'));
 %% Data Generation for XLSX
 % Define an xls name
 
-%%%%%%%%%%%%%%%%
-%% This generates pages with the mean and se for each of the phenotype and contrasts in a column
 for sheetIndex=1:length(xlParams.labelList)
     sheetName=xlParams.labelList{sheetIndex};
     absData=[]; semData=[]; phenotypeCode=[];
     for thisPhenotype=1:length(xlParams.phenotypeList)
-        allData=xlsData{thisPhenotype};
+        allData=xlsData{thisPhenotype}; 
         allsemData=semXlsData{thisPhenotype};
         cData=abs(squeeze(allData(sheetIndex,:,:)));
         sData=abs(squeeze(allsemData(sheetIndex,:,:)));
@@ -50,49 +48,18 @@ for sheetIndex=1:length(xlParams.labelList)
         phenotypeCode=cat(1,phenotypeCode,ones(size(cData,1),1)*thisPhenotype);
         
     end
-    size(absData)
-    size(semData)
-    size(phenotypeCode)
-    outputData=cat(2,phenotypeCode,absData,semData);
-    
-    %% Generate XLSX file
-    sheetName=xlParams.labelList{sheetIndex};
-    disp(sheetName)
-    [status]=xlwrite(filename, {'Phenotype index','Unmasked abs','Masked abs','Unmasked SEM','Masked SEM'},sheetName,'A1')
-    [status]=xlwrite(filename, outputData,sheetName,'A2')
-    sheetIndex
+     size(absData)
+     size(semData)
+     size(phenotypeCode)
+     outputData=cat(2,phenotypeCode,absData,semData);
+     
+%% Generate XLSX file
+sheetName=xlParams.labelList{sheetIndex};
+disp(sheetName)
+[status]=xlwrite(filename, {'Phenotype index','Unmasked abs','Masked abs','Unmasked SEM','Masked SEM'},sheetName,'A1')
+[status]=xlwrite(filename, outputData,sheetName,'A2')
+sheetIndex
+
 end
-
-%%% add sheet with the phenotypes in a column
-iPreviousFlies = 1;
-phenotypeNAME=cell(size(phenotypeCode,1),1);
-for thisPhenotype=1:length(xlParams.phenotypeList)
-    
-    tmpName = xlParams.phenotypeList{thisPhenotype}.type ;         
-    tmpName = strrep (tmpName,'all', '');
-    tmpName = strrep (tmpName,'_', ' ')
-    
-    for iFlies = 1 : xlParams.phenotypeList{thisPhenotype}.nFlies
-        phenotypeNAME{iPreviousFlies} = tmpName;
-        iPreviousFlies = iPreviousFlies + 1;
-    end ;
-end;
-[status]=xlwrite(filename, phenotypeNAME,'expt code','A2')
-
-%%%%%%%%%%%%%%% count the flies
-flyCount=cell(length(xlParams.phenotypeList),1);
-for thisPhenotype=1:length(xlParams.phenotypeList)
-   
-    tmpName = xlParams.phenotypeList{thisPhenotype}.type
-    tmpName = strrep (tmpName,'all', '');
-    tmpName = strrep (tmpName,'_', ' ');
-    strNN = sprintf ('%s  had %d flies ',tmpName,xlParams.phenotypeList{thisPhenotype}.nFlies);
-    flyCount (thisPhenotype) = cellstr(strNN) ;
-end
-[status]=xlwrite(filename, flyCount,'fly count','A2')
-%% write a page with the contrast table
-
-[status]=xlwrite(filename, {'contrasts'},'contrasts','A1')
-[status]=xlwrite(filename, transpose(xlParams.contRange),'contrasts','A2')
 
 

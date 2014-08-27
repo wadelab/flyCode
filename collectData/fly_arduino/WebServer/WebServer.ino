@@ -133,7 +133,6 @@ void setup() {
   Serial.print F("server is at ");
   Serial.println(Ethernet.localIP());
 
-  randomSeed(analogRead(analogPin));
   doShuffle();
 }
 
@@ -144,7 +143,7 @@ void doShuffle()
     contrastOrder[i] = i ;
   }
   ///Knuth-Fisher-Yates shuffle algorithm.
-
+  randomSeed(analogRead(analogPin));
   int randomnumber = random(maxContrasts);
   int tmp ;
 
@@ -321,7 +320,7 @@ void printDirectory(uint8_t flags) {
       root.printFatTime(p.lastWriteTime);
     }
     // print size if requested
-    /*if (!DIR_IS_SUBDIR(&p) && (flags & LS_SIZE))*/    {
+    /*if (!DIR_IS_SUBDIR(&p) && (flags & LS_SIZE))*/ {
       client.print(' ');
       client.print(p.fileSize);
     }
@@ -341,9 +340,9 @@ void serve_dummy()
   sendFooter() ;
 }
 
-int br_Now(double t, int contr)
+int br_Now(double t)
 {
-  int randomnumber = contrastOrder[contr];
+  int randomnumber = contrastOrder[iThisContrast];
   int F2index = 0 ;
   if (randomnumber > F2contrastchange) F2index = 1;
   return int(sin((t/1000.0)*PI*2.0*double(freq1))*1.270 * F1contrast[randomnumber] + sin((t/1000.0)*PI*2.0*double(freq2))*1.270 * F2contrast[F2index])+127;
@@ -459,7 +458,7 @@ void doreadFile (const char * c)
 
     // now try the contrast table
     iBytesRequested = maxContrasts * sizeof(int);
-    iBytesRead = file.read(contrastOrder, iBytesRequested);
+    iBytesRead = file.read(erg_in, iBytesRequested);
     if (iBytesRead < iBytesRequested)
     {
       client.println F("Error reading contrast data in file ");
@@ -474,7 +473,7 @@ void doreadFile (const char * c)
         // save space, put the floats as strings in the time_stamp buffer
         dataString = String(i);
         dataString += ", ";
-        iOldContrast = contrastOrder [i];
+        iOldContrast = erg_in [i];
         dataString += String(dtostrf(F1contrast[iOldContrast], 10, 2, cPtr));
         dataString += ", ";
         if (iOldContrast > F2contrastchange)
@@ -519,7 +518,7 @@ void doreadFile (const char * c)
               dataString += String(time_stamp[i]-time_stamp[0]);
               dataString += ", ";
 
-              dataString += String(br_Now(time_stamp[i], iC));
+              dataString += String(br_Now(time_stamp[i]));
               dataString += ", ";
 
               dataString += String(erg_in[i]);
@@ -542,14 +541,7 @@ void collectData ()
   long mean = 0;
   if (iThisContrast == 0 && file.isOpen()) file.close();
 
-  if (iThisContrast >= maxContrasts) 
-  {
-    iThisContrast = 0;
-  }
-  if (iThisContrast ==0)
-  {
-    doShuffle(); 
-  }
+  if (iThisContrast >= maxContrasts) iThisContrast = 0;
 
   sampleCount = -presamples ;
   while (sampleCount < max_data)
@@ -578,7 +570,7 @@ void collectData ()
         mean = mean + long(analogRead(analogPin));
       }
 
-      int intensity = br_Now(now_time, iThisContrast) ;
+      int intensity = br_Now(now_time) ;
       //brightness[sampleCount] = int(intensity) ;
       analogWrite(ledPin, intensity);
 
@@ -629,12 +621,10 @@ void flickerPage()
     for (int i=0; i < iThisContrast; i++)
     {
       int randomnumber = contrastOrder[i];
-      int F2index = 0 ;
-      if (randomnumber > F2contrastchange) F2index = 1;
       int F1 = int(F1contrast[randomnumber]);
-      int F2 = int(F2contrast[F2index]);
+      int F2 = int(F2contrast[randomnumber]);
       client.println("Data flickered at " + String(freq1) + " Hz with contrast " + String(F1) + 
-        " and " + String(freq2) + " Hz with contrast " + String(F2) +" % <BR> " ); 
+        " and " + String(freq2) + " Hz with contrast " + String(F1) +" % <BR> " ); 
       client.println("please wait....<BR>");
     }
     client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
@@ -657,16 +647,16 @@ void flickerPage()
       client.print(myGraphData[i+1] + 350); 
       client.println F(");");
       client.println F("ctx.stroke();");
-
-      client.print("ctx.moveTo("); 
+      
+            client.print("ctx.moveTo("); 
       client.print(i*4); 
       client.print(","); 
-      client.print(br_Now(time_stamp[i], iThisContrast )); 
+      client.print(br_Now(time_stamp[i]) ); 
       client.println F(");");
       client.print("ctx.lineTo("); 
       client.print((i+1)*4); 
       client.print(","); 
-      client.print(br_Now(time_stamp[i+1], iThisContrast)); 
+      client.print(br_Now(time_stamp[i+1])); 
       client.println F(");");
       client.println F("ctx.stroke();");
     }
@@ -1056,7 +1046,6 @@ void loop() {
 //
 //
 //
-
 
 
 

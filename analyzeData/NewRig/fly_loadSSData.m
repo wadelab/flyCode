@@ -7,8 +7,6 @@ function [phenotypeData,params]=fly_loadSSData(subDirList,extractionParams)
 % Now works with new stimulus system, arbitrary mixing of background /
 % foreground contrasts etc.
 %
-% Mission critical code! Do not edit needlessly
-%
 % Data are held in a structure loaded from a .mat file
 freqsToExtract=extractionParams.freqsToExtract; % Which frequencies to extract (optional label structure as well)
 nFreqs=extractionParams.incoherentAvMaxFreq; % Cutoff for incoherent averaging
@@ -100,14 +98,14 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
                 % spectrum up to some number of frequencies per expt (500 =
                 % 50Hz if we have 10- bins, 1000 = 100Hz etc.). 
                 
-                avSpectrum=squeeze(nanmean(abs(fft(rawPerFileData,[],1)),2)); % Incoherent average down bins. This will be 
+                avSpectrum=squeeze(nanmean(abs(fft(rawPerFileData,[],1)),2));
                 
                 
                 % Sort the condDat - undo the randomization of contrast levels
                 [dummy,sortSeq]=sort(allData.exptParams.randSeq);
                 condDat(:,:,:,thisFile)=avWaveformThisFile(:,:,sortSeq);
-                freqDat(:,:,:,thisFile)=avSpectrum(:,:,sortSeq); % Freq data is now frequences x electrodes x contrasts x repetitions
-                  
+                freqDat(:,:,:,thisFile)=avSpectrum(:,:,sortSeq);
+                
                 
             end % Next file. Then we have a big set of bins
             
@@ -115,7 +113,6 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
             % Make an average waveform for a single bin across all files, bins.
             
             avWaveform=squeeze(nanmean(condDat,4)); % Average across files - all averaging is coherent.
-            avSpectrum=squeeze(nanmean(freqDat,4)); % Also average spectra incoherently - they are now averaged across bins AND files (repetitions). So avSpectrum is nFrequencies x nElectrodes x nContrast conds
             
             % Do some resampling to match the requested waveformSampleRate
             currRate=size(avWaveform,1);
@@ -143,7 +140,7 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
             meanSpect=(nanmean(abs(fCondDat(2:nFreqs,:,:,:)),2));
             compMeanSpect=(nanmean((fCondDat(2:nFreqs,:,:,:)),2));
             
-            flyMeanSpectrum{thisSubDir}.data(:,:,:,:,thisExptIndex)=avSpectrum;% Average across files for a single fly
+            flyMeanSpectrum{thisSubDir}.data(:,:,:,thisExptIndex)=squeeze(nanmean(meanSpect,4));% Average across files for a single fly
             flyCompMeanSpectrum{thisSubDir}.data(:,:,:,thisExptIndex)=squeeze(nanmean(compMeanSpect,4)); % The same frequency domain average but with complex vals.
             
             
@@ -158,8 +155,7 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
                 
             phenotypeData{thisSubDir}.expt{thisExptIndex}.allfCondDat=meanDat; % Average in the complex fourier domain across bins, then across repetitions
             phenotypeData{thisSubDir}.expt{thisExptIndex}.allAbsfCondDat=absMeanDat; % Average of abs data (incoherent)
-            phenotypeData{thisSubDir}.expt{thisExptIndex}.allIncoherentSpectra=avSpectrum; % Average of abs data (incoherent)
-               
+                        
             overallExptIndex=overallExptIndex+1;
             
         end % Next expt

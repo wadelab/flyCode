@@ -2,7 +2,9 @@
 clear all
 close all;
 dataDir=uigetdir;
-fList=dir(fullfile(dataDir,'flyTV_*.mat'))
+
+%%
+fList=dir(fullfile(dataDir,'*.mat'))
 
 nFlies=length(fList);
 
@@ -19,7 +21,7 @@ for thisFly=1:nFlies
     
     for thisRep=1:nReps
         for thisCombo=1:nContCombos
-   % fprintf('\n%d,%d\n',thisRep,thisCombo);
+    fprintf('\n%d,%d\n',thisRep,thisCombo);
     
             thisMD=thisD.metaData{thisRep,thisCombo};
             probeCont(thisRep,thisCombo)=thisMD.stim.cont(1);
@@ -28,86 +30,61 @@ for thisFly=1:nFlies
     end
     
     % Extract the responses at the modulation frequencies
-    cyclesPerData=[(dur-1)*freqs(1),;(dur-1)*(freqs(2));(dur-1)*(freqs(2)+freqs(1)) ];
+    cyclesPerData=(dur-1)*freqs;
     rawData=thisD.data(:,:,(1001:end));
     fRaw=fft(rawData,[],3); % Ft down time
     goodComps=(fRaw(:,:,cyclesPerData+1));
     [seq,ishuffleSeq]=sort(thisD.shuffleSeq);
     
-    mGoodComps(thisFly,thisD.shuffleSeq,:)=(mean((goodComps(:,:,:)))); % This is the complex (coherent) mean within a single animal
+    mGoodComps(thisFly,thisD.shuffleSeq,:)=mean((goodComps(:,:,:)));
     
- 
+    
+    
+    
+    
     
 end
 %%
-mvals=abs(squeeze(mean(abs(mGoodComps)))); % This is the incoherent (abs) mean between animals
-stVals=squeeze(std((mGoodComps)));
+unmaskedInds=[1:5];
+maskedInds=[6:10];
+mvals=squeeze(mean(abs(mGoodComps),1));
+stVals=squeeze(std(mGoodComps,[],1));
 semVals=stVals/sqrt(nFlies);
-aVals=angle(squeeze(mean(mGoodComps)));
-
-umInds=1:7;
-mInds=8:12;
 
 figure(10);
-cLevels1=thisD.probeCont(umInds);
-cLevels2=thisD.probeCont(mInds);
-subplot(4,1,1);
+cLevels1=thisD.probeCont(unmaskedInds);
+cLevels2=thisD.probeCont(maskedInds);
+subplot(3,1,1);
 
 imagesc(abs(mGoodComps(:,:,1)));
-colormap hot;
 
-subplot(4,1,2);
+subplot(3,1,2);
 hold off;
 
 
-h1=errorbar(cLevels1+.01,mvals(umInds),semVals(umInds),'k');
+h1=errorbar(cLevels1+.01,mvals(unmaskedInds),semVals(unmaskedInds),'k');
 hold on;
-h2=errorbar(cLevels2+.01,mvals(mInds),semVals(mInds),'r');set(gca,'XScale','Log');
+h2=errorbar(cLevels2+.01,mvals(maskedInds),semVals(maskedInds),'r');set(gca,'XScale','Log');
 set(h1,'LineWidth',2);
 set(h2,'LineWidth',2);
 
 grid on;
-title('2F1 responses');
-legend({'Unmasked','Masked'});
 
 % Also plot the mask response
 
 
-subplot(4,1,3);
+subplot(3,1,3);
 
 hold off;
 
 
-h1=errorbar(cLevels1+.01,mvals(umInds,2),semVals(umInds,2),'k');
+h1=errorbar(cLevels1+.01,mvals(unmaskedInds,2),semVals(unmaskedInds,2),'k');
 hold on;
-h2=errorbar(cLevels2+.01,mvals(mInds,2),semVals(mInds,2),'r');set(gca,'XScale','Log');
+h2=errorbar(cLevels2+.01,mvals(maskedInds,2),semVals(maskedInds,2),'r');set(gca,'XScale','Log');
 set(h1,'LineWidth',2);
 set(h2,'LineWidth',2);
 
 grid on;
-title('2F2 responses');
-legend({'Unmasked','Masked'});
-
-
-% Also plot the IM 
-
-
-subplot(4,1,4);
-
-hold off;
-
-
-h1=errorbar(cLevels1+.01,mvals(umInds,3),semVals(umInds,3),'k');
-hold on;
-h2=errorbar(cLevels2+.01,mvals(mInds,3),semVals(mInds,3),'r');set(gca,'XScale','Log');
-set(h1,'LineWidth',2);
-set(h2,'LineWidth',2);
-
-grid on;
-title('1F1+1F2 responses');
-legend({'Unmasked','Masked'});
-
-
 
 return;
 %%
