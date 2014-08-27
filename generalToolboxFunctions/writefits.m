@@ -1,7 +1,7 @@
 %This code reads a 'fit' file of bootstrap parameters and plots the data and then does anova on it
 
 close all;
-clear all;
+clear all; 
 
 [fileToLoad,pathToLoad]=uigetfile('*fitTemp*.mat','Load fit file');
 [pathstr, name, ext] = fileparts(fileToLoad);
