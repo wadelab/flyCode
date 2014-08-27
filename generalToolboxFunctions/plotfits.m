@@ -53,7 +53,7 @@ end
         set(gca,'YLim', [0, maxRMax]);
     end
     sTmp = strcat('Rmax median unmasked and masked ', harmonicNames(iFreqComponent,1));
-    set(gcf,'Name',char(sTmp)); %% ] 1F1');
+    set(gcf,'Name',char(sTmp)); %% ] 1F1'); 
     %
     %notBoxPlot(dataToBoxplot); errorbar(mean(dataToBoxplot), std(dataToBoxplot));
 end ;
