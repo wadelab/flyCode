@@ -20,7 +20,12 @@ for thisPhenotype=1:length(phenotypeList)
     
     % Go into the diirectory containing the next phenotype and find out how
     % many 'Fly...' subdirectories it contains.
-    
+    if ~isfield(phenotypeList{thisPhenotype}, 'flyDir')
+        disp('no flydir here; probablpy directory with wrong name');
+        keyboard ;
+        disp(['no flydir here', phenotypeList{thisPhenotype}.flyData{1}.fileNames]);
+        
+    end
     nFlies=length(phenotypeList{thisPhenotype}.flyDir);
     
     
