@@ -6,7 +6,7 @@ function outType=fly_parseGUIPhenotypeFields_old(tags)
 % describing each fly's phenotype as well as an MD5 hash so that we can
 % tell if they are the same or different.
 
-criticalFields={'Fly1AgeDays','UASListFly1','GAL4Fly1','DrugFly1List','ConcFly1List','DrugAdminFly1List','OtherTypeListFly1';'Fly2AgeDays','UASListFly2','GAL4Fly2','DrugFly2List','ConcFly2List','DrugAdminFly2List','OtherTypeListFly1'};
+criticalFields={'Fly1AgeDays','GAL4Fly1','UASListFly1','DrugFly1List','ConcFly1List','DrugAdminFly1List','OtherTypeListFly1';'Fly2AgeDays','GAL4Fly2','UASListFly2','DrugFly2List','ConcFly2List','DrugAdminFly2List','OtherTypeListFly1'};
 
 nFieldsInGUI=length(tags);
 nPhenoFields=size(criticalFields,2); % How many things contribute to the unique phenotype?

@@ -43,10 +43,10 @@ for i = 1:nContrasts
     rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
     subplot(9,1,i);
     complx_fftData=fft(rawdata(i,:)); %% return this to main program and then average first and then calculate the abs
-    take angle too
+%%%%%s    take angle too
     fftData(i,:) = abs(complx_fftData(2:100));
     bar(fftData(i,:));
-    axis([0 100 0 5000]); % plot to 25Hz
+    axis([0 100 0 1000]); % plot to 25Hz
     set(gca,'XTickLabel',''); % no tick labels (unless bottom row, see below)
     
     yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
