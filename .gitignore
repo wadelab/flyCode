@@ -9,3 +9,11 @@ Thu*.d*
 
 
 *.m~
+
+collectData/flyTV/flytv_runSOMDriftNoDAQ.m
+
+collectData/flyTV/flytv_runSOMDrift.m
+
+analyzeData/flyTV/prototype_ContModNoise.m
+
+generalToolboxFunctions/Matteobox/fit_powFunction_Mean.m
