@@ -29,7 +29,14 @@
 const int max_graph_data = 32 ;
 int * myGraphData ;  // will share erg_in space, see below
 int iIndex = 0 ;
-const int ledPin =  9;
+
+
+//
+int usedLED  = 5;
+const int redled = 5;
+const int grnled = 6;
+const int bluLED = 7;
+const int BledPin = 9;// 9 for normal blue diode
 const int analogPin = 1 ;
 
 const byte maxContrasts = 9 ;
@@ -125,15 +132,31 @@ void setup() {
   }
 
   Serial.println F("Setting up the Ethernet card...\n");
-
-
   // start the Ethernet connection and the server:
   Ethernet.begin(mac);
   server.begin();
   Serial.print F("server is at ");
   Serial.println(Ethernet.localIP());
+  
+  goBlack ();
 
   doShuffle();
+}
+
+void goBlack()
+{
+  analogWrite( redled, 0 );
+  analogWrite( grnled, 0 );
+  analogWrite( bluLED, 0 );
+  analogWrite( BledPin, 0 );
+}
+
+void goWhite()
+{
+  analogWrite( redled, 255 );
+  analogWrite( grnled, 255 );
+  analogWrite( bluLED, 255 );
+  analogWrite( BledPin, 255 );
 }
 
 void doShuffle()
@@ -195,6 +218,8 @@ void serve_dir ()
 
 void run_graph()
 {
+  // turn off any LEDs, always do flash with blue
+  goBlack();
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   int sensorReading = analogRead(analogPin);
@@ -202,11 +227,11 @@ void run_graph()
   iIndex ++ ;
   if (iIndex > max_graph_data /10 && iIndex < max_graph_data/2)
   {
-    analogWrite(ledPin, 255);
+    analogWrite(bluLED, 255);
   }
   else
   {
-    analogWrite(ledPin, 0);
+    analogWrite(bluLED, 0);
   }
 
   sendHeader () ;
@@ -572,14 +597,14 @@ void collectData ()
 
       int intensity = br_Now(now_time) ;
       //brightness[sampleCount] = int(intensity) ;
-      analogWrite(ledPin, intensity);
+      analogWrite(usedLED, intensity);
 
       sampleCount ++ ;
     }
   }
   // now done with sampling....
   sampleCount ++ ;  
-  analogWrite(ledPin, 127);
+  analogWrite(usedLED, 127);
   iThisContrast ++;
 
   writeFile(cFile);
@@ -648,7 +673,7 @@ void flickerPage()
       client.println F(");");
       client.println F("ctx.stroke();");
       
-            client.print("ctx.moveTo("); 
+      client.print("ctx.moveTo("); 
       client.print(i*4); 
       client.print(","); 
       client.print(br_Now(time_stamp[i]) ); 
@@ -722,7 +747,7 @@ void loop() {
               file.close();
 
               sendHeader ();
-              client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Exists <BR>");
+              client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR>");
               client.println F( "<A HREF= \"dir=\"  > Full directory</A> <BR>");
               sendFooter ();
             }
