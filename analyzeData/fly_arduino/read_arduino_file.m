@@ -36,17 +36,18 @@ end;
 
 
 %% subtract mean and do fft
+fft_display_limit = 100 ;
 figure('Name', strcat('FFT of: ',fileName));
-fftData= zeros(nContrasts,99);
+fftData= zeros(nContrasts,fft_display_limit);
 for i = 1:nContrasts
     
     rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
     subplot(9,1,i);
     complx_fftData=fft(rawdata(i,:)); %% return this to main program and then average first and then calculate the abs
 %%%%%s    take angle too
-    fftData(i,:) = abs(complx_fftData(2:100));
+    fftData(i,:) = abs(complx_fftData(2:fft_display_limit+1));
     bar(fftData(i,:));
-    axis([0 100 0 1000]); % plot to 25Hz
+    axis([0 fft_display_limit 0 10000]); % plot to 25Hz
     set(gca,'XTickLabel',''); % no tick labels (unless bottom row, see below)
     
     yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
@@ -61,7 +62,7 @@ xlabel('Hz');
 figure('Name', strcat('CRF of: ',fileName));
 
 xData = contrasts(:,2);
-y12Data = fftData(:,50);
+y12Data = fftData(:,fft_display_limit/2);
 %y15Data = fftData(:,max(60:63));
 
 plot(xData, y12Data, 'LineStyle','none', 'marker', 'o');
