@@ -11,7 +11,7 @@ walk_a_directory_recursively(dirName, '*.SWP');
 %% now we have a list of all the files with .SVP in that tree
 
 %%read first file and save x values
-CRF_start = read_arduino_file ( deblank(SVPfiles{1}) );
+[U_CRF_start M_CRF_start]  = read_arduino_file ( deblank(SVPfiles{1}) );
 
 %% read all the rest of them (well, the first 20)
 for i=2:min(length(SVPfiles),20)
