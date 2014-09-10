@@ -32,7 +32,7 @@ int iIndex = 0 ;
 
 
 //
-int usedLED  = 5;
+int usedLED  = 0;
 const int redled = 5;
 const int grnled = 6;
 const int bluLED = 7;
@@ -567,7 +567,7 @@ void collectData ()
   if (iThisContrast == 0 && file.isOpen()) file.close();
 
   if (iThisContrast >= maxContrasts) iThisContrast = 0;
-
+  
   sampleCount = -presamples ;
   while (sampleCount < max_data)
   {
@@ -728,6 +728,13 @@ void loop() {
           {
             // save the commandline....
             MyInputString.toCharArray(cInput, MaxInputStr+2);
+            // now choose the colour
+            int oldLED = usedLED ;
+            if(MyInputString.indexOf("colour=blue&") > 0 ) usedLED  = BledPin ; //
+            if(MyInputString.indexOf("colour=blue (K)&") > 0 ) usedLED  = bluLED ; //
+            if(MyInputString.indexOf("colour=red&") > 0 ) usedLED  = redled ; //
+            if(MyInputString.indexOf("colour=green&") > 0 ) usedLED  = grnled ; //
+            if (oldLED != usedLED) goBlack ();
 
             //Serial.println F("saving ???");
             String sFile = MyInputString.substring(fPOS+15); // ignore the leading / should be 9
