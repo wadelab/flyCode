@@ -247,8 +247,7 @@ mExtracted=abs(squeeze(mean(abs(TransExtracted))));
 
 
 TTransExtracted=transpose(TransExtracted);
-subplot(2,1,2);imagesc(squeeze(TTransExtracted),[0 1.7
-    e-3]);colorbar;
+subplot(2,1,2);imagesc(squeeze(TTransExtracted),[0 1.7e-3]);colorbar;
 ylabel('Temporal Frequency (Hz)');
 xlabel('Spatial Frequency (cpd)');
 set(gca,'YTickLabel',uniqueTF );
