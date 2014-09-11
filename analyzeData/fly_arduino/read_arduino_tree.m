@@ -6,33 +6,46 @@ global SVPfiles ;
 SVPfiles = {};
 
 dirName=uigetdir();
-walk_a_directory_recursively(dirName, '*.SWP');
+walk_a_directory_recursively(dirName, '*.SVP');
 
 %% now we have a list of all the files with .SVP in that tree
+for i=1:length(SVPfiles)
+    SVPfiles{i} = deblank(SVPfiles{i});
+end
+%% 
 
 %%read first file and save x values
-[U_CRF_start M_CRF_start]  = read_arduino_file ( deblank(SVPfiles{1}) );
+CRF_start = read_arduino_file ( SVPfiles{1} );
 
 %% read all the rest of them (well, the first 20)
 for i=2:min(length(SVPfiles),20)
-    disp(SVPfiles{i});
-   CRF_tmp = read_arduino_file ( deblank(SVPfiles{i}) );
-   CRF_start(:,i+2) = CRF_tmp(:,3)
+   disp(SVPfiles{i});
+   CRF_tmp = read_arduino_file ( SVPfiles{i} );
+   CRF_start.UNmaskedCRF(:,i+1) = CRF_tmp.UNmaskedCRF(:,2);
+   CRF_start.MaskedCRF(:,i+1) = CRF_tmp.MaskedCRF(:,2);
 end;
 %% 
 
 %%calculate and plot the average
-CRF_output=CRF_start(:,3:end) ;
-meanCRF = mean(CRF_output, 2) ;
+CRF_output.UNmaskedCRF=CRF_start.UNmaskedCRF(:,2:end) ;
+meanCRF.UNmaskedCRF = mean(CRF_output.UNmaskedCRF, 2) ;
+
+CRF_output.MaskedCRF=CRF_start.MaskedCRF(:,2:end) ;
+meanCRF.MaskedCRF = mean(CRF_output.MaskedCRF, 2) ;
 
 figure('Name',strcat('mean CRF', dirName));
-plot (CRF_start(:,1), meanCRF, '*');
+plot (CRF_start.UNmaskedCRF(:,1), CRF_start.UNmaskedCRF(:,2), '-*', CRF_start.MaskedCRF(:,1), CRF_start.MaskedCRF(:,2), '-.O' );
+legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
+set(gca,'XScale','log');
 
-figure('Name',strcat('boxplot CRF', dirName));
-boxplot(transpose(CRF_output),'labels', CRF_start(:,1));
-set(gca,'YLim', [0, 200]);
+printFilename = [dirName, filesep, 'mean_CRF', '.eps']
+print( printFilename );
 
-disp (['done!', dirName]); 
+% figure('Name',strcat('boxplot CRF', dirName));
+% boxplot(transpose(CRF_output),'labels', CRF_start(:,1));
+% set(gca,'YLim', [0, 200]);
+
+disp (['done! ', dirName]); 
 
 
 

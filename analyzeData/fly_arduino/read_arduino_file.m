@@ -1,7 +1,7 @@
 % close all
 % clear all
 
-function {myUNmaskedCRF  myMaskedCRF} = read_arduino_file (fName)
+function myCRFs = read_arduino_file (fName)
 
 nContrasts = 9 ; %fixed for this first version of the arduino stimuli
 
@@ -42,7 +42,8 @@ for i = 1:nContrasts
     yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
     ylabel(yTxt);
 end;
-
+printFilename = [pathstr, filesep, fileName, '_RawData', '.eps']
+print( printFilename );
 
 
 %% subtract mean and do fft
@@ -67,6 +68,10 @@ end;
 % label bottom row
 set(gca,'XTickLabel',{'0',' ','5',' ','10',' ','15',' ','20',' ','25'});
 xlabel('Hz');
+
+printFilename = [pathstr, filesep, fileName, '_FFT', '.eps']
+print( printFilename );
+
 
 %% Plot 12 Hz CRF for this fly
 figure('Name', strcat('12 Hz CRF of: ',fileName));
@@ -97,13 +102,16 @@ CRF(:,3)= y12Data;
 %     0.0300    0.0700    4.0892
 
 % return the sorted array; we should count the zeros in the fist column...
-myCRF = sortrows(CRF);
-myUNmaskedCRF = myCRF([1:5],:);
-myMaskedCRF = myCRF([6:nContrasts],:);
+CRF = sortrows(CRF);
+myCRFs.UNmaskedCRF = CRF([1:5],[2:3]);
+myCRFs.MaskedCRF = CRF([6:nContrasts],[2:3]);
 
-plot (myUNmaskedCRF(:,2), myUNmaskedCRF(:,3), '-*', myMaskedCRF(:,2), myMaskedCRF(:,3), '-.O' );
-legend('UNmasked', 'Masked') ;
+plot (myCRFs.UNmaskedCRF(:,1), myCRFs.UNmaskedCRF(:,2), '-*', myCRFs.MaskedCRF(:,1), myCRFs.MaskedCRF(:,2), '-.O' );
+legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
 set(gca,'XScale','log');
+
+printFilename = [pathstr, filesep, fileName, '_CRF', '.eps']
+print( printFilename );
 
 % CRF(:,3) has dat for this fly run
 

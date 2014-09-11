@@ -3,6 +3,7 @@ close all;
 clear all; 
 
 global SVPfiles ;
+
 SVPfiles = {};
 
 dirName=uigetdir();
