@@ -58,7 +58,7 @@ for i = 1:nContrasts
 %%%%%s    take angle too
     fftData(i,:) = abs(complx_fftData(2:fft_display_limit+1));
     bar(fftData(i,:));
-    axis([0 fft_display_limit 0 10000]); % plot to 25Hz
+    axis([0 fft_display_limit 0 6000]); % plot to 25Hz
     set(gca,'XTickLabel',''); % no tick labels (unless bottom row, see below)
     
     yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;

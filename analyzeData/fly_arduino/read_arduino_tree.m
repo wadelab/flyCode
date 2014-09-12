@@ -33,10 +33,12 @@ meanCRF.UNmaskedCRF = mean(CRF_output.UNmaskedCRF, 2) ;
 CRF_output.MaskedCRF=CRF_start.MaskedCRF(:,2:end) ;
 meanCRF.MaskedCRF = mean(CRF_output.MaskedCRF, 2) ;
 
-figure('Name',strcat('mean CRF', dirName));
+[pathstr, fileName, ext] = fileparts(fileName);
+figure('Name',strcat('mean CRF', pathstr));
 plot (CRF_start.UNmaskedCRF(:,1), CRF_start.UNmaskedCRF(:,2), '-*', CRF_start.MaskedCRF(:,1), CRF_start.MaskedCRF(:,2), '-.O' );
 legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
 set(gca,'XScale','log');
+
 
 printFilename = [dirName, filesep, 'mean_CRF', '.eps']
 print( printFilename );
