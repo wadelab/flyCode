@@ -659,17 +659,17 @@ void flickerPage()
     client.println F( "<BR> ");// retrieve the flicker rates we sampled with...
 
 
-  int randomnumber = contrastOrder[iThisContrast];
-  int F2index = 0 ;
-  if (randomnumber > F2contrastchange) F2index = 1;
-  
+    int randomnumber = contrastOrder[iThisContrast];
+    int F2index = 0 ;
+    if (randomnumber > F2contrastchange) F2index = 1;
+
     client.println("Data will flicker at " + String(freq1) + " Hz with contrast " + String(F1contrast[randomnumber]) +
                    " and " + String(freq2) + " Hz with contrast " + String(F2contrast[F2index]) + " % <BR> " );
 
     client.println("please wait....<BR>");
     if (iThisContrast > 0)
     {
-      iThisContrast -- ; 
+      iThisContrast -- ;
       client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
       client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
 
@@ -711,9 +711,9 @@ void flickerPage()
   for (int i = iThisContrast - 1; i > -1 ; i--)
   {
     int randomnumber = contrastOrder[i];
-  int F2index = 0 ;
-  if (randomnumber > F2contrastchange) F2index = 1;
-  
+    int F2index = 0 ;
+    if (randomnumber > F2contrastchange) F2index = 1;
+
     client.println("<BR>Data has been flickered at " + String(freq1) + " Hz with contrast " + String(F1contrast[randomnumber]) +
                    " and " + String(freq2) + " Hz with contrast " + String(F2contrast[F2index]) + " %  " );
   }
@@ -749,11 +749,11 @@ void loop() {
         // so you can send a reply
         if (c == '\n' )
         {
-          bool pageServed = false ;
+          bool pageNotServed = true ;
           Serial.print(MyInputString);
           int fPOS = MyInputString.indexOf("filename=");
           // asking for new sample
-          Serial.println("  Position of file was:" + String(fPOS));
+          //Serial.println("  Position of file was:" + String(fPOS));
           if (fPOS > 0)
           {
             // save the commandline....
@@ -798,35 +798,43 @@ void loop() {
               flickerPage();
               sampleCount = -102 ; //implies collectData();
             }
-            pageServed = true ;
+            pageNotServed = false ;
           }
           // show directory
           fPOS = MyInputString.indexOf("dir=");
           //Serial.println("  Position of dir was:" + String(fPOS));
-          if (fPOS > 0)
+          if (pageNotServed && fPOS > 0)
           {
             serve_dir() ;
-            pageServed = true ;
+            pageNotServed = false ;
           }
-          else
+          
+          //light up
+                    fPOS = MyInputString.indexOf("white=");
+          //Serial.println("  Position of dir was:" + String(fPOS));
+          if (pageNotServed && fPOS > 0)
           {
-            fPOS = MyInputString.indexOf(".SVP");
-            //Serial.println("  Position of .SVP was:" + String(fPOS));
-            if (fPOS > 0)
-            {
-              // requested a file...
-              fPOS = MyInputString.indexOf("/");
-              String sFile = MyInputString.substring(fPOS + 1); // ignore the leading /
-              //Serial.println(" Proposed filename " + sFile );
-              fPOS = sFile.indexOf(" ");
-              sFile = sFile.substring(0, fPOS);
-              //Serial.println(" Proposed filename now" + sFile + ";");
-              sFile.toCharArray(cFile, 29); // adds terminating null
-              doreadFile(cFile) ;
-              pageServed = true ;
-            }
+            goWhite() ;
+            pageNotServed = false ;
           }
-          if (!pageServed)
+
+          fPOS = MyInputString.indexOf(".SVP");
+          //Serial.println("  Position of .SVP was:" + String(fPOS));
+          if (pageNotServed && fPOS > 0)
+          {
+            // requested a file...
+            fPOS = MyInputString.indexOf("/");
+            String sFile = MyInputString.substring(fPOS + 1); // ignore the leading /
+            //Serial.println(" Proposed filename " + sFile );
+            fPOS = sFile.indexOf(" ");
+            sFile = sFile.substring(0, fPOS);
+            //Serial.println(" Proposed filename now" + sFile + ";");
+            sFile.toCharArray(cFile, 29); // adds terminating null
+            doreadFile(cFile) ;
+            pageNotServed = false ;
+
+          }
+          if (pageNotServed)
           {
             run_graph() ;
           }
