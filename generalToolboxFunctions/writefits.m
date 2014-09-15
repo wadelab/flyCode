@@ -42,27 +42,27 @@ end
 % data ( thisMaskCondition = 2:2 )
 fID = fopen([filebaseName,'.csv'], 'w+');
 
-% This writes out the summary of the bootstaps
-% fprintf(fID,' Freq, Param, CI1, CI2, Phenotype\n');
-% 
-% for iPhenotype=24:35
-%     for iFreq = 1:2
-%         for iParam = 1:2 % just write RMax and c50
-%             for thisMaskCondition = 2:2
-%                 fprintf(fID,'%s, %s, %0.5e, %0.5e, %0.5e, %s \n',  harmonicNames{iFreq},  paramNames{iParam},  confInt(iPhenotype,thisMaskCondition,iFreq,1,iParam),  mean(bootFitParams(iPhenotype,thisMaskCondition,iFreq,:,iParam)),confInt(iPhenotype,thisMaskCondition,iFreq,2,iParam), fittedNames{iPhenotype});
-%             end % mask
-%         end  % iParam
-%     end % iFreq
-% end %iPhen
-% %quit
+This writes out the summary of the bootstaps
+fprintf(fID,' Freq, Param, CI1, CI2, Phenotype\n');
+
+for iPhenotype=1:length(fittedNames)
+    for iFreq = 1:2
+        for iParam = 1:2 % just write RMax and c50
+            for thisMaskCondition = 2:2
+                fprintf(fID,'%s, %s, %0.5e, %0.5e, %0.5e, %s \n',  harmonicNames{iFreq},  paramNames{iParam},  confInt(iPhenotype,thisMaskCondition,iFreq,1,iParam),  mean(bootFitParams(iPhenotype,thisMaskCondition,iFreq,:,iParam)),confInt(iPhenotype,thisMaskCondition,iFreq,2,iParam), fittedNames{iPhenotype});
+            end % mask
+        end  % iParam
+    end % iFreq
+end %iPhen
+%quit
 
 % this writes out the actual 300 boots
 %write 24-35
-%fID = fopen('work.csv', 'w+');
+fID = fopen([filebaseName, data,'.csv'], 'w+');
 iParam = 2;
 fprintf(fID,' Freq, %s, Phenotype\n', paramNames{iParam});
 thisMaskCondition = 2;
-for iPhenotype=24:35
+for iPhenotype=length(fittedNames)
     for iFreq = 1:2
         for thisMaskCondition = 2:2
             for iBoot = 1:300
