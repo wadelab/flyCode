@@ -11,19 +11,19 @@ close all;
 IGNORE_PHOTODIODE_FLAG=1; % Normally we don't want to waste time processing the photodiode phenotype since it's a) not physiologically interesting and b) statistically different from everything else
 
 
-[fileToLoad,pathToLoad]=uigetfile('*Analysis*.mat','Load analysis file');
-[pathstr, name, ext] = fileparts(fileToLoad);
-b = [pathToLoad,name, '_analysed_',datestr(now,30)];
+[newfileToLoad,newpathToLoad]=uigetfile('*Analysis*.mat','Load analysis file');
+[pathstr, name, ext] = fileparts(newfileToLoad);
+b = [newpathToLoad,name, '_analysed_',datestr(now,30)];
 
 
-load(fullfile(pathToLoad,fileToLoad)); % This is the file you got from the directory analysis script. It will place a structure calles 'analysisStruct' in the workspace
+load(fullfile(newpathToLoad,newfileToLoad)); % This is the file you got from the directory analysis script. It will place a structure calles 'analysisStruct' in the workspace
 % ** Obviously you replace the filename above with the one that you saved
 % out from the selectLoadAnalyze... script' Or make the call above a
 % uigetfile to browse .
 
 
 %% now calculate a csv file name
-[pathstr, name, ext] = fileparts([pathToLoad,fileToLoad]);
+[pathstr, name, ext] = fileparts([newpathToLoad,newfileToLoad]);
 outfile = [pathstr, '/', name,'_MAX_forSPSS.csv'];
 fileID = fopen(outfile, 'w+');
 if fileID < 3
@@ -33,12 +33,15 @@ end
 % Fly, F, contrast, mask, response, genotype 
 % we put genotype last so it can be split in Excel
 iPreviousFlies = 1;
-contrastmax = nConts;
+contrastmax = length(analysisStruct.contRange);
 maskmax = 2 ;
-freqmax = nFreqs;
+
+FreqLabels ={'1F1','1F2','2F1','2F2', '1F1+1F2','2F1+2F2'};
+freqmax=length(FreqLabels);
+
 genotypemax = length(analysisStruct.phenotypeName) ;
 
-outcells(iPreviousFlies,:) = {'fly'; 'mask'; 'freq'; 'max response'; 'max/masked F2[1]'; 'genotype '};
+outcells(iPreviousFlies,:) = {'fly'; 'mask'; 'freq'; 'max response'; 'max/masked F2[1]'; 'age, genotype '};
 iPreviousFlies = iPreviousFlies + 1;
 
 for genotype = 1 : genotypemax
@@ -61,13 +64,21 @@ for genotype = 1 : genotypemax
                         
                         %%convert the indexes to humean friendly forms...
                         genotype_str = analysisStruct.phenotypeName{genotype} ;
+                           genotype_str = strrep (genotype_str,'all', '');
+    genotype_str = strrep (genotype_str,'_1_', ' 01, ');
+    genotype_str = strrep (genotype_str,'_7_', ' 07, ');
+    genotype_str = strrep (genotype_str,'_14_', ' 14, ');
+    genotype_str = strrep (genotype_str,'_21_', ' 21, ');
+    genotype_str = strrep (genotype_str,'_', ' ');
+    genotype_str = strrep (genotype_str,'D ', '');
+    genotype_str = strrep (genotype_str,'0uM Bottle', '');
                         if mask == 1
                             mask_str='unmasked';
                         else
                             mask_str='masked';
                         end
                         
-                        freq_str= plotParams.labelList{freq} ;
+                        freq_str= FreqLabels{freq} ; %%plotParams.labelList{freq} ;
                     end % contrast
                     
                     %%calculate the max_response as a ratio of the masked F2
