@@ -24,8 +24,10 @@ paramNames = {'Rmax', 'c50', 'n', 'R0'}; %R0 is always zero
 for phenotypeIndex=1:length(fittedNames)
     tmpName = fittedNames{phenotypeIndex};
      tmpName = strrep (tmpName,'all', '');
-    tmpName = strrep (tmpName,'_1_', ' 01 ');
-    tmpName = strrep (tmpName,'_7_', ' 07 ');
+    tmpName = strrep (tmpName,' 1 ', ' 01, ');
+    tmpName = strrep (tmpName,' 7 ', ' 07, ');
+    tmpName = strrep (tmpName,' 14 ', ' 14, ');
+    tmpName = strrep (tmpName,' 21 ', ' 21, ');
     tmpName = strrep (tmpName,'_', ' ');
     tmpName = strrep (tmpName,'D ', '');
     tmpName = strrep (tmpName,'0uM Bottle', '');
@@ -39,7 +41,7 @@ end
 fID = fopen([newfilebaseName,'.csv'], 'w+');
 
 %%%This writes out the summary of the bootstaps
-fprintf(fID,' Freq, Param, CI1, CI2, Phenotype\n');
+fprintf(fID,' Freq, Param, CI1, mean, CI2, age, Phenotype\n');
 
 for iPhenotype=1:length(fittedNames)
     for iFreq = 1:2
