@@ -84,7 +84,7 @@ for thisSubDir=1:length(subDirList) % Loop over all subdirectories
     nExpts=length(subDirList{thisSubDir}.exptDir);
 
     
-    for thisExptIndex=1:nExpts % Loop over all expts in a single subDirectory. An expt is defined as a new set of flies : a new 'pressing of the go button'
+    for thisExptIndex=1:nExpts % Loop over all expts in a single subDirectory. An expt is defined as a new set of files : a new 'pressing of the go button'
         % Build up lists of complex response amps, average waveforms etc
    
         thisExptResponse=subDirData{thisSubDir}.expt{thisExptIndex}.allfCondDat;
@@ -118,13 +118,13 @@ end % Next sub directory
 [uniqueFlyTypes,uniqueIndices,uniqueJ]=unique(allPTHashes);
 nUniqueFlies=length(uniqueFlyTypes);
 
-fprintf('\nFound %d unique fly types in this dataset\n',nUniqueFlies);
-for thisFlyTypeIndex=1:nUniqueFlies
-    fprintf('\n%s\n',char(allFlyNames{uniqueIndices(thisFlyTypeIndex)}));
-    ptypeList{thisFlyTypeIndex}=char(allFlyNames{uniqueIndices(thisFlyTypeIndex)});
-    
-    
-end
+% fprintf('\nFound %d unique fly types in this dataset\n',nUniqueFlies);
+% for thisFlyTypeIndex=1:nUniqueFlies
+%     fprintf('\n%s\n',char(allFlyNames{uniqueIndices(thisFlyTypeIndex)}));
+%     ptypeList{thisFlyTypeIndex}=char(allFlyNames{uniqueIndices(thisFlyTypeIndex)});
+%     
+%     
+% end
 %%
 % Sort data into unique sets and average
 for thisFlyTypeIndex=1:nUniqueFlies
@@ -139,6 +139,15 @@ for thisFlyTypeIndex=1:nUniqueFlies
     
 end
 
+%% 
+
+fprintf('\nFound %d unique fly types in this dataset\n',nUniqueFlies);
+for thisFlyTypeIndex=1:nUniqueFlies
+    fprintf('\n%s %d\n',char(allFlyNames{uniqueIndices(thisFlyTypeIndex)}), nFliesInThisType(thisFlyTypeIndex) );
+    ptypeList{thisFlyTypeIndex}=char(allFlyNames{uniqueIndices(thisFlyTypeIndex)});
+    
+    
+end
 
 analysisStruct.contRange=linspace(min(params.contRange(:,1)),max(params.contRange(:,1)),length(params.contRange(:,1))/2); % Which contrasts were the data acquired over?
 
@@ -196,8 +205,12 @@ toc
 %%
 plotScales=[ .005 .0005 .001]; % Scales
 
-for thisFlyTypeIndex=1:nUniqueFlies
+[sortednames,sortIndex] = sort(ptypeList);
+
+
+for thisFlyTypeIDX=1:nUniqueFlies
     
+    thisFlyTypeIndex = sortIndex(thisFlyTypeIDX);
     fprintf('\n%s',ptypeList{thisFlyTypeIndex});
     if (strcmp(ptypeList{thisFlyTypeIndex},'Photodiode') && PHOTODIODE_HIDE)
         % Do nothing
@@ -218,7 +231,7 @@ for thisFlyTypeIndex=1:nUniqueFlies
         plotParams.lineWidthCart=2;
         plotParams.errorEnvelope=1;
         plotParams.doPhasePlot=0;
-        plotParams.doCartPlot=1;
+        plotParams.doCartPlot=0; %% make this 1 again
         plotParams.XAxisType='Log';
         plotParams.plotColors=[0 0 0];
         plotParams.doFitPlot=1;
@@ -226,14 +239,18 @@ for thisFlyTypeIndex=1:nUniqueFlies
         if (plotParams.doFitPlot)
             %We can plot these fitted data separately
             figure(99);
-            subplot(1,nUniqueFlies,thisFlyTypeIndex);
-            handles=fly_plotFittedData(analysisStruct.contRange,meanFlyDataCoh(thisFlyTypeIndex,1,1:7),fittedCRFParamsUnmasked1_1F1(thisFlyTypeIndex,:),plotParams);
+            subplot(1,nUniqueFlies,thisFlyTypeIDX);
+            %%%% for 2F1 
+            handles=fly_plotFittedData(analysisStruct.contRange,meanFlyDataCoh(thisFlyTypeIndex,3,1:7),fittedCRFParamsUnmasked1_2F1(thisFlyTypeIndex,:),plotParams);
+            %%handles=fly_plotFittedData(analysisStruct.contRange,meanFlyDataCoh(thisFlyTypeIndex,1,1:7),fittedCRFParamsUnmasked1_1F1(thisFlyTypeIndex,:),plotParams);
             set(handles(1),'Color','k');
-              set(handles(1),'LineWidth',2);
+            set(handles(1),'LineWidth',2);
             set(handles(2),'MarkerFaceColor','k');
-              set(handles(2),'MarkerEdgeColor','k');
+            set(handles(2),'MarkerEdgeColor','k');
             hold on;
-            handles=fly_plotFittedData(analysisStruct.contRange,meanFlyDataCoh(thisFlyTypeIndex,1,8:14),fittedCRFParamsMasked1_1F1(thisFlyTypeIndex,:),plotParams);
+            %%% for 2f1 
+            handles=fly_plotFittedData(analysisStruct.contRange,meanFlyDataCoh(thisFlyTypeIndex,3,1:7),fittedCRFParamsUnmasked1_2F1(thisFlyTypeIndex,:),plotParams);
+            %%%handles=fly_plotFittedData(analysisStruct.contRange,meanFlyDataCoh(thisFlyTypeIndex,1,8:14),fittedCRFParamsMasked1_1F1(thisFlyTypeIndex,:),plotParams);
             
             set(gca,'XScale', plotParams.XAxisType);
             grid on;
@@ -245,12 +262,20 @@ for thisFlyTypeIndex=1:nUniqueFlies
             set(gca,'YLim',[0 plotParams.maxYLim(3)]);
             grid on;
             v=axis(gca);
-            g=title(ptypeList{thisFlyTypeIndex});
-            set(g,'Position',[v(2)*.96,v(4)*.5 0]);
-            set(g,'Rotation',90);
-            set(g,'FontSize',8);
-           
-
+            %% we may want to shorten the names being displayed
+%             sTmp = [ptypeList{thisFlyTypeIndex}, ' ', num2str(nFliesInThisType(thisFlyTypeIndex))] ;
+%             sTmp = strrep (sTmp,'D_7', '');
+%             sTmp = strrep (sTmp,'_', ' ');
+%             sTmp = strrep (sTmp,'instant', '');
+%             sTmp = strrep (sTmp,'Instant', '');
+            
+            
+            g=title(sTmp);
+            set(g,'Position',[v(2)*.2,v(4)*.99 0]);
+            set(g,'Rotation',30); % was 90
+            set(g,'FontSize',18); % was 8
+            
+            
         end
 
         if (plotParams.doCartPlot)
