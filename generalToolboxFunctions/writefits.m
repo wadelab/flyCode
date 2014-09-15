@@ -5,7 +5,7 @@ clear all;
 
 [fileToLoad,pathToLoad]=uigetfile('*fitTemp*.mat','Load fit file');
 [pathstr, name, ext] = fileparts(fileToLoad);
-filebaseName = [pathToLoad,name, '_fitted_Bootff'];
+newfilebaseName = [pathToLoad,name, '_fitted_Bootff'];
 load(fullfile(pathToLoad,fileToLoad));
 
 %%load(fullfile('work.mat'));
@@ -20,19 +20,15 @@ load(fullfile(pathToLoad,fileToLoad));
 harmonicNames = {'1F1','1F2';'2F1','2F2'};
 paramNames = {'Rmax', 'c50', 'n', 'R0'}; %R0 is always zero
 
-xToPlot = linspace(0,length(fittedNames),length(fittedNames));
-if length(fittedNames) < 4 % try 4
-    sStyle = 'horizontal' ;
-    xAngle = 0 ;
-else
-    sStyle = 'inline' ; 
-    xAngle = 45 ;
-end
 
 for phenotypeIndex=1:length(fittedNames)
     tmpName = fittedNames{phenotypeIndex};
-    tmpName = strrep (tmpName,'all', '');
+     tmpName = strrep (tmpName,'all', '');
+    tmpName = strrep (tmpName,'_1_', ' 01 ');
+    tmpName = strrep (tmpName,'_7_', ' 07 ');
     tmpName = strrep (tmpName,'_', ' ');
+    tmpName = strrep (tmpName,'D ', '');
+    tmpName = strrep (tmpName,'0uM Bottle', '');
     fittedNames{phenotypeIndex}= tmpName;
 end
 
@@ -40,9 +36,9 @@ end
 
 % in this case we just write out the last bit (rows 24-35) of the masked
 % data ( thisMaskCondition = 2:2 )
-fID = fopen([filebaseName,'.csv'], 'w+');
+fID = fopen([newfilebaseName,'.csv'], 'w+');
 
-This writes out the summary of the bootstaps
+%%%This writes out the summary of the bootstaps
 fprintf(fID,' Freq, Param, CI1, CI2, Phenotype\n');
 
 for iPhenotype=1:length(fittedNames)
@@ -58,7 +54,7 @@ end %iPhen
 
 % this writes out the actual 300 boots
 %write 24-35
-fID = fopen([filebaseName, data,'.csv'], 'w+');
+fID = fopen([newfilebaseName, 'data','.csv'], 'w+');
 iParam = 2;
 fprintf(fID,' Freq, %s, Phenotype\n', paramNames{iParam});
 thisMaskCondition = 2;
