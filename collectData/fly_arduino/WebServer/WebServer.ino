@@ -69,11 +69,8 @@ long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in 
 unsigned long last_time = 0;
 unsigned long timing_too_fast = 0 ;
 
-
-//#define N_WAVE          1024    /* dimension of Sinewave[] */
-//#define LOG2_N_WAVE     10      /* log2(N_WAVE) */
-//#define N_LOUD          100     /* dimension of Loudampl[] */
-
+byte second, minute, hour, day, month;
+int year ;
 
 const int MaxInputStr = 130 ;
 String MyInputString = String(MaxInputStr + 1);
@@ -108,7 +105,7 @@ void setup() {
 
 
   // Open serial communications and wait for port to open:
-  Serial.begin(38400);
+  Serial.begin(115200);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
@@ -187,6 +184,9 @@ void doShuffle()
     contrastOrder[i] = tmp ;
   }
 }
+
+
+
 
 
 void sendHeader (const String & sTitle, bool isHTML = true)
@@ -309,6 +309,33 @@ void run_graph()
 
 }
 
+void printTwoDigits(uint8_t v)
+{
+  char str[3];
+  str[0] = '0' + v / 10;
+  str[1] = '0' + v % 10;
+  str[2] = 0;
+  client.print(str);
+}
+
+//code to print date...
+void myPrintFatDateTime(const dir_t & pFile)
+{
+  client.write(' ');
+  client.print(FAT_YEAR(pFile.lastWriteDate));
+  client.write('-');
+  printTwoDigits(FAT_MONTH(pFile.lastWriteDate));
+  client.write('-');
+  printTwoDigits(FAT_DAY(pFile.lastWriteDate));
+  client.write(' ');
+  printTwoDigits(FAT_HOUR(pFile.lastWriteTime));
+  client.print(':');
+  printTwoDigits(FAT_MINUTE(pFile.lastWriteTime));
+  client.print(':');
+  printTwoDigits(FAT_SECOND(pFile.lastWriteTime));
+  client.print(' ');
+}
+
 void printDirectory(uint8_t flags) {
   // This code is just copied from SdFile.cpp in the SDFat library
   // and tweaked to print to the client output in html!
@@ -328,7 +355,8 @@ void printDirectory(uint8_t flags) {
 
     // print any indent spaces
     client.print("<li><a href=\"");
-    for (uint8_t i = 0; i < 11; i++) {
+    for (uint8_t i = 0; i < 11; i++)
+    {
       if (p.name[i] == ' ') continue;
       if (i == 8) {
         client.print('.');
@@ -338,7 +366,8 @@ void printDirectory(uint8_t flags) {
     client.print("\">");
 
     // print file name with possible blank fill
-    for (uint8_t i = 0; i < 11; i++) {
+    for (uint8_t i = 0; i < 11; i++)
+    {
       if (p.name[i] == ' ') continue;
       if (i == 8) {
         client.print('.');
@@ -348,19 +377,15 @@ void printDirectory(uint8_t flags) {
 
     client.print("</a>");
 
-    if (DIR_IS_SUBDIR(&p)) {
+    if (DIR_IS_SUBDIR(&p)) 
+    {
       client.print('/');
     }
-
-    // print modify date/time if requested
-    //if (flags & LS_DATE) {
-    root.printFatDate(p.lastWriteDate);
-    client.print(' XX ');
-    root.printFatTime(p.lastWriteTime);
-    //}
-    // print size if requested
-    /*if (!DIR_IS_SUBDIR(&p) && (flags & LS_SIZE))*/ {
-      client.print(' ');
+else
+    // print size 
+  {
+    myPrintFatDateTime(p);
+      client.print F(" size: ");
       client.print(p.fileSize);
     }
     client.println F("</li>");
@@ -387,7 +412,67 @@ int br_Now(double t)
   return int(sin((t / 1000.0) * PI * 2.0 * double(freq1)) * 1.270 * F1contrast[randomnumber] + sin((t / 1000.0) * PI * 2.0 * double(freq2)) * 1.270 * F2contrast[F2index]) + 127;
 }
 
+void webTime ()
+{
+  EthernetClient timeclient;
+  // default values ...
+  year = 2014;
+  second = minute = hour = day = month = 0;
 
+  // Just choose any reasonably busy web server, the load is really low
+  if (timeclient.connect("biolpc22.york.ac.uk", 80))
+  {
+    // Make an HTTP 1.1 request which is missing a Host: header
+    // compliant servers are required to answer with an error that includes
+    // a Date: header.
+    timeclient.print(F("GET / HTTP/1.1 \r\n\r\n"));
+
+    char buf[5];			// temporary buffer for characters
+    timeclient.setTimeout(5000);
+    if (timeclient.find((char *)"\r\nDate: ") // look for Date: header
+        && timeclient.readBytes(buf, 5) == 5) // discard
+    {
+      day = timeclient.parseInt();	   // day
+      timeclient.readBytes(buf, 1);	   // discard
+      timeclient.readBytes(buf, 3);	   // month
+      year = timeclient.parseInt();	   // year
+      hour = timeclient.parseInt();   // hour
+      minute = timeclient.parseInt(); // minute
+      second = timeclient.parseInt(); // second
+
+
+      switch (buf[0])
+      {
+        case 'F': month = 2 ; break; // Feb
+        case 'S': month = 9; break; // Sep
+        case 'O': month = 10; break; // Oct
+        case 'N': month = 11; break; // Nov
+        case 'D': month = 12; break; // Dec
+        default:
+          if (buf[0] == 'J' && buf[1] == 'a')
+            month = 1;		// Jan
+          else if (buf[0] == 'A' && buf[1] == 'p')
+            month = 4;		// Apr
+          else switch (buf[2])
+            {
+              case 'r': month =  3; break; // Mar
+              case 'y': month = 5; break; // May
+              case 'n': month = 6; break; // Jun
+              case 'l': month = 7; break; // Jul
+              default: // add a default label here to avoid compiler warning
+              case 'g': month = 8; break; // Aug
+            }
+      } // months sorted
+      month -- ; // zero based, I guess
+
+    }
+  }
+  delay(10);
+  timeclient.flush();
+  timeclient.stop();
+
+  return ;
+}
 
 
 void writeFile(const char * c)
@@ -409,7 +494,11 @@ void writeFile(const char * c)
       Serial.println (c);
       return ;
     }
-
+    webTime();
+    if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, minute, second)) {
+      Serial.println F ("Error in timestamping file");
+      Serial.println (c);
+    }
     iBytesWritten = file.write(cInput, MaxInputStr + 2);
     if (iBytesWritten <= 0)
     {
@@ -781,6 +870,7 @@ void loop() {
             {
               // done so tidy up
               iThisContrast = 0 ; // ready to start again
+              file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
               file.close();
 
               sendHeader ("Sampling Complete!");
@@ -808,15 +898,25 @@ void loop() {
             serve_dir() ;
             pageNotServed = false ;
           }
-          
+
           //light up
-                    fPOS = MyInputString.indexOf("white=");
+          fPOS = MyInputString.indexOf("white=");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
             goWhite() ;
             pageNotServed = false ;
           }
+
+          //          // get date
+          //          fPOS = MyInputString.indexOf("date=");
+          //          //Serial.println("  Position of dir was:" + String(fPOS));
+          //          if (pageNotServed && fPOS > 0)
+          //          {
+          //            getDate () ;
+          //            pageNotServed = false ;
+          //          }
+
 
           fPOS = MyInputString.indexOf(".SVP");
           //Serial.println("  Position of .SVP was:" + String(fPOS));
