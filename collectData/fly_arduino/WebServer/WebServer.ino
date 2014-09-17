@@ -377,14 +377,14 @@ void printDirectory(uint8_t flags) {
 
     client.print("</a>");
 
-    if (DIR_IS_SUBDIR(&p)) 
+    if (DIR_IS_SUBDIR(&p))
     {
       client.print('/');
     }
-else
-    // print size 
-  {
-    myPrintFatDateTime(p);
+    else
+      // print size
+    {
+      myPrintFatDateTime(p);
       client.print F(" size: ");
       client.print(p.fileSize);
     }
