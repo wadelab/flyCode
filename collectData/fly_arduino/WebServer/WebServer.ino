@@ -37,7 +37,7 @@ int usedLED  = 0;
 const int redled = 5;
 const int grnled = 6;
 const int bluLED = 7;
-const int BledPin = 9;// 9 for normal blue diode
+
 const int analogPin = 1 ;
 
 const byte maxContrasts = 9 ;
@@ -115,11 +115,7 @@ void setup() {
     myGraphData[i] = 0;
   }
 
-
-  pinMode(10, OUTPUT); // set the SS pin as an output (necessary!)
-  digitalWrite(10, HIGH); // but turn off the W5100 chip!
   // initialize the SD card
-
   Serial.println F("Setting up SD card...\n");
 
   if (!card.init(SPI_FULL_SPEED, 4)) {
@@ -143,6 +139,19 @@ void setup() {
   Serial.print F("server is at ");
   Serial.println(Ethernet.localIP());
 
+//set up PWM
+//http://forum.arduino.cc/index.php?topic=72092.0
+// timer 4 (controls pin 8, 7, 6);
+int myEraser = 7;             // this is 111 in binary and is used as an eraser
+TCCR4B &= ~myEraser;   // this operation (AND plus NOT),  set the three bits in TCCR2B to 0
+
+// CS02, CS01, CS00  are clear, we write on them a new value:
+//prescaler = 1 ---> PWM frequency is 31000 Hz
+//prescaler = 2 ---> PWM frequency is 4000 Hz
+//prescaler = 3 ---> PWM frequency is 490 Hz (default value)
+int myPrescaler = 2;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.   
+TCCR4B |= myPrescaler;  //this operation (OR), replaces the last three bits in TCCR2B with our new value 011
+
   goBlack ();
 
   doShuffle();
@@ -153,7 +162,6 @@ void goBlack()
   analogWrite( redled, 0 );
   analogWrite( grnled, 0 );
   analogWrite( bluLED, 0 );
-  analogWrite( BledPin, 0 );
 }
 
 void goWhite()
@@ -161,7 +169,6 @@ void goWhite()
   analogWrite( redled, 255 );
   analogWrite( grnled, 255 );
   analogWrite( bluLED, 255 );
-  analogWrite( BledPin, 255 );
 }
 
 void doShuffle()
@@ -849,8 +856,7 @@ void loop() {
             MyInputString.toCharArray(cInput, MaxInputStr + 2);
             // now choose the colour
             int oldLED = usedLED ;
-            if (MyInputString.indexOf("colour=blue&") > 0 ) usedLED  = BledPin ; //
-            if (MyInputString.indexOf("colour=blue (K)&") > 0 ) usedLED  = bluLED ; //
+            if (MyInputString.indexOf("colour=blue&") > 0 ) usedLED  = bluLED ; //
             if (MyInputString.indexOf("colour=red&") > 0 ) usedLED  = redled ; //
             if (MyInputString.indexOf("colour=green&") > 0 ) usedLED  = grnled ; //
             if (oldLED != usedLED) goBlack ();
