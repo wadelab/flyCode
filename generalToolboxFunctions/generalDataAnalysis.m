@@ -176,7 +176,7 @@ drawnow ;
 %% If you install the parallel computing toolbox, it will use all your n cores and take and take 1/n as much time
 % It's really worth doing this!
 tic
-if ( exist('matlabpool','builtin')) % Check for the existence of the Parallel computing matlabpool function
+if ( exist('matlabpool')) ; %%,'builtin')) % Check for the existence of the Parallel computing matlabpool function
     if(matlabpool('size') ~=0   )
         matlabpool('open',4); % Open four cores. If your computer has more than 4 cores then you can get even better performance. I think GPUs are supported these days so with the right hardware you might be able to get x100 speedup!
     end
