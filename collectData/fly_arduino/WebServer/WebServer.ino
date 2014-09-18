@@ -152,24 +152,13 @@ void setup() {
   int myPrescaler = 2;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.
   TCCR4B |= myPrescaler;  //this operation (OR), replaces the last three bits in TCCR2B with our new value 011
 
-  goBlack ();
+  goColour(0,0,0, false);
 
   doShuffle();
 }
 
-void goBlack()
-{
-  analogWrite( redled, 0 );
-  analogWrite( grnled, 0 );
-  analogWrite( bluLED, 0 );
-}
 
-void goColour(const byte r, const byte g, const byte b)
-{
-  analogWrite( redled, r );
-  analogWrite( grnled, g );
-  analogWrite( bluLED, b );
-}
+
 
 void doShuffle()
 {
@@ -196,7 +185,7 @@ void doShuffle()
 
 
 
-void sendHeader (const String & sTitle, bool isHTML = true)
+void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML = true)
 {
   // send a standard http response header
   client.println F("HTTP/1.1 200 OK");
@@ -217,7 +206,9 @@ void sendHeader (const String & sTitle, bool isHTML = true)
     client.println F("<title>");
     client.println (sTitle);
     client.println F("</title>");
-    client.println F("<body>");
+    client.println F("<body ");
+    client.println (sINBody);
+    client.println F(">");
   }
 }
 
@@ -226,6 +217,23 @@ void sendFooter()
   client.println F("</body></html>");
 }
 
+void goColour(const byte r, const byte g, const byte b, const bool boolUpdatePage)
+{
+  analogWrite( redled, r );
+  analogWrite( grnled, g );
+  analogWrite( bluLED, b );
+  if (boolUpdatePage)
+  {
+  sendHeader ("Lit up ?", "onload=\"goBack()\" ");
+  
+  client.println F(" <script>");
+  client.println F("function goBack() ");
+  client.println F("{ window.history.back() }");
+  client.println F("</script>");
+ 
+  sendFooter();
+  }
+}
 
 void serve_dir ()
 {
@@ -237,7 +245,7 @@ void serve_dir ()
 void run_graph()
 {
   // turn off any LEDs, always do flash with blue
-  goBlack();
+  goColour(0,0,0, false);
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   int sensorReading = analogRead(analogPin);
@@ -252,8 +260,8 @@ void run_graph()
     analogWrite(bluLED, 0);
   }
 
-  sendHeader ("Graph of last sweep") ;
-  client.println("<script>");
+  sendHeader F("Graph of last sweep") ;
+  client.println F("<script>");
 
   // script to reload ...
   client.println F("var myVar = setInterval(function(){myTimer()}, 400);"); //mu sec
@@ -572,7 +580,7 @@ void doreadFile (const char * c)
   cPtr = (char *) erg_in ;
   int iOldContrast ;
 
-  sendHeader(String(c),  false);
+  sendHeader(String(c), "", false);
   if (file.isOpen()) file.close();
   file.open(root, c, O_READ);
   int iBytesRequested, iBytesRead;
@@ -859,7 +867,7 @@ void loop() {
             if (MyInputString.indexOf("colour=blue&") > 0 ) usedLED  = bluLED ; //
             if (MyInputString.indexOf("colour=red&") > 0 ) usedLED  = redled ; //
             if (MyInputString.indexOf("colour=green&") > 0 ) usedLED  = grnled ; //
-            if (oldLED != usedLED) goBlack ();
+            if (oldLED != usedLED) goColour(0,0,0, false);
 
             //Serial.println F("saving ???");
             String sFile = MyInputString.substring(fPOS + 15); // ignore the leading / should be 9
@@ -910,35 +918,35 @@ void loop() {
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
-            goColour(255, 255, 255) ;
+            goColour(255, 255, 255, true) ;
             pageNotServed = false ;
           }
           fPOS = MyInputString.indexOf("red/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
-            goColour(255, 0, 0) ;
+            goColour(255, 0, 0, true) ;
             pageNotServed = false ;
           }
           fPOS = MyInputString.indexOf("blue/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
-            goColour(0, 0, 255) ;
+            goColour(0, 0, 255, true) ;
             pageNotServed = false ;
           }
           fPOS = MyInputString.indexOf("green/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
-            goColour(0, 255, 0) ;
+            goColour(0, 255, 0, true) ;
             pageNotServed = false ;
           }
           fPOS = MyInputString.indexOf("black/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
-            goColour(0, 0, 0) ;
+            goColour(0, 0, 0, true) ;
             pageNotServed = false ;
           }
 
