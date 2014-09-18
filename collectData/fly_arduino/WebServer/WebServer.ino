@@ -139,18 +139,18 @@ void setup() {
   Serial.print F("server is at ");
   Serial.println(Ethernet.localIP());
 
-//set up PWM
-//http://forum.arduino.cc/index.php?topic=72092.0
-// timer 4 (controls pin 8, 7, 6);
-int myEraser = 7;             // this is 111 in binary and is used as an eraser
-TCCR4B &= ~myEraser;   // this operation (AND plus NOT),  set the three bits in TCCR2B to 0
+  //set up PWM
+  //http://forum.arduino.cc/index.php?topic=72092.0
+  // timer 4 (controls pin 8, 7, 6);
+  int myEraser = 7;             // this is 111 in binary and is used as an eraser
+  TCCR4B &= ~myEraser;   // this operation (AND plus NOT),  set the three bits in TCCR2B to 0
 
-// CS02, CS01, CS00  are clear, we write on them a new value:
-//prescaler = 1 ---> PWM frequency is 31000 Hz
-//prescaler = 2 ---> PWM frequency is 4000 Hz
-//prescaler = 3 ---> PWM frequency is 490 Hz (default value)
-int myPrescaler = 2;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.   
-TCCR4B |= myPrescaler;  //this operation (OR), replaces the last three bits in TCCR2B with our new value 011
+  // CS02, CS01, CS00  are clear, we write on them a new value:
+  //prescaler = 1 ---> PWM frequency is 31000 Hz
+  //prescaler = 2 ---> PWM frequency is 4000 Hz
+  //prescaler = 3 ---> PWM frequency is 490 Hz (default value)
+  int myPrescaler = 2;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.
+  TCCR4B |= myPrescaler;  //this operation (OR), replaces the last three bits in TCCR2B with our new value 011
 
   goBlack ();
 
@@ -164,11 +164,11 @@ void goBlack()
   analogWrite( bluLED, 0 );
 }
 
-void goWhite()
+void goColour(const byte r, const byte g, const byte b)
 {
-  analogWrite( redled, 255 );
-  analogWrite( grnled, 255 );
-  analogWrite( bluLED, 255 );
+  analogWrite( redled, r );
+  analogWrite( grnled, g );
+  analogWrite( bluLED, b );
 }
 
 void doShuffle()
@@ -906,11 +906,39 @@ void loop() {
           }
 
           //light up
-          fPOS = MyInputString.indexOf("white=");
+          fPOS = MyInputString.indexOf("white/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
-            goWhite() ;
+            goColour(255, 255, 255) ;
+            pageNotServed = false ;
+          }
+          fPOS = MyInputString.indexOf("red/");
+          //Serial.println("  Position of dir was:" + String(fPOS));
+          if (pageNotServed && fPOS > 0)
+          {
+            goColour(255, 0, 0) ;
+            pageNotServed = false ;
+          }
+          fPOS = MyInputString.indexOf("blue/");
+          //Serial.println("  Position of dir was:" + String(fPOS));
+          if (pageNotServed && fPOS > 0)
+          {
+            goColour(0, 0, 255) ;
+            pageNotServed = false ;
+          }
+          fPOS = MyInputString.indexOf("green/");
+          //Serial.println("  Position of dir was:" + String(fPOS));
+          if (pageNotServed && fPOS > 0)
+          {
+            goColour(0, 255, 0) ;
+            pageNotServed = false ;
+          }
+          fPOS = MyInputString.indexOf("black/");
+          //Serial.println("  Position of dir was:" + String(fPOS));
+          if (pageNotServed && fPOS > 0)
+          {
+            goColour(0, 0, 0) ;
             pageNotServed = false ;
           }
 
