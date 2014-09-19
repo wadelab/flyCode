@@ -36,28 +36,27 @@ nFlies = length(line_tmp(1,:));
 
 [pathstr, fileName, ext] = fileparts(dirName);
 
-% this is also in anothr place ...
-FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2' };
-
+% definition of frequency names is also in anothr filr ...
 
 %% Plot mean 12 Hz CRF 
-figure('Name', strcat('1F1 Hz mean CRF of: ',fileName));
-plot (meanCRF([1:nUnMasked],2), meanCRF([1:nUnMasked],3), '-*', meanCRF([nUnMasked+1:end],2), meanCRF([nUnMasked+1:end],3), '-.O' );
-legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
-set(gca,'XScale','log');
+FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2' };
 
-printFilename = [pathstr, '_mean_', FreqNames{1}, '_CRF', '.eps'];
+figure('Name', strcat(' mean CRF of: ',fileName));
+
+nPlots = length(FreqNames);
+for i = 1 : nPlots
+    
+    subplot ( (nPlots/3), nPlots/2, i);
+    plot (meanCRF([1:nUnMasked],2), meanCRF([1:nUnMasked],i+2), '-*', meanCRF([nUnMasked+1:end],2), meanCRF([nUnMasked+1:end],i+2), '-.O' );
+    legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
+    title(FreqNames{i});
+    set(gca,'XScale','log');
+     
+end
+
+printFilename = [dirName, '_mean_CRF', '.eps'];
 print( printFilename );
 
-
-%% Plot mean 24 Hz CRF 
-figure('Name', strcat('2F1 Hz mean CRF of: ',fileName));
-plot (meanCRF([1:nUnMasked],2), meanCRF([1:nUnMasked],5), '-*', meanCRF([nUnMasked+1:end],2), meanCRF([nUnMasked+1:end],5), '-.O' );
-legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
-set(gca,'XScale','log');
-
-printFilename = [pathstr, filesep, fileName, '_mean_', FreqNames{3}, '_CRF', '.eps'];
-print( printFilename );
 
 disp (['done! ', dirName]); 
 
