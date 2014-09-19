@@ -1,8 +1,9 @@
 % close all
 % clear all
 
-function [CRF, line] = read_arduino_file (fName)
+function [CRF, line, success] = read_arduino_file (fName)
 
+success = false ;
 
 % [f,p]=uigetfile('*.SVP');
 % fName=fullfile(p,f);
@@ -41,9 +42,9 @@ nContrasts = 0;
 cTmp = [1;2];
 while (cTmp (2) > cTmp(1))
 nContrasts = nContrasts + 1;
-cTmp = csvread(fName, nContrasts,0, [nContrasts,0,nContrasts+1,0]) 
+cTmp = csvread(fName, nContrasts,0, [nContrasts,0,nContrasts+1,0]) ;
 end
-disp([ 'contrasts are ', nContrasts ]); 
+
 contrasts=csvread(fName, 1,0, [1,0,nContrasts,2]);
 
 %% read the SSVEP data - 9 contrasts of 1024 data points
@@ -126,6 +127,10 @@ CRF(:,8)= y54Data;
 [CRF, sortindex] = sortrows(CRF);
 nUnMasked = sum(CRF(:,1)==0) ;
 
+success = ( nUnMasked < 6 );
+if (success)
+    disp (['File ok', fileName])
+
 %     mask %    contrast   12Hz  & 15 Hz       24  &   30 Hz      F1+F2    2F1_2F2 response
 %          0    0.0050    0.7000    0.1192    0.0682    0.1184    0.0602    0.0088
 %          0    0.0100    1.1445    0.1962    0.0290    0.0976    0.0798    0.1139
@@ -145,7 +150,7 @@ plot (CRF([1:nUnMasked],2), CRF([1:nUnMasked],3), '-*', CRF([nUnMasked+1:nContra
 legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
 set(gca,'XScale','log');
 
-printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', '.eps']
+printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', '.eps'];
 print( printFilename );
 
 
@@ -155,8 +160,10 @@ plot (CRF([1:nUnMasked],2), CRF([1:nUnMasked],5), '-*', CRF([nUnMasked+1:nContra
 legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
 set(gca,'XScale','log');
 
-printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', '.eps']
+printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', '.eps'];
 print( printFilename );
 
-
+else
+   disp (['File not', fileName, ' *************************']); 
+end
 

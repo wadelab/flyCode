@@ -18,16 +18,21 @@ end
 
 %% read all the rest of them (well, the first 20)
 for i=1:min(length(SVPfiles),20)
-   disp(SVPfiles{i});
-   [CRF_tmp, line_tmp] = read_arduino_file ( SVPfiles{i} );
-   Collected_CRF (i,:,:) = CRF_tmp ;
-   Collected_line(i,:) = line_tmp ;
+    disp(SVPfiles{i});
+    [CRF_tmp, line_tmp, success] = read_arduino_file ( SVPfiles{i} );
+    if (success)
+        % - now parse the line
+        %
+        Collected_CRF (i,:,:) = CRF_tmp ;
+        Collected_line(i,:) = line_tmp ;
+    end
 end;
 %% 
 
 %%calculate and plot the average
 meanCRF = squeeze(mean(Collected_CRF));
-nUnMasked = sum(CRF_tmp(:,1)==0) ;
+nUnMasked = sum(meanCRF(:,1)==0) ;
+nFlies = length(line_tmp(1,:));
 
 [pathstr, fileName, ext] = fileparts(dirName);
 
@@ -41,7 +46,7 @@ plot (meanCRF([1:nUnMasked],2), meanCRF([1:nUnMasked],3), '-*', meanCRF([nUnMask
 legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
 set(gca,'XScale','log');
 
-printFilename = [pathstr, '_mean_', FreqNames{1}, '_CRF', '.eps']
+printFilename = [pathstr, '_mean_', FreqNames{1}, '_CRF', '.eps'];
 print( printFilename );
 
 
@@ -51,7 +56,7 @@ plot (meanCRF([1:nUnMasked],2), meanCRF([1:nUnMasked],5), '-*', meanCRF([nUnMask
 legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
 set(gca,'XScale','log');
 
-printFilename = [pathstr, filesep, fileName, '_mean_', FreqNames{3}, '_CRF', '.eps']
+printFilename = [pathstr, filesep, fileName, '_mean_', FreqNames{3}, '_CRF', '.eps'];
 print( printFilename );
 
 disp (['done! ', dirName]); 
