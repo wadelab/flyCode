@@ -79,7 +79,7 @@ for i = 1:nContrasts
 %%%%%s    take angle too
     fftData(i,:) = abs(complx_fftData(2:fft_display_limit+1));
     bar(fftData(i,:));
-    axis([0 fft_display_limit 0 6000]); % plot to 25Hz
+    axis([0 fft_display_limit 0 2000]); % plot to 25Hz
     set(gca,'XTickLabel',''); % no tick labels (unless bottom row, see below)
     
     yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
@@ -98,6 +98,7 @@ print( printFilename );
 
 %% Extract fft data
 % sample rate was 4 ms, so these numbers are 4 times
+FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2' };
 FreqsToExtract = [ 12, 15, 24, 30, 27, 54 ];
 FreqsToExtract = FreqsToExtract*4 + 1 ;
 y12Data = fftData(:,FreqsToExtract(1)); 
@@ -144,7 +145,7 @@ plot (CRF([1:nUnMasked],2), CRF([1:nUnMasked],3), '-*', CRF([nUnMasked+1:nContra
 legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
 set(gca,'XScale','log');
 
-printFilename = [pathstr, filesep, fileName, '_CRF', '.eps']
+printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', '.eps']
 print( printFilename );
 
 
@@ -154,7 +155,7 @@ plot (CRF([1:nUnMasked],2), CRF([1:nUnMasked],5), '-*', CRF([nUnMasked+1:nContra
 legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
 set(gca,'XScale','log');
 
-printFilename = [pathstr, filesep, fileName, '_CRF', '.eps']
+printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', '.eps']
 print( printFilename );
 
 

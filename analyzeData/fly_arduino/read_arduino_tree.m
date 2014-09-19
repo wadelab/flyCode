@@ -14,38 +14,45 @@ for i=1:length(SVPfiles)
 end
 %% 
 
-%%read first file and save x values
-CRF_start = read_arduino_file ( SVPfiles{1} );
+
 
 %% read all the rest of them (well, the first 20)
-for i=2:min(length(SVPfiles),20)
+for i=1:min(length(SVPfiles),20)
    disp(SVPfiles{i});
-   CRF_tmp = read_arduino_file ( SVPfiles{i} );
-   CRF_start.UNmaskedCRF(:,i+1) = CRF_tmp.UNmaskedCRF(:,2);
-   CRF_start.MaskedCRF(:,i+1) = CRF_tmp.MaskedCRF(:,2);
+   [CRF_tmp, line_tmp] = read_arduino_file ( SVPfiles{i} );
+   Collected_CRF (i,:,:) = CRF_tmp ;
+   Collected_line(i,:) = line_tmp ;
 end;
 %% 
 
 %%calculate and plot the average
-CRF_output.UNmaskedCRF=CRF_start.UNmaskedCRF(:,2:end) ;
-meanCRF.UNmaskedCRF = mean(CRF_output.UNmaskedCRF, 2) ;
+meanCRF = squeeze(mean(Collected_CRF));
+nUnMasked = sum(CRF_tmp(:,1)==0) ;
 
-CRF_output.MaskedCRF=CRF_start.MaskedCRF(:,2:end) ;
-meanCRF.MaskedCRF = mean(CRF_output.MaskedCRF, 2) ;
+[pathstr, fileName, ext] = fileparts(dirName);
 
-[pathstr, fileName, ext] = fileparts(fileName);
-figure('Name',strcat('mean CRF', pathstr));
-plot (CRF_start.UNmaskedCRF(:,1), CRF_start.UNmaskedCRF(:,2), '-*', CRF_start.MaskedCRF(:,1), CRF_start.MaskedCRF(:,2), '-.O' );
+% this is also in anothr place ...
+FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2' };
+
+
+%% Plot mean 12 Hz CRF 
+figure('Name', strcat('1F1 Hz mean CRF of: ',fileName));
+plot (meanCRF([1:nUnMasked],2), meanCRF([1:nUnMasked],3), '-*', meanCRF([nUnMasked+1:end],2), meanCRF([nUnMasked+1:end],3), '-.O' );
 legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
 set(gca,'XScale','log');
 
-
-printFilename = [dirName, filesep, 'mean_CRF', '.eps']
+printFilename = [pathstr, '_mean_', FreqNames{1}, '_CRF', '.eps']
 print( printFilename );
 
-% figure('Name',strcat('boxplot CRF', dirName));
-% boxplot(transpose(CRF_output),'labels', CRF_start(:,1));
-% set(gca,'YLim', [0, 200]);
+
+%% Plot mean 24 Hz CRF 
+figure('Name', strcat('2F1 Hz mean CRF of: ',fileName));
+plot (meanCRF([1:nUnMasked],2), meanCRF([1:nUnMasked],5), '-*', meanCRF([nUnMasked+1:end],2), meanCRF([nUnMasked+1:end],5), '-.O' );
+legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
+set(gca,'XScale','log');
+
+printFilename = [pathstr, filesep, fileName, '_mean_', FreqNames{3}, '_CRF', '.eps']
+print( printFilename );
 
 disp (['done! ', dirName]); 
 
