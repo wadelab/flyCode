@@ -102,6 +102,8 @@ print( printFilename );
 FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2' };
 FreqsToExtract = [ 12, 15, 24, 30, 27, 54 ];
 FreqsToExtract = FreqsToExtract*4 + 1 ;
+% this next bit might be written more cleanly, but i want to check we get
+% the right section..
 y12Data = fftData(:,FreqsToExtract(1)); 
 y15Data = fftData(:,FreqsToExtract(2));
 y24Data = fftData(:,FreqsToExtract(3));
@@ -110,7 +112,7 @@ y27Data = fftData(:,FreqsToExtract(5));
 y54Data = fftData(:,FreqsToExtract(6));
 
 
-%% Sort the data
+
 CRF=zeros(nContrasts,5);
 
 CRF(:,1)= contrasts(:,3);
@@ -122,48 +124,68 @@ CRF(:,6)= y30Data;
 CRF(:,7)= y27Data;
 CRF(:,8)= y54Data;
 
-
+%% Sort the data
 % return the sorted array; we count the zeros in the first column...
 [CRF, sortindex] = sortrows(CRF);
 nUnMasked = sum(CRF(:,1)==0) ;
 
+% sort the rawdata and fft to go with the CRFs
+sortedRawData = zeros(size(rawdata)) ;
+sortedFFTdata = zeros(size(fftData)) ;
+
+for i = 1 : nContrasts
+     sortedRawData(i,:) = rawdata (sortindex(i),:);
+     sortedFFTdata(i,:) = fftData (sortindex(i),:);
+end
+
+figure('Name','Sanity check');
+for i = 1:nContrasts
+
+    subplot(nContrasts,1,i);
+    plot (timedata, sortedRawData(i,:));
+    %bar(sortedFFTdata(i,:));
+    
+end;
+%% 
+
+
 success = ( nUnMasked < 6 );
 if (success)
     disp (['File ok', fileName])
-
-%     mask %    contrast   12Hz  & 15 Hz       24  &   30 Hz      F1+F2    2F1_2F2 response
-%          0    0.0050    0.7000    0.1192    0.0682    0.1184    0.0602    0.0088
-%          0    0.0100    1.1445    0.1962    0.0290    0.0976    0.0798    0.1139
-%          0    0.0300    3.4122    0.0642    0.1332    0.0834    0.1172    0.1681
-%          0    0.0700    7.7857    0.0965    0.3987    0.0752    0.1233    0.1432
-%          0    0.1000    9.8932    0.1163    0.5891    0.1674    0.2707    0.0640
-%     0.0300    0.0050    0.4410    2.4871    0.1067    0.1131    0.1026    0.0233
-%     0.0300    0.0100    0.9691    2.4725    0.1457    0.2365    0.1073    0.1004
-%     0.0300    0.0300    3.3535    2.5891    0.0647    0.1302    0.1800    0.0678
-%     0.0300    0.0700    6.8394    2.6980    0.2947    0.1872    0.5111    0.131
-
-
-
-%% Plot 12 Hz CRF for this fly
-figure('Name', strcat('1F1 Hz CRF of: ',fileName));
-plot (CRF([1:nUnMasked],2), CRF([1:nUnMasked],3), '-*', CRF([nUnMasked+1:nContrasts],2), CRF([nUnMasked+1:nContrasts],3), '-.O' );
-legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
-set(gca,'XScale','log');
-
-printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', '.eps'];
-print( printFilename );
-
-
-%% Plot 24 Hz CRF for this fly
-figure('Name', strcat('2F1 Hz CRF of: ',fileName));
-plot (CRF([1:nUnMasked],2), CRF([1:nUnMasked],5), '-*', CRF([nUnMasked+1:nContrasts],2), CRF([nUnMasked+1:nContrasts],5), '-.O' );
-legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
-set(gca,'XScale','log');
-
-printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', '.eps'];
-print( printFilename );
-
+    
+    %     mask %    contrast   12Hz  & 15 Hz       24  &   30 Hz      F1+F2    2F1_2F2 response
+    %          0    0.0050    0.7000    0.1192    0.0682    0.1184    0.0602    0.0088
+    %          0    0.0100    1.1445    0.1962    0.0290    0.0976    0.0798    0.1139
+    %          0    0.0300    3.4122    0.0642    0.1332    0.0834    0.1172    0.1681
+    %          0    0.0700    7.7857    0.0965    0.3987    0.0752    0.1233    0.1432
+    %          0    0.1000    9.8932    0.1163    0.5891    0.1674    0.2707    0.0640
+    %     0.0300    0.0050    0.4410    2.4871    0.1067    0.1131    0.1026    0.0233
+    %     0.0300    0.0100    0.9691    2.4725    0.1457    0.2365    0.1073    0.1004
+    %     0.0300    0.0300    3.3535    2.5891    0.0647    0.1302    0.1800    0.0678
+    %     0.0300    0.0700    6.8394    2.6980    0.2947    0.1872    0.5111    0.131
+    
+    
+    
+    %% Plot 12 Hz CRF for this fly
+    figure('Name', strcat('1F1 Hz CRF of: ',fileName));
+    plot (CRF([1:nUnMasked],2), CRF([1:nUnMasked],3), '-*', CRF([nUnMasked+1:nContrasts],2), CRF([nUnMasked+1:nContrasts],3), '-.O' );
+    legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
+    set(gca,'XScale','log');
+    
+    printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', '.eps'];
+    print( printFilename );
+    
+    
+    %% Plot 24 Hz CRF for this fly
+    figure('Name', strcat('2F1 Hz CRF of: ',fileName));
+    plot (CRF([1:nUnMasked],2), CRF([1:nUnMasked],5), '-*', CRF([nUnMasked+1:nContrasts],2), CRF([nUnMasked+1:nContrasts],5), '-.O' );
+    legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
+    set(gca,'XScale','log');
+    
+    printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', '.eps'];
+    print( printFilename );
+    
 else
-   disp (['File not', fileName, ' *************************']); 
+    disp (['File not ok', fileName, ' *************************']);
 end
 
