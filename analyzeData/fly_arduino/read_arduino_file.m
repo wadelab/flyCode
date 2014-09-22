@@ -131,12 +131,10 @@ nUnMasked = sum(CRF(:,1)==0) ;
 
 % sort the rawdata and fft to go with the CRFs
 sortedRawData = zeros(size(rawdata)) ;
-sortedFFTdata = zeros(size(fftData)) ;
+sortedRawData( [1:nContrasts],: ) = rawdata(sortindex,:);
 
-for i = 1 : nContrasts
-     sortedRawData(i,:) = rawdata (sortindex(i),:);
-     sortedFFTdata(i,:) = fftData (sortindex(i),:);
-end
+sortedFFTdata = zeros(size(fftData)) ;
+sortedFFTdata( [1:nContrasts],: ) = fftData(sortindex,:);
 
 figure('Name','Sanity check');
 for i = 1:nContrasts
