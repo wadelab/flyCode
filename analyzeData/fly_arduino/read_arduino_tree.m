@@ -32,7 +32,8 @@ end;
 %%calculate and plot the average
 meanCRF = squeeze(mean(Collected_CRF));
 nUnMasked = sum(meanCRF(:,1)==0) ;
-nFlies = length(line_tmp(1,:));
+disp('Number of flies in this analysis');
+nFlies = length(Collected_line)
 
 [pathstr, fileName, ext] = fileparts(dirName);
 
@@ -50,7 +51,7 @@ for i = 1 : nPlots
     plot (meanCRF([1:nUnMasked],2), meanCRF([1:nUnMasked],i+2), '-*', meanCRF([nUnMasked+1:end],2), meanCRF([nUnMasked+1:end],i+2), '-.O' );
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     title(FreqNames{i});
-    set(gca,'XScale','log');
+   % set(gca,'XScale','log');
      
 end
 
