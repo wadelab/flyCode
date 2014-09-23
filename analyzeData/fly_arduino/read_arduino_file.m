@@ -1,7 +1,7 @@
 % close all
 % clear all
 
-function [CRF, line, success] = read_arduino_file (fName)
+function [thisFlyData, success] = read_arduino_file (fName)
 
 success = false ;
 
@@ -16,7 +16,7 @@ fclose(fid);
 line1b=strrep(line1a, 'GET /?'  ,'');
 line1c=strrep(line1b, 'HTTP/1.1','');
 
-line = strsplit(line1c, '&');
+thisFlyData.line = strsplit(line1c, '&');
 % will return line as cell array
  
 
@@ -55,6 +55,7 @@ rawdata=zeros(nContrasts,1024);
 for i = 1:nContrasts
     iStart = 10+1024*(i-1) ;
     iEnd = 1033+1024*(i-1) ;
+    try
     rawdata(i,:)=csvread(fName, iStart,3, [iStart,3,iEnd,3]);
 
     %now we've read the data, lets plot it
@@ -63,6 +64,11 @@ for i = 1:nContrasts
     
     yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
     ylabel(yTxt);
+    catch
+       % success = false ;
+       disp([' File Read failed ', fileName, ' Bad format ? Out of data ?']);
+        return ;
+    end
 end;
 printFilename = [pathstr, filesep, fileName, '_RawData', '.eps'];
 print( printFilename );
@@ -76,9 +82,9 @@ for i = 1:nContrasts
     
     rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
     subplot(nContrasts,1,i);
-    complx_fftData=fft(rawdata(i,:)); %% return this to main program and then average first and then calculate the abs
+    complx_fftData(i,:)=fft(rawdata(i,:)); %% return this to main program and then average first and then calculate the abs
 %%%%%s    take angle too
-    fftData(i,:) = abs(complx_fftData(2:fft_display_limit+1));
+    fftData(i,:) = abs(complx_fftData(i,2:fft_display_limit+1));
     bar(fftData(i,:));
     axis([0 fft_display_limit 0 2000]); % plot to 25Hz
     set(gca,'XTickLabel',''); % no tick labels (unless bottom row, see below)
@@ -128,28 +134,32 @@ CRF(:,8)= y54Data;
 % return the sorted array; we count the zeros in the first column...
 [CRF, sortindex] = sortrows(CRF);
 nUnMasked = sum(CRF(:,1)==0) ;
+thisFlyData.sorted_CRF = CRF;
+thisFlyData.nUnMasked = nUnMasked ;
 
 % sort the rawdata and fft to go with the CRFs
-sortedRawData = zeros(size(rawdata)) ;
-sortedRawData( [1:nContrasts],: ) = rawdata(sortindex,:);
+thisFlyData.sortedRawData = zeros(size(rawdata)) ;
+thisFlyData.sortedRawData( [1:nContrasts],: ) = rawdata(sortindex,:);
 
-sortedFFTdata = zeros(size(fftData)) ;
-sortedFFTdata( [1:nContrasts],: ) = fftData(sortindex,:);
+thisFlyData.sortedComplex_FFTdata = zeros(size(complx_fftData)) ;
+thisFlyData.sortedComplex_FFTdata( [1:nContrasts],: ) = complx_fftData(sortindex,:);
 
-figure('Name','Sanity check');
-for i = 1:nContrasts
-
-    subplot(nContrasts,1,i);
-    plot (timedata, sortedRawData(i,:));
-    %bar(sortedFFTdata(i,:));
-    
-end;
+% figure('Name','Sanity check');
+% for i = 1:nContrasts
+% 
+%     subplot(nContrasts,1,i);
+%     plot (timedata, thisFlyData.sortedRawData(i,:));
+%     %bar(sortedFFTdata(i,:));
+%     
+% end;
 %% 
 
 
 success = ( nUnMasked < 6 );
+
+%% everything here is a plot so we get pictures in the directory where the file was
 if (success)
-    disp (['File ok', fileName])
+    disp (['File ok: ', fileName])
     
     %     mask %    contrast   12Hz  & 15 Hz       24  &   30 Hz      F1+F2    2F1_2F2 response
     %          0    0.0050    0.7000    0.1192    0.0682    0.1184    0.0602    0.0088
@@ -183,7 +193,8 @@ if (success)
     printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', '.eps'];
     print( printFilename );
     
+    
 else
-    disp (['File not ok', fileName, ' *************************']);
+    disp (['File not ok: ', fileName, ' *************************']);
 end
 
