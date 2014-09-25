@@ -1,13 +1,13 @@
 % close all
 % clear all
 
-function [thisFlyData, success] = read_arduino_file (fName)
+function [thisFlyData, success] = read_arduino_file (fName, bKeepGraphs)
 
 success = false ;
 
 % [f,p]=uigetfile('*.SVP');
 % fName=fullfile(p,f);
-[pathstr, fileName, ext] = fileparts(fName) ; 
+[pathstr, fileName, ext] = fileparts(fName) ;
 
 %% read header line
 [fid, msg] = fopen(fName, 'rt');
@@ -18,7 +18,7 @@ line1c=strrep(line1b, 'HTTP/1.1','');
 
 thisFlyData.line = strsplit(line1c, '&');
 % will return line as cell array
- 
+
 
 %% count the contrasts and then read the table of contrasts
 % zero based array!
@@ -41,41 +41,48 @@ thisFlyData.line = strsplit(line1c, '&');
 nContrasts = 0;
 cTmp = [1;2];
 while (cTmp (2) > cTmp(1))
-nContrasts = nContrasts + 1;
-cTmp = csvread(fName, nContrasts,0, [nContrasts,0,nContrasts+1,0]) ;
+    nContrasts = nContrasts + 1;
+    cTmp = csvread(fName, nContrasts,0, [nContrasts,0,nContrasts+1,0]) ;
 end
 
 contrasts=csvread(fName, 1,0, [1,0,nContrasts,2]);
 
 %% read the SSVEP data - 9 contrasts of 1024 data points
 timedata = csvread(fName, 10,1, [10,1,1033,1]);
-figure ('Name', strcat('Rawdata of: ',fileName));
 
+figure ('Name', strcat('Rawdata of: ',fileName));
 rawdata=zeros(nContrasts,1024);
 for i = 1:nContrasts
     iStart = 10+1024*(i-1) ;
     iEnd = 1033+1024*(i-1) ;
     try
-    rawdata(i,:)=csvread(fName, iStart,3, [iStart,3,iEnd,3]);
-
-    %now we've read the data, lets plot it
-    subplot(nContrasts,1,i);
-    plot (timedata, rawdata(i,:));
-    
-    yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
-    ylabel(yTxt);
+        rawdata(i,:)=csvread(fName, iStart,3, [iStart,3,iEnd,3]);
+        
+        %now we've read the data, lets plot it
+        subplot(nContrasts,1,i);
+        plot (timedata, rawdata(i,:));
+        
+        yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
+        ylabel(yTxt);
     catch
-       % success = false ;
-       disp([' File Read failed ', fileName, ' Bad format ? Out of data ?']);
+        % success = false ;
+        disp([' File Read failed ', fileName, ' Bad format ? Out of data ?']);
+        if (~ bKeepGraphs)
+            delete(gcf) ;
+        end
         return ;
     end
 end;
 printFilename = [pathstr, filesep, fileName, '_RawData', '.eps'];
 print( printFilename );
+if (~ bKeepGraphs)
+    delete(gcf) ;
+end
 
 
 %% subtract mean and do fft
 fft_display_limit = 250 ;
+
 figure('Name', strcat('FFT of: ',fileName));
 fftData= zeros(nContrasts,fft_display_limit);
 for i = 1:nContrasts
@@ -83,7 +90,7 @@ for i = 1:nContrasts
     rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
     subplot(nContrasts,1,i);
     complx_fftData(i,:)=fft(rawdata(i,:)); %% return this to main program and then average first and then calculate the abs
-%%%%%s    take angle too
+    %%%%%s    take angle too
     fftData(i,:) = abs(complx_fftData(i,2:fft_display_limit+1));
     bar(fftData(i,:));
     axis([0 fft_display_limit 0 2000]); % plot to 25Hz
@@ -99,8 +106,9 @@ xlabel('Hz');
 
 printFilename = [pathstr, filesep, fileName, '_FFT', '.eps'];
 print( printFilename );
-
-
+if (~ bKeepGraphs)
+    delete(gcf) ;
+end
 
 
 %% Extract fft data
@@ -110,7 +118,7 @@ FreqsToExtract = [ 12, 15, 24, 30, 27, 54 ];
 FreqsToExtract = FreqsToExtract*4 + 1 ;
 % this next bit might be written more cleanly, but i want to check we get
 % the right section..
-y12Data = fftData(:,FreqsToExtract(1)); 
+y12Data = fftData(:,FreqsToExtract(1));
 y15Data = fftData(:,FreqsToExtract(2));
 y24Data = fftData(:,FreqsToExtract(3));
 y30Data = fftData(:,FreqsToExtract(4));
@@ -144,15 +152,15 @@ thisFlyData.sortedRawData( [1:nContrasts],: ) = rawdata(sortindex,:);
 thisFlyData.sortedComplex_FFTdata = zeros(size(complx_fftData)) ;
 thisFlyData.sortedComplex_FFTdata( [1:nContrasts],: ) = complx_fftData(sortindex,:);
 
-% figure('Name','Sanity check');
-% for i = 1:nContrasts
-% 
-%     subplot(nContrasts,1,i);
-%     plot (timedata, thisFlyData.sortedRawData(i,:));
-%     %bar(sortedFFTdata(i,:));
-%     
-% end;
-%% 
+figure('Name','Sanity check');
+for i = 1:nContrasts
+
+    subplot(nContrasts,1,i);
+    plot (timedata, thisFlyData.sortedRawData(i,:));
+    %bar(sortedFFTdata(i,:));
+
+end;
+%%
 
 
 success = ( nUnMasked < 6 );
@@ -175,6 +183,7 @@ if (success)
     
     
     %% Plot 12 Hz CRF for this fly
+    
     figure('Name', strcat('1F1 Hz CRF of: ',fileName));
     plot (CRF([1:nUnMasked],2), CRF([1:nUnMasked],3), '-*', CRF([nUnMasked+1:nContrasts],2), CRF([nUnMasked+1:nContrasts],3), '-.O' );
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
@@ -182,9 +191,12 @@ if (success)
     
     printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', '.eps'];
     print( printFilename );
-    
+    if (~ bKeepGraphs)
+        delete(gcf) ;
+    end
     
     %% Plot 24 Hz CRF for this fly
+    
     figure('Name', strcat('2F1 Hz CRF of: ',fileName));
     plot (CRF([1:nUnMasked],2), CRF([1:nUnMasked],5), '-*', CRF([nUnMasked+1:nContrasts],2), CRF([nUnMasked+1:nContrasts],5), '-.O' );
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
@@ -192,7 +204,9 @@ if (success)
     
     printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', '.eps'];
     print( printFilename );
-    
+    if (~ bKeepGraphs)
+        delete(gcf) ;
+    end
     
 else
     disp (['File not ok: ', fileName, ' *************************']);

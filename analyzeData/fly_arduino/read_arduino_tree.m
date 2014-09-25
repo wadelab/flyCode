@@ -12,31 +12,37 @@ walk_a_directory_recursively(dirName, '*.SVP');
 for i=1:length(SVPfiles)
     SVPfiles{i} = deblank(SVPfiles{i});
 end
-%% 
-
 
 
 %% read all the rest of them (well, the first 20)
-
-for i=1:min(length(SVPfiles),40)
+iSuccesseses = 1;
+maxFilesToRead = 40 ;
+for i=1:min(length(SVPfiles),maxFilesToRead)
     disp(SVPfiles{i});
-    [flydata, success] = read_arduino_file ( SVPfiles{i} );
+    [flydata, success] = read_arduino_file ( SVPfiles{i} , false );
     if (success)
         % - now parse the line
         %
-        if (~ exist('Collected_Data'))
-            Collected_Data(1) = flydata;
-        else
-            Collected_Data(end+1) = flydata;
+        if (iSuccesseses == 1)
+            %set up an array to fill up
+            Collected_Data = repmat(flydata, maxFilesToRead) ;
         end
+        Collected_Data(iSuccesseses) = flydata;
+        iSuccesseses = iSuccesseses + 1;
     end
 end;
-%% 
+Collected_Data(iSuccesseses:end) = [] ; % remove all the unsused columns
+
 disp('Number of flies in this analysis');
 nFlies = length(Collected_Data)
+savefileName = [dirName, filesep, 'CollectedData.mat'];
+save(savefileName);
+
+%% now we can process the data
 
 [r,c] = size(Collected_Data(1).sorted_CRF);
 allCRFs = zeros(nFlies,r,c);
+
 for i = 1 : nFlies
     allCRFs(i,:,:)= Collected_Data(i).sorted_CRF;
 end
