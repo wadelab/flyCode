@@ -1,5 +1,5 @@
 
-#define test_on_mac
+//#define test_on_mac
 
 /*
 
@@ -38,7 +38,7 @@ const int redled = 5;
 const int grnled = 6;
 const int bluLED = 7;
 
-const int analogPin = 1 ;
+const int analogPin = 0 ;
 
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
@@ -260,7 +260,7 @@ void run_graph()
     analogWrite(bluLED, 0);
   }
 
-  sendHeader F("Graph of last sweep") ;
+  sendHeader ("Graph of last sweep") ;
   client.println F("<script>");
 
   // script to reload ...
@@ -766,9 +766,11 @@ void flickerPage()
     int randomnumber = contrastOrder[iThisContrast];
     int F2index = 0 ;
     if (randomnumber > F2contrastchange) F2index = 1;
-
-    client.println("Data will flicker at " + String(freq1) + " Hz with contrast " + String(F1contrast[randomnumber]) +
-                   " and " + String(freq2) + " Hz with contrast " + String(F2contrast[F2index]) + " % <BR> " );
+    char cPtr[25];
+    client.println("Data will flicker at " + String(freq1) + " Hz with contrast " + 
+                   String(dtostrf(F1contrast[randomnumber], 10, 2, cPtr)) +
+                   " and " + String(freq2) + " Hz with contrast " + 
+                   String(dtostrf(F2contrast[F2index], 10, 2, cPtr)) + " % <BR> " );
 
     client.println("please wait....<BR>");
     if (iThisContrast > 0)
@@ -811,15 +813,17 @@ void flickerPage()
       iThisContrast ++ ;
     }
   }
-
+  char cPtr [10] ;
   for (int i = iThisContrast - 1; i > -1 ; i--)
   {
     int randomnumber = contrastOrder[i];
     int F2index = 0 ;
     if (randomnumber > F2contrastchange) F2index = 1;
 
-    client.println("<BR>Data has been flickered at " + String(freq1) + " Hz with contrast " + String(F1contrast[randomnumber]) +
-                   " and " + String(freq2) + " Hz with contrast " + String(F2contrast[F2index]) + " %  " );
+    client.println("<BR>Data has been flickered at " + String(freq1) + " Hz with contrast " + 
+                   String(dtostrf(F1contrast[randomnumber], 10, 2, cPtr)) +
+                   " and " + String(freq2) + " Hz with contrast " + 
+                   String(dtostrf(F2contrast[F2index], 10, 2, cPtr)) + " %  " );
   }
 
   sendFooter() ;
