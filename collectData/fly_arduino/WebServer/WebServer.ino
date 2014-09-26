@@ -260,7 +260,7 @@ void run_graph()
     analogWrite(bluLED, 0);
   }
 
-  sendHeader F("Graph of last sweep") ;
+  sendHeader ("Graph of last sweep") ;
   client.println F("<script>");
 
   // script to reload ...
@@ -766,11 +766,19 @@ void flickerPage()
     int randomnumber = contrastOrder[iThisContrast];
     int F2index = 0 ;
     if (randomnumber > F2contrastchange) F2index = 1;
+    char cptr [6];
+    client.print F("Data will flicker at "); + 
+    client.print (freq1) ;
+    client.print F( " Hz with contrast "); 
+    client.print (dtostrf(F1contrast[randomnumber], 4,1, cptr) );
+    client.print F(" and "); +
+    client.print (freq2) ; 
+    client.print F(" Hz with contrast ") ;
+    client.print (dtostrf( F2contrast[F2index], 4, 1, cptr) ); 
+    client.print F(" % <BR> " );
+    client.println ();
 
-    client.println("Data will flicker at " + String(freq1) + " Hz with contrast " + String(F1contrast[randomnumber]) +
-                   " and " + String(freq2) + " Hz with contrast " + String(F2contrast[F2index]) + " % <BR> " );
-
-    client.println("please wait....<BR>");
+    client.println F("please wait....<BR>");
     if (iThisContrast > 0)
     {
       iThisContrast -- ;
@@ -818,8 +826,17 @@ void flickerPage()
     int F2index = 0 ;
     if (randomnumber > F2contrastchange) F2index = 1;
 
-    client.println("<BR>Data has been flickered at " + String(freq1) + " Hz with contrast " + String(F1contrast[randomnumber]) +
-                   " and " + String(freq2) + " Hz with contrast " + String(F2contrast[F2index]) + " %  " );
+      char cptr [6];
+    client.print F("Datahas been flickered at "); + 
+    client.print (freq1) ;
+    client.print F( " Hz with contrast "); 
+    client.print (dtostrf(F1contrast[randomnumber], 4,1, cptr) );
+    client.print F(" and "); +
+    client.print (freq2) ; 
+    client.print F(" Hz with contrast ") ;
+    client.print (dtostrf( F2contrast[F2index], 4, 1, cptr) ); 
+    client.print F(" % <BR> " );
+    client.println ();
   }
 
   sendFooter() ;
