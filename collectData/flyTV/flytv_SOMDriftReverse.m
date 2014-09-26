@@ -8,7 +8,7 @@ close all;
 clear all;
 startTime=clock;
 DUMMYRUN=0;
-commentFromHeader='w-_7DPE_1_SO';
+commentFromHeader='w-_1DPE_10_SOC_4Hz';
 
 if (~DUMMYRUN)
     
@@ -25,7 +25,7 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\';
+datadir='C:\data\SSERG\data\SOC_Drift\1DPEw-\2Hz\';
 flyTV_startTime=now;
 
 dpy.res = [1920 1080]; % screen resoloution
@@ -44,7 +44,9 @@ dpy.frameRate=144;
 % For now if just has the gamma function (inverse) insc it.
 
 tfList=[4;4]'; % This is in Hz.
+
 sfList=[.05,.05,.05,.05,.05,.05;.005,.22,.44,.88,1.76,3.25]'; % Cycles per degree Carrier,Modulator, 
+
 
 nTF=size(tfList,1);
 nSF=size(sfList,1);
@@ -67,6 +69,7 @@ stim.temporal.modulation.stopStart=2;
 probeCont=[40]/100;
 maskCont =[50]/100;
 
+
 nConds=length(ordered);
 
 nRepeats=20;
@@ -82,7 +85,7 @@ for thisRun=1:nRepeats  % 5 repeats
         % Phase is the phase shift in degrees (0-360 etc.)applied to the sine gratiscng:
         stim.spatial.phase=[0 0 ]; %[rand(1)*360 rand(1)*360];
         stim.spatial.pOffset=rand(2,1)*360;
-        
+
         fprintf('\nRunning cont1 %.2f cont2 %.2f',stim.cont(1),stim.cont(2));
         
         thisaction= shuffleSeq(thisCond);
