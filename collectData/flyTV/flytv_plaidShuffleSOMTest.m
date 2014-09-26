@@ -23,7 +23,7 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\SOM\';
+datadir='C:\data\SSERG\data\SOC\w-1dpe\';
 flyTV_startTime=now;
 
 
@@ -96,7 +96,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
             
-           finalData.comment='wapr_3DPE_SOM_10';
+           finalData.comment='w-_1DPE_SOC_2';
            finalData.stim=stim;
            finalData.now=now;
            finalData.nRepeats=nRepeats;

@@ -23,7 +23,7 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\NewSweep\PINK1\pink1male\';
+datadir='C:\data\SSERG\data\NewSweep\PINK1\1DPE\repoG2019S\';
 flyTV_startTime=now;
 
 
@@ -95,7 +95,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
             
-            finalData.comment='PINK1male_1DPE_12';
+            finalData.comment='1: repo-G2019s_1_1dpe 2: repo-G2019s_2_1dpe'; % Here : the first data channel ('ai0') is the bottom fly.
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;
@@ -105,11 +105,11 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.tfList=tfList;
             finalData.sfList=sfList;
             
-            
+            singleRunDat=d.Data;
             filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisRun),'_',datestr(flyTV_startTime,30),'.mat'])
-            save(filename,'finalData','d');
+            save(filename,'finalData','d','singleRunDat');
             metaData{thisRun,thisCond}=finalData; % Put the extracted data into an array tf x sf x nrepeats
-            data(thisRun,thisCond,:)=d.Data;
+            data(thisRun,thisCond,:,:)=d.Data;
             
             
         end % End check on dummy run

@@ -1,12 +1,17 @@
 close %Basic Chart Recorder for flyTV
 %Written by RJHW 15.05.14
+TWO_CHANNEL_SYSTEM=1;
 
 KbReleaseWait;
-
+whichScreen=1
 s = daq.createSession('ni');
-s.DurationInSeconds = 200;
+s.DurationInSeconds = 200;1
 s.Rate = 1000
-addAnalogInputChannel(s,'Dev3','ai0','Voltage')
+   addAnalogInputChannel(s,'Dev3',0,'Voltage')
+if(TWO_CHANNEL_SYSTEM==1)
+    addAnalogInputChannel(s,'Dev3',1,'Voltage')
+end
+
 s.NumberOfScans = 1000;
 s.NotifyWhenDataAvailableExceeds = s.NumberOfScans;
 myData=[];
