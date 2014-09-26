@@ -57,7 +57,7 @@ meanCRF = squeeze(mean(allCRFs));
 % definition of frequency names is also in anothr filr ...
 
 %% Plot mean CRFs 
-FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2' };
+FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2', 'F2-F1' };
 nUnMasked=flydata(1).nUnMasked ;
 
 figure('Name', strcat(' mean CRFs of: ',fileName));
@@ -65,7 +65,7 @@ figure('Name', strcat(' mean CRFs of: ',fileName));
 nPlots = length(FreqNames);
 for i = 1 : nPlots
     
-    subplot ( (nPlots/3), nPlots/2, i);
+    subplot ( mod(nPlots,4), floor(nPlots/2), i);
     plot (meanCRF([1:nUnMasked],2), meanCRF([1:nUnMasked],i+2), '-*', meanCRF([nUnMasked+1:end],2), meanCRF([nUnMasked+1:end],i+2), '-.O' );
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');

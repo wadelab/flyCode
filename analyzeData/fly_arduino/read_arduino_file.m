@@ -15,10 +15,29 @@ line1a = fgets(fid);
 fclose(fid);
 line1b=strrep(line1a, 'GET /?'  ,'');
 line1c=strrep(line1b, 'HTTP/1.1','');
-
-thisFlyData.line = strsplit(line1c, '&');
 % will return line as cell array
+thisFlyData.line = strsplit(line1c, '&');
+%% 
 
+%%default values
+F1=12 ; %Hz
+F2=15 ; %Hz
+
+F1_index = strmatch('F1',thisFlyData.line);
+ff= strsplit(thisFlyData.line{F1_index},'=');
+num = sscanf(ff{length(ff)}, '%f');
+if ~isempty(num)
+    F1 = num;
+    end
+thisFlyData.F1=F1;
+
+F2_index = strmatch('F2',thisFlyData.line);
+ff= strsplit(thisFlyData.line{F2_index},'=');
+num = sscanf(ff{length(ff)}, '%f');
+if ~isempty(num)
+    F2 = num;
+    end
+thisFlyData.F2=F2;
 
 %% count the contrasts and then read the table of contrasts
 % zero based array!
@@ -113,8 +132,8 @@ end
 
 %% Extract fft data
 % sample rate was 4 ms, so these numbers are 4 times
-FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2' };
-FreqsToExtract = [ 12, 15, 24, 30, 27, 54 ];
+FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2', 'F2-F1' };
+FreqsToExtract = [ F1, F2, 2*F1, 2*F2, F1+F2, 2*(F1+F2), F2-F1 ];
 FreqsToExtract = FreqsToExtract*4 + 1 ;
 % this next bit might be written more cleanly, but i want to check we get
 % the right section..
@@ -124,7 +143,7 @@ y24Data = fftData(:,FreqsToExtract(3));
 y30Data = fftData(:,FreqsToExtract(4));
 y27Data = fftData(:,FreqsToExtract(5));
 y54Data = fftData(:,FreqsToExtract(6));
-
+y03Data = fftData(:,FreqsToExtract(7));
 
 
 CRF=zeros(nContrasts,5);
@@ -137,6 +156,7 @@ CRF(:,5)= y24Data;
 CRF(:,6)= y30Data;
 CRF(:,7)= y27Data;
 CRF(:,8)= y54Data;
+CRF(:,9)= y03Data;
 
 %% Sort the data
 % return the sorted array; we count the zeros in the first column...
@@ -152,14 +172,14 @@ thisFlyData.sortedRawData( [1:nContrasts],: ) = rawdata(sortindex,:);
 thisFlyData.sortedComplex_FFTdata = zeros(size(complx_fftData)) ;
 thisFlyData.sortedComplex_FFTdata( [1:nContrasts],: ) = complx_fftData(sortindex,:);
 
-figure('Name','Sanity check');
-for i = 1:nContrasts
-
-    subplot(nContrasts,1,i);
-    plot (timedata, thisFlyData.sortedRawData(i,:));
-    %bar(sortedFFTdata(i,:));
-
-end;
+% figure('Name','Sanity check');
+% for i = 1:nContrasts
+% 
+%     subplot(nContrasts,1,i);
+%     plot (timedata, thisFlyData.sortedRawData(i,:));
+%     %bar(sortedFFTdata(i,:));
+% 
+% end;
 %%
 
 
