@@ -65,7 +65,7 @@ const int max_data = 1024  ;
 unsigned int time_stamp [max_data] ;
 int erg_in [max_data];
 long sampleCount = 0;        // will store number of A/D samples taken
-unsigned long interval = 4000;           // interval (5ms) at which to - 2 ms is also ok in this version
+unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0;
 unsigned long timing_too_fast = 0 ;
 
@@ -689,7 +689,7 @@ void collectData ()
   sampleCount = -presamples ;
   while (sampleCount < max_data)
   {
-    unsigned long now_time = micros();
+    unsigned long now_time = millis();
     if (now_time < last_time + interval)
     {
       timing_too_fast ++ ;
@@ -827,7 +827,7 @@ void flickerPage()
     if (randomnumber > F2contrastchange) F2index = 1;
 
       char cptr [6];
-    client.print F("Datahas been flickered at "); + 
+    client.print F("<BR>Data has been flickered at "); + 
     client.print (freq1) ;
     client.print F( " Hz with contrast "); 
     client.print (dtostrf(F1contrast[randomnumber], 4,1, cptr) );
@@ -835,7 +835,7 @@ void flickerPage()
     client.print (freq2) ; 
     client.print F(" Hz with contrast ") ;
     client.print (dtostrf( F2contrast[F2index], 4, 1, cptr) ); 
-    client.print F(" % <BR> " );
+    client.print F(" % " );
     client.println ();
   }
 
@@ -905,7 +905,7 @@ void loop() {
               file.close();
 
               sendHeader ("Sampling Complete!");
-              client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR>");
+              client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
 #ifdef test_on_mac
               client.println F("Setup Next Test <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A> <BR><BR> ");
 #else
