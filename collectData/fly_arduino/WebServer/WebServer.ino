@@ -149,7 +149,7 @@ void setup() {
   //prescaler = 1 ---> PWM frequency is 31000 Hz
   //prescaler = 2 ---> PWM frequency is 4000 Hz
   //prescaler = 3 ---> PWM frequency is 490 Hz (default value)
-  int myPrescaler = 2;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.
+  int myPrescaler = 1;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.
   TCCR4B |= myPrescaler;  //this operation (OR), replaces the last three bits in TCCR2B with our new value 011
 
   goColour(0,0,0, false);
