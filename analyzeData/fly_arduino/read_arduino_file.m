@@ -15,8 +15,16 @@ line1a = fgets(fid);
 fclose(fid);
 line1b=strrep(line1a, 'GET /?'  ,'');
 line1c=strrep(line1b, 'HTTP/1.1','');
+
 % will return line as cell array
-thisFlyData.line = strsplit(line1c, '&');
+line = strsplit(line1c, '&');
+
+% find and delete the filename
+ix = strfind(line, 'filename=') ;
+ix = find(~cellfun(@isempty,ix));
+thisFlyData.fileName = line{ix};
+line (ix)=[];
+thisFlyData.line = line ;
 %% 
 
 %%default values
