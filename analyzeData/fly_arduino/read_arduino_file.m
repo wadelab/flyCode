@@ -1,7 +1,7 @@
 % close all
 % clear all
 
-function [thisFlyData, success] = read_arduino_file (fName, bKeepGraphs)
+function [thisFlyData, success] = read_arduino_file (fName, bCloseGraphs)
 
 success = false ;
 
@@ -24,7 +24,7 @@ ix = strfind(line, 'filename=') ;
 ix = find(~cellfun(@isempty,ix));
 thisFlyData.fileName = line{ix};
 line (ix)=[];
-thisFlyData.line = line ;
+thisFlyData.phenotypes = line ;
 %% 
 
 %%default values
@@ -94,7 +94,7 @@ for i = 1:nContrasts
     catch
         % success = false ;
         disp([' File Read failed ', fileName, ' Bad format ? Out of data ?']);
-        if (~ bKeepGraphs)
+        if (bCloseGraphs)
             delete(gcf) ;
         end
         return ;
@@ -102,7 +102,7 @@ for i = 1:nContrasts
 end;
 printFilename = [pathstr, filesep, fileName, '_RawData', '.eps'];
 print( printFilename );
-if (~ bKeepGraphs)
+if (bCloseGraphs)
     delete(gcf) ;
 end
 
@@ -133,7 +133,7 @@ xlabel('Hz');
 
 printFilename = [pathstr, filesep, fileName, '_FFT', '.eps'];
 print( printFilename );
-if (~ bKeepGraphs)
+if (bCloseGraphs)
     delete(gcf) ;
 end
 
@@ -167,11 +167,8 @@ CRF(:,8)= y54Data;
 CRF(:,9)= y03Data;
 
 %% Sort the data
-% return the sorted array; we count the zeros in the first column...
+% calculate the sorted array; we count the zeros in the first column...
 [CRF, sortindex] = sortrows(CRF);
-nUnMasked = sum(CRF(:,1)==0) ;
-thisFlyData.sorted_CRF = CRF;
-thisFlyData.nUnMasked = nUnMasked ;
 
 % sort the rawdata and fft to go with the CRFs
 thisFlyData.sortedRawData = zeros(size(rawdata)) ;
@@ -179,6 +176,35 @@ thisFlyData.sortedRawData( [1:nContrasts],: ) = rawdata(sortindex,:);
 
 thisFlyData.sortedComplex_FFTdata = zeros(size(complx_fftData)) ;
 thisFlyData.sortedComplex_FFTdata( [1:nContrasts],: ) = complx_fftData(sortindex,:);
+
+
+
+%% calculate the mean for each contrast
+c12 = CRF(:,[1:2]);
+
+i = 1;
+k = 1;
+while (i < nContrasts)
+  j = i + 1;
+  while (j < nContrasts && isequal(c12(i,:), c12(j,:)))
+     %disp ([i, '  ' ,j]);
+     j = j + 1;
+     end;
+
+   av_CRF(k,:) = mean(CRF(i:j-1,:),1)  ; % need the ,1 to force it to work if i==j
+   
+   
+   k = k + 1 ;
+   i = j ;
+end
+
+
+
+% how many unmasked contrasts were given
+nUnMasked = sum(av_CRF(:,1)==0) ;
+thisFlyData.sorted_CRF = av_CRF;
+thisFlyData.nUnMasked = nUnMasked ;
+
 
 % figure('Name','Sanity check');
 % for i = 1:nContrasts
@@ -213,26 +239,26 @@ if (success)
     %% Plot 12 Hz CRF for this fly
     
     figure('Name', strcat('1F1 Hz CRF of: ',fileName));
-    plot (CRF([1:nUnMasked],2), CRF([1:nUnMasked],3), '-*', CRF([nUnMasked+1:nContrasts],2), CRF([nUnMasked+1:nContrasts],3), '-.O' );
+    plot (av_CRF([1:nUnMasked],2), av_CRF([1:nUnMasked],3), '-*', av_CRF([nUnMasked+1:nContrasts],2), av_CRF([nUnMasked+1:nContrasts],3), '-.O' );
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
     
     printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', '.eps'];
     print( printFilename );
-    if (~ bKeepGraphs)
+    if (bCloseGraphs)
         delete(gcf) ;
     end
     
-    %% Plot 24 Hz CRF for this fly
+    %% Plot 24 Hz av_CRF for this fly
     
-    figure('Name', strcat('2F1 Hz CRF of: ',fileName));
-    plot (CRF([1:nUnMasked],2), CRF([1:nUnMasked],5), '-*', CRF([nUnMasked+1:nContrasts],2), CRF([nUnMasked+1:nContrasts],5), '-.O' );
+    figure('Name', strcat('2F1 Hz av_CRF of: ',fileName));
+    plot (av_CRF([1:nUnMasked],2), av_CRF([1:nUnMasked],5), '-*', av_CRF([nUnMasked+1:nContrasts],2), av_CRF([nUnMasked+1:nContrasts],5), '-.O' );
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
     
     printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', '.eps'];
     print( printFilename );
-    if (~ bKeepGraphs)
+    if (bCloseGraphs)
         delete(gcf) ;
     end
     
