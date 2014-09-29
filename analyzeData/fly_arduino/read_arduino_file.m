@@ -3,7 +3,7 @@
 
 function [thisFlyData, success] = read_arduino_file (fName, bCloseGraphs)
 
-success = false ;
+success = true ;
 
 % [f,p]=uigetfile('*.SVP');
 % fName=fullfile(p,f);
@@ -92,7 +92,7 @@ for i = 1:nContrasts
         yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
         ylabel(yTxt);
     catch
-        % success = false ;
+        success = false ;
         disp([' File Read failed ', fileName, ' Bad format ? Out of data ?']);
         if (bCloseGraphs)
             delete(gcf) ;
@@ -202,9 +202,12 @@ end
 
 % how many unmasked contrasts were given
 nUnMasked = sum(av_CRF(:,1)==0) ;
+[nContrasts,c] = size(av_CRF);
+
+%return the data
 thisFlyData.sorted_CRF = av_CRF;
 thisFlyData.nUnMasked = nUnMasked ;
-[nContrasts,c] = size(av_CRF);
+
 
 
 % figure('Name','Sanity check');
@@ -218,7 +221,9 @@ thisFlyData.nUnMasked = nUnMasked ;
 %%
 
 
-success = ( nUnMasked < 6 );
+%success = ( nUnMasked < 6 );
+%success = strfind(fName, 'a.');
+
 
 %% everything here is a plot so we get pictures in the directory where the file was
 if (success)
