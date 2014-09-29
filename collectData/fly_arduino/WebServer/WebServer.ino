@@ -697,7 +697,7 @@ void collectData ()
     else
     {
       // Initial test showed it could write this to the card at 12 ms intervals
-      last_time = now_time ;
+      last_time = last_time + interval ;
       if (sampleCount == 0)
       {
         mean = mean / presamples ;
