@@ -31,16 +31,16 @@ thisFlyData.phenotypes = line ;
 F1=12 ; %Hz
 F2=15 ; %Hz
 
-F1_index = strmatch('F1',thisFlyData.line);
-ff= strsplit(thisFlyData.line{F1_index},'=');
+F1_index = strmatch('F1',line);
+ff= strsplit(line{F1_index},'=');
 num = sscanf(ff{length(ff)}, '%f');
 if ~isempty(num)
     F1 = num;
     end
 thisFlyData.F1=F1;
 
-F2_index = strmatch('F2',thisFlyData.line);
-ff= strsplit(thisFlyData.line{F2_index},'=');
+F2_index = strmatch('F2',line);
+ff= strsplit(line{F2_index},'=');
 num = sscanf(ff{length(ff)}, '%f');
 if ~isempty(num)
     F2 = num;
@@ -184,9 +184,9 @@ c12 = CRF(:,[1:2]);
 
 i = 1;
 k = 1;
-while (i < nContrasts)
+while (i <= nContrasts)
   j = i + 1;
-  while (j < nContrasts && isequal(c12(i,:), c12(j,:)))
+  while (j <= nContrasts && isequal(c12(i,:), c12(j,:)))
      %disp ([i, '  ' ,j]);
      j = j + 1;
      end;
@@ -204,6 +204,7 @@ end
 nUnMasked = sum(av_CRF(:,1)==0) ;
 thisFlyData.sorted_CRF = av_CRF;
 thisFlyData.nUnMasked = nUnMasked ;
+[nContrasts,c] = size(av_CRF);
 
 
 % figure('Name','Sanity check');
