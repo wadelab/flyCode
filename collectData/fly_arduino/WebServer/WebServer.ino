@@ -101,7 +101,7 @@ void setup() {
   pinMode(SS_SD_CARD, OUTPUT);
   pinMode(SS_ETHERNET, OUTPUT);
   digitalWrite(SS_SD_CARD, HIGH);  // HIGH means SD Card not active
-  digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
+  digitalWrite(SS_ETHERNET, HIGH); // HIGH means Ethernet not active
 
 
   // Open serial communications and wait for port to open:
