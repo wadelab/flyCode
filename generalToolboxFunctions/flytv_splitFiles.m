@@ -35,6 +35,9 @@ else
                     for thisFly=1:2
                         d2=d;
                         d2.data=d2.data(:,:,:,thisFly);
+                        d2.comment2=sprintf('Split from a single file %s',fileName);
+                        d2.splitDate=now;
+                        
                         % Chop out the bit after the flyTV_ part
                         datePart=fileName(7:end);
                         
