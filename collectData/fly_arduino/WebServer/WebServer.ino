@@ -687,6 +687,7 @@ void collectData ()
   if (iThisContrast >= maxContrasts) iThisContrast = 0;
 
   sampleCount = -presamples ;
+  last_time = millis();
   while (sampleCount < max_data)
   {
     unsigned long now_time = millis();
@@ -872,25 +873,33 @@ void loop() {
         {
           bool pageNotServed = true ;
           Serial.print(MyInputString);
+          if (!has_filesystem)
+          {
+            sendHeader F("Card not working");
+            client.println F("SD Card failed");
+            sendFooter();
+            pageNotServed = false;
+          }
+          
           int fPOS = MyInputString.indexOf("filename=");
           // asking for new sample
           //Serial.println("  Position of file was:" + String(fPOS));
-          if (fPOS > 0)
+          if (pageNotServed && fPOS > 0)
           {
             // save the commandline....
             MyInputString.toCharArray(cInput, MaxInputStr + 2);
             // now choose the colour
             int oldLED = usedLED ;
-            if (MyInputString.indexOf("colour=blue&") > 0 ) usedLED  = bluLED ; //
-            if (MyInputString.indexOf("colour=red&") > 0 ) usedLED  = redled ; //
-            if (MyInputString.indexOf("colour=green&") > 0 ) usedLED  = grnled ; //
+            if (MyInputString.indexOf F("colour=blue&") > 0 ) usedLED  = bluLED ; //
+            if (MyInputString.indexOf F("colour=red&") > 0 ) usedLED  = redled ; //
+            if (MyInputString.indexOf F("colour=green&") > 0 ) usedLED  = grnled ; //
             if (oldLED != usedLED) goColour(0,0,0, false);
 
             //Serial.println F("saving ???");
             String sFile = MyInputString.substring(fPOS + 15); // ignore the leading / should be 9
             //Serial.println("  Position of filename= was:" + String(fPOS));
             //Serial.println(" Proposed saving filename " + sFile );
-            fPOS = sFile.indexOf(" ");  // or  & id filename is not the last paramtere
+            fPOS = sFile.indexOf F(" ");  // or  & id filename is not the last paramtere
             //Serial.println("  Position of blankwas:" + String(fPOS));
             sFile = sFile.substring(0, fPOS);
             sFile = sFile + ".SVP";
@@ -901,7 +910,7 @@ void loop() {
             {
               // done so tidy up
               iThisContrast = 0 ; // ready to start again
-              file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
+              //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
               file.close();
 
               sendHeader ("Sampling Complete!");
