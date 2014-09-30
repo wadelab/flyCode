@@ -1,5 +1,5 @@
 
-//#define test_on_mac
+#define test_on_mac
 
 /*
 
@@ -38,7 +38,7 @@ const int redled = 5;
 const int grnled = 6;
 const int bluLED = 7;
 
-const int analogPin = 0 ;
+const int analogPin = 1 ;
 
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
@@ -65,7 +65,7 @@ const int max_data = 1024  ;
 unsigned int time_stamp [max_data] ;
 int erg_in [max_data];
 long sampleCount = 0;        // will store number of A/D samples taken
-long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
+unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0;
 unsigned long timing_too_fast = 0 ;
 
@@ -101,7 +101,7 @@ void setup() {
   pinMode(SS_SD_CARD, OUTPUT);
   pinMode(SS_ETHERNET, OUTPUT);
   digitalWrite(SS_SD_CARD, HIGH);  // HIGH means SD Card not active
-  digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
+  digitalWrite(SS_ETHERNET, HIGH); // HIGH means Ethernet not active
 
 
   // Open serial communications and wait for port to open:
@@ -149,7 +149,7 @@ void setup() {
   //prescaler = 1 ---> PWM frequency is 31000 Hz
   //prescaler = 2 ---> PWM frequency is 4000 Hz
   //prescaler = 3 ---> PWM frequency is 490 Hz (default value)
-  int myPrescaler = 2;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.
+  int myPrescaler = 1;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.
   TCCR4B |= myPrescaler;  //this operation (OR), replaces the last three bits in TCCR2B with our new value 011
 
   goColour(0,0,0, false);
@@ -697,7 +697,7 @@ void collectData ()
     else
     {
       // Initial test showed it could write this to the card at 12 ms intervals
-      last_time = now_time ;
+      last_time = last_time + interval ;
       if (sampleCount == 0)
       {
         mean = mean / presamples ;
@@ -766,13 +766,19 @@ void flickerPage()
     int randomnumber = contrastOrder[iThisContrast];
     int F2index = 0 ;
     if (randomnumber > F2contrastchange) F2index = 1;
-    char cPtr[25];
-    client.println("Data will flicker at " + String(freq1) + " Hz with contrast " + 
-                   String(dtostrf(F1contrast[randomnumber], 10, 2, cPtr)) +
-                   " and " + String(freq2) + " Hz with contrast " + 
-                   String(dtostrf(F2contrast[F2index], 10, 2, cPtr)) + " % <BR> " );
+    char cptr [6];
+    client.print F("Data will flicker at "); + 
+    client.print (freq1) ;
+    client.print F( " Hz with contrast "); 
+    client.print (dtostrf(F1contrast[randomnumber], 4,1, cptr) );
+    client.print F(" and "); +
+    client.print (freq2) ; 
+    client.print F(" Hz with contrast ") ;
+    client.print (dtostrf( F2contrast[F2index], 4, 1, cptr) ); 
+    client.print F(" % <BR> " );
+    client.println ();
 
-    client.println("please wait....<BR>");
+    client.println F("please wait....<BR>");
     if (iThisContrast > 0)
     {
       iThisContrast -- ;
@@ -813,17 +819,24 @@ void flickerPage()
       iThisContrast ++ ;
     }
   }
-  char cPtr [10] ;
+
   for (int i = iThisContrast - 1; i > -1 ; i--)
   {
     int randomnumber = contrastOrder[i];
     int F2index = 0 ;
     if (randomnumber > F2contrastchange) F2index = 1;
 
-    client.println("<BR>Data has been flickered at " + String(freq1) + " Hz with contrast " + 
-                   String(dtostrf(F1contrast[randomnumber], 10, 2, cPtr)) +
-                   " and " + String(freq2) + " Hz with contrast " + 
-                   String(dtostrf(F2contrast[F2index], 10, 2, cPtr)) + " %  " );
+      char cptr [6];
+    client.print F("<BR>Data has been flickered at "); + 
+    client.print (freq1) ;
+    client.print F( " Hz with contrast "); 
+    client.print (dtostrf(F1contrast[randomnumber], 4,1, cptr) );
+    client.print F(" and "); +
+    client.print (freq2) ; 
+    client.print F(" Hz with contrast ") ;
+    client.print (dtostrf( F2contrast[F2index], 4, 1, cptr) ); 
+    client.print F(" % " );
+    client.println ();
   }
 
   sendFooter() ;
@@ -892,7 +905,7 @@ void loop() {
               file.close();
 
               sendHeader ("Sampling Complete!");
-              client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR>");
+              client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
 #ifdef test_on_mac
               client.println F("Setup Next Test <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A> <BR><BR> ");
 #else
