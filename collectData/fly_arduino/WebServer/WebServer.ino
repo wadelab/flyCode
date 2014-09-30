@@ -741,7 +741,8 @@ void collectData ()
 
 void flickerPage()
 {
-  Serial.println ("Sampling at :" + String(sampleCount));
+  Serial.print F("Sampling at :");
+  Serial.println (String(sampleCount));
 
   sendHeader("Sampling");
 
@@ -792,26 +793,26 @@ void flickerPage()
 
       for (int i = 0; i < 5 * max_graph_data - 2; i++)
       {
-        client.print("ctx.moveTo(");
+        client.print F("ctx.moveTo(");
         client.print(i * 4);
-        client.print(",");
+        client.print F(",");
         client.print(myGraphData[i] + 350);
         client.println F(");");
-        client.print("ctx.lineTo(");
+        client.print F("ctx.lineTo(");
         client.print((i + 1) * 4);
-        client.print(",");
+        client.print F(",");
         client.print(myGraphData[i + 1] + 350);
         client.println F(");");
         client.println F("ctx.stroke();");
 
-        client.print("ctx.moveTo(");
+        client.print F("ctx.moveTo(");
         client.print(i * 4);
-        client.print(",");
+        client.print F(",");
         client.print(br_Now(time_stamp[i]) );
         client.println F(");");
-        client.print("ctx.lineTo(");
+        client.print F("ctx.lineTo(");
         client.print((i + 1) * 4);
-        client.print(",");
+        client.print F(",");
         client.print(br_Now(time_stamp[i + 1]));
         client.println F(");");
         client.println F("ctx.stroke();");
@@ -881,7 +882,7 @@ void loop() {
             pageNotServed = false;
           }
           
-          int fPOS = MyInputString.indexOf("filename=");
+          int fPOS = MyInputString.indexOf F("filename=");
           // asking for new sample
           //Serial.println("  Position of file was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
@@ -902,7 +903,7 @@ void loop() {
             fPOS = sFile.indexOf F(" ");  // or  & id filename is not the last paramtere
             //Serial.println("  Position of blankwas:" + String(fPOS));
             sFile = sFile.substring(0, fPOS);
-            sFile = sFile + ".SVP";
+            sFile = sFile + F(".SVP");
             //Serial.println(" Proposed filename now" + sFile + ";");
             //if file exists... ????
             sFile.toCharArray(cFile, 29); // adds terminating null
@@ -913,7 +914,7 @@ void loop() {
               //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
               file.close();
 
-              sendHeader ("Sampling Complete!");
+              sendHeader F("Sampling Complete!");
               client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
 #ifdef test_on_mac
               client.println F("Setup Next Test <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A> <BR><BR> ");
@@ -931,7 +932,7 @@ void loop() {
             pageNotServed = false ;
           }
           // show directory
-          fPOS = MyInputString.indexOf("dir=");
+          fPOS = MyInputString.indexOf F("dir=");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
@@ -940,35 +941,35 @@ void loop() {
           }
 
           //light up
-          fPOS = MyInputString.indexOf("white/");
+          fPOS = MyInputString.indexOf F("white/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
             goColour(255, 255, 255, true) ;
             pageNotServed = false ;
           }
-          fPOS = MyInputString.indexOf("red/");
+          fPOS = MyInputString.indexOf F("red/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
             goColour(255, 0, 0, true) ;
             pageNotServed = false ;
           }
-          fPOS = MyInputString.indexOf("blue/");
+          fPOS = MyInputString.indexOf F("blue/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
             goColour(0, 0, 255, true) ;
             pageNotServed = false ;
           }
-          fPOS = MyInputString.indexOf("green/");
+          fPOS = MyInputString.indexOf F("green/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
             goColour(0, 255, 0, true) ;
             pageNotServed = false ;
           }
-          fPOS = MyInputString.indexOf("black/");
+          fPOS = MyInputString.indexOf F("black/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
@@ -986,12 +987,12 @@ void loop() {
           //          }
 
 
-          fPOS = MyInputString.indexOf(".SVP");
+          fPOS = MyInputString.indexOf F(".SVP");
           //Serial.println("  Position of .SVP was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
             // requested a file...
-            fPOS = MyInputString.indexOf("/");
+            fPOS = MyInputString.indexOf F("/");
             String sFile = MyInputString.substring(fPOS + 1); // ignore the leading /
             //Serial.println(" Proposed filename " + sFile );
             fPOS = sFile.indexOf(" ");
