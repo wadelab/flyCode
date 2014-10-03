@@ -907,7 +907,7 @@ void loop() {
             //Serial.println(" Proposed filename now" + sFile + ";");
             //if file exists... ????
             sFile.toCharArray(cFile, 29); // adds terminating null
-            if (fileExists(cFile) &&  iThisContrast >= maxContrasts)
+            if (!has_filesystem || (fileExists(cFile) &&  iThisContrast >= maxContrasts))
             {
               // done so tidy up
               iThisContrast = 0 ; // ready to start again
