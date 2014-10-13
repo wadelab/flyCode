@@ -678,10 +678,10 @@ void doreadFile (const char * c)
                           
               dataString = "-99, ";
 
-              dataString += String(time_stamp[max_data]);
+              dataString += String(time_stamp[max_data-1]);
               dataString += ", ";
 
-              dataString += String(erg_in[max_data]);
+              dataString += String(erg_in[max_data-1]);
               client.println(dataString);
             
           } // timing data ok
@@ -704,6 +704,7 @@ void collectData ()
 
   sampleCount = -presamples ;
   last_time = millis();
+  start_time = last_time;
   while (sampleCount < max_data)
   {
     unsigned long now_time = millis();
@@ -715,26 +716,23 @@ void collectData ()
     {
       // Initial test showed it could write this to the card at 12 ms intervals
       last_time = last_time + interval ;
+      iTime = now_time - start_time ;
       if (sampleCount == 0)
       {
         mean = mean / presamples ;
-        start_time = now_time ;
       }
       if (sampleCount >= 0)
       {
         // read  sensor
-        erg_in[sampleCount] = analogRead(analogPin) - mean ; // subtract 512 so we get it in the range...
-        iTime = now_time - start_time ;
+        erg_in[sampleCount] = analogRead(analogPin) - mean ; // subtract 512 so we get it in the range...  
         time_stamp[sampleCount] = iTime ;
-        int intensity = br_Now(iTime) ;
-        analogWrite(usedLED, intensity);
       }
       else
       {
         mean = mean + long(analogRead(analogPin));
-        analogWrite(usedLED, 127);
       }
-
+      int intensity = br_Now(iTime) ;
+      analogWrite(usedLED, intensity);
       sampleCount ++ ;
     }
   }
