@@ -42,11 +42,11 @@ const int analogPin = 1 ;
 
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
-const float F1contrast[] = {
-  5.0, 10.0, 30.0, 70.0, 100.0,  5.0, 10.0, 30.0, 70.0
+const byte F1contrast[] = {
+  5, 10, 30, 70, 100,  5, 10, 30, 70
 };
-const float F2contrast[] = {
-  0.0, 30.0
+const byte F2contrast[] = {
+  0, 30
 };
 int contrastOrder[ maxContrasts ];
 int iThisContrast = 0 ;
@@ -61,12 +61,13 @@ SdFile file;
 int freq1 = 12 ; // flicker of LED Hz
 int freq2 = 15 ; // flicker of LED Hz
 // as of 18 June, maxdata of 2048 is too big for the mega....
-const int max_data = 1024  ;
+const int max_data = 1025  ;
 unsigned int time_stamp [max_data] ;
 int erg_in [max_data];
 long sampleCount = 0;        // will store number of A/D samples taken
 unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0;
+unsigned int start_time = 0;
 unsigned long timing_too_fast = 0 ;
 
 byte second, minute, hour, day, month;
@@ -131,7 +132,10 @@ void setup() {
     Serial.println F("openRoot failed");
     has_filesystem = false;
   }
-
+  if (has_filesystem) 
+  {
+    Serial.println F("SD card ok\n");
+  }
   Serial.println F("Setting up the Ethernet card...\n");
   // start the Ethernet connection and the server:
   Ethernet.begin(mac);
@@ -424,7 +428,7 @@ int br_Now(double t)
   int randomnumber = contrastOrder[iThisContrast];
   int F2index = 0 ;
   if (randomnumber > F2contrastchange) F2index = 1;
-  return int(sin((t / 1000.0) * PI * 2.0 * double(freq1)) * 1.270 * F1contrast[randomnumber] + sin((t / 1000.0) * PI * 2.0 * double(freq2)) * 1.270 * F2contrast[F2index]) + 127;
+  return int(sin((t / 1000.0) * PI * 2.0 * double(freq1)) * 1.270 * double(F1contrast[randomnumber]) + sin((t / 1000.0) * PI * 2.0 * double(freq2)) * 1.270 * double(F2contrast[F2index])) + 127;
 }
 
 void webTime ()
@@ -522,13 +526,13 @@ void writeFile(const char * c)
       return ;
     }
 
-    iBytesWritten = file.write(contrastOrder, maxContrasts * sizeof(int));
-    if (iBytesWritten <= 0)
-    {
-      Serial.println F ("Error in writing contrast data to file");
-      file.close();
-      return ;
-    }
+//    iBytesWritten = file.write(contrastOrder, maxContrasts * sizeof(int));
+//    if (iBytesWritten <= 0)
+//    {
+//      Serial.println F ("Error in writing contrast data to file");
+//      file.close();
+//      return ;
+//    }
 
   }
   else // file exists, so just append...
@@ -543,7 +547,7 @@ void writeFile(const char * c)
   }
 
 
-  // always write the erg and time data
+  // always write the erg and time data, and on last line contrast data
   iBytesWritten = file.write(erg_in, max_data * sizeof(int));
   if (iBytesWritten <= 0)
   {
@@ -599,38 +603,38 @@ void doreadFile (const char * c)
     client.print(cPtr);
     //    client.println F("<BR>");
 
-    // now try the contrast table
-    iBytesRequested = maxContrasts * sizeof(int);
-    iBytesRead = file.read(erg_in, iBytesRequested);
-    if (iBytesRead < iBytesRequested)
-    {
-      client.println F("Error reading contrast data in file ");
-      client.println(c);
-    }
-    else
-    {
-      // write out the contast table
-      for (int i = 0; i < maxContrasts; i++)
-      {
-        cPtr = (char *) time_stamp ;
-        // save space, put the floats as strings in the time_stamp buffer
-        dataString = String(i);
-        dataString += ", ";
-        iOldContrast = erg_in [i];
-        dataString += String(dtostrf(F1contrast[iOldContrast], 10, 2, cPtr));
-        dataString += ", ";
-        if (iOldContrast > F2contrastchange)
-        {
-          dataString += String(dtostrf(F2contrast[1], 10, 2, cPtr));
-        }
-        else
-        {
-          dataString += String(dtostrf(F2contrast[0], 10, 2, cPtr));
-        }
-        //      dataString += "<BR>";
-
-        client.println(dataString);
-      }
+//    // now try the contrast table
+//    iBytesRequested = maxContrasts * sizeof(int);
+//    iBytesRead = file.read(erg_in, iBytesRequested);
+//    if (iBytesRead < iBytesRequested)
+//    {
+//      client.println F("Error reading contrast data in file ");
+//      client.println(c);
+//    }
+//    else
+//    {
+//      // write out the contast table
+//      for (int i = 0; i < maxContrasts; i++)
+//      {
+//        cPtr = (char *) time_stamp ;
+//        // save space, put the floats as strings in the time_stamp buffer
+//        dataString = String(i);
+//        dataString += ", ";
+//        iOldContrast = erg_in [i];
+//        dataString += String(dtostrf(F1contrast[iOldContrast], 10, 2, cPtr));
+//        dataString += ", ";
+//        if (iOldContrast > F2contrastchange)
+//        {
+//          dataString += String(dtostrf(F2contrast[1], 10, 2, cPtr));
+//        }
+//        else
+//        {
+//          dataString += String(dtostrf(F2contrast[0], 10, 2, cPtr));
+//        }
+//        //      dataString += "<BR>";
+//
+//        client.println(dataString);
+//      }
       for (int iC = 0; iC < maxContrasts; iC++)
       {
         // now on to the data
@@ -652,13 +656,13 @@ void doreadFile (const char * c)
           }
           else
           {
-            for (int i = 0; i < max_data; i++)
+            for (int i = 0; i < max_data-1; i++)
             {
               // make a string for assembling the data to log:
-              dataString = String(i);
-              dataString += ", ";
+//              dataString = String(i);
+//              dataString += ", ";
 
-              dataString += String(time_stamp[i] - time_stamp[0]);
+              dataString = String(time_stamp[i]);
               dataString += ", ";
 
               dataString += String(br_Now(time_stamp[i]));
@@ -669,10 +673,21 @@ void doreadFile (const char * c)
 
               client.println(dataString);
             } //for
+            
+            // write out contrast
+                          
+              dataString = "-99, ";
+
+              dataString += String(time_stamp[max_data]);
+              dataString += ", ";
+
+              dataString += String(erg_in[max_data]);
+              client.println(dataString);
+            
           } // timing data ok
         } //erg data ok
       }
-    } // contrasts ok
+ //   } // contrasts ok
   }// header ok
   file.close();
   // sendFooter();
@@ -682,6 +697,7 @@ void collectData ()
 {
   const long presamples = 102;
   long mean = 0;
+  unsigned int iTime ;
   if (iThisContrast == 0 && file.isOpen()) file.close();
 
   if (iThisContrast >= maxContrasts) iThisContrast = 0;
@@ -702,26 +718,35 @@ void collectData ()
       if (sampleCount == 0)
       {
         mean = mean / presamples ;
+        start_time = now_time ;
       }
       if (sampleCount >= 0)
       {
         // read  sensor
         erg_in[sampleCount] = analogRead(analogPin) - mean ; // subtract 512 so we get it in the range...
-        time_stamp[sampleCount] = (now_time) ;
+        iTime = now_time - start_time ;
+        time_stamp[sampleCount] = iTime ;
+        int intensity = br_Now(iTime) ;
+        analogWrite(usedLED, intensity);
       }
       else
       {
         mean = mean + long(analogRead(analogPin));
+        analogWrite(usedLED, 127);
       }
-
-      int intensity = br_Now(now_time) ;
-      //brightness[sampleCount] = int(intensity) ;
-      analogWrite(usedLED, intensity);
 
       sampleCount ++ ;
     }
   }
+
   // now done with sampling....
+  //save contrasts we've used...
+  int randomnumber = contrastOrder[iThisContrast];
+  int F2index = 0 ;
+  if (randomnumber > F2contrastchange) F2index = 1;
+  erg_in[max_data-1] = F1contrast[randomnumber]; 
+  time_stamp[max_data-1] = F2contrast[F2index] ;
+
   sampleCount ++ ;
   analogWrite(usedLED, 127);
   iThisContrast ++;
@@ -760,7 +785,9 @@ void flickerPage()
     client.println F("clearInterval(myVar); }");
     client.println F("");
     client.println F("</script>");
-    client.println ("Acquired " + String(iThisContrast) + " data blocks so far <BR>" );
+    client.print F("Acquired ") ;
+    client.print (iThisContrast) ;
+    client.println F(" data blocks so far <BR>" );
     client.println (cInput);
     client.println F( "<BR> ");// retrieve the flicker rates we sampled with...
 
@@ -768,15 +795,14 @@ void flickerPage()
     int randomnumber = contrastOrder[iThisContrast];
     int F2index = 0 ;
     if (randomnumber > F2contrastchange) F2index = 1;
-    char cptr [6];
     client.print F("Data will flicker at "); + 
     client.print (freq1) ;
     client.print F( " Hz with contrast "); 
-    client.print (dtostrf(F1contrast[randomnumber], 4,1, cptr) );
+    client.print (F1contrast[randomnumber] );
     client.print F(" and "); +
     client.print (freq2) ; 
     client.print F(" Hz with contrast ") ;
-    client.print (dtostrf( F2contrast[F2index], 4, 1, cptr) ); 
+    client.print ( F2contrast[F2index] ); 
     client.print F(" % <BR> " );
     client.println ();
 
@@ -828,15 +854,14 @@ void flickerPage()
     int F2index = 0 ;
     if (randomnumber > F2contrastchange) F2index = 1;
 
-      char cptr [6];
     client.print F("<BR>Data has been flickered at "); + 
     client.print (freq1) ;
     client.print F( " Hz with contrast "); 
-    client.print (dtostrf(F1contrast[randomnumber], 4,1, cptr) );
+    client.print (F1contrast[randomnumber] );
     client.print F(" and "); +
     client.print (freq2) ; 
     client.print F(" Hz with contrast ") ;
-    client.print (dtostrf( F2contrast[F2index], 4, 1, cptr) ); 
+    client.print (F2contrast[F2index] ); 
     client.print F(" % " );
     client.println ();
   }
