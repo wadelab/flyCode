@@ -3,7 +3,9 @@
 
 /*
 
- Web Server
+Prototype : put the grey wire in ground, and purple wire in pin7
+
+ Based on Web Server
 
  A simple web server that shows the value of the analog input pins.
  using an Arduino Wiznet Ethernet shield.
@@ -742,8 +744,8 @@ void collectData ()
   int randomnumber = contrastOrder[iThisContrast];
   int F2index = 0 ;
   if (randomnumber > F2contrastchange) F2index = 1;
-  erg_in[max_data-1] = F1contrast[randomnumber]; 
-  time_stamp[max_data-1] = F2contrast[F2index] ;
+  time_stamp [max_data-1] = F1contrast[randomnumber]; 
+  erg_in [max_data-1] = F2contrast[F2index] ;
 
   sampleCount ++ ;
   analogWrite(usedLED, 127);

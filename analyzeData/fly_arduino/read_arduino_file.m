@@ -65,25 +65,31 @@ thisFlyData.F2=F2;
 % 3, 12, 170, 0
 % read LH column one by one and look for decreased value when ERG data starts
 
-nContrasts = 0;
-cTmp = [1;2];
-while (cTmp (2) > cTmp(1))
-    nContrasts = nContrasts + 1;
-    cTmp = csvread(fName, nContrasts,0, [nContrasts,0,nContrasts+1,0]) ;
-end
-
-contrasts=csvread(fName, 1,0, [1,0,nContrasts,2]);
+% nContrasts = 0;
+% cTmp = [1;2];
+% while (cTmp (2) > cTmp(1))
+%     nContrasts = nContrasts + 1;
+%     cTmp = csvread(fName, nContrasts,0, [nContrasts,0,nContrasts+1,0]) ;
+% end
+% 
+% contrasts=csvread(fName, 1,0, [1,0,nContrasts,2]);
 
 %% read the SSVEP data - 9 contrasts of 1024 data points
-timedata = csvread(fName, 10,1, [10,1,1033,1]);
+alldata = csvread(fName, 1,0);
+
+[nContrasts,c] = size(alldata);
+nContrasts= nContrasts/1025 ;
+timedata = alldata(1:1024,1);
+
+iStart = 1;
+iEnd = 1024;
 
 figure ('Name', strcat('Rawdata of: ',fileName));
 rawdata=zeros(nContrasts,1024);
 for i = 1:nContrasts
-    iStart = 10+1024*(i-1) ;
-    iEnd = 1033+1024*(i-1) ;
-    try
-        rawdata(i,:)=csvread(fName, iStart,3, [iStart,3,iEnd,3]);
+    
+        rawdata(i,:)=alldata(iStart:iEnd,3) ;
+        contrasts(i,:) = alldata(iEnd+1,:) ;
         
         %now we've read the data, lets plot it
         subplot(nContrasts,1,i);
@@ -91,15 +97,11 @@ for i = 1:nContrasts
         
         yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
         ylabel(yTxt);
-    catch
-        success = false ;
-        disp([' File Read failed ', fileName, ' Bad format ? Out of data ?']);
-        if (bCloseGraphs)
-            delete(gcf) ;
-        end
-        return ;
-    end
+
+        iStart = iStart + 1025;
+        iEnd = iEnd + 1025;
 end;
+
 printFilename = [pathstr, filesep, fileName, '_RawData', '.eps'];
 print( printFilename );
 if (bCloseGraphs)
