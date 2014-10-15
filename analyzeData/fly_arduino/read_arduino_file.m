@@ -78,13 +78,20 @@ thisFlyData.F2=F2;
 alldata = csvread(fName, 1,0);
 
 [nContrasts,c] = size(alldata);
-nContrasts= nContrasts/1025 ;
+nContrasts= nContrasts/1025 
 timedata = alldata(1:1024,1);
+timedata = timedata - timedata(1);
+
 
 iStart = 1;
 iEnd = 1024;
 
 figure ('Name', strcat('Rawdata of: ',fileName));
+               m = 9;
+        n = 6;
+        ymax = max(alldata(:,3)) ;
+        ymin = min(alldata(:,3)) ;
+
 rawdata=zeros(nContrasts,1024);
 for i = 1:nContrasts
     
@@ -92,8 +99,9 @@ for i = 1:nContrasts
         contrasts(i,:) = alldata(iEnd+1,:) ;
         
         %now we've read the data, lets plot it
-        subplot(nContrasts,1,i);
+        subplot(m,n,i);
         plot (timedata, rawdata(i,:));
+        axis([0 4092 ymin ymax]);
         
         yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
         ylabel(yTxt);
@@ -117,7 +125,7 @@ fftData= zeros(nContrasts,fft_display_limit);
 for i = 1:nContrasts
     
     rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
-    subplot(nContrasts,1,i);
+    subplot(m,n,i);
     complx_fftData(i,:)=fft(rawdata(i,:)); %% return this to main program and then average first and then calculate the abs
     %%%%%s    take angle too
     fftData(i,:) = abs(complx_fftData(i,2:fft_display_limit+1));
