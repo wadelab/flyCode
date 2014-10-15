@@ -35,12 +35,15 @@ int iIndex = 0 ;
 
 
 //
-int usedLED  = 0;
-const int redled = 5;
-const int grnled = 6;
-const int bluLED = 7;
+byte usedLED  = 0;
+const byte redled = 5;
+const byte grnled = 6;
+const byte bluLED = 7;
 
-const int analogPin = 1 ;
+const byte analogPin = 1 ;
+
+byte nRepeats = 0;
+const byte maxRepeats = 5;
 
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
@@ -50,8 +53,8 @@ const byte F1contrast[] = {
 const byte F2contrast[] = {
   0, 30
 };
-int contrastOrder[ maxContrasts ];
-int iThisContrast = 0 ;
+byte contrastOrder[ maxContrasts ];
+byte iThisContrast = 0 ;
 
 boolean has_filesystem = true;
 Sd2Card card;
@@ -60,8 +63,8 @@ SdFile root;
 SdFile file;
 
 
-int freq1 = 12 ; // flicker of LED Hz
-int freq2 = 15 ; // flicker of LED Hz
+byte freq1 = 12 ; // flicker of LED Hz
+byte freq2 = 15 ; // flicker of LED Hz
 // as of 18 June, maxdata of 2048 is too big for the mega....
 const int max_data = 1025  ;
 unsigned int time_stamp [max_data] ;
@@ -134,7 +137,7 @@ void setup() {
     Serial.println F("openRoot failed");
     has_filesystem = false;
   }
-  if (has_filesystem) 
+  if (has_filesystem)
   {
     Serial.println F("SD card ok\n");
   }
@@ -158,7 +161,7 @@ void setup() {
   int myPrescaler = 1;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.
   TCCR4B |= myPrescaler;  //this operation (OR), replaces the last three bits in TCCR2B with our new value 011
 
-  goColour(0,0,0, false);
+  goColour(0, 0, 0, false);
 
   doShuffle();
 }
@@ -230,14 +233,14 @@ void goColour(const byte r, const byte g, const byte b, const bool boolUpdatePag
   analogWrite( bluLED, b );
   if (boolUpdatePage)
   {
-  sendHeader ("Lit up ?", "onload=\"goBack()\" ");
-  
-  client.println F(" <script>");
-  client.println F("function goBack() ");
-  client.println F("{ window.history.back() }");
-  client.println F("</script>");
- 
-  sendFooter();
+    sendHeader ("Lit up ?", "onload=\"goBack()\" ");
+
+    client.println F(" <script>");
+    client.println F("function goBack() ");
+    client.println F("{ window.history.back() }");
+    client.println F("</script>");
+
+    sendFooter();
   }
 }
 
@@ -251,7 +254,7 @@ void serve_dir ()
 void run_graph()
 {
   // turn off any LEDs, always do flash with blue
-  goColour(0,0,0, false);
+  goColour(0, 0, 0, false);
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   int sensorReading = analogRead(analogPin);
@@ -528,13 +531,13 @@ void writeFile(const char * c)
       return ;
     }
 
-//    iBytesWritten = file.write(contrastOrder, maxContrasts * sizeof(int));
-//    if (iBytesWritten <= 0)
-//    {
-//      Serial.println F ("Error in writing contrast data to file");
-//      file.close();
-//      return ;
-//    }
+    //    iBytesWritten = file.write(contrastOrder, maxContrasts * sizeof(int));
+    //    if (iBytesWritten <= 0)
+    //    {
+    //      Serial.println F ("Error in writing contrast data to file");
+    //      file.close();
+    //      return ;
+    //    }
 
   }
   else // file exists, so just append...
@@ -598,101 +601,53 @@ void doreadFile (const char * c)
   {
     client.println F("Error reading header data in file ");
     client.println(c);
+    return ;
   }
-  else
+
+  // write out the string ....
+  client.print(cPtr);
+
+  // now on to the data
+  iBytesRequested = max_data * sizeof(int);
+  iBytesRead = file.read(erg_in, iBytesRequested);
+   int nBlocks = 0;
+  while (iBytesRead == iBytesRequested)
   {
-    // write out the string ....
-    client.print(cPtr);
-    //    client.println F("<BR>");
+    iBytesRequested = max_data * sizeof(unsigned int);
+    iBytesRead = file.read (time_stamp, iBytesRequested );
+    nBlocks ++;
+    Serial.print F("Reading file blocks ");
+    Serial.println (nBlocks);
 
-//    // now try the contrast table
-//    iBytesRequested = maxContrasts * sizeof(int);
-//    iBytesRead = file.read(erg_in, iBytesRequested);
-//    if (iBytesRead < iBytesRequested)
-//    {
-//      client.println F("Error reading contrast data in file ");
-//      client.println(c);
-//    }
-//    else
-//    {
-//      // write out the contast table
-//      for (int i = 0; i < maxContrasts; i++)
-//      {
-//        cPtr = (char *) time_stamp ;
-//        // save space, put the floats as strings in the time_stamp buffer
-//        dataString = String(i);
-//        dataString += ", ";
-//        iOldContrast = erg_in [i];
-//        dataString += String(dtostrf(F1contrast[iOldContrast], 10, 2, cPtr));
-//        dataString += ", ";
-//        if (iOldContrast > F2contrastchange)
-//        {
-//          dataString += String(dtostrf(F2contrast[1], 10, 2, cPtr));
-//        }
-//        else
-//        {
-//          dataString += String(dtostrf(F2contrast[0], 10, 2, cPtr));
-//        }
-//        //      dataString += "<BR>";
-//
-//        client.println(dataString);
-//      }
-      for (int iC = 0; iC < maxContrasts; iC++)
-      {
-        // now on to the data
-        int iBytesRequested = max_data * sizeof(int);
-        int iBytesRead = file.read(erg_in, iBytesRequested);
-        if (iBytesRead < iBytesRequested)
-        {
-          client.println F("Error reading ERG data in file ");
-          client.println(c);
-        }
-        else
-        {
-          iBytesRequested = max_data * sizeof(unsigned int);
-          iBytesRead = file.read (time_stamp, iBytesRequested );
-          if (iBytesRead < iBytesRequested)
-          {
-            client.println F("Error reading Timing data in file ");
-            client.println(c);
-          }
-          else
-          {
-            for (int i = 0; i < max_data-1; i++)
-            {
-              // make a string for assembling the data to log:
-//              dataString = String(i);
-//              dataString += ", ";
+    for (int i = 0; i < max_data - 1; i++)
+    {
+      // make a string for assembling the data to log:
+      dataString = String(time_stamp[i]);
+      dataString += ", ";
 
-              dataString = String(time_stamp[i]);
-              dataString += ", ";
+      dataString += String(br_Now(time_stamp[i]));
+      dataString += ", ";
 
-              dataString += String(br_Now(time_stamp[i]));
-              dataString += ", ";
+      dataString += String(erg_in[i]);
+      client.println(dataString);
+    } //for
 
-              dataString += String(erg_in[i]);
-              //            dataString += "<BR>";
+    // write out contrast
 
-              client.println(dataString);
-            } //for
-            
-            // write out contrast
-                          
-              dataString = "-99, ";
+    dataString = "-99, ";
 
-              dataString += String(time_stamp[max_data-1]);
-              dataString += ", ";
+    dataString += String(time_stamp[max_data - 1]);
+    dataString += ", ";
 
-              dataString += String(erg_in[max_data-1]);
-              client.println(dataString);
-            
-          } // timing data ok
-        } //erg data ok
-      }
- //   } // contrasts ok
-  }// header ok
+    dataString += String(erg_in[max_data - 1]);
+    client.println(dataString);
+    //read next block
+    iBytesRequested = max_data * sizeof(int);
+    iBytesRead = file.read(erg_in, iBytesRequested);
+  } // end of while
+
   file.close();
-  // sendFooter();
+
 }
 
 void collectData ()
@@ -702,7 +657,21 @@ void collectData ()
   unsigned int iTime ;
   if (iThisContrast == 0 && file.isOpen()) file.close();
 
-  if (iThisContrast >= maxContrasts) iThisContrast = 0;
+  Serial.print F("collecting data with ");
+  Serial.print (nRepeats);
+  Serial.print ("r : c");
+  Serial.println (iThisContrast);
+
+  if (iThisContrast >= maxContrasts)
+  {
+    iThisContrast = 0;
+    nRepeats ++;
+  }
+
+  Serial.print F("update collecting data with ");
+  Serial.print (nRepeats);
+  Serial.print ("r : c");
+  Serial.println (iThisContrast);
 
   sampleCount = -presamples ;
   last_time = millis();
@@ -726,7 +695,7 @@ void collectData ()
       if (sampleCount >= 0)
       {
         // read  sensor
-        erg_in[sampleCount] = analogRead(analogPin) - mean ; // subtract 512 so we get it in the range...  
+        erg_in[sampleCount] = analogRead(analogPin) - mean ; // subtract 512 so we get it in the range...
         time_stamp[sampleCount] = iTime ;
       }
       else
@@ -744,23 +713,15 @@ void collectData ()
   int randomnumber = contrastOrder[iThisContrast];
   int F2index = 0 ;
   if (randomnumber > F2contrastchange) F2index = 1;
-  time_stamp [max_data-1] = F1contrast[randomnumber]; 
-  erg_in [max_data-1] = F2contrast[F2index] ;
+  time_stamp [max_data - 1] = F1contrast[randomnumber];
+  erg_in [max_data - 1] = F2contrast[F2index] ;
 
   sampleCount ++ ;
   analogWrite(usedLED, 127);
   iThisContrast ++;
 
   writeFile(cFile);
-  //  //destructive in place fft
-  //  int imag_in [max_data];
-  //  int real_in [max_data];
-  //  for (int i=0; i < max_data; i++)
-  //  {
-  //    imag_in [i] = 0;
-  //    real_in [i] = erg_in[i] ;
-  //  }
-  //  //  int iResult = fix_fft(real_in, imag_in, 10, 0 ); //2 ^ 10 1024
+
 
 }
 
@@ -771,38 +732,38 @@ void flickerPage()
 
   sendHeader("Sampling");
 
+  client.println F("<script>");
+
+  // script to reload ...
+  client.println F("var myVar = setInterval(function(){myTimer()}, 4500);"); //mu sec
+  client.println F("function myTimer() {");
+  client.println F("location.reload(true);");
+  client.println F("};");
+
+  client.println F("function myStopFunction() {");
+  client.println F("clearInterval(myVar); }");
+  client.println F("");
+  client.println F("</script>");
+  client.print F("Acquired ") ;
+  client.print (iThisContrast) ;
+  client.println F(" data blocks so far <BR>" );
+  client.println (cInput);
+  client.println F( "<BR> ");
+
+
   if (iThisContrast < maxContrasts)
   {
-    client.println F("<script>");
-
-    // script to reload ...
-    client.println F("var myVar = setInterval(function(){myTimer()}, 4500);"); //mu sec
-    client.println F("function myTimer() {");
-    client.println F("location.reload(true);");
-    client.println F("};");
-
-    client.println F("function myStopFunction() {");
-    client.println F("clearInterval(myVar); }");
-    client.println F("");
-    client.println F("</script>");
-    client.print F("Acquired ") ;
-    client.print (iThisContrast) ;
-    client.println F(" data blocks so far <BR>" );
-    client.println (cInput);
-    client.println F( "<BR> ");// retrieve the flicker rates we sampled with...
-
-
     int randomnumber = contrastOrder[iThisContrast];
     int F2index = 0 ;
     if (randomnumber > F2contrastchange) F2index = 1;
-    client.print F("Data will flicker at "); + 
+    client.print F("Data will flicker at "); +
     client.print (freq1) ;
-    client.print F( " Hz with contrast "); 
+    client.print F( " Hz with contrast ");
     client.print (F1contrast[randomnumber] );
     client.print F(" and "); +
-    client.print (freq2) ; 
+    client.print (freq2) ;
     client.print F(" Hz with contrast ") ;
-    client.print ( F2contrast[F2index] ); 
+    client.print ( F2contrast[F2index] );
     client.print F(" % <BR> " );
     client.println ();
 
@@ -846,26 +807,26 @@ void flickerPage()
       client.println F("</script>");
       iThisContrast ++ ;
     }
+
+
+    for (int i = iThisContrast - 1; i > -1 ; i--)
+    {
+      int randomnumber = contrastOrder[i];
+      int F2index = 0 ;
+      if (randomnumber > F2contrastchange) F2index = 1;
+
+      client.print F("<BR>Data has been flickered at "); +
+      client.print (freq1) ;
+      client.print F( " Hz with contrast ");
+      client.print (F1contrast[randomnumber] );
+      client.print F(" and "); +
+      client.print (freq2) ;
+      client.print F(" Hz with contrast ") ;
+      client.print (F2contrast[F2index] );
+      client.print F(" % " );
+      client.println ();
+    }
   }
-
-  for (int i = iThisContrast - 1; i > -1 ; i--)
-  {
-    int randomnumber = contrastOrder[i];
-    int F2index = 0 ;
-    if (randomnumber > F2contrastchange) F2index = 1;
-
-    client.print F("<BR>Data has been flickered at "); + 
-    client.print (freq1) ;
-    client.print F( " Hz with contrast "); 
-    client.print (F1contrast[randomnumber] );
-    client.print F(" and "); +
-    client.print (freq2) ; 
-    client.print F(" Hz with contrast ") ;
-    client.print (F2contrast[F2index] ); 
-    client.print F(" % " );
-    client.println ();
-  }
-
   sendFooter() ;
 
 }
@@ -906,7 +867,7 @@ void loop() {
             sendFooter();
             pageNotServed = false;
           }
-          
+
           int fPOS = MyInputString.indexOf F("filename=");
           // asking for new sample
           //Serial.println("  Position of file was:" + String(fPOS));
@@ -919,7 +880,7 @@ void loop() {
             if (MyInputString.indexOf F("colour=blue&") > 0 ) usedLED  = bluLED ; //
             if (MyInputString.indexOf F("colour=red&") > 0 ) usedLED  = redled ; //
             if (MyInputString.indexOf F("colour=green&") > 0 ) usedLED  = grnled ; //
-            if (oldLED != usedLED) goColour(0,0,0, false);
+            if (oldLED != usedLED) goColour(0, 0, 0, false);
 
             //Serial.println F("saving ???");
             String sFile = MyInputString.substring(fPOS + 15); // ignore the leading / should be 9
@@ -932,10 +893,10 @@ void loop() {
             //Serial.println(" Proposed filename now" + sFile + ";");
             //if file exists... ????
             sFile.toCharArray(cFile, 29); // adds terminating null
-            if (!has_filesystem || (fileExists(cFile) &&  iThisContrast >= maxContrasts))
+            if (fileExists(cFile) &&  iThisContrast >= maxContrasts && nRepeats >= maxRepeats)
             {
               // done so tidy up
-              iThisContrast = 0 ; // ready to start again
+              nRepeats = 0 ; // ready to start again
               //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
               file.close();
 
