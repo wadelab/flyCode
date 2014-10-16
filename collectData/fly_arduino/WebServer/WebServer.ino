@@ -62,7 +62,7 @@ SdVolume volume;
 SdFile root;
 SdFile file;
 
-
+boolean bDoFlash = false ;
 byte freq1 = 12 ; // flicker of LED Hz
 byte freq2 = 15 ; // flicker of LED Hz
 // as of 18 June, maxdata of 2048 is too big for the mega....
@@ -293,6 +293,8 @@ void run_graph()
   if (iIndex >= max_graph_data) iIndex = 0;
   for (int i = 0; i < max_graph_data - 2; i++)
   {
+    if (i < iIndex || i > iIndex +1)
+    {
     client.print("ctx.moveTo(");
     client.print(i * 20);
     client.print(",");
@@ -303,7 +305,9 @@ void run_graph()
     client.print(",");
     client.print(myGraphData[i + 1] / 2);
     client.println F(");");
+      client.println F("ctx.strokeStyle=\"blue\";");
     client.println F("ctx.stroke();");
+    }
   }
   //draw stimulus...
   client.print("ctx.moveTo(");
@@ -434,6 +438,15 @@ int br_Now(double t)
   int F2index = 0 ;
   if (randomnumber > F2contrastchange) F2index = 1;
   return int(sin((t / 1000.0) * PI * 2.0 * double(freq1)) * 1.270 * double(F1contrast[randomnumber]) + sin((t / 1000.0) * PI * 2.0 * double(freq2)) * 1.270 * double(F2contrast[F2index])) + 127;
+}
+
+
+int fERG_Now (unsigned int t)
+{
+  // 2ms per sample
+  if (t < (2*max_data) / 3) return 0;
+  if (t > (4*max_data) / 3) return 0;
+  return 255;
 }
 
 void webTime ()
@@ -606,6 +619,8 @@ void doreadFile (const char * c)
 
   // write out the string ....
   client.print(cPtr);
+  // test if its an ERG
+  boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
 
   // now on to the data
   iBytesRequested = max_data * sizeof(int);
@@ -624,8 +639,14 @@ void doreadFile (const char * c)
       // make a string for assembling the data to log:
       dataString = String(time_stamp[i]);
       dataString += ", ";
-
+      if (bERG)
+      {
+        dataString += String( fERG_Now (time_stamp[i] - time_stamp[i] ) );
+      }
+      else
+      {
       dataString += String(br_Now(time_stamp[i]));
+      }
       dataString += ", ";
 
       dataString += String(erg_in[i]);
@@ -650,7 +671,7 @@ void doreadFile (const char * c)
 
 }
 
-void collectData ()
+void collectSSVEPData ()
 {
   const long presamples = 102;
   long mean = 0;
@@ -725,6 +746,73 @@ void collectData ()
 
 }
 
+
+void collect_fERG_Data ()
+{
+  const long presamples = 102;
+  long mean = 0;
+  unsigned int iTime ;
+  if (iThisContrast == 0 && file.isOpen()) file.close();
+
+iThisContrast = maxContrasts;
+    nRepeats ++;
+ Serial.print F("collecting fERG data with ");
+  Serial.print (nRepeats);
+  Serial.print ("r : c");
+  Serial.println (iThisContrast);
+  
+  sampleCount = -presamples ;
+  last_time = millis();
+  start_time = last_time;
+  while (sampleCount < max_data)
+  {
+    unsigned long now_time = millis();
+    if (now_time < last_time + interval/2)
+    {
+      timing_too_fast ++ ;
+    }
+    else
+    {
+      // Initial test showed it could write this to the card at 12 ms intervals
+      last_time = last_time + interval/2 ;
+      iTime = now_time - start_time ;
+      if (sampleCount == 0)
+      {
+        mean = mean / presamples ;
+      }
+      if (sampleCount >= 0)
+      {
+        // read  sensor
+        erg_in[sampleCount] = analogRead(analogPin) - mean ; // subtract 512 so we get it in the range...
+        time_stamp[sampleCount] = iTime ;
+      }
+      else
+      {
+        mean = mean + long(analogRead(analogPin));
+      }
+      int intensity = fERG_Now(iTime - time_stamp[0]) ;
+      analogWrite(usedLED, intensity);
+      sampleCount ++ ;
+    }
+  }
+
+  // now done with sampling....
+//  //save contrasts we've used...
+//  int randomnumber = contrastOrder[iThisContrast];
+//  int F2index = 0 ;
+//  if (randomnumber > F2contrastchange) F2index = 1;
+//  time_stamp [max_data - 1] = F1contrast[randomnumber];
+//  erg_in [max_data - 1] = F2contrast[F2index] ;
+
+  sampleCount ++ ;
+  analogWrite(usedLED, 0);
+  iThisContrast = maxContrasts ; //++;
+
+  writeFile(cFile);
+
+
+}
+
 void flickerPage()
 {
   Serial.print F("Sampling at :");
@@ -745,7 +833,9 @@ void flickerPage()
   client.println F("");
   client.println F("</script>");
   client.print F("Acquired ") ;
-  client.print (iThisContrast) ;
+  client.print (iThisContrast + nRepeats * maxContrasts);
+  client.print (" of ");
+  client.print (maxRepeats * maxContrasts);
   client.println F(" data blocks so far <BR>" );
   client.println (cInput);
   client.println F( "<BR> ");
@@ -837,7 +927,14 @@ void flickerPage()
 void loop() {
   if (sampleCount < 0)
   {
-    collectData();
+    if (bDoFlash)
+    {
+    collect_fERG_Data ();
+    }
+    else
+    {
+      collectSSVEPData ();
+    }
   }
   // listen for incoming clients
   client = server.available();
@@ -877,10 +974,13 @@ void loop() {
             MyInputString.toCharArray(cInput, MaxInputStr + 2);
             // now choose the colour
             int oldLED = usedLED ;
-            if (MyInputString.indexOf F("colour=blue&") > 0 ) usedLED  = bluLED ; //
-            if (MyInputString.indexOf F("colour=red&") > 0 ) usedLED  = redled ; //
-            if (MyInputString.indexOf F("colour=green&") > 0 ) usedLED  = grnled ; //
+            if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
+            if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
+            if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
             if (oldLED != usedLED) goColour(0, 0, 0, false);
+            
+            //flash ERG or SSVEP?
+            bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
 
             //Serial.println F("saving ???");
             String sFile = MyInputString.substring(fPOS + 15); // ignore the leading / should be 9
@@ -889,7 +989,14 @@ void loop() {
             fPOS = sFile.indexOf F(" ");  // or  & id filename is not the last paramtere
             //Serial.println("  Position of blankwas:" + String(fPOS));
             sFile = sFile.substring(0, fPOS);
+            if (bDoFlash)
+            {
+              sFile = sFile + F(".ERG");
+            }
+            else
+            {
             sFile = sFile + F(".SVP");
+            }
             //Serial.println(" Proposed filename now" + sFile + ";");
             //if file exists... ????
             sFile.toCharArray(cFile, 29); // adds terminating null
@@ -974,6 +1081,10 @@ void loop() {
 
 
           fPOS = MyInputString.indexOf F(".SVP");
+          if (fPOS == -1) 
+          {
+            fPOS = MyInputString.indexOf F(".ERG");
+          }
           //Serial.println("  Position of .SVP was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
