@@ -860,29 +860,29 @@ void AppendFlashReport()
   client.println F("var c = document.getElementById(\"myCanvas\");");
   client.println F("var ctx = c.getContext(\"2d\");");
 
-  for (int i = 0; i < 5 * max_graph_data - 2; i++)
+  for (int i = 0; i < 100 * max_graph_data - 2; i=i+20)
   {
     client.print F("ctx.moveTo(");
-    client.print(i * 4);
+    client.print(i );
     client.print F(",");
     client.print(myGraphData[i] + 350);
     client.println F(");");
     client.print F("ctx.lineTo(");
-    client.print((i + 1) * 4);
+    client.print((i + 1) );
     client.print F(",");
-    client.print(myGraphData[i + 1] + 350);
+    client.print(myGraphData[i + 20] + 350);
     client.println F(");");
     client.println F("ctx.stroke();");
 
     client.print F("ctx.moveTo(");
-    client.print(i * 4);
+    client.print(i );
     client.print F(",");
-    client.print(fERG_Now(time_stamp[i] - time_stamp[0]) );
+    client.print(10+ fERG_Now(time_stamp[i] - time_stamp[0]) );
     client.println F(");");
     client.print F("ctx.lineTo(");
-    client.print((i + 1) * 4);
+    client.print((i + 10) );
     client.print F(",");
-    client.print(fERG_Now(time_stamp[i + 1] - time_stamp[0]));
+    client.print(10+ fERG_Now(time_stamp[i + 20] - time_stamp[0]));
     client.println F(");");
     client.println F("ctx.stroke();");
   }
