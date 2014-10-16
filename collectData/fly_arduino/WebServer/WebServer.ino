@@ -62,7 +62,7 @@ SdVolume volume;
 SdFile root;
 SdFile file;
 
-
+boolean bDoFlash ;
 byte freq1 = 12 ; // flicker of LED Hz
 byte freq2 = 15 ; // flicker of LED Hz
 // as of 18 June, maxdata of 2048 is too big for the mega....
@@ -650,14 +650,14 @@ void doreadFile (const char * c)
 
 }
 
-void collectData ()
+void collectFERGData ()
 {
   const long presamples = 102;
   long mean = 0;
   unsigned int iTime ;
   if (iThisContrast == 0 && file.isOpen()) file.close();
 
-  Serial.print F("collecting data with ");
+  Serial.print F("collecting fERG data with ");
   Serial.print (nRepeats);
   Serial.print ("r : c");
   Serial.println (iThisContrast);
@@ -679,14 +679,14 @@ void collectData ()
   while (sampleCount < max_data)
   {
     unsigned long now_time = millis();
-    if (now_time < last_time + interval)
+    if (now_time < last_time + interval/2)
     {
       timing_too_fast ++ ;
     }
     else
     {
       // Initial test showed it could write this to the card at 12 ms intervals
-      last_time = last_time + interval ;
+      last_time = last_time + interval/2 ;
       iTime = now_time - start_time ;
       if (sampleCount == 0)
       {
@@ -702,23 +702,23 @@ void collectData ()
       {
         mean = mean + long(analogRead(analogPin));
       }
-      int intensity = br_Now(iTime) ;
+      int intensity = fERG_Now(iTime) ;
       analogWrite(usedLED, intensity);
       sampleCount ++ ;
     }
   }
 
   // now done with sampling....
-  //save contrasts we've used...
-  int randomnumber = contrastOrder[iThisContrast];
-  int F2index = 0 ;
-  if (randomnumber > F2contrastchange) F2index = 1;
-  time_stamp [max_data - 1] = F1contrast[randomnumber];
-  erg_in [max_data - 1] = F2contrast[F2index] ;
+//  //save contrasts we've used...
+//  int randomnumber = contrastOrder[iThisContrast];
+//  int F2index = 0 ;
+//  if (randomnumber > F2contrastchange) F2index = 1;
+//  time_stamp [max_data - 1] = F1contrast[randomnumber];
+//  erg_in [max_data - 1] = F2contrast[F2index] ;
 
   sampleCount ++ ;
   analogWrite(usedLED, 127);
-  iThisContrast ++;
+  iThisContrast = maxContrasts ; //++;
 
   writeFile(cFile);
 
@@ -837,7 +837,14 @@ void flickerPage()
 void loop() {
   if (sampleCount < 0)
   {
-    collectData();
+    if (doFlash)
+    {
+    collectSSVEPData();
+    }
+    else
+    {
+      collectSSVEPData();
+    }
   }
   // listen for incoming clients
   client = server.available();
@@ -881,6 +888,9 @@ void loop() {
             if (MyInputString.indexOf F("colour=red&") > 0 ) usedLED  = redled ; //
             if (MyInputString.indexOf F("colour=green&") > 0 ) usedLED  = grnled ; //
             if (oldLED != usedLED) goColour(0, 0, 0, false);
+            
+            //flash ERG or SSVEP?
+            bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
 
             //Serial.println F("saving ???");
             String sFile = MyInputString.substring(fPOS + 15); // ignore the leading / should be 9
@@ -889,7 +899,14 @@ void loop() {
             fPOS = sFile.indexOf F(" ");  // or  & id filename is not the last paramtere
             //Serial.println("  Position of blankwas:" + String(fPOS));
             sFile = sFile.substring(0, fPOS);
+            if (bDoFlash)
+            {
+              sFile = sFile + F(".ERG");
+            }
+            else
+            {
             sFile = sFile + F(".SVP");
+            }
             //Serial.println(" Proposed filename now" + sFile + ";");
             //if file exists... ????
             sFile.toCharArray(cFile, 29); // adds terminating null
