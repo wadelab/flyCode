@@ -641,7 +641,7 @@ void doreadFile (const char * c)
       dataString += ", ";
       if (bERG)
       {
-        dataString += String( fERG_Now (time_stamp[i] - time_stamp[i] ) );
+        dataString += String( fERG_Now (time_stamp[i] - time_stamp[0] ) );
       }
       else
       {
@@ -860,29 +860,29 @@ void AppendFlashReport()
   client.println F("var c = document.getElementById(\"myCanvas\");");
   client.println F("var ctx = c.getContext(\"2d\");");
 
-  for (int i = 0; i < 100 * max_graph_data - 2; i = i + 20)
+  for (int i = 0; i < max_data - max_data/6; i = i + 15)
   {
     client.print F("ctx.moveTo(");
-    client.print(i );
+    client.print((8*i)/10 );
     client.print F(",");
     client.print(myGraphData[i] + 350);
     client.println F(");");
     client.print F("ctx.lineTo(");
-    client.print((i + 1) );
+    client.print((8*(i + 13))/10 );
     client.print F(",");
-    client.print(myGraphData[i + 20] + 350);
+    client.print(myGraphData[i + 13] + 350);
     client.println F(");");
     client.println F("ctx.stroke();");
 
     client.print F("ctx.moveTo(");
-    client.print(i );
+    client.print((8*i)/10 );
     client.print F(",");
     client.print(10 + fERG_Now(time_stamp[i] - time_stamp[0]) );
     client.println F(");");
     client.print F("ctx.lineTo(");
-    client.print((i + 10) );
-    client.print F(",");
-    client.print(10 + fERG_Now(time_stamp[i + 20] - time_stamp[0]));
+   client.print((8*(i + 13))/10 );
+     client.print F(",");
+    client.print(10 + fERG_Now(time_stamp[i + 13] - time_stamp[0]));
     client.println F(");");
     client.println F("ctx.stroke();");
   }
