@@ -293,20 +293,20 @@ void run_graph()
   if (iIndex >= max_graph_data) iIndex = 0;
   for (int i = 0; i < max_graph_data - 2; i++)
   {
-    if (i < iIndex || i > iIndex +1)
+    if (i < iIndex || i > iIndex + 1)
     {
-    client.print("ctx.moveTo(");
-    client.print(i * 20);
-    client.print(",");
-    client.print(myGraphData[i] / 2);
-    client.println F(");");
-    client.print("ctx.lineTo(");
-    client.print((i + 1) * 20);
-    client.print(",");
-    client.print(myGraphData[i + 1] / 2);
-    client.println F(");");
+      client.print("ctx.moveTo(");
+      client.print(i * 20);
+      client.print(",");
+      client.print(myGraphData[i] / 2);
+      client.println F(");");
+      client.print("ctx.lineTo(");
+      client.print((i + 1) * 20);
+      client.print(",");
+      client.print(myGraphData[i + 1] / 2);
+      client.println F(");");
       client.println F("ctx.strokeStyle=\"blue\";");
-    client.println F("ctx.stroke();");
+      client.println F("ctx.stroke();");
     }
   }
   //draw stimulus...
@@ -444,8 +444,8 @@ int br_Now(double t)
 int fERG_Now (unsigned int t)
 {
   // 2ms per sample
-  if (t < (2*max_data) / 3) return 0;
-  if (t > (4*max_data) / 3) return 0;
+  if (t < (2 * max_data) / 3) return 0;
+  if (t > (4 * max_data) / 3) return 0;
   return 255;
 }
 
@@ -625,7 +625,7 @@ void doreadFile (const char * c)
   // now on to the data
   iBytesRequested = max_data * sizeof(int);
   iBytesRead = file.read(erg_in, iBytesRequested);
-   int nBlocks = 0;
+  int nBlocks = 0;
   while (iBytesRead == iBytesRequested)
   {
     iBytesRequested = max_data * sizeof(unsigned int);
@@ -645,7 +645,7 @@ void doreadFile (const char * c)
       }
       else
       {
-      dataString += String(br_Now(time_stamp[i]));
+        dataString += String(br_Now(time_stamp[i]));
       }
       dataString += ", ";
 
@@ -754,27 +754,27 @@ void collect_fERG_Data ()
   unsigned int iTime ;
   if (iThisContrast == 0 && file.isOpen()) file.close();
 
-iThisContrast = maxContrasts;
-    nRepeats ++;
- Serial.print F("collecting fERG data with ");
+  iThisContrast = maxContrasts;
+  nRepeats ++;
+  Serial.print F("collecting fERG data with ");
   Serial.print (nRepeats);
   Serial.print ("r : c");
   Serial.println (iThisContrast);
-  
+
   sampleCount = -presamples ;
   last_time = millis();
   start_time = last_time;
   while (sampleCount < max_data)
   {
     unsigned long now_time = millis();
-    if (now_time < last_time + interval/2)
+    if (now_time < last_time + interval / 2)
     {
       timing_too_fast ++ ;
     }
     else
     {
       // Initial test showed it could write this to the card at 12 ms intervals
-      last_time = last_time + interval/2 ;
+      last_time = last_time + interval / 2 ;
       iTime = now_time - start_time ;
       if (sampleCount == 0)
       {
@@ -797,12 +797,12 @@ iThisContrast = maxContrasts;
   }
 
   // now done with sampling....
-//  //save contrasts we've used...
-//  int randomnumber = contrastOrder[iThisContrast];
-//  int F2index = 0 ;
-//  if (randomnumber > F2contrastchange) F2index = 1;
-//  time_stamp [max_data - 1] = F1contrast[randomnumber];
-//  erg_in [max_data - 1] = F2contrast[F2index] ;
+  //  //save contrasts we've used...
+  //  int randomnumber = contrastOrder[iThisContrast];
+  //  int F2index = 0 ;
+  //  if (randomnumber > F2contrastchange) F2index = 1;
+  //  time_stamp [max_data - 1] = F1contrast[randomnumber];
+  //  erg_in [max_data - 1] = F2contrast[F2index] ;
 
   sampleCount ++ ;
   analogWrite(usedLED, 0);
@@ -820,9 +820,8 @@ void flickerPage()
 
   sendHeader("Sampling");
 
-  client.println F("<script>");
-
   // script to reload ...
+  client.println F("<script>");
   client.println F("var myVar = setInterval(function(){myTimer()}, 4500);"); //mu sec
   client.println F("function myTimer() {");
   client.println F("location.reload(true);");
@@ -832,6 +831,66 @@ void flickerPage()
   client.println F("clearInterval(myVar); }");
   client.println F("");
   client.println F("</script>");
+
+  if (bDoFlash)
+  {
+    AppendFlashReport ();
+  }
+  else
+  {
+    AppendSSVEPReport();
+  }
+  sendFooter ();
+}
+
+void AppendFlashReport()
+{
+  client.print F("Acquired ") ;
+  client.print ( nRepeats );
+  client.print (" of ");
+  client.print (maxRepeats);
+  client.println F(" data blocks so far <BR>" );
+  client.println (cInput);
+  client.println F( "<BR> ");
+
+  client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+  client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
+
+  client.println F("<script>");
+  client.println F("var c = document.getElementById(\"myCanvas\");");
+  client.println F("var ctx = c.getContext(\"2d\");");
+
+  for (int i = 0; i < 5 * max_graph_data - 2; i++)
+  {
+    client.print F("ctx.moveTo(");
+    client.print(i * 4);
+    client.print F(",");
+    client.print(myGraphData[i] + 350);
+    client.println F(");");
+    client.print F("ctx.lineTo(");
+    client.print((i + 1) * 4);
+    client.print F(",");
+    client.print(myGraphData[i + 1] + 350);
+    client.println F(");");
+    client.println F("ctx.stroke();");
+
+    client.print F("ctx.moveTo(");
+    client.print(i * 4);
+    client.print F(",");
+    client.print(fERG_Now(time_stamp[i] - time_stamp[0]) );
+    client.println F(");");
+    client.print F("ctx.lineTo(");
+    client.print((i + 1) * 4);
+    client.print F(",");
+    client.print(fERG_Now(time_stamp[i + 1] - time_stamp[0]));
+    client.println F(");");
+    client.println F("ctx.stroke();");
+  }
+  client.println F("</script>");
+}
+
+void AppendSSVEPReport()
+{
   client.print F("Acquired ") ;
   client.print (iThisContrast + nRepeats * maxContrasts);
   client.print (" of ");
@@ -917,7 +976,6 @@ void flickerPage()
       client.println ();
     }
   }
-  sendFooter() ;
 
 }
 
@@ -929,7 +987,7 @@ void loop() {
   {
     if (bDoFlash)
     {
-    collect_fERG_Data ();
+      collect_fERG_Data ();
     }
     else
     {
@@ -978,7 +1036,7 @@ void loop() {
             if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
             if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
             if (oldLED != usedLED) goColour(0, 0, 0, false);
-            
+
             //flash ERG or SSVEP?
             bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
 
@@ -995,7 +1053,7 @@ void loop() {
             }
             else
             {
-            sFile = sFile + F(".SVP");
+              sFile = sFile + F(".SVP");
             }
             //Serial.println(" Proposed filename now" + sFile + ";");
             //if file exists... ????
@@ -1081,7 +1139,7 @@ void loop() {
 
 
           fPOS = MyInputString.indexOf F(".SVP");
-          if (fPOS == -1) 
+          if (fPOS == -1)
           {
             fPOS = MyInputString.indexOf F(".ERG");
           }
