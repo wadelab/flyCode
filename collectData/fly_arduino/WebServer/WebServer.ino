@@ -1,5 +1,5 @@
 
-#define test_on_mac
+//#define test_on_mac
 
 /*
 
@@ -40,7 +40,7 @@ const byte redled = 5;
 const byte grnled = 6;
 const byte bluLED = 7;
 
-const byte analogPin = 1 ;
+const byte analogPin = 0 ;
 
 byte nRepeats = 0;
 const byte maxRepeats = 5;
@@ -273,7 +273,7 @@ void run_graph()
   client.println F("<script>");
 
   // script to reload ...
-  client.println F("var myVar = setInterval(function(){myTimer()}, 400);"); //mu sec
+  client.println F("var myVar = setInterval(function(){myTimer()}, 1400);"); //mu sec
   client.println F("function myTimer() {");
   client.println F("location.reload(true);");
   client.println F("};");
