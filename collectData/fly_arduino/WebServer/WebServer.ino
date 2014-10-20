@@ -868,7 +868,7 @@ void AppendFlashReport()
     client.print(myGraphData[i] + 350);
     client.println F(");");
     client.print F("ctx.lineTo(");
-    client.print((8*(i + 13))/10 );
+    client.print((8*(i + 15))/10 );
     client.print F(",");
     client.print(myGraphData[i + 13] + 350);
     client.println F(");");
