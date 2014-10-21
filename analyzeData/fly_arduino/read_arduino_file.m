@@ -117,20 +117,23 @@ if (bCloseGraphs)
 end
 
 
-%% subtract mean and do fft
+%%  do fft
 fft_display_limit = 250 ;
-
-figure('Name', strcat('FFT of: ',fileName));
 fftData= zeros(nContrasts,fft_display_limit);
 for i = 1:nContrasts
-    
     rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
-    subplot(m,n,i);
     complx_fftData(i,:)=fft(rawdata(i,:)); %% return this to main program and then average first and then calculate the abs
     %%%%%s    take angle too
     fftData(i,:) = abs(complx_fftData(i,2:fft_display_limit+1));
+end
+
+%% plot fft
+figure('Name', strcat('FFT of: ',fileName));
+max_fft = max(max(fftData));
+for i = 1:nContrasts
+    subplot(m,n,i);
     bar(fftData(i,:));
-    axis([0 fft_display_limit 0 2000]); % plot to 25Hz
+    axis([0 fft_display_limit 0 max_fft]); % plot to 25Hz
     set(gca,'XTickLabel',''); % no tick labels (unless bottom row, see below)
     
     yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
