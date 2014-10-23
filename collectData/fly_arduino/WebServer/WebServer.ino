@@ -237,7 +237,7 @@ void goColour(const byte r, const byte g, const byte b, const bool boolUpdatePag
 
     client.println F(" <script>");
     client.println F("function goBack() ");
-    client.println F("{ window.history.back() }");
+     client.println F("{ window.history.back() }");
     client.println F("</script>");
 
     sendFooter();
@@ -273,7 +273,7 @@ void run_graph()
   client.println F("<script>");
 
   // script to reload ...
-  client.println F("var myVar = setInterval(function(){myTimer()}, 1400);"); //mu sec
+  client.println F("var myVar = setInterval(function(){myTimer()}, 1000);"); //mu sec
   client.println F("function myTimer() {");
   client.println F("location.reload(true);");
   client.println F("};");
@@ -822,7 +822,7 @@ void flickerPage()
 
   // script to reload ...
   client.println F("<script>");
-  client.println F("var myVar = setInterval(function(){myTimer()}, 4500);"); //mu sec
+  client.println F("var myVar = setInterval(function(){myTimer()}, 6500);"); //mu sec
   client.println F("function myTimer() {");
   client.println F("location.reload(true);");
   client.println F("};");
@@ -853,6 +853,8 @@ void AppendFlashReport()
   client.println (cInput);
   client.println F( "<BR> ");
 
+  if(nRepeats >0)
+  {
   client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
   client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
 
@@ -865,12 +867,12 @@ void AppendFlashReport()
     client.print F("ctx.moveTo(");
     client.print((8*i)/10 );
     client.print F(",");
-    client.print(myGraphData[i] + 350);
+    client.print(350-myGraphData[i]);
     client.println F(");");
     client.print F("ctx.lineTo(");
     client.print((8*(i + 15))/10 );
     client.print F(",");
-    client.print(myGraphData[i + 13] + 350);
+    client.print(350-myGraphData[i + 15]);
     client.println F(");");
     client.println F("ctx.stroke();");
 
@@ -887,13 +889,15 @@ void AppendFlashReport()
     client.println F("ctx.stroke();");
   }
   client.println F("</script>");
+  }
 }
 
 void AppendSSVEPReport()
 {
   client.print F("Acquired ") ;
-  client.print (iThisContrast + nRepeats * maxContrasts);
-  client.print (" of ");
+  int iTmp = iThisContrast + (nRepeats * maxContrasts) - maxContrasts ;
+  client.print (iTmp);
+  client.print F(" of ");
   client.print (maxRepeats * maxContrasts);
   client.println F(" data blocks so far <BR>" );
   client.println (cInput);
