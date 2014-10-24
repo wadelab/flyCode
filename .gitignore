@@ -17,3 +17,5 @@ collectData/flyTV/flytv_runSOMDrift.m
 analyzeData/flyTV/prototype_ContModNoise.m
 
 generalToolboxFunctions/Matteobox/fit_powFunction_Mean.m
+
+analyzeData/flyTV/flytv_sweep_analysis_goodBins5c.m

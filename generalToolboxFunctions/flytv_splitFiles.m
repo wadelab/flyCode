@@ -8,6 +8,9 @@ function dummy=flytv_splitFiles(inputDir,baseName)
 % E.g. 
 % dummy=flytv_splitFiles('C:\data\SSERG\data\NewSweep\PINK1\7DPE\THG2019S\','flyTVsplit_'
 % ARW 30/9/2014
+
+inputDir=uigetdir;
+
 if (nargin<2)
     baseName='flyTVsplit_';
 end
