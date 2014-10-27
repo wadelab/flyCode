@@ -822,7 +822,7 @@ void flickerPage()
 
   // script to reload ...
   client.println F("<script>");
-  client.println F("var myVar = setInterval(function(){myTimer()}, 6500);"); //mu sec
+  client.println F("var myVar = setInterval(function(){myTimer()}, 7500);"); //mu sec
   client.println F("function myTimer() {");
   client.println F("location.reload(true);");
   client.println F("};");
@@ -1039,7 +1039,8 @@ void loop() {
             if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
             if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
             if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
-            if (oldLED != usedLED) goColour(0, 0, 0, false);
+            //if (oldLED != usedLED) 
+            goColour(0, 0, 0, false);
 
             //flash ERG or SSVEP?
             bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
