@@ -55,7 +55,7 @@ cellspacing="2">
 </tr>
 <tr>
 <td style="vertical-align: top;">
-<select name="GAL4" size = 4>
+<select name="GAL4" size = 6>
 <option value="w">w-</option>
 <option value="w_apr">w^apr</option>
 <option value="CS">CS</option>
@@ -63,7 +63,7 @@ cellspacing="2">
 </select><br>
 </td>
 <td style="vertical-align: top;">
-<select name="UAS" size = 4>
+<select name="UAS" size = 6>
 <option value="homoz">homozygote</option>
 <option value="w">w-</option>
 <option value="w_apr">w^apr</option>
@@ -72,7 +72,7 @@ cellspacing="2">
 </select><br>
 </td>
 <td style="vertical-align: top;">
-<select name="Age" size = 4>
+<select name="Age" size = 6>
 <option value="0.4">4-8 hours</option>
 <option selected value="1">1 day</option>
 <option value="2">2</option>
@@ -92,9 +92,11 @@ cellspacing="2">
 cellspacing="2">
 <tbody >
 <tr>
-<td style="vertical-align: top; width = 33%"><BR> Sex: <BR></td>
-<td style="vertical-align: top; width = 33%"><BR>Organism: <BR></td>
-<td style="vertical-align: top; width = 33%"><BR>Colour</td>
+<td style="vertical-align: top; width = 20%"><BR> Sex: <BR></td>
+<td style="vertical-align: top; width = 20%"><BR>Organism: <BR></td>
+<td style="vertical-align: top; width = 20%"><BR>Colour</td>
+<td style="vertical-align: top; width = 20%"><BR>Frequencies</td>
+<td style="vertical-align: top; width = 20%"><BR>Protocol</td>
 </tr>
 <tr>
 <td style="vertical-align: top;"><BR>
@@ -103,17 +105,27 @@ cellspacing="2">
 <BR><br>
 </td>
 <td style="vertical-align: top;"><BR> 
-<input type="radio" name="organism" value="fly" checked>fly<br>
-<input type="radio" name="organism" value="zfish">zebrafish<br>
-<input type="radio" name="organism" value="mouse">mouse<br>
-<input type="radio" name="organism" value="locust">locust<br>
+<input type="radio" name="org" value="fly" checked>fly<br>
+<input type="radio" name="org" value="zfish">zebrafish<br>
+<input type="radio" name="org" value="mouse">mouse<br>
+<input type="radio" name="org" value="locust">locust<br>
 <BR><br>
 </td>
+
 <td style="vertical-align: top;"><BR>
-<input type="radio" name="colour" value="blue" checked>blue<br>
-<input type="radio" name="colour" value="blue_K">blue (K)<br>
-<input type="radio" name="colour" value="green">green<br>
-<input type="radio" name="colour" value="red">red<br>
+<input type="radio" name="col" value="blue" checked>blue<br>
+<input type="radio" name="col" value="green">green<br>
+<input type="radio" name="col" value="red">red<br>
+</td>
+
+<td style="vertical-align: top;"><BR>
+<input type="checkbox" name="F1" value="12" checked> F1: 12 Hz<br>
+<input type="checkbox" name="F2" value="15" checked> F2: 15 Hz<br>
+</td>
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="stim" value="fERG" checked>flash ERG<br>
+<input type="radio" name="stim" value="SSVEP" checked>SSVEP<br>
 </td>
 </tr>
 </tbody>
@@ -131,5 +143,31 @@ File name: <input id="FileID" type="text" name="filename">
 
 </form>
 
+<BR><BR>
+
+<table>
+<tr><td>
+<A href="http://biolpc2793.york.ac.uk/white/">White</a>
+</td>
+
+<td bgcolor="Red">
+<A href="http://biolpc2793.york.ac.uk/red/"><font color="White">Red </font></a>
+</td>
+
+<td bgcolor="Green">
+<A href="http://biolpc2793.york.ac.uk/green/"><font color="White">Green </font></a>
+</td>
+<td bgcolor="Blue">
+<A href="http://biolpc2793.york.ac.uk/blue/"><font color="White">Blue </font></a>
+</td>
+<td bgcolor="Black">
+<A href="http://biolpc2793.york.ac.uk/black/"><font color="White">Black</font></a>
+</td>
+
+<td>
+<a href="http://biolpc2793.york.ac.uk/">Test setup</a>
+</td><td>
+<a href="http://biolpc2793.york.ac.uk/dir=">Directory</a>
+</table>
 </body>
 </html>
