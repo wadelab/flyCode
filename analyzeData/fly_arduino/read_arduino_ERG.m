@@ -83,8 +83,9 @@ timedata = timedata - timedata(1);
 
 iStart = 1;
 iEnd = 1024;
+xdata = linspace(1,250);
 
-figure ('Name', strcat('Rawdata of: ',fileName));
+figure ('Name', strcat('Data from: ',fileName));
 
         ymax = max(alldata(:,3)) ;
         ymin = min(alldata(:,3)) ;
@@ -96,12 +97,20 @@ for i = 1:nContrasts
         contrasts(i,:) = alldata(iEnd+1,:) ;
         
         %now we've read the data, lets plot it
-        subplot(nContrasts +1 ,1,i);
+        subplot(nContrasts +1, 3, (i*3)-2);
         plot (timedata, rawdata(i,:));
         axis([0 timedata(1024) ymin ymax]);
         
          yTxt = strcat(num2str(i), '//') ;
          ylabel(yTxt);
+         
+        f1=abs(fft(rawdata(i,1:200)));
+        subplot(nContrasts +1, 3, (i*3)-1);
+        plot (xdata, f1(1:100));
+        
+         f2=abs(fft(rawdata(i,350:670)));
+         subplot(nContrasts +1, 3, (i*3));
+plot (xdata, f2(1:100));
 
         iStart = iStart + 1025;
         iEnd = iEnd + 1025;
@@ -112,7 +121,7 @@ end;
         axis([0 timedata(1024) ymin ymax]);
         ylabel('mean');
 
-printFilename = [pathstr, filesep, fileName, '_RawData', '.eps'];
+printFilename = [pathstr, filesep, fileName, '_MyData', '.eps'];
 print( printFilename );
 
 
