@@ -1,7 +1,16 @@
-% close all
-% clear all
+
 
 function [thisFlyData, success] = read_arduino_file (fName, bCloseGraphs)
+% This reads SSVEP data downloaded from the flyCode arduino; each fly is
+% stimulated ~45 times, with blocks of 1024 intger data; each line contains
+% time, stimulus, response
+% This is followed by the contrast applied; each contrast line should begin
+% with -99
+% It returns the rawdata, the computed FFTs, the averaged CRF for this fly,
+% the stimulus conditions, all in "thisFlyData" It also returns a boolean
+% "success" to say if the file was successfully read.
+% Input parameters are the filename and a boolean to say if the graphs
+% should be closed at the end of the code
 
 success = true ;
 
@@ -24,8 +33,8 @@ ix = strfind(line, 'filename=') ;
 ix = find(~cellfun(@isempty,ix));
 thisFlyData.fileName = line{ix};
 line (ix)=[];
-thisFlyData.phenotypes = line ;
-%% 
+
+%%
 
 %%default values
 F1=12 ; %Hz
@@ -36,7 +45,8 @@ ff= strsplit(line{F1_index},'=');
 num = sscanf(ff{length(ff)}, '%f');
 if ~isempty(num)
     F1 = num;
-    end
+    line (F1_index)=[];
+end
 thisFlyData.F1=F1;
 
 F2_index = strmatch('F2',line);
@@ -44,41 +54,20 @@ ff= strsplit(line{F2_index},'=');
 num = sscanf(ff{length(ff)}, '%f');
 if ~isempty(num)
     F2 = num;
-    end
+    line (F2_index)=[];
+end
 thisFlyData.F2=F2;
 
-%% count the contrasts and then read the table of contrasts
-% zero based array!
-% GET /?GAL4=TH&UAS=G2019S&Age=1&sex=female&organism=fly&colour=blue&filename=18_08_13h46m05 HTTP/1.1
-% 0,       5.00,      30.00
-% 1,       5.00,       0.00
-% 2,      70.00,       0.00
-% 3,      30.00,       0.00
-% 4,      70.00,      30.00
-% 5,      10.00,      30.00
-% 6,      30.00,      30.00
-% 7,     100.00,       0.00
-% 8,      10.00,       0.00
-% 0, 0, 142, 0
-% 1, 4, 156, 0
-% 2, 8, 166, 0
-% 3, 12, 170, 0
-% read LH column one by one and look for decreased value when ERG data starts
+thisFlyData.phenotypes = line ;
 
-% nContrasts = 0;
-% cTmp = [1;2];
-% while (cTmp (2) > cTmp(1))
-%     nContrasts = nContrasts + 1;
-%     cTmp = csvread(fName, nContrasts,0, [nContrasts,0,nContrasts+1,0]) ;
-% end
-% 
-% contrasts=csvread(fName, 1,0, [1,0,nContrasts,2]);
 
 %% read the SSVEP data - 9 contrasts of 1024 data points
+% followed by line of contrast
+
 alldata = csvread(fName, 1,0);
 
 [nContrasts,c] = size(alldata);
-nContrasts= nContrasts/1025 
+nContrasts= nContrasts/1025
 timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
 
@@ -87,27 +76,27 @@ iStart = 1;
 iEnd = 1024;
 
 figure ('Name', strcat('Rawdata of: ',fileName));
-               m = 9;
-        n = 6;
-        ymax = max(alldata(:,3)) ;
-        ymin = min(alldata(:,3)) ;
+m = 9;
+n = 6;
+ymax = max(alldata(:,3)) ;
+ymin = min(alldata(:,3)) ;
 
 rawdata=zeros(nContrasts,1024);
 for i = 1:nContrasts
     
-        rawdata(i,:)=alldata(iStart:iEnd,3) ;
-        contrasts(i,:) = alldata(iEnd+1,:) ;
-        
-        %now we've read the data, lets plot it
-        subplot(m,n,i);
-        plot (timedata, rawdata(i,:));
-        axis([0 4092 ymin ymax]);
-        
-        yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
-        ylabel(yTxt);
-
-        iStart = iStart + 1025;
-        iEnd = iEnd + 1025;
+    rawdata(i,:)=alldata(iStart:iEnd,3) ;
+    contrasts(i,:) = alldata(iEnd+1,:) ;
+    
+    %now we've read the data, lets plot it
+    subplot(m,n,i);
+    plot (timedata, rawdata(i,:));
+    axis([0 4092 ymin ymax]);
+    
+    yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
+    ylabel(yTxt);
+    
+    iStart = iStart + 1025;
+    iEnd = iEnd + 1025;
 end;
 
 printFilename = [pathstr, filesep, fileName, '_RawData', '.eps'];
@@ -198,17 +187,17 @@ c12 = CRF(:,[1:2]);
 i = 1;
 k = 1;
 while (i <= nContrasts)
-  j = i + 1;
-  while (j <= nContrasts && isequal(c12(i,:), c12(j,:)))
-     %disp ([i, '  ' ,j]);
-     j = j + 1;
-     end;
-
-   av_CRF(k,:) = mean(CRF(i:j-1,:),1)  ; % need the ,1 to force it to work if i==j
-   
-   
-   k = k + 1 ;
-   i = j ;
+    j = i + 1;
+    while (j <= nContrasts && isequal(c12(i,:), c12(j,:)))
+        %disp ([i, '  ' ,j]);
+        j = j + 1;
+    end;
+    
+    av_CRF(k,:) = mean(CRF(i:j-1,:),1)  ; % need the ,1 to force it to work if i==j
+    
+    
+    k = k + 1 ;
+    i = j ;
 end
 
 
@@ -225,11 +214,11 @@ thisFlyData.nUnMasked = nUnMasked ;
 
 % figure('Name','Sanity check');
 % for i = 1:nContrasts
-% 
+%
 %     subplot(nContrasts,1,i);
 %     plot (timedata, thisFlyData.sortedRawData(i,:));
 %     %bar(sortedFFTdata(i,:));
-% 
+%
 % end;
 %%
 
