@@ -94,6 +94,9 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.TimeStamps=d.TimeStamps;
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
+            finalData.flyName{1}='repo-G2019s_1_1dpe';
+            finalData.flyName{2}='repo-G2019s_2_1dpe';
+            
             
             finalData.comment='1: repo-G2019s_1_1dpe 2: repo-G2019s_2_1dpe'; % Here : the first data channel ('ai0') is the bottom fly.
             finalData.stim=stim;
