@@ -31,7 +31,7 @@ flyTV_startTime=now;
 dpy.res = [1920 1080]; % screen resoloution
 dpy.size = [.53 .3] % Meters
 dpy.distance = [.22]; % Meters
-dpy.frameRate=144;
+dpy.frameRate=60;
 
  if (strcmp(computer,'PCWIN64'))
     dpy.defaultScreen=1;

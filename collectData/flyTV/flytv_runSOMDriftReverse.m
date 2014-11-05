@@ -88,9 +88,9 @@ try
     
     
     %Now we run the Plaid
-     Screen('Preference', 'VisualDebuglevel', 1);% disables welcome and warning screens
-    %Screen('Preference', 'SkipSyncTests', 1);
-    Screen('Preference', 'SuppressAllWarnings', 1);
+    Screen('Preference', 'VisualDebuglevel', 1);% disables welcome and warning screens
+    Screen('Preference', 'SkipSyncTests', 1);
+    Screen('Preference', 'SuppressAllWarnings', 2);
     % Select Screen
     WhichScreen = dpy.defaultScreen;
     
@@ -115,9 +115,9 @@ try
     ifi = Screen('GetFlipInterval', win);
     
     
-    if (round(ifi*1000)~=round(1000/dpy.frameRate))
+    if (round(ifi*100)~=round(100/dpy.frameRate))
         disp(ifi);
-        disp(1000/dpy.frameRate);
+        disp(100/dpy.frameRate);
         sca
         error('Framerate incorrect');
     end
