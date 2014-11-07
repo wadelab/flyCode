@@ -11,36 +11,35 @@
 close all;
 clear all;
 startTime=clock;
+tic
 DUMMYRUN=0;
-commentFromHeader='w-_1DPE_10_SOC_4Hz';
+commentFromHeader='Testing';
 
-if (~DUMMYRUN)
-    
-    if (strcmp(computer,'PCWIN64'))
-        jheapcl; % For some reason this is required on PCWin64 arch
-    end
-    
-    Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
-    HideCursor % Hides the mouse cursor
-    
-    % Get the calibration and compute the gamma table
-    igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
-    dpy.gamma.inverse=igt;
+
+if (strcmp(computer,'PCWIN64'))
+    jheapcl; % For some reason this is required on PCWin64 arch
 end
+
+Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
+HideCursor % Hides the mouse cursor
+
+% Get the calibration and compute the gamma table
+igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat');
+dpy.gamma.inverse=igt;
 
 
 datadir='C:\data\SSERG\data\SOC_Drift\1DPEw-\2Hz\';
 flyTV_startTime=now;
 
+% Set up display specific parameters. Really these should be in a proper
+% calibration file a la exptTools
 dpy.res = [1920 1080]; % screen resoloution
-dpy.size = [.53 .3] % Meters
+dpy.size = [.53 .3]; % Meters
 dpy.distance = [.22]; % Meters
 dpy.frameRate=60;
 dpy.VisualDebugLevel=1;
 dpy.SkipSyncTests=1;
 dpy.SuppressAllWarnings=1;
-
-
 
 
 if (strcmp(computer,'PCWIN64'))
@@ -80,7 +79,8 @@ eegInfo.channels = 1;
 eegInfo.nchannels = length(eegInfo.channels);
 eegInfo.hwName='ni';
 eegInfo.hwIndex=3;
-eegInfo.DORECORDEEG=1;
+eegInfo.DORECORDEEG=0;
+eegInfo.DAQ_PRESENT=0;
 
 
 expt.stimType=[1 2 1 2;1 1 2 2]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
@@ -88,9 +88,8 @@ expt.nConds=size(expt.stimType,2); % How many pairs of conditions do we run? In 
 % Later we will randomize these but for
 % now we don't
 
-expt.nRepeats=20; % How many times do we repeat the entire sequence? There is now an expt structure that contains information about the entire experiment
+expt.nRepeats=2; % How many times do we repeat the entire sequence? There is now an expt structure that contains information about the entire experiment
 
-% 
 expt.stim=stim;
 expt.eegInfo=eegInfo;
 
@@ -108,51 +107,23 @@ if (strcmp(computer,'PCWIN64'))
 end
 
 if (~DUMMYRUN)
-    d=flytv_runSOMAdapt(dpy,expt);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
-    % We might not have to
-    % open the screen each
-    % time around.
-    
-    if (isprop(d,'TriggerTime'))
+    try
+        dataOut=flytv_runSOMAdapt(dpy,expt);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
+        % This returns a big block of data containing everything from all the runs
+        filename=fullfile(datadir,['allData_',datestr(flyTV_startTime,30),'.mat']);
         
-        finalData.triggerTime=d.TriggerTime; % Extracu    t the data into a new struct because DAQ objects don't save nicely
-        finalData.TimeStamps=d.TimeStamps;
-        finalData.Source=d.Source;
-        finalData.EventName=d.EventName;
-        
-        finalData.comment=commentFromHeader;
-        finalData.stim=stim;
-        finalData.now=now;
-        finalData.nRepeats=nRepeats;
-        finalData.thisRun=thisRun;
-        finalData.thisCond=thisCond;
-        finalData.shuffleSeq=shuffleSeq;
-        finalData.tfList=tfList;
-        finalData.sfList=sfList;
-        finalData.data=d.Data; % I'm nervous that d (because it's some sort of special object) doesn't get converted properly
-        
-        filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisRun),'_',datestr(flyTV_startTime,30),'.mat'])
-        save(filename,'finalData','d');
-        metaData{thisRun,thisCond}=finalData; % Put the extracted data into an array tf x sf x nrepeats
-        data(thisRun,thisCond,:)=d.Data;
+        % Save all the data in an appropriate directory.
+        save(filename,'dataOut','expt','stim','eegInfo','dpy');
+    catch MAINLOOPERROR
+        sca
+        rethrow(MAINLOOPERROR);
     end
     
 end % End check on dummy run
+sca
 
+toc
 
-totalSessionTime=toc;
-
-%
-if ((~DUMMYRUN) && (isprop(d,'TriggerTime')))
-    
-    filename=fullfile(datadir,['flyTV_SOM_',datestr(flyTV_startTime,30),'.mat']);
-    fprintf('\nSaving all data in %s',filename);
-    save(filename);
-    
-    
-end
-disp('Total elapsed time (s) for this experiment:');
-etime(clock,startTime)
 return
 
 
