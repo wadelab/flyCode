@@ -53,25 +53,11 @@ end
 % For now if just has the gamma function (inverse) insc it.
 
 % Stim is now a struct array. It contains information for multiple stimuli
-% which can be chained together...
-stim(1).temporal.tf=[4,4]; % This is in Hz. There are t frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
-stim(1).spatial.sf=[.44,.04]; % Cycles per degree Carrier,Modulator,
-stim(1).temporal.nTF=size(stim(1).temporal.tf,1);
-stim(1).spatial.nSF=size(stim(1).spatial.sf,1);
-stim(1).temporal.modulation.type='drift';
-stim(1).temporal.modulation.stopStart=0; % 0 is constant, 1 is on/off, 2 is reversing
-stim(1).spatial.angle = [0 0]  ; % angle of gratings on screen
-stim(1).temporal.duration=30; % Adaptation period
-stim(1).spatial.internalRotation = 0; % Does the grating rotate within the envelope?
-stim(1).spatial.rotateMode = []; % rotation of mask grating (1= horizontal, 2= vertical, etc?)
-stim(1).contrast=[40 50]; % Percent.
-stim(1).spatial.phase=[0 0 ];
-% That was the adaptor. Now the probe. It's similar to the adaptor..
-stim(2)=stim(1);
-stim(2).temporal.modulation.stopStart=2; % 0 is constant, 1 is on/off, 2 is reversing
-stim(2).temporal.duration=4; % Probe period
+% which can be chained together.. Here we define all the possible stimuli
+% in this experiment: 
+stim=flytv_getSOMFOMAdaptStimuli(dpy);
 
-% Note: the order of the stimulus (1st or 2nd order motion) is set by the
+
 
 % Set up the EEG information
 eegInfo.eegsamplerate = 1000;
