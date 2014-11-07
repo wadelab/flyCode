@@ -57,6 +57,16 @@ end
 % in this experiment: 
 stim=flytv_getSOMFOMAdaptStimuli(dpy);
 
+% These stimuli are, in order:
+% 1: SOM ADAPT
+% 2: SOM PROBE
+% 3: FOM ADAPT
+% 4: FOM PROBE
+% 5: BLANK ADAPT (Zero contrast, same length)
+% 6: BLANK PROBE (Zero contrast, same length)
+
+% Our job below is to set up an expt so that we look at all combinations od
+% these.
 
 
 % Set up the EEG information
