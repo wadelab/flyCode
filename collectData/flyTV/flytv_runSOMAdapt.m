@@ -38,10 +38,12 @@ try
     for thisRepeat=1:expt.nRepeats % This is the number of times the entire sequence is repeated
         for thisCond=1:expt.nConds % This is the number of individual conditions in the sequence (e.g. 4 in the adaptation condition + possibly some blanks)
             
-            nStims=length(stim);
+            nStims=size(expt.stimType,1)
             % Loop over stims in sequence
-            for thisStim=1:nStims
-                phaseincrement = [stim(thisStim).temporal.frequency] * 2*pi * dpy.ifi; % How much the gratings increment each step. For flicker, this determines the response frequency
+            for thisStimIndex=1:nStims
+                thisStim=stim(expt.stimType(thisStimIndex,thisCond));
+                
+                phaseincrement = [thisStim.temporal.frequency] * 2*pi * dpy.ifi; % How much the gratings increment each step. For flicker, this determines the response frequency
                 
                 % We have to work out whether the order of the stim is 1 or
                 % 2. These have different generators:
@@ -51,14 +53,13 @@ try
                 % 2: Is a second order motion stim where the first
                 % component is the carrer and the second component is the
                 % modulator or envelope.
-                currStimType=expt.stimType(thisStim,thisCond);
                 
-                switch currStimType
+                switch thisStim.stimulusType
                     
-                    case 1
-                        [stim]=flytv_buildFOMStim(dpy,stim{thisStim}); % Build first order motion stim
-                    case 2
-                        [stim]=flytv_buildSOMStim(dpy,stim{thisStim}); % Build second order motion stim
+                    case 'FOM'
+                        [thisStim]=flytv_buildFOMStim(dpy,thisStim); % Build first order motion stim
+                    case 'SOM'
+                        [thisStim]=flytv_buildSOMStim(dpy,thisStim); % Build second order motion stim
                         
                     otherwise
                         disp('Undefined stimulus');
@@ -73,21 +74,21 @@ try
                     startBackground(s);
                     
                 end
-                vbl = Screen('Flip', dpy.win);
+                dpy.vbl = Screen('Flip', dpy.win);
                 
                 
                 % We run at most 'movieDurationSecs' seconds if user doesn't abort via keypress.
-                stim.vblendtime = vbl + stim.temporal.duration;
-                stim.vblStart=vbl;
+                thisStim.vblendtime = dpy.vbl + thisStim.temporal.duration;
+                thisStim.vblStart=dpy.vbl;
                 
                 disp('Entering loop');
                 
-                switch currStimType
-                    case 1
-                        timinglist=runInnerFOMLoop(dpy,stim{thisStim}); % First order motion
+                switch thisStim.stimulusType
+                    case 'FOM'
+                        timinglist=runInnerFOMLoop(dpy,thisStim); % First order motion
                         
-                    case 2
-                        timingList=flytv_runInnerSOMLoop(dpy,stim{thisStim}); % Second order motion
+                    case 'SOM'
+                        timingList=flytv_runInnerSOMLoop(dpy,thisStim); % Second order motion
                     otherwise
                 end % End switch statement
                 
@@ -97,11 +98,11 @@ try
                     pause(.1); % Wait for all the data acq to end
                     
                     % Bye bye!
-                    dataOut.data{thisCond,thisRepeat,thisStim}=gl;
-                    dataOut.stim{thisCond,thisRepeat,thisStim}=stim{thisStim};
-                    dataOut.timeStampEnd(thisCond,thisRepeat,thisStim)=now;
+                    dataOut.data{thisCond,thisRepeat,thisStimIndex}=gl;
+                    dataOut.stim{thisCond,thisRepeat,thisStimIndex}=thisStim;
+                    dataOut.timeStampEnd(thisCond,thisRepeat,thisStimIndex)=now;
                 else
-                    dataOut.data{thisCond,thisRepeat,thisStim}=-1;
+                    dataOut.data{thisCond,thisRepeat,thisStimIndex}=-1;
                 end
             end % Next stim
         end % Next condition

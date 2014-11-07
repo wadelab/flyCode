@@ -18,14 +18,14 @@ function stim=flytv_buildSOMStim(dpy,stim)
     stim.spatial.frequencyCPerPixel=stim.spatial.frequency/pixPerDegree;
     pixelsPerScreen=dpy.res(1);
     cyclesPerScreen=degreesPerScreen.*stim.spatial.frequency; % A vector
-    pixelsPerCycle1=pixelsPerScreen(1)./cyclesPerScreen(1); % We need this to generate a larger modulation texture. So that we can crop it in different places to simulate drift.
+    stim.pixelsPerCycle1=pixelsPerScreen(1)./cyclesPerScreen(1); % We need this to generate a larger modulation texture. So that we can crop it in different places to simulate drift.
     
     % Compute the alpha and amplitudes that we will use
-    [amps,alpha]=flytv_computeAlphaAmps(stim.cont); % !!!!! EDIT?
+    [amps,alpha]=flytv_computeAlphaAmps(stim.contrast/100); % !!!!! EDIT?
     
     % We have to make our own sine wave grating for the modulator because we
     % only want it to modulate the alpha channel...
-    angleList1=linspace(0,2*pi*cyclesPerScreen(1),dpy.res(1)+pixelsPerCycle1*2); %
+    angleList1=linspace(0,2*pi*cyclesPerScreen(1),dpy.res(1)+stim.pixelsPerCycle1*2); %
     [xx_mod,yy_mod]=meshgrid(angleList1,[1:dpy.res(2)]);
     gt1=(((sin(xx_mod))));
     
@@ -47,7 +47,7 @@ function stim=flytv_buildSOMStim(dpy,stim)
     % backbuffer will be cleared to this neutral 50% intensity gray
     % and a default 'bgcontrast' background noise contrast level:
     carrText=0; % Initilize this
-    gCarr=(sin(xx_car+stim.spatial.pOffset(2)));
+    gCarr=(sin(xx_car));
   
     % Problem: I don't think we can compute the multiplied gratings in real
     % time. It missed VBLs when we do this, causing the timing to be in
@@ -88,11 +88,11 @@ function stim=flytv_buildSOMStim(dpy,stim)
     framesPerDuration=ceil(stim.temporal.duration*dpy.frameRate);
     stim.thisPhase(:,1)=linspace(0,2*pi*stim.temporal.frequency(1)*stim.temporal.duration,framesPerDuration);
     stim.thisPhase(:,2)=linspace(0,2*pi*stim.temporal.frequency(2)*stim.temporal.duration,framesPerDuration);
+    fprintf('\nFrames per duration %d',framesPerDuration);
     
     switch stim.temporal.modulation.stopStart
         case 0
-            % This is a continuously moving thing in one direction: A
-            % sawtooth
+            % This is a continuously moving thing in one direction: 
             
             stim.thisPhase=rem( stim.thisPhase,2*pi);
             
@@ -100,7 +100,7 @@ function stim=flytv_buildSOMStim(dpy,stim)
         case 1
             % This stops and starts : a sawtooth with gaps
             error('Stop start not implemented yet');
-        case 2
+        case 2 % ?
              stim.thisPhase(:,1)=sawtooth( stim.thisPhase(:,1),.5)*pi;
              stim.thisPhase(:,2)=sawtooth( stim.thisPhase(:,2),.5)*pi;
             
