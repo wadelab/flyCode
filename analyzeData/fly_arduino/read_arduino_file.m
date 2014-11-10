@@ -71,13 +71,12 @@ nContrasts= nContrasts/1025
 timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
 
-
 iStart = 1;
 iEnd = 1024;
 
 figure ('Name', strcat('Rawdata of: ',fileName));
-m = 9;
-n = 6;
+m = 5;
+n = 9;
 ymax = max(alldata(:,3)) ;
 ymin = min(alldata(:,3)) ;
 
