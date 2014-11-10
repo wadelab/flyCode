@@ -73,6 +73,8 @@ for i = 1:nContrasts
     iStart = iStart + 1025;
     iEnd = iEnd + 1025;
 end;
+xTxt = 'scales are in ms, Hz';
+xlabel(xTxt);
 
 subplot(nContrasts +1 ,1, nContrasts +1);
 meandata = mean(rawdata);
