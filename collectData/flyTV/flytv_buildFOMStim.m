@@ -10,7 +10,8 @@ function stim=flytv_buildFOMStim(dpy,stim)
 
 % Compute increment of phase shift per redraw:
 stim.phaseincrement = [stim.temporal.frequency] * 360 * dpy.ifi;
-[stim.amps,stim.alpha]=flytv_computeAlphaAmps(stim.cont);
+disp(stim.contrast)
+[stim.amps,stim.alpha]=flytv_computeAlphaAmps(stim.contrast/100);
 
 stim.texture{1} = CreateProceduralSineGrating(dpy.win, dpy.res(1), dpy.res(2),[.5,.5,.5, 1]); % Bottom grating
 stim.texture{2}= CreateProceduralSineGrating(dpy.win, dpy.res(1), dpy.res(2),[.5 .5 .5 stim.alpha]); % Top grating blend 50%

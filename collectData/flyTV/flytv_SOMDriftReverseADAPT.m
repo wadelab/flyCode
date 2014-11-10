@@ -28,7 +28,7 @@ igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat');
 dpy.gamma.inverse=igt;
 
 
-datadir='C:\data\SSERG\data\SOC_Drift\1DPEw-\2Hz\';
+datadir='C:\data\SSERG\data\ADAPT\';
 flyTV_startTime=now;
 
 % Set up display specific parameters. Really these should be in a proper
@@ -36,7 +36,7 @@ flyTV_startTime=now;
 dpy.res = [1920 1080]; % screen resoloution
 dpy.size = [.53 .3]; % Meters
 dpy.distance = [.22]; % Meters
-dpy.frameRate=60;
+dpy.frameRate=144;
 dpy.VisualDebugLevel=1;
 dpy.SkipSyncTests=1;
 dpy.SuppressAllWarnings=1;
@@ -79,7 +79,7 @@ eegInfo.DORECORDEEG=0;
 eegInfo.DAQ_PRESENT=0;
 
 
-expt.stimType=[1 2 1 2;1 1 2 2]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
+expt.stimType=[4 3 1 3;2 4 4 2]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
 expt.nConds=size(expt.stimType,2); % How many pairs of conditions do we run? In this case it's 2x2 so 4...
 % Later we will randomize these but for
 % now we don't

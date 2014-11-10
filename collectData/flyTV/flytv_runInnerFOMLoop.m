@@ -5,26 +5,26 @@ function timingList=runInnerFOMLoop(dpy,stim)
 % stim must contain textures for the two components
 % ARW 103114
 
-Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+Screen('BlendFunction', dpy.win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
 % Wait for release of all keys on keyboard, then sync us to retrace:
 
-vbl = Screen('Flip', win);
+dpy.vbl = Screen('Flip', dpy.win);
 
 
 % We run at most 'movieDurationSecs' seconds if user doesn't abort via keypress.
-vblendtime = vbl + stim.temporal.duration;
-i=0;
+vblendtime = dpy.vbl + stim.temporal.duration;
+i=1;
 
 phase=stim.spatial.phase; % This is the starting phase of both gratings (a vector)
 try
-    while (vbl < vblendtime)
+    while (dpy.vbl < vblendtime)
         
         
         % Increment phase by the appropriate amount for this time period:
         phase = phase + stim.phaseincrement;
-        pMod = 180*(round(phase/180 ));
+        pMod = phase;
         
         
         
@@ -40,12 +40,12 @@ try
         
 
         % Show it at next retrace:
-        vbl = Screen('Flip', dpy.win, vbl + 0.5 * dpy.ifi);
-        timingList(i)=vbl;
+        dpy.vbl = Screen('Flip', dpy.win, dpy.vbl + 0.5 * dpy.ifi);
+        timingList(i)=dpy.vbl;
         i=i+1;
     end
 catch RENDERINGERROR
-    disp('Error in %s',mfilename);
+    sprintf('\nError in %s',mfilename);
     disp('Rendering error in display loop');
     sca
     rethrow(RENDERINGERROR);

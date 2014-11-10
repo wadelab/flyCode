@@ -85,7 +85,7 @@ try
                 
                 switch thisStim.stimulusType
                     case 'FOM'
-                        timinglist=runInnerFOMLoop(dpy,thisStim); % First order motion
+                        timinglist=flytv_runInnerFOMLoop(dpy,thisStim); % First order motion
                         
                     case 'SOM'
                         timingList=flytv_runInnerSOMLoop(dpy,thisStim); % Second order motion

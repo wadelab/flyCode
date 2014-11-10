@@ -4,7 +4,7 @@ function stim=flytv_getSOMFOMAdaptStimuli(exptSeq)
 
 stim(1).stimulusType='SOM'; 
 stim(1).temporal.frequency=[4,4]; % This is in Hz. There are two frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
-stim(1).spatial.frequency=[.44,.04]; % Cycles per degree Carrier,Modulator for a second order grating
+stim(1).spatial.frequency=[.04,.44]; % Cycles per degree modulator,carrier for a second order grating
 stim(1).temporal.nTF=size(stim(1).temporal.frequency,1);
 stim(1).spatial.nSF=size(stim(1).spatial.frequency,1);
 stim(1).temporal.modulation.type='drift';
@@ -16,6 +16,7 @@ stim(1).spatial.internalRotation = 0; % Does the grating rotate within the envel
 stim(1).spatial.rotateMode = []; % rotation of mask grating (1= horizontal, 2= vertical, etc?)
 stim(1).contrast=[40 50]; % Percent.
 stim(1).spatial.phase=[0 0 ];
+stim(1).rotateMode=0;
 
 
 % That was the adaptor. Now the SOM probe. It's similar to the adaptor..

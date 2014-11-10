@@ -8,14 +8,13 @@ function timingList=flytv_runInnerSOMLoop(dpy,stim)
 % stim.thisPhase
 % ARW 103114
 
-vbl=0;
 i=1;
 Screen('Blendfunction', dpy.win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 phase=stim.spatial.phase; % This is the starting phase of both gratings (a vector)
 try
-    while (vbl < stim.vblendtime)
+    while (dpy.vbl < stim.vblendtime)
         
-        thisFrame=(round((vbl-stim.vblStart)*dpy.frameRate))+1;
+        thisFrame=(round((dpy.vbl-stim.vblStart)*dpy.frameRate))+1;
         
         % Increment phase by the appropriate amount for this time period:
         phase = stim.thisPhase(thisFrame);
@@ -33,12 +32,12 @@ try
         Screen('DrawTexture', dpy.win, stim.texture{2}, sRect, []);
         
         % Show it at next retrace:
-        vbl = Screen('Flip', dpy.win, vbl + 0.5 * dpy.ifi);
-        timingList(i)=vbl;
+        dpy.vbl = Screen('Flip', dpy.win, dpy.vbl + 0.5 * dpy.ifi);
+        timingList(i)=dpy.vbl;
         i=i+1;
     end
 catch RENDERINGERROR
-    disp('Error in %s',mfilename);
+    fprintf('\nError in %s',mfilename);
     disp('Rendering error in display loop');
     sca
     rethrow(RENDERINGERROR);
