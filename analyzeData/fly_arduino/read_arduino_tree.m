@@ -40,55 +40,64 @@ nFlies = length(Collected_Data)
 savefileName = [dirName, filesep, 'CollectedData.mat'];
 save(savefileName);
 
-%%
-[C, ia, ic] = unique(phenotypeList, 'stable');
-
-%% now we can process the data
-
-[r,c] = size(Collected_Data(1).sorted_CRF);
+%% Sort the data and work out how many of each phenotype we have 
+[SortedPhenotypes,z]=sort(phenotypeList) ;
+SortedData=Collected_Data(z);
+[C, ia, ic] = unique(SortedPhenotypes, 'stable');
 
 nPhenotypes = length(ia)
+ib = ia(2:end) - 1;
+ib(nPhenotypes) = length(ic) ;
+
+%% now we can process the data
+% ia tells us the starting value of each phenotype
+% ib tells us the end of each phenotype
+% length(ia) tells us how many phenotypes we have 
+
+% copy data into matrix otherwise we can't get the mean...
+[r,c] = size(Collected_Data(1).sorted_CRF);
+Sortedmatrix = zeros(nFlies,r,c);
+for i = 1 : nFlies
+    Sortedmatrix(i,:,:) = SortedData(i).sorted_CRF ;
+end
+
+
+%% calculate mean for each phenotype
 for phen = 1 : nPhenotypes
-    allCRFs = zeros(nPhenotypes,r,c);
-    for i = 1 : nFlies
-        if ( i == phen )
-            allCRFs(phen,:,:)= Collected_Data(i).sorted_CRF;
-        end
-    end
+    meanCRF(phen,:,:)=squeeze(mean(Sortedmatrix(ia(phen):ib(phen),:,:),1));
+end
     
-    %%
-    
-    %%calculate and plot the average
-    meanCRF = squeeze(mean(allCRFs,1));
-    
-    
-    [pathstr, fileName, ext] = fileparts(dirName);
-    
-    % definition of frequency names is also in anothr filr ...
-    
-    %% Plot mean CRFs
-    FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2', 'F2-F1' };
-    nUnMasked=flydata(1).nUnMasked ;
-    
+%% Plot mean CRFs
+[pathstr, fileName, ext] = fileparts(dirName);
+
+% definition of frequency names is also in anothr filr ...
+FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2', 'F2-F1' };
+nUnMasked=flydata(1).nUnMasked ;
+
+for phen = 1 : nPhenotypes
     figure('Name', strcat(' mean CRFs of: ',fileName));
-        
+    
     nPlots = length(FreqNames);
     for i = 1 : nPlots
         
         subplot ( mod(nPlots,4), floor(nPlots/2), i);
-        plot (meanCRF([1:nUnMasked],2), meanCRF([1:nUnMasked],i+2), '-*', meanCRF([nUnMasked+1:end],2), meanCRF([nUnMasked+1:end],i+2), '-.O' );
-        legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
+        plot (meanCRF(phen, [1:nUnMasked],2), meanCRF(phen, [1:nUnMasked],i+2), '-*', meanCRF(phen, [nUnMasked+1:end],2), meanCRF(phen, [nUnMasked+1:end],i+2), '-.O' );
+        ylim([ 0, max(max(meanCRF(:,:,i+2))) ]);
+        if (i==1)
+            legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
+        end;
         set(gca,'XScale','log');
         title(FreqNames{i});
         
     end
     
-    text(150,max(meanCRF([nUnMasked+1:end],i+2))/2,C(phen));
+    text(150,max(meanCRF(phen, [nUnMasked+1:end],i+2))/2,C(phen));
     
     printFilename = [dirName, filesep, fileName, '_', num2str(phen), '_mean_CRF', '.eps'];
     print( printFilename );
     
 end
+
 
 disp (['done! ', dirName]);
 
