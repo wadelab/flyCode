@@ -97,6 +97,7 @@ for i = 1:nContrasts
     iStart = iStart + 1025;
     iEnd = iEnd + 1025;
 end;
+xlabel('xscale is in ms');
 
 printFilename = [pathstr, filesep, fileName, '_RawData', '.eps'];
 print( printFilename );
@@ -115,6 +116,7 @@ for i = 1:nContrasts
     fftData(i,:) = abs(complx_fftData(i,2:fft_display_limit+1));
 end
 
+
 %% plot fft
 figure('Name', strcat('FFT of: ',fileName));
 max_fft = max(max(fftData));
@@ -127,10 +129,15 @@ for i = 1:nContrasts
     yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
     ylabel(yTxt);
     
+    if (i> (m-1)*n)
+        % label bottom row
+        set(gca,'XTickmode','manual');
+        set(gca,'XTick',[0,12.5,25,37.5,50,62.5]*4);
+        set(gca,'XTickLabel',{'0','12.5','25','37.5','50','62.5'});
+        
+    end ;
 end;
-% label bottom row
-set(gca,'XTickLabel',{'0','12.5','25','37.5','50','62.5'});
-xlabel('Hz');
+xlabel('xscale is in Hz');
 
 printFilename = [pathstr, filesep, fileName, '_FFT', '.eps'];
 print( printFilename );
@@ -142,10 +149,12 @@ end
 %% Extract fft data
 % sample rate was 4 ms, so these numbers are 4 times
 FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2', 'F2-F1' };
-FreqsToExtract = [ F1, F2, 2*F1, 2*F2, F1+F2, 2*(F1+F2), F2-F1 ];
-FreqsToExtract = FreqsToExtract*4 + 1 ;
+% FreqsToExtract = [ F1, F2, 2*F1, 2*F2, F1+F2, 2*(F1+F2), F2-F1 ];
+% FreqsToExtract = FreqsToExtract*4 + 1 ;
 % this next bit might be written more cleanly, but i want to check we get
 % the right section..
+FreqsToExtract = [49,62,98,123,111,214,12] ;
+
 y12Data = fftData(:,FreqsToExtract(1));
 y15Data = fftData(:,FreqsToExtract(2));
 y24Data = fftData(:,FreqsToExtract(3));
@@ -250,6 +259,9 @@ if (success)
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
     
+    xlabel('contrast (%)');
+    ylabel('response, a.u.');
+    
     printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', '.eps'];
     print( printFilename );
     if (bCloseGraphs)
@@ -262,6 +274,9 @@ if (success)
     plot (av_CRF([1:nUnMasked],2), av_CRF([1:nUnMasked],5), '-*', av_CRF([nUnMasked+1:nContrasts],2), av_CRF([nUnMasked+1:nContrasts],5), '-.O' );
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
+
+    xlabel('contrast (%)');
+    ylabel('response, a.u.');
     
     printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', '.eps'];
     print( printFilename );
