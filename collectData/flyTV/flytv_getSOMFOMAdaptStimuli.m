@@ -30,6 +30,7 @@ stim(3)=stim(1);
 stim(3).stimulusType='FOM'; % First order modulation (includes contrast reversing gratings and plaids)
 stim(3).spatial.frequency=[.04 .04]; % Cycles per degree Carrier,Modulator for a second order grating
 stim(3).contrast=[80 0]; 
+
 stim(4)=stim(2);
 stim(4).stimulusType='FOM'; % First order modulation (includes contrast reversing gratings and plaids)
 stim(3).contrast=[80 0]; 
