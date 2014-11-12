@@ -13,6 +13,7 @@ function [thisFlyData, success] = read_arduino_file (fName, bCloseGraphs)
 % should be closed at the end of the code
 
 success = true ;
+thisFlyData.Error = 'None' ;
 
 % [f,p]=uigetfile('*.SVP');
 % fName=fullfile(p,f);
@@ -20,6 +21,13 @@ success = true ;
 
 %% read header line
 [fid, msg] = fopen(fName, 'rt');
+% if we succeed fid > 2
+if (fid < 3)
+    thisFlyData.Error = ['Could not open file: ', fName]
+    success = false ;
+    return
+end
+
 line1a = fgets(fid);
 fclose(fid);
 line1b=strrep(line1a, 'GET /?'  ,'');
@@ -63,10 +71,27 @@ thisFlyData.phenotypes = line ;
 
 %% read the SSVEP data - 9 contrasts of 1024 data points
 % followed by line of contrast
-
-alldata = csvread(fName, 1,0);
-
+try
+    alldata = csvread(fName, 1,0);
+catch
+    thisFlyData.Error = ['CSVfunction died with unknown error in file : ', fName]
+    success = false ;
+    return
+end
 [nContrasts,c] = size(alldata);
+
+if (c < 3)
+    thisFlyData.Error = ['Less than 3 columns found in file : ', fName]
+    success = false ;
+    return
+end
+
+if (nContrasts < 1025)
+    thisFlyData.Error = ['Less than 1024 data lines found in file : ', fName]
+    success = false ;
+    return
+end
+
 nContrasts= nContrasts/1025
 timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
@@ -274,7 +299,7 @@ if (success)
     plot (av_CRF([1:nUnMasked],2), av_CRF([1:nUnMasked],5), '-*', av_CRF([nUnMasked+1:nContrasts],2), av_CRF([nUnMasked+1:nContrasts],5), '-.O' );
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
-
+    
     xlabel('contrast (%)');
     ylabel('response, a.u.');
     

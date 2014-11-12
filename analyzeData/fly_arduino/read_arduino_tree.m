@@ -9,6 +9,11 @@ dirName=uigetdir();
 walk_a_directory_recursively(dirName, '*.SVP');
 
 %% now we have a list of all the files with .SVP in that tree
+if (length(SVPfiles) ==0)
+   disp(['Exiting becuase No SVP files were found in ',dirName]);
+   return 
+end
+
 for i=1:length(SVPfiles)
     SVPfiles{i} = deblank(SVPfiles{i});
 end
@@ -21,18 +26,24 @@ for i=1:min(length(SVPfiles),maxFilesToRead)
     disp(SVPfiles{i});
     [flydata, success] = read_arduino_file ( SVPfiles{i} , true );
     if (success)
-        % - now parse the line
-        %
+
         if (iSuccesseses == 1)
             %set up an array to fill up
             Collected_Data = repmat(flydata, maxFilesToRead) ;
         end
+        
         Collected_Data(iSuccesseses) = flydata;
         phenotypeList{iSuccesseses} = strjoin(transpose(flydata.phenotypes(:)),'&');
         
         iSuccesseses = iSuccesseses + 1;
     end
 end;
+
+if (iSuccesseses == 1)
+   disp(['Exiting becuase No **Readable** SVP files were found in ',dirName]);
+   return 
+end
+
 Collected_Data(iSuccesseses:end) = [] ; % remove all the unsused columns
 
 disp('Number of flies in this analysis');
