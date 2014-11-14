@@ -75,11 +75,12 @@ eegInfo.channels = 1;
 eegInfo.nchannels = length(eegInfo.channels);
 eegInfo.hwName='ni';
 eegInfo.hwIndex=3;
-eegInfo.DORECORDEEG=0;
-eegInfo.DAQ_PRESENT=0;
+eegInfo.DORECORDEEG=1;
+eegInfo.DAQ_PRESENT=1;
+eegInfo.bufferSizeSeconds=31;
 
-
-expt.stimType=[4 3 1 3;2 4 4 2]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
+expt.stimType=[3;...
+               4]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
 expt.nConds=size(expt.stimType,2); % How many pairs of conditions do we run? In this case it's 2x2 so 4...
 % Later we will randomize these but for
 % now we don't

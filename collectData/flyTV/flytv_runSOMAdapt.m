@@ -71,7 +71,8 @@ try
                 if (eegInfo.DAQ_PRESENT && eegInfo.DORECORDEEG)
                     % Begin data acquisition in the background
                     disp('Running');
-                    startBackground(s);
+                    eegInfo.s.DurationInSeconds=thisStim.temporal.duration;
+                    startBackground(eegInfo.s);
                     
                 end
                 dpy.vbl = Screen('Flip', dpy.win);

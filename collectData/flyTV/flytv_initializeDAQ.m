@@ -7,7 +7,7 @@ if (eegInfo.DAQ_PRESENT)
         disp('** Initializing amp ***');
         
         eegInfo.s = daq.createSession(eegInfo.hwName);
-        eegInfo.s.DurationInSeconds = stim.temporal.duration;
+        eegInfo.s.DurationInSeconds = eegInfo.bufferSizeSeconds;
         addAnalogInputChannel(eegInfo.s,'Dev3','ai0','Voltage');
         eegInfo.s.NumberOfScans = eegInfo.s.DurationInSeconds*1000;
         eegInfo.s.NotifyWhenDataAvailableExceeds = eegInfo.s.NumberOfScans;

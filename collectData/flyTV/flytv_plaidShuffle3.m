@@ -23,7 +23,7 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\NewSweep\PINK1\1DPE\repoPINK1RNAi41671\';
+datadir='C:\data\SSERG\data\NewSweep\PINK1\1DPE\actinCS\';
 flyTV_startTime=now;
 
 
@@ -98,7 +98,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.flyName{2}='repo-G2019s_2_1dpe';
             
             
-            finalData.comment='1: repoPINK1RNAi41671_1DPE_3 2: repoPINK1RNAi41671_1DPE_4'; % Here : the first data channel ('ai0') is the bottom fly.
+            finalData.comment='1:actinCS_1DPE_9 2: actinCS_1DPE_10'; % Here : the first data channel ('ai0') is the bottom fly.
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;
