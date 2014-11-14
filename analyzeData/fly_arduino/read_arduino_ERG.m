@@ -82,7 +82,8 @@ plot (timedata, meandata);
 axis([0 timedata(1024) ymin ymax]);
 ylabel('mean');
 
-printFilename = [pathstr, filesep, fileName, '_MyData', '.eps'];
+sExt = getPictExt ();
+printFilename = [pathstr, filesep, fileName, '_MyData', sExt];
 print( printFilename );
 
 %% get some data out

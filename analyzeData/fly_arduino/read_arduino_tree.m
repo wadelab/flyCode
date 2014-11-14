@@ -4,6 +4,7 @@ clear all;
 
 global SVPfiles ;
 SVPfiles = {};
+sExt = getPictExt () ;
 
 dirName=uigetdir();
 walk_a_directory_recursively(dirName, '*.SVP');
@@ -104,7 +105,7 @@ for phen = 1 : nPhenotypes
     
     text(150,max(meanCRF(phen, [nUnMasked+1:end],i+2))/2,C(phen));
     
-    printFilename = [dirName, filesep, fileName, '_', num2str(phen), '_mean_CRF', '.eps'];
+    printFilename = [dirName, filesep, fileName, '_', num2str(phen), '_mean_CRF', sExt];
     print( printFilename );
     
 end

@@ -14,6 +14,7 @@ function [thisFlyData, success] = read_arduino_file (fName, bCloseGraphs)
 
 success = true ;
 thisFlyData.Error = 'None' ;
+sExt = getPictExt () ;
 
 % [f,p]=uigetfile('*.SVP');
 % fName=fullfile(p,f);
@@ -124,7 +125,7 @@ for i = 1:nContrasts
 end;
 xlabel('xscale is in ms');
 
-printFilename = [pathstr, filesep, fileName, '_RawData', '.eps'];
+printFilename = [pathstr, filesep, fileName, '_RawData', sExt];
 print( printFilename );
 if (bCloseGraphs)
     delete(gcf) ;
@@ -164,7 +165,7 @@ for i = 1:nContrasts
 end;
 xlabel('xscale is in Hz');
 
-printFilename = [pathstr, filesep, fileName, '_FFT', '.eps'];
+printFilename = [pathstr, filesep, fileName, '_FFT', sExt];
 print( printFilename );
 if (bCloseGraphs)
     delete(gcf) ;
@@ -287,7 +288,7 @@ if (success)
     xlabel('contrast (%)');
     ylabel('response, a.u.');
     
-    printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', '.eps'];
+    printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', sExt];
     print( printFilename );
     if (bCloseGraphs)
         delete(gcf) ;
@@ -303,7 +304,7 @@ if (success)
     xlabel('contrast (%)');
     ylabel('response, a.u.');
     
-    printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', '.eps'];
+    printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', sExt];
     print( printFilename );
     if (bCloseGraphs)
         delete(gcf) ;
