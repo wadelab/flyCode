@@ -1,4 +1,5 @@
 % FlyCRF
+% now testing on windows7 box
 % Generates a flickering stimulus on a single output channel and steps
 % through a range on contrasts (and,possibly, baseline luminances)
 % Initially we want to just measure a nice CRF.
