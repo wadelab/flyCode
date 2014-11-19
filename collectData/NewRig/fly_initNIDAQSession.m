@@ -52,4 +52,46 @@ catch AMPINITERROR
     
 end % End try catch for initialization
 
-
+%% Stuff below has to be incorporated into this function as well...
+ %% Here we set up the trials and run them. We will store data on a
+%         % per-trial basis and chop it up later.
+%         
+%         % Data will be acquired from hardware channels 0,1 and 5. These are
+%         % the two input
+%         % electrodes and the photodiode.
+%         channelList=[0 1 5]; % List of hardware (NIDAQ - reference type) input channels. It is very important that these are in the right order!!!!
+%         
+%         %% Set up the input system - we can do this just once per expt: Data will
+%         % come into the same buffer each time and we can extract it after
+%         % each trialfor thisChannelToInit=1:length(channelList)
+%         
+%         for thisChannelToInit=1:length(channelList)
+%             
+%             addchannel(ai, channelList(thisChannelToInit));
+%             % Configure the analog input
+%             set(ai.Channel(thisChannelToInit),'InputRange',[-10 10]);
+%             set(ai.Channel(1),'SensorRange',[-10,10]);
+%             set(ai.Channel(1),'UnitsRange',[-10 10]);
+%             set(ai,'InputType',digitizerAmpMode);
+%         end
+%         
+%         
+%         
+%         ai.SampleRate = digitizerSampleRate; % Rate in samples / second
+%         ai.SamplesPerTrigger = digitizerSampleRate*totalTrialDuration;
+%         % Make it a manual trigger and link it to the output trigger
+%         
+%         %% Set up the output channels. There are two for now - more perhaps later
+%         %when we do silent substitution
+%         % However, there's no reason not to initialize all 4
+%         chans = addchannel(ao,0:(nOutChans-1));
+%         set(ao,'SampleRate',outputPWMCarrierRate);
+%         ActualOutputRate = get(ao,'SampleRate');
+%         set([ai ao],'TriggerType','Manual')
+%         set(ai,'ManualTriggerHwOn','Trigger')
+%         
+%     else
+%         ActualOutputRate=digitizerSampleRate;
+% end
+%     
+    
