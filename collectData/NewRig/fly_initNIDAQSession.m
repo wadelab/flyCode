@@ -4,14 +4,15 @@ function daqInfo=fly_initNIDAQSession(daqInfo)
 % Note - we have to do this on new Win7 machines - XP no longer an option!
 % daqInfo should be a structure containing useful information about the daq
 % setup.
-% Based on flytv_initializeDAQ.m 
+% Based on flytv_initializeDAQ.m
 % The session (s) is returned as part of the daqInfo structure
 % Note - we need simultaneous input and output: 4 output, 1 input.
 % daqInfo.DAQ_PRESENT, daqInfo.hwName and daqInfo.devName must be defined.
 
 try % This will fail, for example, on non-windows machines
-
-if (daqInfo.DAQ_PRESENT)
+    
+    if (daqInfo.DAQ_PRESENT)
+        
         disp('** Initializing amp ***');
         % Set up the input channel first
         daqInfo.s = daq.createSession(daqInfo.hwName);
@@ -36,15 +37,19 @@ if (daqInfo.DAQ_PRESENT)
         
         daqInfo.status=1;
         daqInfo.message='Amp initialized'; % Okay
-    catch AMPINITERROR
-        disp('Could not initiate recording hardware');
+    else
         daqInfo.status=-1;
-        daqInfo.message='Failed to initialize amp'; % Failed
-        sca;
-        
-        rethrow(AMPINITERROR);
-    end % End check on amp present
+        daqInfo.message='NO DAQ PRESENT ACCORDING TO daqInfo';
+        % End check on daq presence
+    end
+catch AMPINITERROR
+    disp('Could not initiate recording hardware');
+    daqInfo.status=-1;
+    daqInfo.message='Failed to initialize amp'; % Failed
+    sca;
+    
+    rethrow(AMPINITERROR);
+    
 end % End try catch for initialization
 
 
-    
