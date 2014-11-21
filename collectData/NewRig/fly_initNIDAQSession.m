@@ -15,14 +15,18 @@ try % This will fail, for example, on non-windows machines
         
         disp('** Initializing amp ***');
         % Set up the input channel first
-        daqInfo.s = daq.createSession(daqInfo.hwName);
+        daqInfo.input = daq.createSession(daqInfo.hwName);
         % daqInfo.hwName an daqInfo.devName are typically something like
         % 'ni' and 'Dev1'
         
-        addAnalogInputChannel(daqInfo.s,daqInfo.devName,'ai0','Voltage');
+        addAnalogInputChannel(daqInfo.input,daqInfo.devName,'ai0','Voltage');
+        daqInfo.input.Rate=daqInfo.digitizerSampleRate;
         
         % Now set up the output channels - there are 4 of these...
-        addAnalogOutputChannel(daqInfo.s,daqInfo.devName,0:3,'Voltage');
+        daqInfo.output = daq.createSession(daqInfo.hwName);
+        daqInfo.output.Rate=daqInfo.outputPWMCarrierRate;
+
+        addAnalogOutputChannel(daqInfo.output,daqInfo.devName,0:3,'Voltage');
         % Note that (we hope) everything is triggered and synchronized
         % together. Stuff like duration and number of scans are read-only :
         % determined by the output rate and the number of data points
@@ -46,7 +50,7 @@ catch AMPINITERROR
     disp('Could not initiate recording hardware');
     daqInfo.status=-1;
     daqInfo.message='Failed to initialize amp'; % Failed
-    sca;
+    close all;
     
     rethrow(AMPINITERROR);
     
