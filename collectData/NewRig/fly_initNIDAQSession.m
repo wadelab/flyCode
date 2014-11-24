@@ -20,13 +20,22 @@ try % This will fail, for example, on non-windows machines
         % 'ni' and 'Dev1'
         
         addAnalogInputChannel(daqInfo.input,daqInfo.devName,'ai0','Voltage');
+        addAnalogInputChannel(daqInfo.input,daqInfo.devName,'ai1','Voltage');
+        addAnalogInputChannel(daqInfo.input,daqInfo.devName,'ai5','Voltage'); % There are three channels - two flies and a photodiode
         daqInfo.input.Rate=daqInfo.digitizerSampleRate;
+        daqInfo.inputListenerHandle =addlistener(daqInfo.input,'DataAvailable',@fly_dataListener);
+        daqInfo.input.DurationInSeconds= daqInfo.totalTrialDuration;
+        daqInfo.input.NumberOfScans = daqInfo.totalTrialDuration * daqInfo.input.Rate;
+         daqInfo.input.NotifyWhenDataAvailableExceeds = daqInfo.input.NumberOfScans;
+        
         
         % Now set up the output channels - there are 4 of these...
         daqInfo.output = daq.createSession(daqInfo.hwName);
-        daqInfo.output.Rate=daqInfo.outputPWMCarrierRate;
 
         addAnalogOutputChannel(daqInfo.output,daqInfo.devName,0:3,'Voltage');
+        daqInfo.output.Rate=daqInfo.outputPWMCarrierRate;
+      %  daqInfo.output.DurationInSeconds= daqInfo.totalTrialDuration;
+
         % Note that (we hope) everything is triggered and synchronized
         % together. Stuff like duration and number of scans are read-only :
         % determined by the output rate and the number of data points

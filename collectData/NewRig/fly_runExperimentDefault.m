@@ -1,3 +1,4 @@
+disp('This code no longer runs under Win7 - it has been replaced with fly_runExperimentDefaultSession.m');
 % FlyCRF
 % now testing on windows7 box
 % Generates a flickering stimulus on a single output channel and steps

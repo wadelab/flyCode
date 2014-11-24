@@ -27,30 +27,15 @@ end
 clear all;
 close all;
 global inData;
+inData.data=[];
 TESTFLAG=0; % Set this to 1 to indicate that we're testing the script without accessing the hardware.
 % Remember to set it to '0' for real experiments!
 
-datadir='k:\data\SSERG\data\'; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
+datadir='c:\data\SSERG'; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
 %%%%%%%%%%datadir=pwd; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
 
 interExptPauseSecs = 0;
-daqInfo.digitizerSampleRate=1000; % Hz
-daqInfo.outputSampleRate=200; % Hz. Higher rate because we are using PWM to modulate LEDs
-daqInfo.outputPWMCarrierRate=20000; % This is highe than the sample rate. The number of levels =outputPWMCarrierRate/outputSampleRate;
-daqInfo.nOutChans=4; % How many LED outputs do we have? Now I >thought< we had 5 LEDs but I get an error if I set this to 5.
-daqInfo.offVoltage=5.5; % Volts. At this level the LED is off. Don't ask why it's not 0...
-daqInfo.digitizerAmpMode='Differential';
-daqInfo.defaultVals=[daqInfo.offVoltage]; % 
-daqInfo.hwName='ni'; % We need to check these at the machines
-daqInfo.devName='Dev1'; % Ditto - check this.
-daqInfo.DAQ_PRESENT=1;
 
- if (~TESTFLAG)    % If we're >not< testing, go ahead and set up the acquisition hardware.
-        
-        %% INITIALIZE THE RIG
-        daqInfo=fly_initNIDAQSession(daqInfo); %This is a separate function that zeros out all the outputs. Normally we leave the led on between trials to allow the fly to adapt to mean levels
-
- end
 
 %% Experiment logging
 [exptParams,Cancelled]=fly_runParseInputGui;   % This calls a matlab 'GUIDE'-generated GUI
@@ -67,6 +52,27 @@ end
 
 exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
 
+%% Set DAQ parameters
+daqInfo.digitizerSampleRate=1000; % Hz
+daqInfo.outputSampleRate=200; % Hz. Higher rate because we are using PWM to modulate LEDs
+daqInfo.outputPWMCarrierRate=20000; % This is highe than the sample rate. The number of levels =outputPWMCarrierRate/outputSampleRate;
+daqInfo.nOutChans=4; % How many LED outputs do we have? Now I >thought< we had 5 LEDs but I get an error if I set this to 5.
+daqInfo.offVoltage=5.5; % Volts. At this level the LED is off. Don't ask why it's not 0...
+daqInfo.digitizerAmpMode='Differential';
+daqInfo.defaultVals=[daqInfo.offVoltage]; %
+daqInfo.hwName='ni'; % We need to check these at the machines
+daqInfo.devName='Dev1'; % Ditto - check this.
+daqInfo.DAQ_PRESENT=1;
+daqInfo.totalTrialDuration = exptParams.binDuration*(exptParams.binsPerTrial+exptParams.nPreBins); % in Seconds
+
+if (~TESTFLAG)    % If we're >not< testing, go ahead and set up the acquisition hardware.
+    
+    %% INITIALIZE THE RIG
+    daqInfo=fly_initNIDAQSession(daqInfo); %This is a separate function that zeros out all the outputs. Normally we leave the led on between trials to allow the fly to adapt to mean levels
+    
+end
+
+exptParams.nRepeats=2; %% FOR TESTING!
 for thisRun=1:exptParams.nRepeats
     
     exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
@@ -83,142 +89,142 @@ for thisRun=1:exptParams.nRepeats
     
     disp('Running experiment...');
     
- 
+    
     
     if (~TESTFLAG)    % If we're >not< testing, go ahead and set up the acquisition hardware.
         
-    
         
-       
-    
-    %%
-    % Loop over all experiments
-    
-    disp('Pausing...');
-    pause(interExptPauseSecs);
-    disp('Running');
-    len = daqInfo.outputSampleRate*totalTrialDuration; % We do this because the rate we ask for might not be available. However, if it's not, I'd expect trouble.
-    
-    
-    % Stuff that converts between input voltages and contrast.
-    % Specifically it works out a maximum voltage modulation that
-    % corresponds to a particular contrast given the baseline voltage level
-    % and the 'off voltage' that we are using. For example, if baseline is 3V in real units
-    % and the 'off voltage' is 5.5 (as it is on the Prysmatix box) then the baselins is sitting at 2.5V above 0
-    % and the contrast is
-    % For a 50% modulation, you then want a modulation voltage of 1.25 volts around the baseline. For 100% modulation, you want 2.5V
-    
-    contVoltRange(:,1)=exptParams.contRange(:,1)*(daqInfo.offVoltage-exptParams.baselineVoltage); % For each contrast, this is the corresponding voltage modulation.
-    contVoltRange(:,2)=exptParams.contRange(:,2)*(daqInfo.offVoltage-exptParams.baselineVoltage); %
-    
-    % Save these values for logging
-    % Expt is a big cell array that stores all the information needed to
-    % recreate the stimulus + the resulting data
-    
-    % Now loop over all trials (contrast levels) setting up the output system
-    % and acquiring data each time.
-    expt=exptParams.b;
-    
-    expt.startTime=now;
-    %%
-    
-    nOutChans=length(daqInfo.output.Channels);
-    for thisTrial=1:length(exptParams.randSeq) % Loop over all trials (a trial is 10 seconds or so of the same contrast). For each trial we reset and recompute the output waveforms.
         
-        outputData=zeros(len,nOutChans); % Here we set up the actual output data array: the thing that we send to the NIDAQ. The values in chanBaselineArray are set to 'offVoltage' if there's nothing happening on that channel
         
-        % oputputData has  columns corresponding to each LED. To initialize
-        % it, we set it to the 'average' voltage level that we want the
-        % LEDs to sit at. They modulate around this level....
         
-        thisModVoltage(1)=contVoltRange(thisTrial,1);
-        thisModVoltage(2)=contVoltRange(thisTrial,2);
+        %%
+        % Loop over all experiments
         
-        fprintf('\nRunning trial %d of %d  at F1 contrast %.2g, F2 contrast %.2g',thisTrial,exptParams.nTrials, exptParams.contRange(thisTrial,1),exptParams.contRange(thisTrial,2));
-        % Now set up the output system
+        disp('Pausing...');
+        pause(interExptPauseSecs);
+        disp('Running');
+        len = daqInfo.outputSampleRate*totalTrialDuration; % We do this because the rate we ask for might not be available. However, if it's not, I'd expect trouble.
         
-        for thisF=1:2 % Generate the waveforms that will be used as the F1 and F2 inputs. Each LED listed in the LEDChannels (:,F) will be set to modulate at the sum of these waveforms.
+        
+        % Stuff that converts between input voltages and contrast.
+        % Specifically it works out a maximum voltage modulation that
+        % corresponds to a particular contrast given the baseline voltage level
+        % and the 'off voltage' that we are using. For example, if baseline is 3V in real units
+        % and the 'off voltage' is 5.5 (as it is on the Prysmatix box) then the baselins is sitting at 2.5V above 0
+        % and the contrast is
+        % For a 50% modulation, you then want a modulation voltage of 1.25 volts around the baseline. For 100% modulation, you want 2.5V
+        
+        contVoltRange(:,1)=exptParams.contRange(:,1)*(daqInfo.offVoltage-exptParams.baselineVoltage); % For each contrast, this is the corresponding voltage modulation.
+        contVoltRange(:,2)=exptParams.contRange(:,2)*(daqInfo.offVoltage-exptParams.baselineVoltage); %
+        
+        % Save these values for logging
+        % Expt is a big cell array that stores all the information needed to
+        % recreate the stimulus + the resulting data
+        
+        % Now loop over all trials (contrast levels) setting up the output system
+        % and acquiring data each time.
+      
+        
+        exptParams.startTime(thisRun)=now;
+        %%
+        
+        nOutChans=length(daqInfo.output.Channels);
+        for thisTrial=1:length(exptParams.randSeq) % Loop over all trials (a trial is 10 seconds or so of the same contrast). For each trial we reset and recompute the output waveforms.
             
-            waveform(:,thisF)=sin(linspace(0,2*pi*exptParams.F(thisF).Freq*totalTrialDuration,len))';
+            outputData=zeros(len,nOutChans); % Here we set up the actual output data array: the thing that we send to the NIDAQ. The values in chanBaselineArray are set to 'offVoltage' if there's nothing happening on that channel
             
-            if (strcmp(exptParams.modType{thisF},'square')) % Surn a sine wave into a square wave.
-                waveform(:,thisF)=sign(waveform(:,thisF));
+            % oputputData has  columns corresponding to each LED. To initialize
+            % it, we set it to the 'average' voltage level that we want the
+            % LEDs to sit at. They modulate around this level....
+            
+            thisModVoltage(1)=contVoltRange(thisTrial,1);
+            thisModVoltage(2)=contVoltRange(thisTrial,2);
+            
+            fprintf('\nRunning trial %d of %d  at F1 contrast %.2g, F2 contrast %.2g',thisTrial,exptParams.nTrials, exptParams.contRange(thisTrial,1),exptParams.contRange(thisTrial,2));
+            % Now set up the output system
+            
+            for thisF=1:2 % Generate the waveforms that will be used as the F1 and F2 inputs. Each LED listed in the LEDChannels (:,F) will be set to modulate at the sum of these waveforms.
+                
+                waveform(:,thisF)=sin(linspace(0,2*pi*exptParams.F(thisF).Freq*totalTrialDuration,len))';
+                
+                if (strcmp(exptParams.modType{thisF},'square')) % Surn a sine wave into a square wave.
+                    waveform(:,thisF)=sign(waveform(:,thisF));
+                end
+                
+                modulationContrast(:,thisF)=exptParams.contRange(thisTrial,thisF)*waveform(:,thisF);
+            end
+            % We are still in LED modulation contrast units at this point.
+            
+            
+            for thisChannel=1:nOutChans %
+                % For each channel, we look in exptParams.F.LEDs
+                % If F(1) is set for that channel, it gets output(1) added to
+                % it. If F(2) is set, it also gets output(2) added to it.
+                % Finally, if either F(1) or F(2) are set, it gets the baseline
+                % voltage added to it...
+                % If >neither< F1 or F2 are set for that LED, it runs at zero
+                % amplitude (not a mean level)
+                for thisF=1:2
+                    outputData(:,thisChannel)=outputData(:,thisChannel)+modulationContrast(:,thisF)*exptParams.F(thisF).LED(thisChannel);
+                end
+                
+                
+                
             end
             
-            modulationContrast(:,thisF)=exptParams.contRange(thisTrial,thisF)*waveform(:,thisF);
-        end
-        % We are still in LED modulation contrast units at this point.
-        
-        
-        for thisChannel=1:nOutChans %
-            % For each channel, we look in exptParams.F.LEDs
-            % If F(1) is set for that channel, it gets output(1) added to
-            % it. If F(2) is set, it also gets output(2) added to it.
-            % Finally, if either F(1) or F(2) are set, it gets the baseline
-            % voltage added to it...
-            % If >neither< F1 or F2 are set for that LED, it runs at zero
-            % amplitude (not a mean level)
-            for thisF=1:2
-                outputData(:,thisChannel)=outputData(:,thisChannel)+modulationContrast(:,thisF)*exptParams.F(thisF).LED(thisChannel);
+            % To run into the PWM code, outputData must be a contrast
+            % running between 0 and 1 (with .5 as the mean).
+            outputData=(outputData+1)/2;
+            
+            % Generate the PWM waveforms corresponding to the 0-1 contrast
+            % levels contained in outputData
+            outputVoltage=pry_waveformToPWM(outputData,daqInfo.outputSampleRate,daqInfo.outputPWMCarrierRate,100);
+            
+            
+            %Load the data onto the dac
+            vScale=5;
+            outputVoltage=vScale-outputVoltage*vScale;
+            outputVoltage(end,:)=mean(outputVoltage);
+            
+            % At this stage, set the 'off'channels to offVoltage
+            for thisChannel=1:nOutChans
+                if (~(exptParams.F(1).LED(thisChannel) | (exptParams.F(2).LED(thisChannel))))
+                    outputVoltage(:,thisChannel)=daqInfo.offVoltage;
+                end
             end
             
             
             
-        end
-        
-        % To run into the PWM code, outputData must be a contrast
-        % running between 0 and 1 (with .5 as the mean).
-        outputData=(outputData+1)/2;
-        
-        % Generate the PWM waveforms corresponding to the 0-1 contrast
-        % levels contained in outputData
-        outputVoltage=pry_waveformToPWM(outputData,daqInfo.outputSampleRate,daqInfo.outputPWMCarrierRate,100);
-        
-        
-        %Load the data onto the dac
-        vScale=5;
-        outputVoltage=vScale-outputVoltage*vScale;
-        outputVoltage(end,:)=mean(outputVoltage);
-        
-        % At this stage, set the 'off'channels to offVoltage
-        for thisChannel=1:nOutChans
-            if (~(exptParams.F(1).LED(thisChannel) | (exptParams.F(2).LED(thisChannel))))
-                outputVoltage(:,thisChannel)=daqInfo.offVoltage;
+            %Do some bounds checking on 'data' - should always be between 0 and
+            %offVoltage.
+            if (min(outputVoltage(:))<0 || max(outputVoltage(:))>daqInfo.offVoltage)
+                disp('**** WARNING - output buffer contains out-of-bounds values. This should really be an error... *****');
             end
-        end
-        
-        
-        
-        %Do some bounds checking on 'data' - should always be between 0 and
-        %offVoltage.
-        if (min(outputVoltage(:))<0 || max(outputVoltage(:))>daqInfo.offVoltage)
-            disp('**** WARNING - output buffer contains out-of-bounds values. This should really be an error... *****');
-        end
-        
-        if (~TESTFLAG)
-            daqInfo.output.queueOutputData(outputVoltage);
-            daqInfo.output.prepare;
-            daqInfo.input.prepare;
-            daqInfo.output.startBackground;
-            daqInfo.input.startBackground; 
             
-            pause(ao,totalTrialDuration+1); % Wait 'till it's all over
-            keyboard
-            %d(:,:,thisTrial)=getdata(ai);
-        else  % If we're just testing, fill the output with random numbers.
-            %d(:,:,thisTrial)=rand(totalTrialDuration*digitizerSampleRate,3);
-        end
+            if (~TESTFLAG)
+                daqInfo.output.queueOutputData(outputVoltage);
+                daqInfo.output.prepare;
+                daqInfo.input.prepare;
+                daqInfo.output.startBackground;
+                daqInfo.input.startBackground;
+                
+                pause(totalTrialDuration+1); % Wait 'till it's all over
+                % Now the data will be in inData.Data
+                d(:,:,thisTrial)=inData.Data;
+               % inData.Data=[];
+            else  % If we're just testing, fill the output with random numbers.
+                %d(:,:,thisTrial)=rand(totalTrialDuration*digitizerSampleRate,3);
+            end
+            
+        end % Go to the next trial
+        %%
+        % Save details of this particular experiment, then move on to the next
+        % one.
+        exptParams.startTimeString{thisRun}=datestr(exptParams.startTime(thisRun));
+        exptParams.endTime(thisRun)=now;
+        exptParams.endTimeString{thisRun}=datestr(exptParams.endTime(thisRun));
         
-    end % Go to the next trial
-    %%
-    % Save details of this particular experiment, then move on to the next
-    % one.
-    expt.exptParams=exptParams;
-    expt.startTimeString=datestr(expt.startTime);
-    expt.endTime=now;
-    expt.endTimeString=datestr(expt.endTime);
-    
-    
+        
     end
     
     
@@ -234,7 +240,7 @@ for thisRun=1:exptParams.nRepeats
         end
         save(fullfile(datadir,'temp'));
         
-        filename=fullfile(datadir,[int2str(thisRun),'_',datestr(expt.startTime,30),'.mat'])
+        filename=fullfile(datadir,[int2str(thisRun),'_',datestr(exptParams.startTime(thisRun),30),'.mat'])
         save(filename);
     end % end TESTFLAG bit
     
@@ -244,9 +250,10 @@ for thisRun=1:exptParams.nRepeats
     % When we plot the data, we want to >undo< this randomiztion
     
     % Turn off the NIDAQ
-    if (~TESTFLAG)
-        initNIDAQ(5.5); %This is a separate function that zeros out all the outputs. Normally we leave the led on between trials to allow the fly to adapt to mean levels
-    end
+%     if (~TESTFLAG)
+%         initNIDAQ(5.5); %This is a separate function that zeros out all the outputs. Normally we leave the led on between trials to allow the fly to adapt to mean levels
+%     end
+    % Need a function here that turns off the daq
     
     
     %% From this point on, everything is just plotting - it could be moved to
@@ -258,12 +265,12 @@ for thisRun=1:exptParams.nRepeats
     
     
     % Condition it a bit. Chop out bins
-    condDat=d((digitizerSampleRate*exptParams.nPreBins+1):end,:,:);
+    condDat=d((daqInfo.digitizerSampleRate*exptParams.nPreBins+1):end,:,:);
     
     
     % Reformat into bins
     nActualTrials=length(exptParams.randSeq);
-    condDat=reshape(condDat,[digitizerSampleRate,exptParams.binsPerTrial,3,nActualTrials]);
+    condDat=reshape(condDat,[daqInfo.digitizerSampleRate,exptParams.binsPerTrial,3,nActualTrials]);
     
     % Compute the average across bins. This throws away bin-to-bin information
     meanCondDat=squeeze(mean(condDat,2));
@@ -303,7 +310,7 @@ for thisRun=1:exptParams.nRepeats
     F1=exptParams.F(1).Freq;
     F2=exptParams.F(2).Freq;
     
-    % Quick look at teh data - functionize this
+    % Quick look at the data - functionize this
     figure(2);
     for chanToPlot=1:3
         
@@ -337,9 +344,9 @@ for thisRun=1:exptParams.nRepeats
         
         
         
-    end
+    end % Next channel
     % Save this as a JPEG
-    imageName=fullfile([datadir,int2str(thisRun),'_',datestr(expt.startTime,30),'.jpg'])
+    imageName=fullfile([datadir,int2str(thisRun),'_',datestr(exptParams.startTime(thisRun),30),'.jpg'])
     print(gcf,'-djpeg',imageName);
     
     
@@ -358,5 +365,5 @@ for thisRun=1:exptParams.nRepeats
     
 end % Outside loop on overall number of repeats
 
-
+delete( daqInfo.inputListenerHandle ); % Delete the listener handle. Perhaps delete teh entire DAQ session now as well?
 
