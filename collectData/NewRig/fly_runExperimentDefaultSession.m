@@ -31,7 +31,8 @@ inData.data=[];
 TESTFLAG=0; % Set this to 1 to indicate that we're testing the script without accessing the hardware.
 % Remember to set it to '0' for real experiments!
 
-datadir='c:\data\SSERG'; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
+datadir='k:\data\SSERG'; % Where you want the data to be saved. 
+%On the acquisition computer it's datadir='E:\data\2012\SSERG\';
 %%%%%%%%%%datadir=pwd; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
 
 interExptPauseSecs = 0;
