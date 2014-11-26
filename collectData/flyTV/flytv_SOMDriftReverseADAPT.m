@@ -13,7 +13,7 @@ clear all;
 startTime=clock;
 tic
 DUMMYRUN=0;
-commentFromHeader='Testing';
+commentFromHeader='Testingwapr';
 
 
 if (strcmp(computer,'PCWIN64'))
@@ -28,12 +28,12 @@ igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat');
 dpy.gamma.inverse=igt;
 
 
-datadir='C:\data\SSERG\data\ADAPT\';
+datadir='C:\data\SSERG\data\NewSweep\ADAPT\1dpewapr\';
 flyTV_startTime=now;
 
 % Set up display specific parameters. Really these should be in a proper
 % calibration file a la exptTools
-dpy.res = [1920 1080]; % screen resoloution
+dpy.res = [1920 1080]; % screen resolution
 dpy.size = [.53 .3]; % Meters
 dpy.distance = [.22]; % Meters
 dpy.frameRate=144;
@@ -79,13 +79,13 @@ eegInfo.DORECORDEEG=1;
 eegInfo.DAQ_PRESENT=1;
 eegInfo.bufferSizeSeconds=31;
 
-expt.stimType=[3;...
-               4]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
+expt.stimType=[3 5 5 ;...
+               4 4 6 ]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
 expt.nConds=size(expt.stimType,2); % How many pairs of conditions do we run? In this case it's 2x2 so 4...
 % Later we will randomize these but for
 % now we don't
 
-expt.nRepeats=2; % How many times do we repeat the entire sequence? There is now an expt structure that contains information about the entire experiment
+expt.nRepeats=3; % How many times do we repeat the entire sequence? There is now an expt structure that contains information about the entire experiment
 
 expt.stim=stim;
 expt.eegInfo=eegInfo;
@@ -105,14 +105,18 @@ end
 
 if (~DUMMYRUN)
     try
-        dataOut=flytv_runSOMAdapt(dpy,expt);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
+        dataOut=flytv_runMotionAdapt(dpy,expt);     % This function runs the grating and acquires data. If we did the screen opening outside the loop (or made it static?)
         % This returns a big block of data containing everything from all the runs
         filename=fullfile(datadir,['allData_',datestr(flyTV_startTime,30),'.mat']);
         
         % Save all the data in an appropriate directory.
+        fprintf('\nSaving %s\n',filename);
+        
         save(filename,'dataOut','expt','stim','eegInfo','dpy');
+        
     catch MAINLOOPERROR
         sca
+        save('ErrorState');
         rethrow(MAINLOOPERROR);
     end
     

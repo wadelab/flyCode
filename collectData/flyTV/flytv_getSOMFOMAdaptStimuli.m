@@ -3,7 +3,7 @@ function stim=flytv_getSOMFOMAdaptStimuli(exptSeq)
 % to the calling function to work out what to do with them
 
 stim(1).stimulusType='SOM'; 
-stim(1).temporal.frequency=[4,4]; % This is in Hz. There are two frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
+stim(1).temporal.frequency=[12 0]; % This is in Hz. There are two frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
 stim(1).spatial.frequency=[.04,.44]; % Cycles per degree modulator,carrier for a second order grating
 stim(1).temporal.nTF=size(stim(1).temporal.frequency,1);
 stim(1).spatial.nSF=size(stim(1).spatial.frequency,1);
@@ -22,18 +22,20 @@ stim(1).rotateMode=0;
 % That was the adaptor. Now the SOM probe. It's similar to the adaptor..
 stim(2)=stim(1);
 stim(2).temporal.modulation.stopStart=2; % 0 is constant, 1 is on/off, 2 is reversing
-
 stim(2).temporal.duration=4; % Probe period
-stim(1).temporal.modulation.frequency=[4 4]; % This is the reversal frequency for stimuli that drift
+stim(2).temporal.modulation.frequency=[4 4]; % This is the reversal frequency for stimuli that drift
 
+stim(3).temporal.frequency=[12 12]; % This is in Hz. There are two frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
 stim(3)=stim(1);
 stim(3).stimulusType='FOM'; % First order modulation (includes contrast reversing gratings and plaids)
 stim(3).spatial.frequency=[.04 .04]; % Cycles per degree Carrier,Modulator for a second order grating
 stim(3).contrast=[80 0]; 
 
 stim(4)=stim(2);
+stim(4).temporal.frequency=[12 12]; % This is in Hz. There are two frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
 stim(4).stimulusType='FOM'; % First order modulation (includes contrast reversing gratings and plaids)
-stim(3).contrast=[80 0]; 
+stim(4).contrast=[80 0]; 
+stim(4).spatial.frequency=[.04 .04]; % Cycles per degree Carrier,Modulator for a second order grating
 
 % Finally some blanks..
 stim(5)=stim(3);

@@ -1,4 +1,7 @@
-close %Basic Chart Recorder for flyTV
+close all
+clear all
+
+%Basic Chart Recorder for flyTV
 %Written by RJHW 15.05.14
 TWO_CHANNEL_SYSTEM=1;
 

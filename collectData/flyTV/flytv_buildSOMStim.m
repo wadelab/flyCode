@@ -92,11 +92,8 @@ function stim=flytv_buildSOMStim(dpy,stim)
     
     switch stim.temporal.modulation.stopStart
         case 0
-            % This is a continuously moving thing in one direction: 
-            
+            % This is a continuously moving thing in one direction:             
             stim.thisPhase=rem( stim.thisPhase,2*pi);
-            
-            
         case 1
             % This stops and starts : a sawtooth with gaps
             error('Stop start not implemented yet');

@@ -9,6 +9,8 @@ if (eegInfo.DAQ_PRESENT)
         eegInfo.s = daq.createSession(eegInfo.hwName);
         eegInfo.s.DurationInSeconds = eegInfo.bufferSizeSeconds;
         addAnalogInputChannel(eegInfo.s,'Dev3','ai0','Voltage');
+        addAnalogInputChannel(eegInfo.s,'Dev3','ai1','Voltage');
+
         eegInfo.s.NumberOfScans = eegInfo.s.DurationInSeconds*1000;
         eegInfo.s.NotifyWhenDataAvailableExceeds = eegInfo.s.NumberOfScans;
         
