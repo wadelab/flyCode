@@ -73,7 +73,6 @@ if (~TESTFLAG)    % If we're >not< testing, go ahead and set up the acquisition 
     
 end
 
-exptParams.nRepeats=2; %% FOR TESTING!
 for thisRun=1:exptParams.nRepeats
     
     exptParams=fly_getExptStructRig2(exptParams); % Get the parameters for all the experiments in a single structure exptParams().
