@@ -25,13 +25,13 @@ stim(2).temporal.modulation.stopStart=2; % 0 is constant, 1 is on/off, 2 is reve
 stim(2).temporal.duration=4; % Probe period
 stim(2).temporal.modulation.frequency=[4 4]; % This is the reversal frequency for stimuli that drift
 
-stim(3).temporal.frequency=[12 12]; % This is in Hz. There are two frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
-stim(3)=stim(1);
+stim(3)=stim(1);  % This is first order constant drift adaptor
+stim(3).temporal.frequency=[12 0]; % This is in Hz. There are two frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
 stim(3).stimulusType='FOM'; % First order modulation (includes contrast reversing gratings and plaids)
 stim(3).spatial.frequency=[.04 .04]; % Cycles per degree Carrier,Modulator for a second order grating
 stim(3).contrast=[80 0]; 
 
-stim(4)=stim(2);
+stim(4)=stim(2); % First order probe
 stim(4).temporal.frequency=[12 12]; % This is in Hz. There are two frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
 stim(4).stimulusType='FOM'; % First order modulation (includes contrast reversing gratings and plaids)
 stim(4).contrast=[80 0]; 
@@ -42,4 +42,21 @@ stim(5)=stim(3);
 stim(5).contrast=[0 0];
 stim(6)=stim(4);
 stim(6).contrast=[0 0];
+
+% Here we have first and second order motion adaptors with reversal. This
+% is to test timing and make sure that the reversal itself generates a nice
+% response
+stim(7)=stim(2); % Second order reverse adapt
+stim(7).temporal.duration=30; % Probe period
+
+stim(8)=stim(4); % Fist order reverse adapt
+stim(8).temporal.duration=30; % Probe period
+
+stim(9)=stim(8); % First order reverse adapt
+% Change the alternation frequency to be a little lower....
+stim(9).temporal.modulation.frequency=[1 1]; % This is the reversal frequency for stimuli that drift
+
+stim(10)=stim(4);
+stim(10).temporal.modulation.frequency=[1 1]; % This is the reversal frequency for stimuli that drift
+
 

@@ -79,8 +79,8 @@ eegInfo.DORECORDEEG=1;
 eegInfo.DAQ_PRESENT=1;
 eegInfo.bufferSizeSeconds=31;
 
-expt.stimType=[3 5 5 ;...
-               4 4 6 ]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
+expt.stimType=[9 7 8 3 5 ;...
+               10 2 4 4 6 ]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
 expt.nConds=size(expt.stimType,2); % How many pairs of conditions do we run? In this case it's 2x2 so 4...
 % Later we will randomize these but for
 % now we don't
