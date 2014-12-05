@@ -28,7 +28,7 @@ igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat');
 dpy.gamma.inverse=igt;
 
 
-datadir='C:\data\SSERG\data\NewSweep\ADAPT\1dpewapr\';
+datadir='C:\data\SSERG\data\NewSweep\ADAPT\1dpewapr\Take_2\';
 flyTV_startTime=now;
 
 % Set up display specific parameters. Really these should be in a proper
