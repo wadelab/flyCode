@@ -19,7 +19,7 @@ stim(1).spatial.phase=[0 0 ];
 stim(1).rotateMode=0;
 
 
-% That was the adaptor. Now the SOM probe. It's similar to the adaptor..
+% That was the adaptor. Now the SOM probe. It's similar to the adapter..
 stim(2)=stim(1);
 stim(2).temporal.modulation.stopStart=2; % 0 is constant, 1 is on/off, 2 is reversing
 stim(2).temporal.duration=4; % Probe period
@@ -49,14 +49,14 @@ stim(6).contrast=[0 0];
 stim(7)=stim(2); % Second order reverse adapt
 stim(7).temporal.duration=30; % Probe period
 
-stim(8)=stim(4); % Fist order reverse adapt
+stim(8)=stim(4); % First order reverse adapt
 stim(8).temporal.duration=30; % Probe period
 
-stim(9)=stim(8); % First order reverse adapt
+stim(9)=stim(2); % Second order reverse probe 2Hz
 % Change the alternation frequency to be a little lower....
-stim(9).temporal.modulation.frequency=[1 1]; % This is the reversal frequency for stimuli that drift
+stim(9).temporal.modulation.frequency=[2 2]; % This is the reversal frequency for stimuli that drift
 
-stim(10)=stim(4);
-stim(10).temporal.modulation.frequency=[1 1]; % This is the reversal frequency for stimuli that drift
+stim(10)=stim(4); % First order probe again - 2Hz reversal
+stim(10).temporal.modulation.frequency=[2 2]; % This is the reversal frequency for stimuli that drift
 
 

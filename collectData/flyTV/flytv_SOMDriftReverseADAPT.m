@@ -62,7 +62,7 @@ stim=flytv_getSOMFOMAdaptStimuli(dpy);
 % 2: SOM PROBE
 % 3: FOM ADAPT
 % 4: FOM PROBE
-% 5: BLANK ADAPT (Zero contrast, same length)
+% 5: BLANK ADAPT (Zero contrast, same length)  
 % 6: BLANK PROBE (Zero contrast, same length)
 
 % Our job below is to set up an expt so that we look at all combinations od
@@ -79,13 +79,13 @@ eegInfo.DORECORDEEG=1;
 eegInfo.DAQ_PRESENT=1;
 eegInfo.bufferSizeSeconds=31;
 
-expt.stimType=[9 7 8 3 5 ;...
-               10 2 4 4 6 ]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
+expt.stimType=[ 8 7  3 1  ;...
+               10 9 10 9  ]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
 expt.nConds=size(expt.stimType,2); % How many pairs of conditions do we run? In this case it's 2x2 so 4...
 % Later we will randomize these but for
 % now we don't
 
-expt.nRepeats=20; % How many times do we repeat the entire sequence? There is now an expt structure that contains information about the entire experiment
+expt.nRepeats=1; % How many times do we repeat the entire sequence? There is now an expt structure that contains information about the entire experiment
 
 expt.stim=stim;
 expt.eegInfo=eegInfo;
@@ -111,7 +111,7 @@ if (~DUMMYRUN)
         
         % Save all the data in an appropriate directory.
         fprintf('\nSaving %s\n',filename);
-        
+       % save(fullfile(['allDataLocal_',datestr(flyTV_startTime,30),'.mat'])); % Save everything in local dir in case of crash
         save(filename,'dataOut','expt','stim','eegInfo','dpy');
         
     catch MAINLOOPERROR
