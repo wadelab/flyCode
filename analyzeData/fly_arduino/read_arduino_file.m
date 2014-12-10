@@ -126,6 +126,10 @@ end;
 xlabel('xscale is in ms');
 
 printFilename = [pathstr, filesep, fileName, '_RawData', sExt];
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
 print( printFilename );
 if (bCloseGraphs)
     delete(gcf) ;
@@ -166,7 +170,12 @@ end;
 xlabel('xscale is in Hz');
 
 printFilename = [pathstr, filesep, fileName, '_FFT', sExt];
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
 print( printFilename );
+
 if (bCloseGraphs)
     delete(gcf) ;
 end
@@ -289,6 +298,10 @@ if (success)
     ylabel('response, a.u.');
     
     printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', sExt];
+    h=gcf;
+    set(h,'PaperOrientation','landscape');
+    set(h,'PaperUnits','normalized');
+    set(h,'PaperPosition', [0 0 1 1]);
     print( printFilename );
     if (bCloseGraphs)
         delete(gcf) ;
