@@ -230,8 +230,8 @@ for thisFlyTypeIDX=1:nUniqueFlies
         plotParams.lineWidthPolar=1.5;
         plotParams.lineWidthCart=2;
         plotParams.errorEnvelope=1;
-        plotParams.doPhasePlot=0;
-        plotParams.doCartPlot=0; %% make this 1 again
+        plotParams.doPhasePlot=1;
+        plotParams.doCartPlot=1; %% make this 1 again
         plotParams.XAxisType='Log';
         plotParams.plotColors=[0 0 0];
         plotParams.doFitPlot=1;
@@ -263,11 +263,11 @@ for thisFlyTypeIDX=1:nUniqueFlies
             grid on;
             v=axis(gca);
             %% we may want to shorten the names being displayed
-%             sTmp = [ptypeList{thisFlyTypeIndex}, ' ', num2str(nFliesInThisType(thisFlyTypeIndex))] ;
-%             sTmp = strrep (sTmp,'D_7', '');
-%             sTmp = strrep (sTmp,'_', ' ');
-%             sTmp = strrep (sTmp,'instant', '');
-%             sTmp = strrep (sTmp,'Instant', '');
+            sTmp = [ptypeList{thisFlyTypeIndex}, ' ', num2str(nFliesInThisType(thisFlyTypeIndex))] ;
+            sTmp = strrep (sTmp,'D_7', '');
+            sTmp = strrep (sTmp,'_', ' ');
+            sTmp = strrep (sTmp,'instant', '');
+            sTmp = strrep (sTmp,'Instant', '');
             
             
             g=title(sTmp);

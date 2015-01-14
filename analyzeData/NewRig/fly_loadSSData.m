@@ -72,7 +72,7 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
                 % contrastLevels x maskCondition
                 
                 nPreBins=params.nPreBins;
-                sampleRate=allData.digitizerSampleRate;
+%%%%%                sampleRate=allData.digitizerSampleRate;
                 nTrials=size(allData.d,3); % How many probe and mask conditions in total
                 channelsToExtract=extractionParams.dataChannelIndices;
                 
@@ -84,7 +84,7 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
                
                 
                 binsPerTrial=params.binsPerTrial;
-
+sampleRate=1000;
                 rawPerFileData=reshape(squeeze(allData.d((sampleRate*nPreBins+1):end,channelsToExtract,:)),[sampleRate,binsPerTrial,nChannels,nTrials]); % This gets rid of the first 'pre' bins...
                 % To get around memory issues and to just generally make things
                 % better, we average across bins straight away.
