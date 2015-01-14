@@ -87,7 +87,7 @@ FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2', 'F2-F1' };
 nUnMasked=flydata(1).nUnMasked ;
 
 for phen = 1 : nPhenotypes
-    figure('Name', strcat(' mean CRFs of: ',fileName));
+    figure('Name', strcat(' mean CRFs of: ',fileName, ' Phenotype: ', num2str(phen)));
     
     nPlots = length(FreqNames);
     for i = 1 : nPlots
@@ -103,7 +103,7 @@ for phen = 1 : nPhenotypes
         
     end
     
-    text(150,max(meanCRF(phen, [nUnMasked+1:end],i+2))/2,C(phen));
+    text(150,max(meanCRF(phen, [nUnMasked+1:end],i+2))/2, strrep(['N=', num2str(ia(phen)), ' ', C{phen}],'&',' '));
     
     printFilename = [dirName, filesep, fileName, '_', num2str(phen), '_mean_CRF', sExt];
     print( printFilename );

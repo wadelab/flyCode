@@ -98,7 +98,21 @@ function stim=flytv_buildSOMStim(dpy,stim)
             % This stops and starts : a sawtooth with gaps
             error('Stop start not implemented yet');
         case 2 % ?
-             stim.thisPhase(:,1)=sawtooth( stim.thisPhase(:,1),.5)*pi;
-             stim.thisPhase(:,2)=sawtooth( stim.thisPhase(:,2),.5)*pi;
+                 % In this case we make a sawtooth based on
+            % temporal.modulation.frequency. Then we scale this by the
+            % values in stim.thisPhase.. 
             
+            stim.stPhase(:,1)=linspace(0,2*pi*stim.temporal.modulation.frequency(1)*stim.temporal.duration,framesPerDuration);
+            stim.stPhase(:,2)=linspace(0,2*pi*stim.temporal.modulation.frequency(2)*stim.temporal.duration,framesPerDuration);
+
+            stim.stPhase(:,1)=sawtooth( stim.stPhase(:,1),.5);
+            stim.stPhase(:,2)=sawtooth( stim.stPhase(:,2),.5);
+            
+             % Now scale this.... The value to scale by is how far
+            % (in phase) the grating moves in a single period of
+            % stim.temporal.modulation
+            % : stim.temporal.frequency*2*pi/(stim.temporal.modulation)
+            stim.thisPhase(:,1)=stim.stPhase(:,1).*(stim.temporal.frequency(1)*2*pi./stim.temporal.modulation.frequency(1));
+            stim.thisPhase(:,2)=stim.stPhase(:,2).*(stim.temporal.frequency(2)*2*pi./stim.temporal.modulation.frequency(2)); 
+             
     end

@@ -31,7 +31,7 @@ inData.data=[];
 TESTFLAG=0; % Set this to 1 to indicate that we're testing the script without accessing the hardware.
 % Remember to set it to '0' for real experiments!
 
-datadir='k:\data\SSERG\data\'; % Where you want the data to be saved. 
+datadir='c:\data\SSERG\'; % Where you want the data to be saved. 
 %On the acquisition computer it's datadir='E:\data\2012\SSERG\';
 %%%%%%%%%%datadir=pwd; % Where you want the data to be saved. On the acquisition computer it's datadir='E:\data\2012\SSERG\';
 
@@ -224,10 +224,10 @@ for thisRun=1:exptParams.nRepeats
         exptParams.endTime(thisRun)=now;
         exptParams.endTimeString{thisRun}=datestr(exptParams.endTime(thisRun));
         
-        
     end
     
-    
+    fly_outputData(daqInfo,daqInfo.offVoltage); % This will set the daq to zero light 
+
     %% Save out the data - now saves out to top level directory
     if (~TESTFLAG)
         if (~exist(datadir,'dir'))

@@ -13,7 +13,7 @@ clear all;
 startTime=clock;
 tic
 DUMMYRUN=0;
-commentFromHeader='Testingwapr';
+commentFromHeader='Testingw-';
 
 
 if (strcmp(computer,'PCWIN64'))
@@ -28,7 +28,7 @@ igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat');
 dpy.gamma.inverse=igt;
 
 
-datadir='C:\data\SSERG\data\NewSweep\ADAPT\1dpewapr\';
+datadir='C:\data\SSERG\data\NewSweep\ADAPT\1DPEw-\Take_2\';
 flyTV_startTime=now;
 
 % Set up display specific parameters. Really these should be in a proper
@@ -62,7 +62,7 @@ stim=flytv_getSOMFOMAdaptStimuli(dpy);
 % 2: SOM PROBE
 % 3: FOM ADAPT
 % 4: FOM PROBE
-% 5: BLANK ADAPT (Zero contrast, same length)
+% 5: BLANK ADAPT (Zero contrast, same length)  
 % 6: BLANK PROBE (Zero contrast, same length)
 
 % Our job below is to set up an expt so that we look at all combinations od
@@ -79,8 +79,8 @@ eegInfo.DORECORDEEG=1;
 eegInfo.DAQ_PRESENT=1;
 eegInfo.bufferSizeSeconds=31;
 
-expt.stimType=[3 5 5 ;...
-               4 4 6 ]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
+expt.stimType=[ 8 7  3 1  ;...
+               10 9 10 9  ]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
 expt.nConds=size(expt.stimType,2); % How many pairs of conditions do we run? In this case it's 2x2 so 4...
 % Later we will randomize these but for
 % now we don't
@@ -111,7 +111,7 @@ if (~DUMMYRUN)
         
         % Save all the data in an appropriate directory.
         fprintf('\nSaving %s\n',filename);
-        
+       % save(fullfile(['allDataLocal_',datestr(flyTV_startTime,30),'.mat'])); % Save everything in local dir in case of crash
         save(filename,'dataOut','expt','stim','eegInfo','dpy');
         
     catch MAINLOOPERROR
