@@ -3,13 +3,15 @@ function stim=flytv_getSOMFOMAdaptStimuli(exptSeq)
 % to the calling function to work out what to do with them
 
 stim(1).stimulusType='SOM'; 
-stim(1).temporal.frequency=[12 0]; % This is in Hz. There are two frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
+stim(1).temporal.frequency=[6 0]; % This is in Hz. There are two frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
 stim(1).spatial.frequency=[.04,.44]; % Cycles per degree modulator,carrier for a second order grating
 stim(1).temporal.nTF=size(stim(1).temporal.frequency,1);
 stim(1).spatial.nSF=size(stim(1).spatial.frequency,1);
 stim(1).temporal.modulation.type='drift';
 stim(1).temporal.modulation.stopStart=0; % 0 is constant, 1 is on/off, 2 is reversing
 stim(1).temporal.modulation.frequency=[0 0]; % This is the alternation frequency for stimuli that drift
+stim(1).temporal.modulation.direction=[-1 -1]; % This is the direction in which the grating moves. 1 means a leftward drift, -1 means rightward
+
 stim(1).spatial.angle = [0 0]  ; % angle of gratings on screen
 stim(1).temporal.duration=30; % Adaptation period
 stim(1).spatial.internalRotation = 0; % Does the grating rotate within the envelope?
@@ -17,7 +19,6 @@ stim(1).spatial.rotateMode = []; % rotation of mask grating (1= horizontal, 2= v
 stim(1).contrast=[40 50]; % Percent.
 stim(1).spatial.phase=[0 0 ];
 stim(1).rotateMode=0;
-
 
 % That was the adaptor. Now the SOM probe. It's similar to the adapter..
 stim(2)=stim(1);
@@ -32,7 +33,7 @@ stim(3).spatial.frequency=[.04 .04]; % Cycles per degree Carrier,Modulator for a
 stim(3).contrast=[80 0]; 
 
 stim(4)=stim(2); % First order probe
-stim(4).temporal.frequency=[12 12]; % This is in Hz. There are two frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
+stim(4).temporal.frequency=[6 6]; % This is in Hz. There are two frequencies for two grating components - in this case carrier and modulator. For flickering stimuli, this is the flicker rate. For drifting stimuli, this is the drift rate.
 stim(4).stimulusType='FOM'; % First order modulation (includes contrast reversing gratings and plaids)
 stim(4).contrast=[80 0]; 
 stim(4).spatial.frequency=[.04 .04]; % Cycles per degree Carrier,Modulator for a second order grating
@@ -59,5 +60,15 @@ stim(9).temporal.modulation.frequency=[2 2]; % This is the reversal frequency fo
 
 stim(10)=stim(4); % First order probe again - 2Hz reversal
 stim(10).temporal.modulation.frequency=[2 2]; % This is the reversal frequency for stimuli that drift
+
+stim(11)=stim(2); % Second order reverse probe 6Hz
+% Change the alternation frequency to be a little lower....
+stim(11).temporal.modulation.frequency=[6 6]; % This is the reversal frequency for stimuli that drift
+
+stim(12)=stim(4); % First order reverse probe again - 6Hz reversal
+stim(12).temporal.modulation.frequency=[6 6]; % This is the reversal frequency for stimuli that drift
+
+stim(13)=stim(3); % First order adaptor - change direction
+stim(13).temporal.modulation.direction=[1 1]; % This is the direction in which the grating moves. 1 means a leftward drift, -1 means rightward
 
 

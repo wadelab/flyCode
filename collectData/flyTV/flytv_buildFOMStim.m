@@ -34,11 +34,9 @@ stim.spatial.frequencyCPerPixel=stim.spatial.frequency/pixPerDegree;
     
     switch stim.temporal.modulation.stopStart
         case 0
-            % This is a continuously moving thing in one direction: 
-            
-            stim.thisPhase=rem( stim.thisPhase,2*pi);
-            
-            
+            % This is a continuously moving thing in one direction:       
+            stim.thisPhase=rem( stim.thisPhase,2*pi).*repmat(stim.temporal.modulation.direction,size(stim.thisPhase,1),1);
+
         case 1
             % This stops and starts : a sawtooth with gaps
             error('Stop start not implemented yet');
