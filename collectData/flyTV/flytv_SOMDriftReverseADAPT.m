@@ -85,7 +85,7 @@ expt.nConds=size(expt.stimType,2); % How many pairs of conditions do we run? In 
 % Later we will randomize these but for
 % now we don't
 
-expt.nRepeats=1; % How many times do we repeat the entire sequence? There is now an expt structure that contains information about the entire experiment
+expt.nRepeats=20; % How many times do we repeat the entire sequence? There is now an expt structure that contains information about the entire experiment
 
 expt.stim=stim;
 expt.eegInfo=eegInfo;
