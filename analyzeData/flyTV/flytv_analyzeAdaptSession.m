@@ -74,5 +74,6 @@ semBinnedData=squeeze(std(abs(meanBinnedData),[],3))/sqrt(nFlies);
 figure(2);
 
 g=barweb(squeeze(abs(flyBin(:,2:31)))',squeeze(semBinnedData(:,2:31))',1,[],'Probe responses','Frequency','Amp',bone,[],{'Adapt','noAdapt','Ctrl'});
+axis on
 
    

@@ -54,6 +54,7 @@ stim(8).temporal.duration=30; % Probe period
 
 stim(9)=stim(2); % Second order reverse probe 2Hz
 % Change the alternation frequency to be a little lower....
+
 stim(9).temporal.modulation.frequency=[2 2]; % This is the reversal frequency for stimuli that drift
 
 stim(10)=stim(4); % First order probe again - 2Hz reversal

@@ -72,7 +72,15 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
                 % contrastLevels x maskCondition
                 
                 nPreBins=params.nPreBins;
-                sampleRate=allData.digitizerSampleRate;
+                
+                if (isfield(allData,'digitizerSampleRate'))
+                    sampleRate=allData.digitizerSampleRate;
+                elseif (isfield(allData,'daqInfo'))
+                    sampleRate=allData.daqInfo.digitizerSampleRate;
+                else
+                    error('No sample rate found in allData or allData.daqInfo');
+                end
+           
                 nTrials=size(allData.d,3); % How many probe and mask conditions in total
                 channelsToExtract=extractionParams.dataChannelIndices;
                 
