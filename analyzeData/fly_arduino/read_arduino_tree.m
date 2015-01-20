@@ -20,7 +20,7 @@ for i=1:length(SVPfiles)
 end
 
 
-%% read all the rest of them (well, the first 20)
+%% read all the rest of them (well, the first 40)
 iSuccesseses = 1;
 maxFilesToRead = 40 ;
 for i=1:min(length(SVPfiles),maxFilesToRead)
@@ -60,6 +60,12 @@ SortedData=Collected_Data(z);
 nPhenotypes = length(ia)
 ib = ia(2:end) - 1;
 ib(nPhenotypes) = length(ic) ;
+
+%% count how many flies in each phenotype
+id (1) = ib (1);
+for i = 2 : length(ib)
+    id(i) = ib(i) - ib(i-1);
+end
 
 %% now we can process the data
 % ia tells us the starting value of each phenotype
@@ -103,7 +109,7 @@ for phen = 1 : nPhenotypes
         
     end
     
-    text(150,max(meanCRF(phen, [nUnMasked+1:end],i+2))/2, strrep(['N=', num2str(ia(phen)), ' ', C{phen}],'&',' '));
+    text(150,max(meanCRF(phen, [nUnMasked+1:end],i+2))/2, strrep(['N=', num2str(id(phen)), ' ', C{phen}],'&',' '));
     
     printFilename = [dirName, filesep, fileName, '_', num2str(phen), '_mean_CRF', sExt];
     print( printFilename );
