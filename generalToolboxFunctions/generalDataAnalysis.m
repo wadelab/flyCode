@@ -110,9 +110,11 @@ title('2F1 masked and unmasked c50');
 %  plot the 2F1 data
 
 plotColors=[0 0 0;1 0 0]; % Black and red (RGB) values determine the line colors for masked and unmasked
-frequencyComponent=2;
 lineContrasts=linspace(0,max(analysisStruct.contRange),100); % This is the range of contrasts for which we will plot the fitted lines.
 
+%% plot curve and points for F1 and 2F1
+yLabels={'1F1 response', '2F1 response'};
+for frequencyComponent=1:2
 % Here we extract all the Rmax vals so that we know how to scale each yAxis
 % in the same way
 allRmaxParams=(fittedCRFParams(:,frequencyComponent,:,1));
@@ -121,11 +123,11 @@ maxRmaxLevel=max(allRmaxParams(:));
 maxPhenotypesToPlot=phenotypeIndex; % We've already worked out which phenotypes to ignore and how many we have left.
 phenotypeIndex=0; % Reset this.
 [xwins,ywins] = count_subwins(maxPhenotypesToPlot);
-
+figure();
 %% 
 % Make one plot per phenotype
 for thisPhenotype=1:nPhenotypes
-    figure(55);
+    
     if (strcmp(analysisStruct.phenotypeName{thisPhenotype},'Photodiode') & (IGNORE_PHOTODIODE_FLAG))
         disp('Skipping photodiode');
     else
@@ -150,7 +152,7 @@ for thisPhenotype=1:nPhenotypes
             grid on;
             set(gca,'XScale','Log');
             xlabel('Contrast');
-            ylabel('2F1 response');
+            ylabel(yLabels(frequencyComponent));
             set(gca,'XLim',[0.02 1]);
             set(gca,'YLim',[0 maxRmaxLevel]);
             set(fitHandle,'LineWidth',2);
@@ -164,7 +166,8 @@ for thisPhenotype=1:nPhenotypes
     end % End check for Photodiode
     %% 
 end % Nex subplot / phenotype
-set(gcf,'Name','2F1 fits');
+set(gcf,'Name',yLabels{frequencyComponent});
+end 
 drawnow ;
 
 

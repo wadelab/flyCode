@@ -8,7 +8,7 @@ close all;
 clear all;
 startTime=clock;
 DUMMYRUN=0;
-commentFromHeader='w-_1DPE_10_SOC_4Hz';
+commentFromHeader='L2_TNTe_1DPE_1 2:L2_TNTe_1DPE_2';
 
 if (~DUMMYRUN)
     
@@ -25,7 +25,7 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\SOC_Drift\1DPEw-\2Hz\';
+datadir='C:\data\SSERG\data\NewSweep\L2TNTe\SOM\';
 flyTV_startTime=now;
 
 dpy.res = [1920 1080]; % screen resoloution
@@ -126,10 +126,12 @@ for thisRun=1:nRepeats  % 5 repeats
                 finalData.sfList=sfList;
                 finalData.data=d.Data; % I'm nervous that d (because it's some sort of special object) doesn't get converted properly
                 
+                singleRunDat=d.Data
+                
                 filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisRun),'_',datestr(flyTV_startTime,30),'.mat'])
-                save(filename,'finalData','d');
+                save(filename,'finalData','d','singleRunDat');
                 metaData{thisRun,thisCond}=finalData; % Put the extracted data into an array tf x sf x nrepeats
-                data(thisRun,thisCond,:)=d.Data;
+                data(thisRun,thisCond,:,:)=d.Data;
             end
             
         end % End check on dummy run

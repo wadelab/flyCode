@@ -13,6 +13,8 @@ function [thisFlyData, success] = read_arduino_file (fName, bCloseGraphs)
 % should be closed at the end of the code
 
 success = true ;
+thisFlyData.Error = 'None' ;
+sExt = getPictExt () ;
 
 % [f,p]=uigetfile('*.SVP');
 % fName=fullfile(p,f);
@@ -20,6 +22,13 @@ success = true ;
 
 %% read header line
 [fid, msg] = fopen(fName, 'rt');
+% if we succeed fid > 2
+if (fid < 3)
+    thisFlyData.Error = ['Could not open file: ', fName]
+    success = false ;
+    return
+end
+
 line1a = fgets(fid);
 fclose(fid);
 line1b=strrep(line1a, 'GET /?'  ,'');
@@ -63,21 +72,37 @@ thisFlyData.phenotypes = line ;
 
 %% read the SSVEP data - 9 contrasts of 1024 data points
 % followed by line of contrast
-
-alldata = csvread(fName, 1,0);
-
+try
+    alldata = csvread(fName, 1,0);
+catch
+    thisFlyData.Error = ['CSVfunction died with unknown error in file : ', fName]
+    success = false ;
+    return
+end
 [nContrasts,c] = size(alldata);
+
+if (c < 3)
+    thisFlyData.Error = ['Less than 3 columns found in file : ', fName]
+    success = false ;
+    return
+end
+
+if (nContrasts < 1025)
+    thisFlyData.Error = ['Less than 1024 data lines found in file : ', fName]
+    success = false ;
+    return
+end
+
 nContrasts= nContrasts/1025
 timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
-
 
 iStart = 1;
 iEnd = 1024;
 
 figure ('Name', strcat('Rawdata of: ',fileName));
-m = 9;
-n = 6;
+m = 5;
+n = 9;
 ymax = max(alldata(:,3)) ;
 ymin = min(alldata(:,3)) ;
 
@@ -98,8 +123,13 @@ for i = 1:nContrasts
     iStart = iStart + 1025;
     iEnd = iEnd + 1025;
 end;
+xlabel('xscale is in ms');
 
-printFilename = [pathstr, filesep, fileName, '_RawData', '.eps'];
+printFilename = [pathstr, filesep, fileName, '_RawData', sExt];
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
 print( printFilename );
 if (bCloseGraphs)
     delete(gcf) ;
@@ -116,6 +146,7 @@ for i = 1:nContrasts
     fftData(i,:) = abs(complx_fftData(i,2:fft_display_limit+1));
 end
 
+
 %% plot fft
 figure('Name', strcat('FFT of: ',fileName));
 max_fft = max(max(fftData));
@@ -128,13 +159,23 @@ for i = 1:nContrasts
     yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
     ylabel(yTxt);
     
+    if (i> (m-1)*n)
+        % label bottom row
+        set(gca,'XTickmode','manual');
+        set(gca,'XTick',[0,12.5,25,37.5,50,62.5]*4);
+        set(gca,'XTickLabel',{'0','12.5','25','37.5','50','62.5'});
+        
+    end ;
 end;
-% label bottom row
-set(gca,'XTickLabel',{'0','12.5','25','37.5','50','62.5'});
-xlabel('Hz');
+xlabel('xscale is in Hz');
 
-printFilename = [pathstr, filesep, fileName, '_FFT', '.eps'];
+printFilename = [pathstr, filesep, fileName, '_FFT', sExt];
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
 print( printFilename );
+
 if (bCloseGraphs)
     delete(gcf) ;
 end
@@ -143,10 +184,12 @@ end
 %% Extract fft data
 % sample rate was 4 ms, so these numbers are 4 times
 FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2', 'F2-F1' };
-FreqsToExtract = [ F1, F2, 2*F1, 2*F2, F1+F2, 2*(F1+F2), F2-F1 ];
-FreqsToExtract = FreqsToExtract*4 + 1 ;
+% FreqsToExtract = [ F1, F2, 2*F1, 2*F2, F1+F2, 2*(F1+F2), F2-F1 ];
+% FreqsToExtract = FreqsToExtract*4 + 1 ;
 % this next bit might be written more cleanly, but i want to check we get
 % the right section..
+FreqsToExtract = [49,62,98,123,111,214,12] ;
+
 y12Data = fftData(:,FreqsToExtract(1));
 y15Data = fftData(:,FreqsToExtract(2));
 y24Data = fftData(:,FreqsToExtract(3));
@@ -251,7 +294,14 @@ if (success)
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
     
-    printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', '.eps'];
+    xlabel('contrast (%)');
+    ylabel('response, a.u.');
+    
+    printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', sExt];
+    h=gcf;
+    set(h,'PaperOrientation','landscape');
+    set(h,'PaperUnits','normalized');
+    set(h,'PaperPosition', [0 0 1 1]);
     print( printFilename );
     if (bCloseGraphs)
         delete(gcf) ;
@@ -264,7 +314,10 @@ if (success)
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
     
-    printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', '.eps'];
+    xlabel('contrast (%)');
+    ylabel('response, a.u.');
+    
+    printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', sExt];
     print( printFilename );
     if (bCloseGraphs)
         delete(gcf) ;

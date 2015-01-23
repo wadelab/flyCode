@@ -29,75 +29,33 @@ Y=Y(Y<256);
 % hold on;
 %scatter(X(:),Y(:),'.');
 
-% Make this as an image so that we can do F-domain filtering
+% Make this as an image so that we can do F-domain filtering if required
+% In the current version there is NO filtering but we can implement this
+% later here....
 
-%figure(1);
 sampImage=zeros(256,256);
 rY=round(Y)+1; rX=round(X)+1;
 
 subPlaces=sub2ind([256 256],rY,rX);
 sampImage(subPlaces)=1;
 
-%imagesc(sampImage);
-%axis off;
-%figure(2);
-%subplot(3,1,1);
-
-
 % Do the filtering
 % First on a sinewave grating
 X1=linspace(0,2*pi*40,256); % A .22 cpd grating has about 16 cycles in this FOV
 [xx,yy]=meshgrid(X1);
-%i1=sin(xx);
 i1=U;
 
-%subplot(3,1,1);
-%hold off;
-% 
-% imagesc(i1);
-% axis image;
-% axis off;
-% hold on;
+
 cols=repmat((i1(subPlaces)+1)/2,1,3);
-%subplot(3,1,2);
+
 simPoints.rX=rX;
 simPoints.rY=256-rY; % So that you can plot this with scatter...
 simPoints.cols=cols;
 
-%h0=scatter(rX,256-rY,35,cols);
 
-% set(h0,'MarkerFaceColor','flat');
-% set(h0,'MarkerEdgeColor',[0 0 0]);
-% whitebg([0 0 0]);
-
-%set(h0,'LineWidth',1);
-% hold off;
 [xx,yy]=meshgrid(linspace(0,255,256));
 colormap gray
-% 
-% axis image;
-% axis off;
+
 % Now sample this using griddata
 [xq,yq,simImage]=griddata(rX,rY,i1(subPlaces),xx,yy,'nearest');
-
-% subplot(3,1,3);
-% colormap gray;
-% 
-% 
-% imagesc(vq);
-% axis image;
-% axis off;
-% return
-% 
-% fI1=fft2(i1);
-% fSamp=fft2(sampImage);
-% conIm=fSamp.*fI1;
-% sampledRestored=abs(ifft2(conIm));
-% 
-% subplot(2,1,2);
-% imagesc(sampledRestored);
-% colormap gray;
-% figure(2);
-% imagesc(abs(fSamp));
-
 

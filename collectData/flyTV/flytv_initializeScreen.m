@@ -37,10 +37,10 @@ try % Initialize the screen.
     
     % Set the gamma tables.
     % Set the CLUTS to the calibrated values
-    dpy.oldClut = LoadIdentityClut(win, 1);
-    Screen('LoadNormalizedGammaTable',win,dpy.gamma.inverse);
+    dpy.oldClut = LoadIdentityClut(dpy.win, 1);
+    Screen('LoadNormalizedGammaTable',dpy.win,dpy.gamma.inverse);
     
-    dpy.hz=Screen('FrameRate', win,[],dpy.frameRate);
+    dpy.hz=Screen('FrameRate', dpy.win,[],dpy.frameRate);
     
     % Make sure the GLSL shading language is supported:
     % AssertGLSL;

@@ -30,8 +30,8 @@ if fileID < 3
     error (['file not opened', outfile]);
 end
 %% Now we have to write out the data in the format
-% Fly, F, contrast, mask, response, genotype 
-% we put genotype last so it can be split in Excel
+% Fly, F, contrast, mask, response, genotype
+% we put genotype last so it can be split in Excel%
 iPreviousFlies = 1;
 contrastmax = length(analysisStruct.contRange);
 maskmax = 2 ;
@@ -41,16 +41,18 @@ freqmax=length(FreqLabels);
 
 genotypemax = length(analysisStruct.phenotypeName) ;
 
-outcells(iPreviousFlies,:) = {'fly'; 'mask'; 'freq'; 'max response'; 'max/masked F2[1]'; 'age, genotype '};
+outcells(iPreviousFlies,:) = {'genotype';   'max response'; 'max/masked F2[1]'; 'fly'; 'mask'; 'freq';};
 iPreviousFlies = iPreviousFlies + 1;
 
-for genotype = 1 : genotypemax
-    flymax = analysisStruct.nFlies{genotype};
-    for freq = 1 : freqmax
-        for mask = 1 : maskmax
-            if ((( mask == 1 ) && ( freq == 2)) || (( mask == 1 ) && ( freq >= 4)) )
-                %% ignore the unmasked F and 2F
-            else
+for freq = 1 : freqmax
+    for mask = 1 : maskmax
+        if ((( mask == 1 ) && ( freq == 2)) || (( mask == 1 ) && ( freq >= 4)) )
+            %% ignore the unmasked F and 2F
+        else
+            for genotype = 1 : genotypemax
+                flymax = analysisStruct.nFlies{genotype};
+                
+                
                 
                 for fly = 1 : flymax
                     
@@ -64,14 +66,14 @@ for genotype = 1 : genotypemax
                         
                         %%convert the indexes to humean friendly forms...
                         genotype_str = analysisStruct.phenotypeName{genotype} ;
-                           genotype_str = strrep (genotype_str,'all', '');
-    genotype_str = strrep (genotype_str,'_1_', ' 01, ');
-    genotype_str = strrep (genotype_str,'_7_', ' 07, ');
-    genotype_str = strrep (genotype_str,'_14_', ' 14, ');
-    genotype_str = strrep (genotype_str,'_21_', ' 21, ');
-    genotype_str = strrep (genotype_str,'_', ' ');
-    genotype_str = strrep (genotype_str,'D ', '');
-    genotype_str = strrep (genotype_str,'0uM Bottle', '');
+                        genotype_str = strrep (genotype_str,'all', '');
+                        genotype_str = strrep (genotype_str,'_1_', ' 01, ');
+                        genotype_str = strrep (genotype_str,'_7_', ' 07, ');
+                        genotype_str = strrep (genotype_str,'_14_', ' 14, ');
+                        genotype_str = strrep (genotype_str,'_21_', ' 21, ');
+                        genotype_str = strrep (genotype_str,'_', ' ');
+                        genotype_str = strrep (genotype_str,'D ', '');
+                        genotype_str = strrep (genotype_str,'0uM Bottle', '');
                         if mask == 1
                             mask_str='unmasked';
                         else
@@ -85,16 +87,16 @@ for genotype = 1 : genotypemax
                     F2_response = abs(analysisStruct.allFlyDataCoh{1,genotype}(fly,2,1,2));
                     ratio_response = max_response / F2_response ;
                     
-                    %%write the line         
-                    outcells(iPreviousFlies, :) = { num2str(fly); mask_str; freq_str;  num2str(max_response); num2str(ratio_response); genotype_str};
+                    %%write the line
+                    outcells(iPreviousFlies, :) = {genotype_str;  num2str(max_response); num2str(ratio_response); num2str(fly); mask_str; freq_str };
                     iPreviousFlies = iPreviousFlies + 1;
                     
                 end
             end  %% if
-        end % freq
+        end % genotype
     end % mask
     
-end % genotype
+end %  freq
 
 %% well csvwrite doesn't like my cell matrix, so do it outselves
 %outM = celltomat(outcells);
@@ -108,6 +110,6 @@ for i =1:cSize(1)
     end
     fprintf (fileID,'\n');
 end
-        
+
 
 disp (['file written ', outfile]);

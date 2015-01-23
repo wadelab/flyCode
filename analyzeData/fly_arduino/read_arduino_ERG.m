@@ -15,7 +15,8 @@ line1b=strrep(line1a, 'GET /?'  ,'');
 line1c=strrep(line1b, 'HTTP/1.1','');
 
 % will return line as cell array
-line = strsplit(line1c, '&');
+lineSaved = strsplit(line1c, '&');
+line = lineSaved ;
 
 % find and delete the filename
 ix = strfind(line, 'filename=') ;
@@ -33,7 +34,7 @@ thisFlyData.phenotypes = line ;
 alldata = csvread(fName, 1,0);
 
 [nContrasts,c] = size(alldata);
-nContrasts= nContrasts/1025
+nContrasts= nContrasts/1025 ;
 timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
 
@@ -72,13 +73,29 @@ for i = 1:nContrasts
     iStart = iStart + 1025;
     iEnd = iEnd + 1025;
 end;
+xTxt = 'scales are in ms, Hz';
+xlabel(xTxt);
 
 subplot(nContrasts +1 ,1, nContrasts +1);
-plot (timedata, mean(rawdata));
+meandata = mean(rawdata);
+plot (timedata, meandata);
 axis([0 timedata(1024) ymin ymax]);
 ylabel('mean');
 
-printFilename = [pathstr, filesep, fileName, '_MyData', '.eps'];
+sExt = getPictExt ();
+printFilename = [pathstr, filesep, fileName, '_MyData', sExt];
 print( printFilename );
+
+%% get some data out
+disp('mean ERG:');
+disp(['nRepeats =',num2str(nContrasts)]);
+disp(['max =', num2str(max(meandata))]);
+disp(['min =', num2str(min(meandata))]);
+disp(['off-transient =', num2str(min(meandata(680:720))-mean(meandata(650:680)))]);
+
+for i = 1:length(lineSaved)
+   disp(lineSaved{i});
+end 
+
 
 

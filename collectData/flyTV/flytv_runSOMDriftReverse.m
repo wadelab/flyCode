@@ -65,6 +65,7 @@ try
         s = daq.createSession('ni');
         s.DurationInSeconds = stim.temporal.duration;
         addAnalogInputChannel(s,'Dev3','ai0','Voltage');
+        addAnalogInputChannel(s,'Dev3','ai1','Voltage');
         s.NumberOfScans = s.DurationInSeconds*1000;
         s.NotifyWhenDataAvailableExceeds = s.NumberOfScans;
         myData=[];

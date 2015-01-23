@@ -1,6 +1,6 @@
 
 //#define test_on_mac
-
+// Arduino Due/shield was 90-A2-DA-0E-09-A2 biolpc2886
 /*
 
 Prototype : put the grey wire in ground, and purple wire in pin7

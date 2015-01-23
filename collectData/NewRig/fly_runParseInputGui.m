@@ -9,10 +9,10 @@ if (nargin == 0 )
     disp('No inputs');
     origExptStruct=[];
     EXPTSTRUCTPASSED=0;
-    [a,b]=flyGui1;
+    [a,b]=FlyGUI1;
 else
     origExptStruct=exptStruct;
-    [a,b]=flyGui1(exptStruct.b);
+    [a,b]=FlyGUI1(exptStruct.b);
 end
 
 
