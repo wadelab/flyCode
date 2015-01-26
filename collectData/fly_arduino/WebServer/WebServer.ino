@@ -38,8 +38,8 @@ int iIndex = 0 ;
 
 //
 byte usedLED  = 0;
-const byte redled = 6;
-const byte grnled = 5;
+const byte redled = 5;
+const byte grnled = 6;
 const byte bluLED = 7;
 
 const byte analogPin = 0 ;
@@ -80,7 +80,7 @@ unsigned long timing_too_fast = 0 ;
 byte second, minute, hour, day, month;
 int year ;
 
-const int MaxInputStr = 135 ;
+const int MaxInputStr = 130 ;
 String MyInputString = String(MaxInputStr + 1);
 char cFile [30];
 char cInput [MaxInputStr + 2] = "";
@@ -823,7 +823,7 @@ void collect_fERG_Data ()
   iThisContrast = maxContrasts ; //++;
 
   writeFile(cFile);
-  doShuffle();
+
 
 }
 
@@ -909,7 +909,7 @@ void AppendFlashReport()
 void AppendSSVEPReport()
 {
   client.print F("Acquired ") ;
-  int iTmp = iThisContrast + (nRepeats * maxContrasts)  - maxContrasts ;
+  int iTmp = iThisContrast + (nRepeats * maxContrasts) - maxContrasts ;
   client.print (iTmp);
   client.print F(" of ");
   client.print (maxRepeats * maxContrasts);
@@ -1053,7 +1053,8 @@ void loop() {
             if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
             if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
             if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
-            if (oldLED != usedLED) goColour(0, 0, 0, false);
+            //if (oldLED != usedLED) 
+            goColour(0, 0, 0, false);
 
             //flash ERG or SSVEP?
             bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
