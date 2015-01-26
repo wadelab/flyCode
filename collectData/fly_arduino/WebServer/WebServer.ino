@@ -895,7 +895,7 @@ void AppendFlashReport()
 void AppendSSVEPReport()
 {
   client.print F("Acquired ") ;
-  int iTmp = iThisContrast + (nRepeats * maxContrasts) - maxContrasts ;
+  int iTmp = iThisContrast + (nRepeats * maxContrasts)  - maxContrasts ;
   client.print (iTmp);
   client.print F(" of ");
   client.print (maxRepeats * maxContrasts);
