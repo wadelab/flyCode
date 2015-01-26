@@ -1,5 +1,7 @@
 
+
 //#define test_on_mac
+//#define due1
 // Arduino Due/shield was 90-A2-DA-0E-09-A2 biolpc2886
 /*
 
@@ -92,9 +94,15 @@ byte mac[] = {
   0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
 }; //biolpc2804
 #else
+#ifdef due1
+    0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA2
+    //90-A2-DA-0E-09-A2 biolpc2886
+#else
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
+  #endif
 }; //biolpc2793
 #endif
+
 // Initialize the Ethernet server library
 // with the IP address and port you want to use
 // (port 80 is default for HTTP):
@@ -147,7 +155,7 @@ void setup() {
   server.begin();
   Serial.print F("server is at ");
   Serial.println(Ethernet.localIP());
-
+#ifndef due1
   //set up PWM
   //http://forum.arduino.cc/index.php?topic=72092.0
   // timer 4 (controls pin 8, 7, 6);
@@ -160,6 +168,7 @@ void setup() {
   //prescaler = 3 ---> PWM frequency is 490 Hz (default value)
   int myPrescaler = 1;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.
   TCCR4B |= myPrescaler;  //this operation (OR), replaces the last three bits in TCCR2B with our new value 011
+#endif 
 
   goColour(0, 0, 0, false);
 
@@ -329,10 +338,15 @@ void run_graph()
   client.println F("</script>");
   client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
 #ifdef test_on_mac
-  client.println F("To run a flicker test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A>  ");
+  client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A>  ");
 #else
-  client.println F("To run a flicker test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
+  #ifdef due1
+      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/sultan.html\"> sultan.html</A>  ");
+    #else
+      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
+  #endif
 #endif
+
   sendFooter();
 
 }
@@ -1073,9 +1087,13 @@ void loop() {
               sendHeader F("Sampling Complete!");
               client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
 #ifdef test_on_mac
-              client.println F("Setup Next Test <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A> <BR><BR> ");
+  client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A>  ");
 #else
-              client.println F("Setup Next Test <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A> <BR><BR> ");
+  #ifdef due1
+      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/sultan.html\"> sultan.html</A>  ");
+    #else
+      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
+  #endif
 #endif
               client.println F( "<A HREF= \"dir=\"  > Full directory</A> <BR>");
               sendFooter ();
