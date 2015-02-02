@@ -49,39 +49,43 @@ function changeText()
 cellspacing="2">
 <tbody>
 <tr>
-<td style="vertical-align: top; width = 33%">GAL4:</td>
-<td style="vertical-align: top; width = 33%">UAS:</td>
-<td style="vertical-align: top; width = 33%">Age:</td>
+<td style="vertical-align: top; width = 25%">GAL4:</td>
+<td style="vertical-align: top; width = 25%">UAS:</td>
+<td style="vertical-align: top; width = 25%">AGE:</td>
+<td style="vertical-align: top; width = 25%">Antennae</td>
 </tr>
 <tr>
 <td style="vertical-align: top;">
 <select name="GAL4" size = 6>
-<option value="w">w-</option>
-<option value="w_apr">w^apr</option>
-<option value="CS">CS</option>
-<option value="ort" selected>ort-</option>
+<option selected value="w">w-</option>
+<option value="iav1">iav1</option>
+<option value="JoB">JO-B</option>
 </select><br>
 </td>
 <td style="vertical-align: top;">
 <select name="UAS" size = 6>
-<option value="homoz" selected>homozygote</option>
-<option value="w">w-</option>
-<option value="w_apr">w^apr</option>
-<option value="G2019S">G2019S</option>
-<option value="hLRRK2">hLRRK2</option>
+<option selected value="homoz">homozygote</option>
+<option value="TNT">TNTE</option>
+<option value="Kir">Kir</option>
 </select><br>
 </td>
 <td style="vertical-align: top;">
-<select name="Age" size = 6>
+<select name="Age" size = 9>
 <option value="0.4">4-8 hours</option>
-<option selected value="1">1 day</option>
+<option value="1">1 day</option>
 <option value="2">2</option>
-<option value="3">3</option>
+<option selected value="3">3</option>
 <option value="5">5</option>
 <option value="7">7</option>
 <option value="14">14</option>
 <option value="21">21</option>
 <option value="-1">unknown</option>
+</select><br>
+</td>
+<td style="vertical-align: top;">
+<select name="Antn" size = 3>
+<option selected value="Ok">Ok</option>
+<option value="N">none</option>
 </select><br>
 </td>
 </tr>
@@ -92,7 +96,7 @@ cellspacing="2">
 cellspacing="2">
 <tbody >
 <tr>
-<td style="vertical-align: top; width = 20%"><BR> Sex: <BR></td>
+<td style="vertical-align: top; width = 20%"><BR>Sex: <BR></td>
 <td style="vertical-align: top; width = 20%"><BR>Organism: <BR></td>
 <td style="vertical-align: top; width = 20%"><BR>Colour</td>
 <td style="vertical-align: top; width = 20%"><BR>Frequencies</td>
@@ -125,7 +129,7 @@ cellspacing="2">
 
 <td style="vertical-align: top;"><BR>
 <input type="radio" name="stim" value="fERG" checked>flash ERG<br>
-<input type="radio" name="stim" value="SSVEP" checked>SSVEP<br>
+<input type="radio" name="stim" value="SSVEP">SSVEP<br>
 </td>
 </tr>
 </tbody>
