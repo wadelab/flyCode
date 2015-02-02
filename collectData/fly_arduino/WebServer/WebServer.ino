@@ -1,8 +1,9 @@
 
 
 //#define test_on_mac
-//#define due1
+#define due1
 // Arduino Due/shield was 90-A2-DA-0E-09-A2 biolpc2886
+//#if defined(__AVR_ATmega2560__  __SAM3X8E__
 /*
 
 Prototype : put the grey wire in ground, and purple wire in pin7
@@ -38,9 +39,16 @@ int iIndex = 0 ;
 
 //
 byte usedLED  = 0;
+byte fiberLED = 8 ;
+#ifdef due1
+const byte redled = 6;
+const byte grnled = 5;
+const byte bluLED = 7;
+#else
 const byte redled = 5;
 const byte grnled = 6;
 const byte bluLED = 7;
+#endif
 
 const byte analogPin = 0 ;
 
@@ -77,7 +85,7 @@ unsigned long last_time = 0;
 unsigned int start_time = 0;
 unsigned long timing_too_fast = 0 ;
 
-byte second, minute, hour, day, month;
+byte second, myminute, hour, day, month;
 int year ;
 
 const int MaxInputStr = 130 ;
@@ -95,11 +103,11 @@ byte mac[] = {
 }; //biolpc2804
 #else
 #ifdef due1
-    0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA2
-    //90-A2-DA-0E-09-A2 biolpc2886
+  0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA2
+  //90-A2-DA-0E-09-A2 biolpc2886
 #else
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
-  #endif
+#endif
 }; //biolpc2793
 #endif
 
@@ -132,16 +140,23 @@ void setup() {
   // initialize the SD card
   Serial.println F("Setting up SD card...\n");
 
-  if (!card.init(SPI_FULL_SPEED, 4)) {
+  if (!card.init(SPI_FULL_SPEED, 4))
+  {
     Serial.println F("card failed\n");
     has_filesystem = false;
+    if (!card.init(SPI_HALF_SPEED, 4))
+    {
+      Serial.println F("card failed\n");
+      has_filesystem = false;
+    }
   }
+
   // initialize a FAT volume
-  if (!volume.init(&card)) {
+  if (has_filesystem && !volume.init(&card)) {
     Serial.println F("vol.init failed!\n");
     has_filesystem = false;
   }
-  if (!root.openRoot(&volume)) {
+  if (has_filesystem && !root.openRoot(&volume)) {
     Serial.println F("openRoot failed");
     has_filesystem = false;
   }
@@ -168,9 +183,9 @@ void setup() {
   //prescaler = 3 ---> PWM frequency is 490 Hz (default value)
   int myPrescaler = 1;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.
   TCCR4B |= myPrescaler;  //this operation (OR), replaces the last three bits in TCCR2B with our new value 011
-#endif 
+#endif
 
-  goColour(0, 0, 0, false);
+  goColour(0, 0, 0, 0, false);
 
   doShuffle();
 }
@@ -235,18 +250,19 @@ void sendFooter()
   client.println F("</body></html>");
 }
 
-void goColour(const byte r, const byte g, const byte b, const bool boolUpdatePage)
+void goColour(const byte r, const byte g, const byte b, const byte f, const bool boolUpdatePage)
 {
   analogWrite( redled, r );
   analogWrite( grnled, g );
   analogWrite( bluLED, b );
+  analogWrite( fiberLED, f );
   if (boolUpdatePage)
   {
     sendHeader ("Lit up ?", "onload=\"goBack()\" ");
 
     client.println F(" <script>");
     client.println F("function goBack() ");
-     client.println F("{ window.history.back() }");
+    client.println F("{ window.history.back() }");
     client.println F("</script>");
 
     sendFooter();
@@ -263,7 +279,7 @@ void serve_dir ()
 void run_graph()
 {
   // turn off any LEDs, always do flash with blue
-  goColour(0, 0, 0, false);
+  goColour(0, 0, 0, 0, false);
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   int sensorReading = analogRead(analogPin);
@@ -340,11 +356,11 @@ void run_graph()
 #ifdef test_on_mac
   client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A>  ");
 #else
-  #ifdef due1
-      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/sultan.html\"> sultan.html</A>  ");
-    #else
-      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
-  #endif
+#ifdef due1
+  client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/sultan.html\"> sultan.html</A>  ");
+#else
+  client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
+#endif
 #endif
 
   sendFooter();
@@ -468,7 +484,7 @@ void webTime ()
   EthernetClient timeclient;
   // default values ...
   year = 2014;
-  second = minute = hour = day = month = 0;
+  second = myminute = hour = day = month = 0;
 
   // Just choose any reasonably busy web server, the load is really low
   if (timeclient.connect("biolpc22.york.ac.uk", 80))
@@ -488,7 +504,7 @@ void webTime ()
       timeclient.readBytes(buf, 3);	   // month
       year = timeclient.parseInt();	   // year
       hour = timeclient.parseInt();   // hour
-      minute = timeclient.parseInt(); // minute
+      myminute = timeclient.parseInt(); // minute
       second = timeclient.parseInt(); // second
 
 
@@ -514,7 +530,7 @@ void webTime ()
               case 'g': month = 8; break; // Aug
             }
       } // months sorted
-      //month -- ; // zero based, I guess - seems not
+      month -- ; // zero based, I guess
 
     }
   }
@@ -545,8 +561,7 @@ void writeFile(const char * c)
       Serial.println (c);
       return ;
     }
-    webTime();
-    if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, minute, second)) {
+    if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
       Serial.println F ("Error in timestamping file");
       Serial.println (c);
     }
@@ -691,17 +706,17 @@ void collectSSVEPData ()
   long mean = 0;
   unsigned int iTime ;
   if (iThisContrast == 0 && file.isOpen()) file.close();
-
-  Serial.print F("collecting data with ");
-  Serial.print (nRepeats);
-  Serial.print ("r : c");
-  Serial.println (iThisContrast);
-
+  
   if (iThisContrast >= maxContrasts)
   {
     iThisContrast = 0;
     nRepeats ++;
   }
+
+  Serial.print F("collecting data with ");
+  Serial.print (nRepeats);
+  Serial.print ("r : c");
+  Serial.println (iThisContrast);
 
   Serial.print F("update collecting data with ");
   Serial.print (nRepeats);
@@ -867,49 +882,55 @@ void AppendFlashReport()
   client.println (cInput);
   client.println F( "<BR> ");
 
-  if(nRepeats >0)
+  if (nRepeats > 0)
   {
-  client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
-  client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
+    client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+    client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
 
-  client.println F("<script>");
-  client.println F("var c = document.getElementById(\"myCanvas\");");
-  client.println F("var ctx = c.getContext(\"2d\");");
+    client.println F("<script>");
+    client.println F("var c = document.getElementById(\"myCanvas\");");
+    client.println F("var ctx = c.getContext(\"2d\");");
 
-  for (int i = 0; i < max_data - max_data/6; i = i + 15)
-  {
-    client.print F("ctx.moveTo(");
-    client.print((8*i)/10 );
-    client.print F(",");
-    client.print(350-myGraphData[i]);
-    client.println F(");");
-    client.print F("ctx.lineTo(");
-    client.print((8*(i + 15))/10 );
-    client.print F(",");
-    client.print(350-myGraphData[i + 15]);
-    client.println F(");");
-    client.println F("ctx.stroke();");
+    for (int i = 0; i < max_data - max_data / 6; i = i + 15)
+    {
+      client.print F("ctx.moveTo(");
+      client.print((8 * i) / 10 );
+      client.print F(",");
+      client.print(350 - myGraphData[i]);
+      client.println F(");");
+      client.print F("ctx.lineTo(");
+      client.print((8 * (i + 15)) / 10 );
+      client.print F(",");
+      client.print(350 - myGraphData[i + 15]);
+      client.println F(");");
+      client.println F("ctx.stroke();");
 
-    client.print F("ctx.moveTo(");
-    client.print((8*i)/10 );
-    client.print F(",");
-    client.print(10 + fERG_Now(time_stamp[i] - time_stamp[0]) );
-    client.println F(");");
-    client.print F("ctx.lineTo(");
-   client.print((8*(i + 13))/10 );
-     client.print F(",");
-    client.print(10 + fERG_Now(time_stamp[i + 13] - time_stamp[0]));
-    client.println F(");");
-    client.println F("ctx.stroke();");
-  }
-  client.println F("</script>");
+      client.print F("ctx.moveTo(");
+      client.print((8 * i) / 10 );
+      client.print F(",");
+      client.print(10 + fERG_Now(time_stamp[i] - time_stamp[0]) );
+      client.println F(");");
+      client.print F("ctx.lineTo(");
+      client.print((8 * (i + 13)) / 10 );
+      client.print F(",");
+      client.print(10 + fERG_Now(time_stamp[i + 13] - time_stamp[0]));
+      client.println F(");");
+      client.println F("ctx.stroke();");
+    }
+    client.println F("</script>");
   }
 }
 
 void AppendSSVEPReport()
 {
   client.print F("Acquired ") ;
-  int iTmp = iThisContrast + (nRepeats * maxContrasts) - maxContrasts ;
+  int iTmp = nRepeats * maxContrasts ; //- maxContrasts ;
+  Serial.print F("Acquired ");
+  Serial.print (iTmp);
+  iTmp = iTmp + iThisContrast ;
+  Serial.print F(" really ");
+  Serial.println (iTmp);
+  
   client.print (iTmp);
   client.print F(" of ");
   client.print (maxRepeats * maxContrasts);
@@ -1053,8 +1074,8 @@ void loop() {
             if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
             if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
             if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
-            //if (oldLED != usedLED) 
-            goColour(0, 0, 0, false);
+            //if (oldLED != usedLED)
+            goColour(0, 0, 0, 0, false);
 
             //flash ERG or SSVEP?
             bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
@@ -1080,22 +1101,22 @@ void loop() {
             if (fileExists(cFile) &&  iThisContrast >= maxContrasts && nRepeats >= maxRepeats)
             {
               // done so tidy up
-              nRepeats = 0 ; // ready to start again
+              nRepeats = iThisContrast = 0 ; // ready to start again
               //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
               file.close();
 
               sendHeader F("Sampling Complete!");
               client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
 #ifdef test_on_mac
-  client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A>  ");
+              client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A>  ");
 #else
-  #ifdef due1
-      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/sultan.html\"> sultan.html</A>  ");
-    #else
-      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
-  #endif
+#ifdef due1
+              client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/sultan.html\"> sultan.html</A>  ");
+#else
+              client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
 #endif
-              client.println F( "<A HREF= \"dir=\"  > Full directory</A> <BR>");
+#endif
+              client.println F( "<BR><BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
               sendFooter ();
             }
             else
@@ -1119,35 +1140,35 @@ void loop() {
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
-            goColour(255, 255, 255, true) ;
+            goColour(255, 255, 255, 0, true) ;
             pageNotServed = false ;
           }
           fPOS = MyInputString.indexOf F("red/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
-            goColour(255, 0, 0, true) ;
+            goColour(255, 0, 0, 0, true) ;
             pageNotServed = false ;
           }
           fPOS = MyInputString.indexOf F("blue/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
-            goColour(0, 0, 255, true) ;
+            goColour(0, 0, 255, 0, true) ;
             pageNotServed = false ;
           }
           fPOS = MyInputString.indexOf F("green/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
-            goColour(0, 255, 0, true) ;
+            goColour(0, 255, 0, 0, true) ;
             pageNotServed = false ;
           }
           fPOS = MyInputString.indexOf F("black/");
           //Serial.println("  Position of dir was:" + String(fPOS));
           if (pageNotServed && fPOS > 0)
           {
-            goColour(0, 0, 0, true) ;
+            goColour(0, 0, 0, 0, true) ;
             pageNotServed = false ;
           }
 
