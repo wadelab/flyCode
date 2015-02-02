@@ -1072,8 +1072,9 @@ void loop() {
             // now choose the colour
             int oldLED = usedLED ;
             if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
+            if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
             if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
-            if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
+            if (MyInputString.indexOf F("col=fiber&") > 0 ) usedLED  = fiberLED ; //
             //if (oldLED != usedLED)
             goColour(0, 0, 0, 0, false);
 
@@ -1169,6 +1170,13 @@ void loop() {
           if (pageNotServed && fPOS > 0)
           {
             goColour(0, 0, 0, 0, true) ;
+            pageNotServed = false ;
+          }    
+          fPOS = MyInputString.indexOf F("fiber/");
+          //Serial.println("  Position of dir was:" + String(fPOS));
+          if (pageNotServed && fPOS > 0)
+          {
+            goColour(0, 0, 0, 255, true) ;
             pageNotServed = false ;
           }
 
