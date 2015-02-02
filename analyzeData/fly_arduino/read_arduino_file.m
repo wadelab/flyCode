@@ -101,8 +101,9 @@ iStart = 1;
 iEnd = 1024;
 
 figure ('Name', strcat('Rawdata of: ',fileName));
-m = 5;
 n = 9;
+m = nContrasts / n;
+
 ymax = max(alldata(:,3)) ;
 ymin = min(alldata(:,3)) ;
 
