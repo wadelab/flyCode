@@ -3,6 +3,8 @@
 //#define test_on_mac
 #define due1
 // Arduino Due/shield was 90-A2-DA-0E-09-A2 biolpc2886
+// biolpc2898 - 90:A2:DA:0F:6F:9E
+// biolpc2899 - 90:A2:DA:0F:75:17
 //#if defined(__AVR_ATmega2560__  __SAM3X8E__
 /*
 
@@ -183,6 +185,10 @@ void setup() {
   //prescaler = 3 ---> PWM frequency is 490 Hz (default value)
   int myPrescaler = 1;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.
   TCCR4B |= myPrescaler;  //this operation (OR), replaces the last three bits in TCCR2B with our new value 011
+#endif
+
+#ifdef due1
+   analogReadResolution(12);
 #endif
 
   goColour(0, 0, 0, 0, false);
@@ -1072,7 +1078,7 @@ void loop() {
             // now choose the colour
             int oldLED = usedLED ;
             if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
-            if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
+            if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = greenLED ; //
             if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
             if (MyInputString.indexOf F("col=fiber&") > 0 ) usedLED  = fiberLED ; //
             //if (oldLED != usedLED)
