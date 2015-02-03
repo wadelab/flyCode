@@ -530,7 +530,7 @@ void webTime ()
               case 'g': month = 8; break; // Aug
             }
       } // months sorted
-      month -- ; // zero based, I guess
+      //month -- ; // zero based, I guess
 
     }
   }
