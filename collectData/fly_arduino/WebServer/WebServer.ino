@@ -1078,7 +1078,7 @@ void loop() {
             // now choose the colour
             int oldLED = usedLED ;
             if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
-            if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = greenLED ; //
+            if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
             if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
             if (MyInputString.indexOf F("col=fiber&") > 0 ) usedLED  = fiberLED ; //
             //if (oldLED != usedLED)
