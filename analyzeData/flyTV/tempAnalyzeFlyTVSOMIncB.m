@@ -64,6 +64,7 @@ colorbar;
 figure(2)
 h=plot(squeeze(abs(fMeanDatAllConds(:,2:17)))');
 set(h,'LineWidth',2);
+ylim([0 1])
 whitebg([0 0 0]);
 
 legend((num2str(thisData.sfList(:,2))));
