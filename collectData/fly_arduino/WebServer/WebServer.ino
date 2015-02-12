@@ -640,6 +640,9 @@ void doreadFile (const char * c)
   sendHeader(String(c), "", false);
   if (file.isOpen()) file.close();
   file.open(root, c, O_READ);
+  // fix me - open file first and then send the headers
+  // Content-Length: 1000000 [size in bytes 
+  // Last-Modified: Sat, 28 Nov 2009 03:50:37 GMT
   int iBytesRequested, iBytesRead;
   // note this overwrites any data already in memeory...
   //first read the header string ...
