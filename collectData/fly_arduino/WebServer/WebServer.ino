@@ -1,10 +1,39 @@
 
-
+// mega1 biolpc2793
+// mega2 biolpc2804
 //#define test_on_mac
-#define due1
-// Arduino Due/shield was 90-A2-DA-0E-09-A2 biolpc2886
-// biolpc2898 - 90:A2:DA:0F:6F:9E
-// biolpc2899 - 90:A2:DA:0F:75:17
+#define due2
+//_____________________________________________________
+
+#ifdef mega1
+  #define MAC_OK 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
+  //biolpc2793
+ 
+#endif
+  
+#ifdef mega2
+  #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
+  //biolpc2804
+ 
+#endif
+
+#ifdef due1
+  #define MAC_OK 0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA2
+  //90-A2-DA-0E-09-A2 biolpc2886
+#endif
+
+#ifdef due2
+  #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x6F, 0x9E
+  //90-A2-DA-0E-09-A2 biolpc2898
+  
+#endif
+
+#ifdef due3
+  #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x75, 0x17
+  //90-A2-DA-0E-09-A2 biolpc2899
+  
+#endif
+
 //#if defined(__AVR_ATmega2560__  __SAM3X8E__
 /*
 
@@ -42,7 +71,8 @@ int iIndex = 0 ;
 //
 byte usedLED  = 0;
 byte fiberLED = 8 ;
-#ifdef due1
+#ifdef __SAM3X8E__ 
+// fix the LED order in hardware....
 const byte redled = 6;
 const byte grnled = 5;
 const byte bluLED = 7;
@@ -96,22 +126,13 @@ char cFile [30];
 char cInput [MaxInputStr + 2] = "";
 
 
-
+#ifndef MAC_OK
+   #error please define which arduino you are setting up
+#endif
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
-byte mac[] = {
-#ifdef  test_on_mac
-  0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
-}; //biolpc2804
-#else
-#ifdef due1
-  0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA2
-  //90-A2-DA-0E-09-A2 biolpc2886
-#else
-  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
-#endif
-}; //biolpc2793
-#endif
+byte mac[] = { MAC_OK } ;
+
 
 // Initialize the Ethernet server library
 // with the IP address and port you want to use
@@ -172,7 +193,7 @@ void setup() {
   server.begin();
   Serial.print F("server is at ");
   Serial.println(Ethernet.localIP());
-#ifndef due1
+#ifdef __AVR_ATmega2560__
   //set up PWM
   //http://forum.arduino.cc/index.php?topic=72092.0
   // timer 4 (controls pin 8, 7, 6);
@@ -187,7 +208,7 @@ void setup() {
   TCCR4B |= myPrescaler;  //this operation (OR), replaces the last three bits in TCCR2B with our new value 011
 #endif
 
-#ifdef due1
+#ifdef __SAM3X8E__
    analogReadResolution(12);
 #endif
 
