@@ -5,7 +5,7 @@ function dummy=flytv_splitFiles(inputDir,baseName)
 % x*y*z*2 then saves out two separate files of form baseName_[1/2]_*.mat
 % Containing data(:,:,:,1) and data(:,:,:,2)
 % This is so we can analyze two-fly expts just like we did the 1-fly expts
-% E.g. 
+% E.g. Split
 % dummy=flytv_splitFiles('C:\data\SSERG\data\NewSweep\PINK1\7DPE\THG2019S\','flyTVsplit_'
 % ARW 30/9/2014
 
