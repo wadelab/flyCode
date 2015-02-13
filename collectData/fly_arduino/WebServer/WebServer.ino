@@ -1,4 +1,6 @@
 
+//try this http://gammon.com.au/forum/?id=11488&reply=5#reply5 for interrupts
+
 // mega1 biolpc2793
 // mega2 biolpc2804
 //#define test_on_mac
@@ -117,8 +119,8 @@ unsigned long last_time = 0;
 unsigned int start_time = 0;
 unsigned long timing_too_fast = 0 ;
 
-byte second, myminute, hour, day, month;
-int year ;
+uint8_t second, myminute, hour, day, month;
+uint16_t year ;
 
 const int MaxInputStr = 130 ;
 String MyInputString = String(MaxInputStr + 1);
@@ -510,11 +512,11 @@ void webTime ()
 {
   EthernetClient timeclient;
   // default values ...
-  year = 2014;
+  year = 2015;
   second = myminute = hour = day = month = 0;
 
   // Just choose any reasonably busy web server, the load is really low
-  if (timeclient.connect("biolpc22.york.ac.uk", 80))
+  if (timeclient.connect("www.york.ac.uk", 80))
   {
     // Make an HTTP 1.1 request which is missing a Host: header
     // compliant servers are required to answer with an error that includes
@@ -578,6 +580,7 @@ void writeFile(const char * c)
   //    int erg_in [max_data];
 
   int16_t iBytesWritten ;
+  webTime ();
 
   if (!fileExists(c))
   {
@@ -588,6 +591,19 @@ void writeFile(const char * c)
       Serial.println (c);
       return ;
     }
+//    Serial.print("Expected date: ");
+//    Serial.print(year);
+//    Serial.print(" ");
+//    Serial.print(month);
+//    Serial.print(" ");
+//    Serial.print(day);
+//    Serial.print(" ");
+//    Serial.print(hour);
+//    Serial.print(" ");
+//    Serial.print(myminute);
+//    Serial.print(" ");
+//    Serial.print(second);
+//    Serial.print(" ");
     if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
       Serial.println F ("Error in timestamping file");
       Serial.println (c);
