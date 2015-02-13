@@ -247,7 +247,7 @@ void doShuffle()
 
 
 
-void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML = true)
+void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML = true, char * pDate = NULL)
 {
   // send a standard http response header
   client.println F("HTTP/1.1 200 OK");
@@ -258,6 +258,11 @@ void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML
   else
   {
     client.println F("Content-Type: text/plain");
+  }
+  if (pDate)
+  {
+    client.print F("Last-Modified: ");
+    client.println (pDate);
   }
   client.println F("Connection: close");  // the connection will be closed after completion of the response
   client.println();
@@ -396,31 +401,37 @@ void run_graph()
 
 }
 
-void printTwoDigits(uint8_t v)
+
+void printTwoDigits(char * p, uint8_t v)
 {
-  char str[3];
-  str[0] = '0' + v / 10;
-  str[1] = '0' + v % 10;
-  str[2] = 0;
-  client.print(str);
+  
+  *p   = '0' + v / 10;
+  *(p+1) = '0' + v % 10;
+  *(p+2) = 0;
+  
 }
 
 //code to print date...
 void myPrintFatDateTime(const dir_t & pFile)
 {
-  client.write(' ');
-  client.print(FAT_YEAR(pFile.lastWriteDate));
-  client.write('-');
-  printTwoDigits(FAT_MONTH(pFile.lastWriteDate));
-  client.write('-');
-  printTwoDigits(FAT_DAY(pFile.lastWriteDate));
-  client.write(' ');
-  printTwoDigits(FAT_HOUR(pFile.lastWriteTime));
-  client.print(':');
-  printTwoDigits(FAT_MINUTE(pFile.lastWriteTime));
-  client.print(':');
-  printTwoDigits(FAT_SECOND(pFile.lastWriteTime));
-  client.print(' ');
+  // write this as a string to erg_in
+  char * pErg_in = (char * ) erg_in ;
+  erg_in [0] = 0;
+  
+  strcat(pErg_in," ");
+  itoa( FAT_YEAR(pFile.lastWriteDate), pErg_in + 1, 10);
+  strcat(pErg_in,"-");
+  printTwoDigits(pErg_in + strlen(pErg_in) , FAT_MONTH(pFile.lastWriteDate));
+  strcat(pErg_in,"-");
+  printTwoDigits(pErg_in + strlen(pErg_in) , FAT_DAY(pFile.lastWriteDate));
+  strcat(pErg_in," ");
+  printTwoDigits(pErg_in + strlen(pErg_in) , FAT_HOUR(pFile.lastWriteTime));
+  strcat(pErg_in,":");
+  printTwoDigits(pErg_in + strlen(pErg_in) , FAT_MINUTE(pFile.lastWriteTime));
+  strcat(pErg_in,":");
+  printTwoDigits(pErg_in + strlen(pErg_in) , FAT_SECOND(pFile.lastWriteTime));
+  strcat(pErg_in," ");
+  client.print(pErg_in);
 }
 
 void printDirectory(uint8_t flags) {
@@ -667,19 +678,82 @@ bool fileExists(const char * c)
   return bExixsts ;
 }
 
+
+
+void gmdate ( const dir_t & pFile)
+{
+  char * cDays = (char *)F("Sun,Mon,Tue,Wed,Thu,Fri,Sat,Sun");
+  char * cMonths = (char *)F("Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec,");
+    char * c  = (char *) erg_in ;
+    erg_in [0] = 0;
+    char cTmp [4];
+    int iTmp ;
+    int d = FAT_DAY(pFile.lastWriteDate) ;
+    int m = FAT_MONTH(pFile.lastWriteDate) ;
+    int y = FAT_YEAR(pFile.lastWriteDate) ;
+    
+  // Last-Modified: Tue, 15 Nov 1994 12:45:26 GMT
+
+  
+  // find day of week http://stackoverflow.com/questions/6054016/c-program-to-find-day-of-week-given-date
+    iTmp = (d+=m<3?y--:y-2,23*m/9+d+4+y/4-y/100+y/400)%7   ;
+  if (iTmp > 6) iTmp = 0;
+  strncpy(cTmp, cDays + iTmp * 4, 3);
+  cTmp[3]=0;  
+  strcat (c, cTmp ); // "Tue" 
+  strcat (c, ", ");
+  
+  
+  printTwoDigits(c + strlen(c) , FAT_DAY(pFile.lastWriteDate));
+  strcat (c, " ");
+  
+  iTmp = m -1;
+  if (iTmp > 11) iTmp = 0;
+  strncpy(cTmp, cMonths + iTmp * 4, 3);
+  cTmp[3]=0;  
+  strcat (c, cTmp ); // "Nov" 
+  
+  
+  strcat (c, " ");
+  itoa( y, c + strlen(c), 10);
+  strcat (c, " ");
+  printTwoDigits(c + strlen(c) , FAT_HOUR(pFile.lastWriteDate));
+  strcat (c, ":");
+    printTwoDigits(c + strlen(c) , FAT_MINUTE(pFile.lastWriteDate));
+  strcat (c, ":");
+    printTwoDigits(c + strlen(c) , FAT_SECOND(pFile.lastWriteDate));
+  strcat (c, " GMT");
+  
+  Serial.println( c );
+}
+
 void doreadFile (const char * c)
 {
   String dataString ;
   char * cPtr;
   cPtr = (char *) erg_in ;
   int iOldContrast ;
-
-  sendHeader(String(c), "", false);
+  
   if (file.isOpen()) file.close();
   file.open(root, c, O_READ);
   // fix me - open file first and then send the headers
   // Content-Length: 1000000 [size in bytes 
   // Last-Modified: Sat, 28 Nov 2009 03:50:37 GMT
+    // make erg_in buffer do the dirty work of getting the date...
+  dir_t  dE;
+  if (file.dirEntry (&dE))
+ { 
+   Serial.println("file date recovered") ;
+ }
+ else
+  { 
+   Serial.println("file date not recovered") ;
+ }
+  gmdate ( dE );
+  Serial.print ("Last modified is:");
+  Serial.println( cPtr ) ;
+  sendHeader(String(c), "", false, cPtr);
+  
   int iBytesRequested, iBytesRead;
   // note this overwrites any data already in memeory...
   //first read the header string ...
