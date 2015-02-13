@@ -119,7 +119,18 @@ end
 
 disp (['done! ', dirName]);
 
-
+%% write out the max CRF
+disp ('Now writing max 1F1 and 2F1');
+disp(' ');
+for i = 1 : length(Collected_Data)
+   myTxt = ['']; 
+   for j=1 : length(Collected_Data(i).phenotypes)
+      myTxt = [ myTxt, Collected_Data(i).phenotypes{j}, ' '];   
+   end
+    myTxt = [myTxt,num2str(Collected_Data(i).sorted_CRF(5,3)),' 1F1 ', num2str(Collected_Data(i).sorted_CRF(5,5)),' 2F1']; 
+    myTxt = [myTxt, ' ', Collected_Data(i).fileName, ' '];
+    disp (myTxt);
+end
 
 
 
