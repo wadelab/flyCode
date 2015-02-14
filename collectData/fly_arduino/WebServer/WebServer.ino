@@ -389,15 +389,10 @@ void run_graph()
 
   client.println F("</script>");
   client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
-#ifdef test_on_mac
-  client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A>  ");
-#else
-#ifdef due1
-  client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/sultan.html\"> sultan.html</A>  ");
-#else
-  client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
-#endif
-#endif
+
+  client.println F("To run a test please stop and then load   <A HREF=\"") ;
+  client.println (MyReferString) ;
+  client.println F("\">the stimulus selection form</A>  <BR>");
 
   sendFooter();
 
@@ -1215,16 +1210,10 @@ void sendReply ()
 
       sendHeader F("Sampling Complete!");
       client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
-#ifdef test_on_mac
-      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A>  ");
-#else
-#ifdef due1
-      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/sultan.html\"> sultan.html</A>  ");
-#else
-      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
-#endif
-#endif
-      client.println F( "<BR><BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
+
+      client.println F("To setup for another test please  <A HREF=\"") ;
+      client.println (MyReferString) ;
+      client.println F("\">click here</A>  <BR><BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
       sendFooter ();
     }
     else
