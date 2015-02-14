@@ -27,14 +27,14 @@
 #ifdef due2
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x6F, 0x9E
 //90-A2-DA-0E-09-A2 biolpc2898
-
 #endif
 
 #ifdef due3
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x75, 0x17
 //90-A2-DA-0E-09-A2 biolpc2899
-
 #endif
+
+
 
 //#if defined(__AVR_ATmega2560__  __SAM3X8E__
 /*
@@ -356,14 +356,14 @@ void run_graph()
   {
     if (i < iIndex || i > iIndex + 1)
     {
-      client.print("ctx.moveTo(");
-      client.print(i * 20);
-      client.print(",");
-      client.print(myGraphData[i] / 2);
+      client.print F("ctx.moveTo(");
+      client.print (i * 20);
+      client.print F(",");
+      client.print (myGraphData[i] / 2);
       client.println F(");");
-      client.print("ctx.lineTo(");
-      client.print((i + 1) * 20);
-      client.print(",");
+      client.print F("ctx.lineTo(");
+      client.print ((i + 1) * 20);
+      client.print F(",");
       client.print(myGraphData[i + 1] / 2);
       client.println F(");");
       client.println F("ctx.strokeStyle=\"blue\";");
@@ -371,16 +371,16 @@ void run_graph()
     }
   }
   //draw stimulus...
-  client.print("ctx.moveTo(");
-  client.print((max_graph_data / 10) * 20);
-  client.print(",");
-  client.print(30);
+  client.print F("ctx.moveTo(");
+  client.print ((max_graph_data / 10) * 20);
+  client.print F(",");
+  client.print (30);
   client.println F(");");
 
-  client.print("ctx.lineTo(");
-  client.print(max_graph_data / 2 * 20);
-  client.print(",");
-  client.print(30);
+  client.print F("ctx.lineTo(");
+  client.print (max_graph_data / 2 * 20);
+  client.print (",");
+  client.print (30);
   client.println F(");");
 
   client.println F("ctx.strokeStyle=\"blue\";");
@@ -449,7 +449,7 @@ void printDirectory(uint8_t flags) {
     if (!DIR_IS_FILE_OR_SUBDIR(&p)) continue;
 
     // print any indent spaces
-    client.print("<li><a href=\"");
+    client.print F("<li><a href=\"");
     for (uint8_t i = 0; i < 11; i++)
     {
       if (p.name[i] == ' ') continue;
@@ -458,7 +458,7 @@ void printDirectory(uint8_t flags) {
       }
       client.print(char(p.name[i]));
     }
-    client.print("\">");
+    client.print F("\">");
 
     // print file name with possible blank fill
     for (uint8_t i = 0; i < 11; i++)
@@ -470,7 +470,7 @@ void printDirectory(uint8_t flags) {
       client.print(char(p.name[i]));
     }
 
-    client.print("</a>");
+    client.print F("</a>");
 
     if (DIR_IS_SUBDIR(&p))
     {
@@ -497,7 +497,7 @@ void printDirectory(uint8_t flags) {
 
 void serve_dummy()
 {
-  sendHeader("Request not found");
+  sendHeader F("Request not found");
   client.println F("Dummy page; <BR> To run a flicker test please load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
   sendFooter() ;
 }
@@ -527,7 +527,7 @@ void webTime ()
   second = myminute = hour = day = month = 0;
 
   // Just choose any reasonably busy web server, the load is really low
-  if (timeclient.connect("www.york.ac.uk", 80))
+  if (timeclient.connect ("www.york.ac.uk", 80))
   {
     // Make an HTTP 1.1 request which is missing a Host: header
     // compliant servers are required to answer with an error that includes
@@ -746,14 +746,14 @@ void doreadFile (const char * c)
   dir_t  dE;
   if (file.dirEntry (&dE))
   {
-    Serial.println("file date recovered") ;
+    Serial.println F("file date recovered") ;
   }
   else
   {
-    Serial.println("file date not recovered") ;
+    Serial.println F("file date not recovered") ;
   }
   gmdate ( dE );
-  Serial.print ("Last modified is:");
+  Serial.print F("Last modified is:");
   Serial.println( cPtr ) ;
   sendHeader(String(c), "", false, cPtr);
 
@@ -834,12 +834,12 @@ void collectSSVEPData ()
 
   Serial.print F("collecting data with ");
   Serial.print (nRepeats);
-  Serial.print ("r : c");
+  Serial.print F("r : c");
   Serial.println (iThisContrast);
 
   Serial.print F("update collecting data with ");
   Serial.print (nRepeats);
-  Serial.print ("r : c");
+  Serial.print F("r : c");
   Serial.println (iThisContrast);
 
   sampleCount = -presamples ;
@@ -911,7 +911,7 @@ void collect_fERG_Data ()
   nRepeats ++;
   Serial.print F("collecting fERG data with ");
   Serial.print (nRepeats);
-  Serial.print ("r : c");
+  Serial.print F("r : c");
   Serial.println (iThisContrast);
 
   sampleCount = -presamples ;
@@ -971,7 +971,7 @@ void flickerPage()
   Serial.print F("Sampling at :");
   Serial.println (String(sampleCount));
 
-  sendHeader("Sampling");
+  sendHeader F("Sampling");
 
   // script to reload ...
   client.println F("<script>");
@@ -1000,7 +1000,7 @@ void AppendFlashReport()
 {
   client.print F("Acquired ") ;
   client.print ( nRepeats );
-  client.print (" of ");
+  client.print F(" of ");
   client.print (maxRepeats);
   client.println F(" data blocks so far <BR>" );
   client.println (cInput);
@@ -1352,15 +1352,15 @@ void loop()
 
           // you're starting a new line
           // see if we need to save the old one
-          if (sTmp.indexOf("GET") >= 0)
+          if (sTmp.indexOf F("GET") >= 0)
           {
             MyInputString = sTmp;
           }          
-          int iTmp = sTmp.indexOf("Referer:") ;
+          int iTmp = sTmp.indexOf F("Referer:") ;
           if (iTmp >= 0)
           {
             MyReferString = sTmp.substring(iTmp + 9);
-            Serial.print("Ref string now :" );
+            Serial.print F("Ref string now :" );
             Serial.println (MyReferString);
           }
           sTmp = "";
