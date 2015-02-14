@@ -830,11 +830,7 @@ void collectSSVEPData ()
   unsigned int iTime ;
   if (iThisContrast == 0 && file.isOpen()) file.close();
 
-  if (iThisContrast >= maxContrasts)
-  {
-    iThisContrast = 0;
-    nRepeats ++;
-  }
+
 
   Serial.print F("collecting data with ");
   Serial.print (nRepeats);
@@ -892,6 +888,11 @@ void collectSSVEPData ()
   sampleCount ++ ;
   analogWrite(usedLED, 127);
   iThisContrast ++;
+  if (iThisContrast >= maxContrasts)
+  {
+    iThisContrast = 0;
+    nRepeats ++;
+  }
 
   writeFile(cFile);
 
@@ -1207,7 +1208,7 @@ void sendReply ()
     //Serial.println(" Proposed filename now" + sFile + ";");
     //if file exists... ????
     sFile.toCharArray(cFile, 29); // adds terminating null
-    if (fileExists(cFile) &&  iThisContrast >= maxContrasts && nRepeats >= maxRepeats)
+    if (fileExists(cFile) &&  nRepeats >= maxRepeats)
     {
       // done so tidy up
       nRepeats = iThisContrast = 0 ; // ready to start again
