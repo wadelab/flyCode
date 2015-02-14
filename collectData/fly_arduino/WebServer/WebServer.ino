@@ -8,32 +8,32 @@
 //_____________________________________________________
 
 #ifdef mega1
-  #define MAC_OK 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
-  //biolpc2793
- 
+#define MAC_OK 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
+//biolpc2793
+
 #endif
-  
+
 #ifdef mega2
-  #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
-  //biolpc2804
- 
+#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
+//biolpc2804
+
 #endif
 
 #ifdef due1
-  #define MAC_OK 0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA2
-  //90-A2-DA-0E-09-A2 biolpc2886
+#define MAC_OK 0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA2
+//90-A2-DA-0E-09-A2 biolpc2886
 #endif
 
 #ifdef due2
-  #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x6F, 0x9E
-  //90-A2-DA-0E-09-A2 biolpc2898
-  
+#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x6F, 0x9E
+//90-A2-DA-0E-09-A2 biolpc2898
+
 #endif
 
 #ifdef due3
-  #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x75, 0x17
-  //90-A2-DA-0E-09-A2 biolpc2899
-  
+#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x75, 0x17
+//90-A2-DA-0E-09-A2 biolpc2899
+
 #endif
 
 //#if defined(__AVR_ATmega2560__  __SAM3X8E__
@@ -73,7 +73,7 @@ int iIndex = 0 ;
 //
 byte usedLED  = 0;
 byte fiberLED = 8 ;
-#ifdef __SAM3X8E__ 
+#ifdef __SAM3X8E__
 // fix the LED order in hardware....
 const byte redled = 6;
 const byte grnled = 5;
@@ -124,12 +124,14 @@ uint16_t year ;
 
 const int MaxInputStr = 130 ;
 String MyInputString = String(MaxInputStr + 1);
+String MyReferString = String(MaxInputStr + 1);
+
 char cFile [30];
 char cInput [MaxInputStr + 2] = "";
 
 
 #ifndef MAC_OK
-   #error please define which arduino you are setting up
+#error please define which arduino you are setting up
 #endif
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
@@ -211,7 +213,7 @@ void setup() {
 #endif
 
 #ifdef __SAM3X8E__
-   analogReadResolution(12);
+  analogReadResolution(12);
 #endif
 
   goColour(0, 0, 0, 0, false);
@@ -404,11 +406,11 @@ void run_graph()
 
 void printTwoDigits(char * p, uint8_t v)
 {
-  
+
   *p   = '0' + v / 10;
-  *(p+1) = '0' + v % 10;
-  *(p+2) = 0;
-  
+  *(p + 1) = '0' + v % 10;
+  *(p + 2) = 0;
+
 }
 
 //code to print date...
@@ -417,20 +419,20 @@ void myPrintFatDateTime(const dir_t & pFile)
   // write this as a string to erg_in
   char * pErg_in = (char * ) erg_in ;
   erg_in [0] = 0;
-  
-  strcat(pErg_in," ");
+
+  strcat(pErg_in, " ");
   itoa( FAT_YEAR(pFile.lastWriteDate), pErg_in + 1, 10);
-  strcat(pErg_in,"-");
+  strcat(pErg_in, "-");
   printTwoDigits(pErg_in + strlen(pErg_in) , FAT_MONTH(pFile.lastWriteDate));
-  strcat(pErg_in,"-");
+  strcat(pErg_in, "-");
   printTwoDigits(pErg_in + strlen(pErg_in) , FAT_DAY(pFile.lastWriteDate));
-  strcat(pErg_in," ");
+  strcat(pErg_in, " ");
   printTwoDigits(pErg_in + strlen(pErg_in) , FAT_HOUR(pFile.lastWriteTime));
-  strcat(pErg_in,":");
+  strcat(pErg_in, ":");
   printTwoDigits(pErg_in + strlen(pErg_in) , FAT_MINUTE(pFile.lastWriteTime));
-  strcat(pErg_in,":");
+  strcat(pErg_in, ":");
   printTwoDigits(pErg_in + strlen(pErg_in) , FAT_SECOND(pFile.lastWriteTime));
-  strcat(pErg_in," ");
+  strcat(pErg_in, " ");
   client.print(pErg_in);
 }
 
@@ -602,19 +604,19 @@ void writeFile(const char * c)
       Serial.println (c);
       return ;
     }
-//    Serial.print("Expected date: ");
-//    Serial.print(year);
-//    Serial.print(" ");
-//    Serial.print(month);
-//    Serial.print(" ");
-//    Serial.print(day);
-//    Serial.print(" ");
-//    Serial.print(hour);
-//    Serial.print(" ");
-//    Serial.print(myminute);
-//    Serial.print(" ");
-//    Serial.print(second);
-//    Serial.print(" ");
+    //    Serial.print("Expected date: ");
+    //    Serial.print(year);
+    //    Serial.print(" ");
+    //    Serial.print(month);
+    //    Serial.print(" ");
+    //    Serial.print(day);
+    //    Serial.print(" ");
+    //    Serial.print(hour);
+    //    Serial.print(" ");
+    //    Serial.print(myminute);
+    //    Serial.print(" ");
+    //    Serial.print(second);
+    //    Serial.print(" ");
     if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
       Serial.println F ("Error in timestamping file");
       Serial.println (c);
@@ -684,46 +686,46 @@ void gmdate ( const dir_t & pFile)
 {
   char * cDays = (char *)F("Sun,Mon,Tue,Wed,Thu,Fri,Sat,Sun");
   char * cMonths = (char *)F("Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec,");
-    char * c  = (char *) erg_in ;
-    erg_in [0] = 0;
-    char cTmp [4];
-    int iTmp ;
-    int d = FAT_DAY(pFile.lastWriteDate) ;
-    int m = FAT_MONTH(pFile.lastWriteDate) ;
-    int y = FAT_YEAR(pFile.lastWriteDate) ;
-    
+  char * c  = (char *) erg_in ;
+  erg_in [0] = 0;
+  char cTmp [4];
+  int iTmp ;
+  int d = FAT_DAY(pFile.lastWriteDate) ;
+  int m = FAT_MONTH(pFile.lastWriteDate) ;
+  int y = FAT_YEAR(pFile.lastWriteDate) ;
+
   // Last-Modified: Tue, 15 Nov 1994 12:45:26 GMT
 
-  
+
   // find day of week http://stackoverflow.com/questions/6054016/c-program-to-find-day-of-week-given-date
-    iTmp = (d+=m<3?y--:y-2,23*m/9+d+4+y/4-y/100+y/400)%7   ;
+  iTmp = (d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) % 7   ;
   if (iTmp > 6) iTmp = 0;
   strncpy(cTmp, cDays + iTmp * 4, 3);
-  cTmp[3]=0;  
-  strcat (c, cTmp ); // "Tue" 
+  cTmp[3] = 0;
+  strcat (c, cTmp ); // "Tue"
   strcat (c, ", ");
-  
-  
+
+
   printTwoDigits(c + strlen(c) , FAT_DAY(pFile.lastWriteDate));
   strcat (c, " ");
-  
-  iTmp = m -1;
+
+  iTmp = m - 1;
   if (iTmp > 11) iTmp = 0;
   strncpy(cTmp, cMonths + iTmp * 4, 3);
-  cTmp[3]=0;  
-  strcat (c, cTmp ); // "Nov" 
-  
-  
+  cTmp[3] = 0;
+  strcat (c, cTmp ); // "Nov"
+
+
   strcat (c, " ");
   itoa( y, c + strlen(c), 10);
   strcat (c, " ");
   printTwoDigits(c + strlen(c) , FAT_HOUR(pFile.lastWriteDate));
   strcat (c, ":");
-    printTwoDigits(c + strlen(c) , FAT_MINUTE(pFile.lastWriteDate));
+  printTwoDigits(c + strlen(c) , FAT_MINUTE(pFile.lastWriteDate));
   strcat (c, ":");
-    printTwoDigits(c + strlen(c) , FAT_SECOND(pFile.lastWriteDate));
+  printTwoDigits(c + strlen(c) , FAT_SECOND(pFile.lastWriteDate));
   strcat (c, " GMT");
-  
+
   Serial.println( c );
 }
 
@@ -733,27 +735,27 @@ void doreadFile (const char * c)
   char * cPtr;
   cPtr = (char *) erg_in ;
   int iOldContrast ;
-  
+
   if (file.isOpen()) file.close();
   file.open(root, c, O_READ);
   // fix me - open file first and then send the headers
-  // Content-Length: 1000000 [size in bytes 
+  // Content-Length: 1000000 [size in bytes
   // Last-Modified: Sat, 28 Nov 2009 03:50:37 GMT
-    // make erg_in buffer do the dirty work of getting the date...
+  // make erg_in buffer do the dirty work of getting the date...
   dir_t  dE;
   if (file.dirEntry (&dE))
- { 
-   Serial.println("file date recovered") ;
- }
- else
-  { 
-   Serial.println("file date not recovered") ;
- }
+  {
+    Serial.println("file date recovered") ;
+  }
+  else
+  {
+    Serial.println("file date not recovered") ;
+  }
   gmdate ( dE );
   Serial.print ("Last modified is:");
   Serial.println( cPtr ) ;
   sendHeader(String(c), "", false, cPtr);
-  
+
   int iBytesRequested, iBytesRead;
   // note this overwrites any data already in memeory...
   //first read the header string ...
@@ -826,7 +828,7 @@ void collectSSVEPData ()
   long mean = 0;
   unsigned int iTime ;
   if (iThisContrast == 0 && file.isOpen()) file.close();
-  
+
   if (iThisContrast >= maxContrasts)
   {
     iThisContrast = 0;
@@ -1050,7 +1052,7 @@ void AppendSSVEPReport()
   iTmp = iTmp + iThisContrast ;
   Serial.print F(" really ");
   Serial.println (iTmp);
-  
+
   client.print (iTmp);
   client.print F(" of ");
   client.print (maxRepeats * maxContrasts);
@@ -1139,10 +1141,8 @@ void AppendSSVEPReport()
 }
 
 
-
-
-void loop() {
-  if (sampleCount < 0)
+void getData ()
+{ if (sampleCount < 0)
   {
     if (bDoFlash)
     {
@@ -1153,201 +1153,232 @@ void loop() {
       collectSSVEPData ();
     }
   }
+}
+
+
+void sendReply ()
+{
+
+  bool pageNotServed = true ;
+  Serial.print(MyInputString);
+  if (!has_filesystem)
+  {
+    sendHeader F("Card not working");
+    client.println F("SD Card failed");
+    sendFooter();
+    pageNotServed = false;
+  }
+
+  int fPOS = MyInputString.indexOf F("filename=");
+  // asking for new sample
+  //Serial.println("  Position of file was:" + String(fPOS));
+  if (pageNotServed && fPOS > 0)
+  {
+    // save the commandline....
+    MyInputString.toCharArray(cInput, MaxInputStr + 2);
+    // now choose the colour
+    int oldLED = usedLED ;
+    if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
+    if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
+    if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
+    if (MyInputString.indexOf F("col=fiber&") > 0 ) usedLED  = fiberLED ; //
+    //if (oldLED != usedLED)
+    goColour(0, 0, 0, 0, false);
+
+    //flash ERG or SSVEP?
+    bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
+
+    //Serial.println F("saving ???");
+    String sFile = MyInputString.substring(fPOS + 15); // ignore the leading / should be 9
+    //Serial.println("  Position of filename= was:" + String(fPOS));
+    //Serial.println(" Proposed saving filename " + sFile );
+    fPOS = sFile.indexOf F(" ");  // or  & id filename is not the last paramtere
+    //Serial.println("  Position of blankwas:" + String(fPOS));
+    sFile = sFile.substring(0, fPOS);
+    if (bDoFlash)
+    {
+      sFile = sFile + F(".ERG");
+    }
+    else
+    {
+      sFile = sFile + F(".SVP");
+    }
+    //Serial.println(" Proposed filename now" + sFile + ";");
+    //if file exists... ????
+    sFile.toCharArray(cFile, 29); // adds terminating null
+    if (fileExists(cFile) &&  iThisContrast >= maxContrasts && nRepeats >= maxRepeats)
+    {
+      // done so tidy up
+      nRepeats = iThisContrast = 0 ; // ready to start again
+      //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
+      file.close();
+
+      sendHeader F("Sampling Complete!");
+      client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
+#ifdef test_on_mac
+      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A>  ");
+#else
+#ifdef due1
+      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/sultan.html\"> sultan.html</A>  ");
+#else
+      client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
+#endif
+#endif
+      client.println F( "<BR><BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
+      sendFooter ();
+    }
+    else
+    {
+      flickerPage();
+      sampleCount = -102 ; //implies collectData();
+    }
+    pageNotServed = false ;
+  }
+  // show directory
+  fPOS = MyInputString.indexOf F("dir=");
+  //Serial.println("  Position of dir was:" + String(fPOS));
+  if (pageNotServed && fPOS > 0)
+  {
+    serve_dir() ;
+    pageNotServed = false ;
+  }
+
+  //light up
+  fPOS = MyInputString.indexOf F("white/");
+  //Serial.println("  Position of dir was:" + String(fPOS));
+  if (pageNotServed && fPOS > 0)
+  {
+    goColour(255, 255, 255, 0, true) ;
+    pageNotServed = false ;
+  }
+  fPOS = MyInputString.indexOf F("red/");
+  //Serial.println("  Position of dir was:" + String(fPOS));
+  if (pageNotServed && fPOS > 0)
+  {
+    goColour(255, 0, 0, 0, true) ;
+    pageNotServed = false ;
+  }
+  fPOS = MyInputString.indexOf F("blue/");
+  //Serial.println("  Position of dir was:" + String(fPOS));
+  if (pageNotServed && fPOS > 0)
+  {
+    goColour(0, 0, 255, 0, true) ;
+    pageNotServed = false ;
+  }
+  fPOS = MyInputString.indexOf F("green/");
+  //Serial.println("  Position of dir was:" + String(fPOS));
+  if (pageNotServed && fPOS > 0)
+  {
+    goColour(0, 255, 0, 0, true) ;
+    pageNotServed = false ;
+  }
+  fPOS = MyInputString.indexOf F("black/");
+  //Serial.println("  Position of dir was:" + String(fPOS));
+  if (pageNotServed && fPOS > 0)
+  {
+    goColour(0, 0, 0, 0, true) ;
+    pageNotServed = false ;
+  }
+  fPOS = MyInputString.indexOf F("fiber/");
+  //Serial.println("  Position of dir was:" + String(fPOS));
+  if (pageNotServed && fPOS > 0)
+  {
+    goColour(0, 0, 0, 255, true) ;
+    pageNotServed = false ;
+  }
+
+  //          // get date
+  //          fPOS = MyInputString.indexOf("date=");
+  //          //Serial.println("  Position of dir was:" + String(fPOS));
+  //          if (pageNotServed && fPOS > 0)
+  //          {
+  //            getDate () ;
+  //            pageNotServed = false ;
+  //          }
+
+
+  fPOS = MyInputString.indexOf F(".SVP");
+  if (fPOS == -1)
+  {
+    fPOS = MyInputString.indexOf F(".ERG");
+  }
+  //Serial.println("  Position of .SVP was:" + String(fPOS));
+  if (pageNotServed && fPOS > 0)
+  {
+    // requested a file...
+    fPOS = MyInputString.indexOf F("/");
+    String sFile = MyInputString.substring(fPOS + 1); // ignore the leading /
+    //Serial.println(" Proposed filename " + sFile );
+    fPOS = sFile.indexOf(" ");
+    sFile = sFile.substring(0, fPOS);
+    //Serial.println(" Proposed filename now" + sFile + ";");
+    sFile.toCharArray(cFile, 29); // adds terminating null
+    doreadFile(cFile) ;
+    pageNotServed = false ;
+
+  }
+  if (pageNotServed)
+  {
+    run_graph() ;
+  }
+  MyInputString = "";
+}
+
+void loop()
+{
+  String sTmp = "";
+  getData ();
+  boolean currentLineIsBlank = true;
   // listen for incoming clients
   client = server.available();
   if (client) {
     Serial.println F("new client");
+    MyInputString = "";
     // an http request ends with a blank line
     while (client.connected()) {
       if (client.available()) {
         char c = client.read();
-        if (MyInputString.length() < MaxInputStr)
-        {
-          MyInputString.concat(c);
-        }
+        Serial.print(c);
 
-        //Serial.write(c);
         // if you've gotten to the end of the line (received a newline
         // character) and the line is blank, the http request has ended,
         // so you can send a reply
-        if (c == '\n' )
+        if (c == '\n' && currentLineIsBlank)
         {
-          bool pageNotServed = true ;
-          Serial.print(MyInputString);
-          if (!has_filesystem)
-          {
-            sendHeader F("Card not working");
-            client.println F("SD Card failed");
-            sendFooter();
-            pageNotServed = false;
-          }
-
-          int fPOS = MyInputString.indexOf F("filename=");
-          // asking for new sample
-          //Serial.println("  Position of file was:" + String(fPOS));
-          if (pageNotServed && fPOS > 0)
-          {
-            // save the commandline....
-            MyInputString.toCharArray(cInput, MaxInputStr + 2);
-            // now choose the colour
-            int oldLED = usedLED ;
-            if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
-            if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
-            if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
-            if (MyInputString.indexOf F("col=fiber&") > 0 ) usedLED  = fiberLED ; //
-            //if (oldLED != usedLED)
-            goColour(0, 0, 0, 0, false);
-
-            //flash ERG or SSVEP?
-            bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
-
-            //Serial.println F("saving ???");
-            String sFile = MyInputString.substring(fPOS + 15); // ignore the leading / should be 9
-            //Serial.println("  Position of filename= was:" + String(fPOS));
-            //Serial.println(" Proposed saving filename " + sFile );
-            fPOS = sFile.indexOf F(" ");  // or  & id filename is not the last paramtere
-            //Serial.println("  Position of blankwas:" + String(fPOS));
-            sFile = sFile.substring(0, fPOS);
-            if (bDoFlash)
-            {
-              sFile = sFile + F(".ERG");
-            }
-            else
-            {
-              sFile = sFile + F(".SVP");
-            }
-            //Serial.println(" Proposed filename now" + sFile + ";");
-            //if file exists... ????
-            sFile.toCharArray(cFile, 29); // adds terminating null
-            if (fileExists(cFile) &&  iThisContrast >= maxContrasts && nRepeats >= maxRepeats)
-            {
-              // done so tidy up
-              nRepeats = iThisContrast = 0 ; // ready to start again
-              //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
-              file.close();
-
-              sendHeader F("Sampling Complete!");
-              client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
-#ifdef test_on_mac
-              client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form04.html\"> form04.html</A>  ");
-#else
-#ifdef due1
-              client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/sultan.html\"> sultan.html</A>  ");
-#else
-              client.println F("To run another test please stop and then load <A HREF=\"http://biolpc22.york.ac.uk/cje2/form.html\"> form.html</A>  ");
-#endif
-#endif
-              client.println F( "<BR><BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
-              sendFooter ();
-            }
-            else
-            {
-              flickerPage();
-              sampleCount = -102 ; //implies collectData();
-            }
-            pageNotServed = false ;
-          }
-          // show directory
-          fPOS = MyInputString.indexOf F("dir=");
-          //Serial.println("  Position of dir was:" + String(fPOS));
-          if (pageNotServed && fPOS > 0)
-          {
-            serve_dir() ;
-            pageNotServed = false ;
-          }
-
-          //light up
-          fPOS = MyInputString.indexOf F("white/");
-          //Serial.println("  Position of dir was:" + String(fPOS));
-          if (pageNotServed && fPOS > 0)
-          {
-            goColour(255, 255, 255, 0, true) ;
-            pageNotServed = false ;
-          }
-          fPOS = MyInputString.indexOf F("red/");
-          //Serial.println("  Position of dir was:" + String(fPOS));
-          if (pageNotServed && fPOS > 0)
-          {
-            goColour(255, 0, 0, 0, true) ;
-            pageNotServed = false ;
-          }
-          fPOS = MyInputString.indexOf F("blue/");
-          //Serial.println("  Position of dir was:" + String(fPOS));
-          if (pageNotServed && fPOS > 0)
-          {
-            goColour(0, 0, 255, 0, true) ;
-            pageNotServed = false ;
-          }
-          fPOS = MyInputString.indexOf F("green/");
-          //Serial.println("  Position of dir was:" + String(fPOS));
-          if (pageNotServed && fPOS > 0)
-          {
-            goColour(0, 255, 0, 0, true) ;
-            pageNotServed = false ;
-          }
-          fPOS = MyInputString.indexOf F("black/");
-          //Serial.println("  Position of dir was:" + String(fPOS));
-          if (pageNotServed && fPOS > 0)
-          {
-            goColour(0, 0, 0, 0, true) ;
-            pageNotServed = false ;
-          }    
-          fPOS = MyInputString.indexOf F("fiber/");
-          //Serial.println("  Position of dir was:" + String(fPOS));
-          if (pageNotServed && fPOS > 0)
-          {
-            goColour(0, 0, 0, 255, true) ;
-            pageNotServed = false ;
-          }
-
-          //          // get date
-          //          fPOS = MyInputString.indexOf("date=");
-          //          //Serial.println("  Position of dir was:" + String(fPOS));
-          //          if (pageNotServed && fPOS > 0)
-          //          {
-          //            getDate () ;
-          //            pageNotServed = false ;
-          //          }
-
-
-          fPOS = MyInputString.indexOf F(".SVP");
-          if (fPOS == -1)
-          {
-            fPOS = MyInputString.indexOf F(".ERG");
-          }
-          //Serial.println("  Position of .SVP was:" + String(fPOS));
-          if (pageNotServed && fPOS > 0)
-          {
-            // requested a file...
-            fPOS = MyInputString.indexOf F("/");
-            String sFile = MyInputString.substring(fPOS + 1); // ignore the leading /
-            //Serial.println(" Proposed filename " + sFile );
-            fPOS = sFile.indexOf(" ");
-            sFile = sFile.substring(0, fPOS);
-            //Serial.println(" Proposed filename now" + sFile + ";");
-            sFile.toCharArray(cFile, 29); // adds terminating null
-            doreadFile(cFile) ;
-            pageNotServed = false ;
-
-          }
-          if (pageNotServed)
-          {
-            run_graph() ;
-          }
-          MyInputString = "";
+          sendReply ()  ;
           break ;
         }
 
-
         if (c == '\n')
         {
-          // you're starting a new line
-          // this is never called
-          MyInputString = "";
+          //Serial.print("Input string now " );
+          //Serial.println (sTmp);
 
+          // you're starting a new line
+          // see if we need to save the old one
+          if (sTmp.indexOf("GET") >= 0)
+          {
+            MyInputString = sTmp;
+          }          
+          int iTmp = sTmp.indexOf("Referer:") ;
+          if (iTmp >= 0)
+          {
+            MyReferString = sTmp.substring(iTmp + 9);
+            Serial.print("Ref string now :" );
+            Serial.println (MyReferString);
+          }
+          sTmp = "";
+
+          currentLineIsBlank = true;
         }
-        else if (c != '\r') {
+        else if (c != '\r')
+        {
           // you've gotten a character on the current line
+          currentLineIsBlank = false;
+          if (sTmp.length() < MaxInputStr)
+          {
+            sTmp.concat(c);
+          }
         }
       }
     }
