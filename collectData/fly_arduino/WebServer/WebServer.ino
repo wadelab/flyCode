@@ -435,7 +435,7 @@ void printDirectory(uint8_t flags) {
   // This code is just copied from SdFile.cpp in the SDFat library
   // and tweaked to print to the client output in html!
   dir_t p;
-
+  int iFiles = 0 ;
   root.rewind();
   client.println F("<ul>");
   while (root.readDir(p) > 0) {
@@ -482,11 +482,14 @@ void printDirectory(uint8_t flags) {
       myPrintFatDateTime(p);
       client.print F(" size: ");
       client.print(p.fileSize);
+      iFiles ++;
     }
     client.println F("</li>");
   }
   client.println F("</ul>");
 
+  client.print (iFiles);
+  client.println F(" files found on disk ");
 
 }
 
@@ -675,10 +678,15 @@ bool fileExists(const char * c)
   return bExixsts ;
 }
 
-
+ // find day of week http://stackoverflow.com/questions/6054016/c-program-to-find-day-of-week-given-date
+int DayOfWeek (int d, int m, int y)
+{
+  return (d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) % 7   ;
+}
 
 void gmdate ( const dir_t & pFile)
 {
+  // Last-Modified: Tue, 15 Nov 1994 12:45:26 GMT
   char * cDays = (char *)F("Sun,Mon,Tue,Wed,Thu,Fri,Sat,Sun");
   char * cMonths = (char *)F("Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec,");
   char * c  = (char *) erg_in ;
@@ -689,11 +697,9 @@ void gmdate ( const dir_t & pFile)
   int m = FAT_MONTH(pFile.lastWriteDate) ;
   int y = FAT_YEAR(pFile.lastWriteDate) ;
 
-  // Last-Modified: Tue, 15 Nov 1994 12:45:26 GMT
 
 
-  // find day of week http://stackoverflow.com/questions/6054016/c-program-to-find-day-of-week-given-date
-  iTmp = (d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) % 7   ;
+  iTmp = DayOfWeek (d,m,y) ;
   if (iTmp > 6) iTmp = 0;
   strncpy(cTmp, cDays + iTmp * 4, 3);
   cTmp[3] = 0;
@@ -714,11 +720,11 @@ void gmdate ( const dir_t & pFile)
   strcat (c, " ");
   itoa( y, c + strlen(c), 10);
   strcat (c, " ");
-  printTwoDigits(c + strlen(c) , FAT_HOUR(pFile.lastWriteDate));
+  printTwoDigits(c + strlen(c) , FAT_HOUR(pFile.lastWriteTime));
   strcat (c, ":");
-  printTwoDigits(c + strlen(c) , FAT_MINUTE(pFile.lastWriteDate));
+  printTwoDigits(c + strlen(c) , FAT_MINUTE(pFile.lastWriteTime));
   strcat (c, ":");
-  printTwoDigits(c + strlen(c) , FAT_SECOND(pFile.lastWriteDate));
+  printTwoDigits(c + strlen(c) , FAT_SECOND(pFile.lastWriteTime));
   strcat (c, " GMT");
 
   Serial.println( c );
