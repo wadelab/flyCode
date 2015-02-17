@@ -19,9 +19,12 @@ try % This will fail, for example, on non-windows machines
         % daqInfo.hwName an daqInfo.devName are typically something like
         % 'ni' and 'Dev1'
         
-        addAnalogInputChannel(daqInfo.input,daqInfo.devName,'ai0','Voltage');
-        addAnalogInputChannel(daqInfo.input,daqInfo.devName,'ai1','Voltage');
-        addAnalogInputChannel(daqInfo.input,daqInfo.devName,'ai5','Voltage'); % There are three channels - two flies and a photodiode
+        ch0 = addAnalogInputChannel(daqInfo.input,daqInfo.devName,'ai0','Voltage');
+        ch1 = addAnalogInputChannel(daqInfo.input,daqInfo.devName,'ai1','Voltage');
+        ch5 = addAnalogInputChannel(daqInfo.input,daqInfo.devName,'ai5','Voltage'); % There are three channels - two flies and a photodiode
+        ch0.Range = [-2.5,2.5];
+        ch1.Range = [-2.5,2.5];
+        ch5.Range = [-2.5,2.5];
         daqInfo.input.Rate=daqInfo.digitizerSampleRate;
         daqInfo.inputListenerHandle =addlistener(daqInfo.input,'DataAvailable',@fly_dataListener);
         daqInfo.input.DurationInSeconds= daqInfo.totalTrialDuration;
