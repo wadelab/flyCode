@@ -4,13 +4,13 @@
 // mega1 biolpc2793
 // mega2 biolpc2804
 //#define test_on_mac
-#define due2
+#define __wifisetup__
+//#define due1
 //_____________________________________________________
 
 #ifdef mega1
 #define MAC_OK 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 //biolpc2793
-
 #endif
 
 #ifdef mega2
@@ -34,6 +34,9 @@
 //90-A2-DA-0E-09-A2 biolpc2899
 #endif
 
+#ifdef __wifisetup__
+#define MAC_OK
+#endif
 
 
 //#if defined(__AVR_ATmega2560__  __SAM3X8E__
@@ -61,7 +64,17 @@ Prototype : put the grey wire in ground, and purple wire in pin7
 // is 10 on normal uno
 
 #include <SPI.h>
+
+#ifndef __wifisetup__
+
 #include <Ethernet.h>
+
+#else
+
+#include <WiFi.h>
+
+#endif
+
 #include <SD.h>
 //#include <FixFFT.h>
 
@@ -135,14 +148,25 @@ char cInput [MaxInputStr + 2] = "";
 #endif
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
-byte mac[] = { MAC_OK } ;
 
+#ifndef __wifisetup__
+//
+
+byte mac[] = { MAC_OK } ;
 
 // Initialize the Ethernet server library
 // with the IP address and port you want to use
 // (port 80 is default for HTTP):
 EthernetServer server(80);
 EthernetClient client ;
+
+#else
+
+WiFiServer server (80);
+WiFiClient client (80);
+
+#endif
+
 
 void setup() {
 
@@ -191,12 +215,35 @@ void setup() {
   {
     Serial.println F("SD card ok\n");
   }
+  
+#ifdef __wifisetup__
+//char ssid[] = "SSID";     //  your network SSID (name)
+//char pass[] = "PASSWD";  // your network password
+#include "./secret.h"
+
+int status = WL_IDLE_STATUS;
+ while ( status != WL_CONNECTED)
+ {
+    Serial.print("Attempting to connect to Network named: ");
+    Serial.println(ssid);                   // print the network name (SSID);
+
+    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+    status = WiFi.begin(ssid, pass);
+    // wait 10 seconds for connection:
+    delay(10000);
+  }
+  server.begin();                           // start the web server on port 80
+  printWifiStatus();                        // you're connected now, so print out the status
+
+#else
   Serial.println F("Setting up the Ethernet card...\n");
   // start the Ethernet connection and the server:
   Ethernet.begin(mac);
   server.begin();
   Serial.print F("server is at ");
   Serial.println(Ethernet.localIP());
+#endif  
+  
 #ifdef __AVR_ATmega2560__
   //set up PWM
   //http://forum.arduino.cc/index.php?topic=72092.0
@@ -216,12 +263,34 @@ void setup() {
   analogReadResolution(12);
 #endif
 
-  goColour(0, 0, 0, 0, false);
+  //goColour(0, 0, 0, 0, false);
 
   doShuffle();
 }
 
+#ifdef __wifisetup__
 
+void printWifiStatus() {
+  // print the SSID of the network you're attached to:
+  Serial.print F("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  // print your WiFi shield's IP address:
+  IPAddress ip = WiFi.localIP();
+  Serial.print F("IP Address: ");
+  Serial.println(ip);
+
+  // print the received signal strength:
+  long rssi = WiFi.RSSI();
+  Serial.print F("signal strength (RSSI):");
+  Serial.print (rssi);
+  Serial.println F(" dBm");
+  // print where to go in a browser:
+  Serial.print F("To see this page in action, open a browser to http://");
+  Serial.println (ip);
+}
+
+#endif
 
 
 void doShuffle()
@@ -521,7 +590,11 @@ int fERG_Now (unsigned int t)
 
 void webTime ()
 {
+#ifdef __wifisetup__
+  WiFiClient timeclient;
+#else
   EthernetClient timeclient;
+#endif  
   // default values ...
   year = 2015;
   second = myminute = hour = day = month = 0;
@@ -1322,20 +1395,22 @@ void sendReply ()
 
 void loop()
 {
+  
   String sTmp = "";
+  MyInputString = "";
   getData ();
   boolean currentLineIsBlank = true;
   // listen for incoming clients
-  client = server.available();
+  
+ client = server.available();
   if (client) {
     Serial.println F("new client");
     MyInputString = "";
     // an http request ends with a blank line
     while (client.connected()) {
-      if (client.available()) {
-        char c = client.read();
-        Serial.print(c);
-
+      if (client.available()) {            // if there's bytes to read from the client,
+        char c = client.read();  
+        
         // if you've gotten to the end of the line (received a newline
         // character) and the line is blank, the http request has ended,
         // so you can send a reply
