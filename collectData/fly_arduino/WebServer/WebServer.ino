@@ -4,8 +4,8 @@
 // mega1 biolpc2793
 // mega2 biolpc2804
 //#define test_on_mac
-#define __wifisetup__
-//#define due1
+//#define __wifisetup__
+#define due2
 //_____________________________________________________
 
 #ifdef mega1
@@ -844,6 +844,7 @@ void doreadFile (const char * c)
 
   // write out the string ....
   client.print(cPtr);
+  client.println();
   // test if its an ERG
   boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
 
@@ -1251,6 +1252,8 @@ void sendReply ()
   {
     // save the commandline....
     MyInputString.toCharArray(cInput, MaxInputStr + 2);
+    char * cP = strstr(cInput,"HTTP/");
+    if(cP) cP = '\0';
     // now choose the colour
     int oldLED = usedLED ;
     if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
