@@ -1,5 +1,7 @@
 
 //try this http://gammon.com.au/forum/?id=11488&reply=5#reply5 for interrupts
+//Digital pin 7 is used as a handshake pin between the WiFi shield and the Arduino, and should not be used
+// don't use pin 4 or 10-12 either...
 
 // mega1 biolpc2793
 // mega2 biolpc2804
@@ -966,6 +968,7 @@ void collectSSVEPData ()
   {
     iThisContrast = 0;
     nRepeats ++;
+    doShuffle ();
   }
 
   writeFile(cFile);
