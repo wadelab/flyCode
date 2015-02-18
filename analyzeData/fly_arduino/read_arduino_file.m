@@ -94,6 +94,11 @@ if (nContrasts < 1025)
 end
 
 nContrasts= nContrasts/1025
+if (mod(nContrasts,1) ~= 0)
+    thisFlyData.Error = ['Not exactly 1024 data lines in file : ', fName]
+    success = false ;
+    return
+end
 timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
 
