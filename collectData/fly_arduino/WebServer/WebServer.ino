@@ -7,7 +7,7 @@
 // mega2 biolpc2804
 //#define test_on_mac
 //#define __wifisetup__
-#define due2
+#define due1
 //_____________________________________________________
 
 #ifdef mega1
@@ -100,6 +100,7 @@ const byte bluLED = 7;
 #endif
 
 const byte analogPin = 0 ;
+byte iGainFactor = 1 ;
 
 byte nRepeats = 0;
 const byte maxRepeats = 5;
@@ -263,6 +264,7 @@ int status = WL_IDLE_STATUS;
 
 #ifdef __SAM3X8E__
   analogReadResolution(12);
+  iGainFactor = 4 ;
 #endif
 
   //goColour(0, 0, 0, 0, false);
@@ -390,7 +392,7 @@ void run_graph()
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   int sensorReading = analogRead(analogPin);
-  myGraphData[iIndex] = sensorReading ;
+  myGraphData[iIndex] = sensorReading / iGainFactor ;
   iIndex ++ ;
   if (iIndex > max_graph_data / 10 && iIndex < max_graph_data / 2)
   {
