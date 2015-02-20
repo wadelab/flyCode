@@ -66,6 +66,7 @@ end
 on_transient_data  = rawdata (:,300:400);
 on_transient_TF  = on_transient_data < ymin/2;
 ontransient_width = sum(on_transient_TF, 2);
+on_trasient_min = min (on_transient_data,[],2) ;
 
 
 
@@ -117,7 +118,7 @@ for i = 1:length(lineSaved)
 end 
 
 for i = 1:nContrasts
-disp (['on transient width of repeat ',num2str(i),' is ', num2str(ontransient_width(i))]);
+disp (['on transient width of repeat ',num2str(i),' is ', num2str(4 * ontransient_width(i)), ' ms; min was ', num2str(on_trasient_min(i)/50), ' mV']);
 end
 
 
