@@ -7,7 +7,7 @@
 // mega2 biolpc2804
 //#define test_on_mac
 //#define __wifisetup__
-#define due1
+#define __wifisetup__
 //_____________________________________________________
 
 #ifdef mega1
@@ -92,11 +92,11 @@ byte fiberLED = 8 ;
 // fix the LED order in hardware....
 const byte redled = 6;
 const byte grnled = 5;
-const byte bluLED = 7;
+const byte bluLED = 8;
 #else
 const byte redled = 5;
 const byte grnled = 6;
-const byte bluLED = 7;
+const byte bluLED = 8;
 #endif
 
 const byte analogPin = 0 ;
@@ -233,7 +233,7 @@ int status = WL_IDLE_STATUS;
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
     status = WiFi.begin(ssid, pass);
     // wait 10 seconds for connection:
-    delay(10000);
+    delay(2000); // 2 s seems enough
   }
   server.begin();                           // start the web server on port 80
   printWifiStatus();                        // you're connected now, so print out the status
@@ -267,7 +267,7 @@ int status = WL_IDLE_STATUS;
   iGainFactor = 4 ;
 #endif
 
-  //goColour(0, 0, 0, 0, false);
+  goColour(0, 0, 0, 0, false);
 
   doShuffle();
 }
