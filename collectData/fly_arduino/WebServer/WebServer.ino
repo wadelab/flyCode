@@ -399,18 +399,16 @@ void run_graph()
   int sensorReading = analogRead(connectedPin);
 //  Serial.print(" sweep is : ");  
 //  Serial.println(sensorReading);
-  digitalWrite (noContactLED, LOW);
-  if (sensorReading < 2 )
-  {
-    //probably no contact
-//    Serial.print("on");
-    digitalWrite (noContactLED, HIGH);
-  }
-  if (sensorReading > 4090)
+  
+  if (sensorReading < 2 || sensorReading > 4090)
     {
     //probably no contact
     digitalWrite (noContactLED, HIGH);
 //    Serial.print("on");
+  }
+  else 
+  {
+    digitalWrite (noContactLED, LOW);
   }
   
   sensorReading = analogRead(analogPin);
@@ -449,7 +447,7 @@ void run_graph()
   if (iIndex >= max_graph_data) iIndex = 0;
   for (int i = 0; i < max_graph_data - 2; i++)
   {
-    if (i < iIndex || i > iIndex + 1)
+    if (i < iIndex - 1 || i > iIndex + 1)
     {
       client.print F("ctx.moveTo(");
       client.print (i * 20);
@@ -468,15 +466,11 @@ void run_graph()
   //draw stimulus...
   client.print F("ctx.moveTo(");
   client.print ((max_graph_data / 10) * 20);
-  client.print F(",");
-  client.print (30);
-  client.println F(");");
+  client.print F(",30);");
 
   client.print F("ctx.lineTo(");
   client.print (max_graph_data / 2 * 20);
-  client.print (",");
-  client.print (30);
-  client.println F(");");
+  client.print F(",30);");
 
   client.println F("ctx.strokeStyle=\"blue\";");
   //              client.println("ctx.lineWidth=5;");
