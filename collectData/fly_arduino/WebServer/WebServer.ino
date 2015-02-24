@@ -1084,6 +1084,7 @@ void AppendFlashReport()
   client.println F(" data blocks so far <BR>" );
   client.println (cInput);
   client.println F( "<BR> ");
+  client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
 
   if (nRepeats > 0)
   {
@@ -1140,6 +1141,9 @@ void AppendSSVEPReport()
   client.println F(" data blocks so far <BR>" );
   client.println (cInput);
   client.println F( "<BR> ");
+  
+  client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
+
 
 
   if (iThisContrast < maxContrasts)
