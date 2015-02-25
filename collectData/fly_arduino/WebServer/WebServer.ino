@@ -1246,21 +1246,18 @@ void getData ()
 
 void sendReply ()
 {
-
-  bool pageNotServed = true ;
   Serial.print(MyInputString);
   if (!has_filesystem)
   {
     sendHeader F("Card not working");
     client.println F("SD Card failed");
     sendFooter();
-    pageNotServed = false;
+    return ;
   }
 
   int fPOS = MyInputString.indexOf F("filename=");
   // asking for new sample
-  //Serial.println("  Position of file was:" + String(fPOS));
-  if (pageNotServed && fPOS > 0)
+  if (fPOS > 0)
   {
     // save the commandline....
     MyInputString.toCharArray(cInput, MaxInputStr + 2);
@@ -1294,106 +1291,92 @@ void sendReply ()
       sFile = sFile + F(".SVP");
     }
     
-    if (MyInputString.indexOf F("stop/") > 0)
-    {
-      nRepeats = maxRepeats + 1 ;
-      Serial.println("stop requested");
-    }
     //Serial.println(" Proposed filename now" + sFile + ";");
     //if file exists... ????
     sFile.toCharArray(cFile, 29); // adds terminating null
-    if (fileExists(cFile) &&  nRepeats >= maxRepeats)
+    if (!fileExists(cFile)) 
     {
-      // done so tidy up
-      nRepeats = iThisContrast = 0 ; // ready to start again
-      //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
-      file.close();
-
-      sendHeader F("Sampling Complete!");
-      client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
-
-      client.println F("To setup for another test please  <A HREF=\"") ;
-      client.println (MyReferString) ;
-      client.println F("\">click here</A>  <BR><BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
-      sendFooter ();
+        // new file
+        nRepeats = iThisContrast = 0 ;
     }
-    else
-    {
+    
+    if (fileExists(cFile) && nRepeats >= maxRepeats)
+      {
+        // done so tidy up
+        nRepeats = iThisContrast = 0 ; // ready to start again
+        //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
+        file.close();
+  
+        sendHeader F("Sampling Complete!");
+        client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
+  
+        client.println F("To setup for another test please  <A HREF=\"") ;
+        client.println (MyReferString) ;
+        client.println F("\">click here</A>  <BR><BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
+        sendFooter ();
+        return ;
+      }
+  
       flickerPage();
       sampleCount = -102 ; //implies collectData();
-    }
-    pageNotServed = false ;
+      return ;
   }
-  // show directory
+
+// show directory
   fPOS = MyInputString.indexOf F("dir=");
   //Serial.println("  Position of dir was:" + String(fPOS));
-  if (pageNotServed && fPOS > 0)
+  if (fPOS > 0)
   {
     serve_dir() ;
-    pageNotServed = false ;
+    return ;
   }
 
-  //light up
+//light up
   fPOS = MyInputString.indexOf F("white/");
-  //Serial.println("  Position of dir was:" + String(fPOS));
-  if (pageNotServed && fPOS > 0)
+  if (fPOS > 0)
   {
     goColour(255, 255, 255, 0, true) ;
-    pageNotServed = false ;
+    return ;
   }
   fPOS = MyInputString.indexOf F("red/");
-  //Serial.println("  Position of dir was:" + String(fPOS));
-  if (pageNotServed && fPOS > 0)
+  if (fPOS > 0)
   {
     goColour(255, 0, 0, 0, true) ;
-    pageNotServed = false ;
+   return ;
   }
   fPOS = MyInputString.indexOf F("blue/");
-  //Serial.println("  Position of dir was:" + String(fPOS));
-  if (pageNotServed && fPOS > 0)
+  if (fPOS > 0)
   {
     goColour(0, 0, 255, 0, true) ;
-    pageNotServed = false ;
+    return ;
   }
   fPOS = MyInputString.indexOf F("green/");
-  //Serial.println("  Position of dir was:" + String(fPOS));
-  if (pageNotServed && fPOS > 0)
+  if (fPOS > 0)
   {
     goColour(0, 255, 0, 0, true) ;
-    pageNotServed = false ;
+    return ;
   }
   fPOS = MyInputString.indexOf F("black/");
-  //Serial.println("  Position of dir was:" + String(fPOS));
-  if (pageNotServed && fPOS > 0)
+  if (fPOS > 0)
   {
     goColour(0, 0, 0, 0, true) ;
-    pageNotServed = false ;
+    return ;
   }
   fPOS = MyInputString.indexOf F("fiber/");
-  //Serial.println("  Position of dir was:" + String(fPOS));
-  if (pageNotServed && fPOS > 0)
+  if (fPOS > 0)
   {
     goColour(0, 0, 0, 255, true) ;
-    pageNotServed = false ;
+    return ;
   }
 
-  //          // get date
-  //          fPOS = MyInputString.indexOf("date=");
-  //          //Serial.println("  Position of dir was:" + String(fPOS));
-  //          if (pageNotServed && fPOS > 0)
-  //          {
-  //            getDate () ;
-  //            pageNotServed = false ;
-  //          }
-
-
+// a file is requested...
   fPOS = MyInputString.indexOf F(".SVP");
   if (fPOS == -1)
   {
     fPOS = MyInputString.indexOf F(".ERG");
   }
   //Serial.println("  Position of .SVP was:" + String(fPOS));
-  if (pageNotServed && fPOS > 0)
+  if (fPOS > 0)
   {
     // requested a file...
     fPOS = MyInputString.indexOf F("/");
@@ -1404,13 +1387,12 @@ void sendReply ()
     //Serial.println(" Proposed filename now" + sFile + ";");
     sFile.toCharArray(cFile, 29); // adds terminating null
     doreadFile(cFile) ;
-    pageNotServed = false ;
+    return ;
 
   }
-  if (pageNotServed)
-  {
-    run_graph() ;
-  }
+  
+  // default - any other url
+  run_graph() ;
   MyInputString = "";
 }
 
