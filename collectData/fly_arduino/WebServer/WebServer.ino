@@ -7,12 +7,12 @@
 // mega2 biolpc2804
 //#define test_on_mac
 //#define __wifisetup__
-#define __wifisetup__
+#define due2
 //_____________________________________________________
 
 #ifdef mega1
 #define MAC_OK 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
-//biolpc2793
+//biolpc2793 [in use in lab with Emily and Richard]
 #endif
 
 #ifdef mega2
@@ -23,7 +23,7 @@
 
 #ifdef due1
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA2
-//90-A2-DA-0E-09-A2 biolpc2886
+//90-A2-DA-0E-09-A2 biolpc2886 [in use for Sultan]
 #endif
 
 #ifdef due2
@@ -1045,7 +1045,7 @@ void collect_fERG_Data ()
 
 }
 
-void flickerPage()
+void flickerPage() 
 {
   Serial.print F("Sampling at :");
   Serial.println (String(sampleCount));
@@ -1060,7 +1060,11 @@ void flickerPage()
   client.println F("};");
 
   client.println F("function myStopFunction() {");
-  client.println F("clearInterval(myVar); }");
+  client.println F("var b = confirm(\"Really Stop Data Acqusition ?\"); \n if ( b == true )  ");
+  client.print F("{ \n clearInterval(myVar);  \n location.assign(\"");
+  client.print (MyReferString);
+  client.print F("\") } }");
+  //client.println F("location.assign(\"stop/\");");
   client.println F("");
   client.println F("</script>");
 
@@ -1081,10 +1085,11 @@ void AppendFlashReport()
   client.print ( nRepeats );
   client.print F(" of ");
   client.print (maxRepeats);
-  client.println F(" data blocks so far <BR>" );
+  client.println F(" data blocks so far " );
+  client.println F("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
   client.println F( "<BR> ");
-  client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
+  
 
   if (nRepeats > 0)
   {
@@ -1138,13 +1143,11 @@ void AppendSSVEPReport()
   client.print (iTmp);
   client.print F(" of ");
   client.print (maxRepeats * maxContrasts);
-  client.println F(" data blocks so far <BR>" );
+  client.println F(" data blocks so far " );
+  client.println F("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
   client.println F( "<BR> ");
   
-  client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
-
-
 
   if (iThisContrast < maxContrasts)
   {
@@ -1289,6 +1292,12 @@ void sendReply ()
     else
     {
       sFile = sFile + F(".SVP");
+    }
+    
+    if (MyInputString.indexOf F("stop/") > 0)
+    {
+      nRepeats = maxRepeats + 1 ;
+      Serial.println("stop requested");
     }
     //Serial.println(" Proposed filename now" + sFile + ";");
     //if file exists... ????
@@ -1447,8 +1456,8 @@ void loop()
           if (iTmp >= 0)
           {
             MyReferString = sTmp.substring(iTmp + 9);
-            Serial.print F("Ref string now :" );
-            Serial.println (MyReferString);
+//            Serial.print F("Ref string now :" );
+//            Serial.println (MyReferString);
           }
           sTmp = "";
 
