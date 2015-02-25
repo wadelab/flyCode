@@ -7,7 +7,9 @@
 // mega2 biolpc2804
 //#define test_on_mac
 //#define __wifisetup__
+
 #define due2
+
 //_____________________________________________________
 
 #ifdef mega1
@@ -28,7 +30,7 @@
 
 #ifdef due2
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x6F, 0x9E
-//90-A2-DA-0E-09-A2 biolpc2898
+//90-A2-DA-0E-09-A2 biolpc2898 [used in testing...]
 #endif
 
 #ifdef due3
@@ -87,12 +89,13 @@ int iIndex = 0 ;
 
 //
 byte usedLED  = 0;
-byte fiberLED = 8 ;
+const byte fiberLED = 8 ;
+const byte noContactLED = 2;
 #ifdef __SAM3X8E__
 // fix the LED order in hardware....
 const byte redled = 6;
 const byte grnled = 5;
-const byte bluLED = 8;
+const byte bluLED = 7;
 #else
 const byte redled = 5;
 const byte grnled = 6;
@@ -100,6 +103,7 @@ const byte bluLED = 8;
 #endif
 
 const byte analogPin = 0 ;
+const byte connectedPin = A1;
 byte iGainFactor = 1 ;
 
 byte nRepeats = 0;
@@ -176,6 +180,9 @@ void setup() {
   // ...
   pinMode(SS_SD_CARD, OUTPUT);
   pinMode(SS_ETHERNET, OUTPUT);
+  
+  pinMode(noContactLED, OUTPUT);
+  
   digitalWrite(SS_SD_CARD, HIGH);  // HIGH means SD Card not active
   digitalWrite(SS_ETHERNET, HIGH); // HIGH means Ethernet not active
 
@@ -391,7 +398,22 @@ void run_graph()
   goColour(0, 0, 0, 0, false);
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
-  int sensorReading = analogRead(analogPin);
+  int sensorReading = analogRead(connectedPin);
+//  Serial.print(" sweep is : ");  
+//  Serial.println(sensorReading);
+  
+  if (sensorReading < 2 || sensorReading > 4090)
+    {
+    //probably no contact
+    digitalWrite (noContactLED, HIGH);
+//    Serial.print("on");
+  }
+  else 
+  {
+    digitalWrite (noContactLED, LOW);
+  }
+  
+  sensorReading = analogRead(analogPin);
   myGraphData[iIndex] = sensorReading / iGainFactor ;
   iIndex ++ ;
   if (iIndex > max_graph_data / 10 && iIndex < max_graph_data / 2)
@@ -427,7 +449,7 @@ void run_graph()
   if (iIndex >= max_graph_data) iIndex = 0;
   for (int i = 0; i < max_graph_data - 2; i++)
   {
-    if (i < iIndex || i > iIndex + 1)
+    if (i < iIndex - 1 || i > iIndex + 1)
     {
       client.print F("ctx.moveTo(");
       client.print (i * 20);
@@ -446,15 +468,11 @@ void run_graph()
   //draw stimulus...
   client.print F("ctx.moveTo(");
   client.print ((max_graph_data / 10) * 20);
-  client.print F(",");
-  client.print (30);
-  client.println F(");");
+  client.print F(",30);");
 
   client.print F("ctx.lineTo(");
   client.print (max_graph_data / 2 * 20);
-  client.print (",");
-  client.print (30);
-  client.println F(");");
+  client.print F(",30);");
 
   client.println F("ctx.strokeStyle=\"blue\";");
   //              client.println("ctx.lineWidth=5;");
