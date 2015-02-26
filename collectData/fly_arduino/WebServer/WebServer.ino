@@ -82,9 +82,9 @@ Prototype : put the grey wire in ground, and purple wire in pin7
 #include <SD.h>
 //#include <FixFFT.h>
 
-const int max_graph_data = 32 ;
-int * myGraphData ;  // will share erg_in space, see below
-int iIndex = 0 ;
+const short max_graph_data = 32 ;
+short * myGraphData ;  // will share erg_in space, see below
+short iIndex = 0 ;
 
 
 //
@@ -130,9 +130,9 @@ boolean bDoFlash = false ;
 byte freq1 = 12 ; // flicker of LED Hz
 byte freq2 = 15 ; // flicker of LED Hz
 // as of 18 June, maxdata of 2048 is too big for the mega....
-const int max_data = 1025  ;
-unsigned int time_stamp [max_data] ;
-int erg_in [max_data];
+const short max_data = 1025  ;
+unsigned short time_stamp [max_data] ;
+short erg_in [max_data];
 long sampleCount = 0;        // will store number of A/D samples taken
 unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0;
@@ -142,7 +142,7 @@ unsigned long timing_too_fast = 0 ;
 uint8_t second, myminute, hour, day, month;
 uint16_t year ;
 
-const int MaxInputStr = 130 ;
+const short MaxInputStr = 130 ;
 String MyInputString = String(MaxInputStr + 1);
 String MyReferString = String(MaxInputStr + 1);
 
@@ -193,7 +193,7 @@ void setup() {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
   myGraphData = erg_in ;
-  for (int i = 0; i < max_graph_data; i++)
+  for (short i = 0; i < max_graph_data; i++)
   {
     myGraphData[i] = 0;
   }
@@ -398,7 +398,7 @@ void run_graph()
   goColour(0, 0, 0, 0, false);
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
-  int sensorReading = analogRead(connectedPin);
+  short sensorReading = analogRead(connectedPin);
 //  Serial.print(" sweep is : ");  
 //  Serial.println(sensorReading);
   
@@ -1050,14 +1050,6 @@ void collect_fERG_Data ()
       sampleCount ++ ;
     }
   }
-
-  // now done with sampling....
-  //  //save contrasts we've used...
-  //  int randomnumber = contrastOrder[iThisContrast];
-  //  int F2index = 0 ;
-  //  if (randomnumber > F2contrastchange) F2index = 1;
-  //  time_stamp [max_data - 1] = F1contrast[randomnumber];
-  //  erg_in [max_data - 1] = F2contrast[F2index] ;
 
   sampleCount ++ ;
   analogWrite(usedLED, 0);
