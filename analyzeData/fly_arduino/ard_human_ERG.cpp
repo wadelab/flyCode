@@ -8,50 +8,24 @@
 
 #include <iostream>
 #include <fstream>
-#include "stdio.h"
 #include "math.h"
 
-typedef uint8_t byte;
 #define PI 3.141
 
-const byte maxContrasts = 9 ;
-const byte F2contrastchange = 4;
-const double F1contrast[] = {
-    5.0, 10.0, 30.0, 70.0, 100.0,  5.0, 10.0, 30.0, 70.0
-};
-const byte F2contrast[] = {
-    0, 30
-};
-byte contrastOrder[ maxContrasts ];
-byte iThisContrast = 0 ;
 
 const double freq1 = 12.0 ; // flicker of LED Hz
 const double freq2 = 15.0 ; // flicker of LED Hz
 
-const int MaxInputStr = 135 ;
+const int MaxInputStr = 135 ; // note this value was changed after 26 jan commit
 
 const short max_data = 1025  ;
 unsigned short time_stamp [max_data] ;
 short erg_in [max_data];
 
 
-uint16_t swap_uint16( uint16_t val )
+int Get_br_Now(double t, const int F1contrast, const int F2contrast)
 {
-    return (val << 8) | (val >> 8 );
-}
-
-//! Byte swap short
-int16_t swap_int16( int16_t val )
-{
-    return (val << 8) | ((val >> 8) & 0xFF);
-}
-
-int br_Now(double t)
-{
-    int randomnumber = contrastOrder[iThisContrast];
-    int F2index = 0 ;
-    if (randomnumber > F2contrastchange) F2index = 1;
-    return int(sin((t / 1000.0) * PI * 2.0 * freq1) * 1.270 * F1contrast[randomnumber] + sin((t / 1000.0) * PI * 2.0 * freq2) * 1.270 * F2contrast[F2index]) + 127;
+    return int(sin((t / 1000.0) * PI * 2.0 * freq1) * 1.270) * F1contrast + int (sin((t / 1000.0) * PI * 2.0 * freq2) * 1.270) * F2contrast + 127;
 }
 
 int fERG_Now (unsigned int t)
@@ -108,7 +82,7 @@ int doreadFile (const char * c)
             }
             else
             {
-                std::cout <<(br_Now(time_stamp[i]));
+                std::cout << Get_br_Now(time_stamp[i], time_stamp [max_data - 1], erg_in [max_data - 1]);
             }
             std::cout << ", ";
             

@@ -597,8 +597,13 @@ int br_Now(double t)
 {
   int randomnumber = contrastOrder[iThisContrast];
   int F2index = 0 ;
-  if (randomnumber > F2contrastchange) F2index = 1;
-  return int(sin((t / 1000.0) * PI * 2.0 * double(freq1)) * 1.270 * double(F1contrast[randomnumber]) + sin((t / 1000.0) * PI * 2.0 * double(freq2)) * 1.270 * double(F2contrast[F2index])) + 127;
+  if (randomnumber > F2contrastchange) F2index = 1;  
+  return Get_br_Now( t,  F1contrast[randomnumber],  F2contrast[F2index]) ;
+}
+
+int Get_br_Now(double t, const int F1contrast, const int F2contrast)
+{
+    return int(sin((t / 1000.0) * PI * 2.0 * double(freq1)) * 1.270) * freq1 * F1contrast + int (sin((t / 1000.0) * PI * 2.0 * double(freq2)) * 1.270) * F2contrast + 127;
 }
 
 
@@ -893,7 +898,7 @@ void doreadFile (const char * c)
       }
       else
       {
-        dataString += String(br_Now(time_stamp[i]));
+        dataString += String(Get_br_Now(time_stamp[i],  time_stamp [max_data - 1], erg_in [max_data - 1]));
       }
       dataString += ", ";
 
