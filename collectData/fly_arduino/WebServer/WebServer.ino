@@ -380,6 +380,10 @@ void goColour(const byte r, const byte g, const byte b, const byte f, const bool
     client.println F("function goBack() ");
     client.println F("{ window.history.back() }");
     client.println F("</script>");
+    
+    client.println F("Click to reload <A HREF=\"") ;
+    client.println (MyReferString) ;
+    client.println F("\">the stimulus selection form</A>  <BR>");
 
     sendFooter();
   }
