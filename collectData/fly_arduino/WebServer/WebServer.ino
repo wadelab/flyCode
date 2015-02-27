@@ -121,6 +121,7 @@ byte contrastOrder[ maxContrasts ];
 byte iThisContrast = 0 ;
 
 boolean has_filesystem = true;
+bool bFileOK = true ;
 Sd2Card card;
 SdVolume volume;
 SdFile root;
@@ -686,7 +687,7 @@ void webTime ()
 }
 
 
-void writeFile(const char * c)
+bool writeFile(const char * c)
 {
   // file format
   //    MyInputString viz. char cInput [MaxInputStr+2];
@@ -704,40 +705,21 @@ void writeFile(const char * c)
     {
       Serial.println F ("Error in opening file");
       Serial.println (c);
-      return ;
+      return false;
     }
-    //    Serial.print("Expected date: ");
-    //    Serial.print(year);
-    //    Serial.print(" ");
-    //    Serial.print(month);
-    //    Serial.print(" ");
-    //    Serial.print(day);
-    //    Serial.print(" ");
-    //    Serial.print(hour);
-    //    Serial.print(" ");
-    //    Serial.print(myminute);
-    //    Serial.print(" ");
-    //    Serial.print(second);
-    //    Serial.print(" ");
+ 
     if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
       Serial.println F ("Error in timestamping file");
       Serial.println (c);
+      return false ;
     }
     iBytesWritten = file.write(cInput, MaxInputStr + 2);
     if (iBytesWritten <= 0)
     {
       Serial.println F ("Error in writing header to file");
       file.close();
-      return ;
+      return false ;
     }
-
-    //    iBytesWritten = file.write(contrastOrder, maxContrasts * sizeof(int));
-    //    if (iBytesWritten <= 0)
-    //    {
-    //      Serial.println F ("Error in writing contrast data to file");
-    //      file.close();
-    //      return ;
-    //    }
 
   }
   else // file exists, so just append...
@@ -746,7 +728,7 @@ void writeFile(const char * c)
     {
       Serial.println F ("Error in opening file");
       Serial.println (c);
-      return ;
+      return false;
     }
 
   }
@@ -758,7 +740,7 @@ void writeFile(const char * c)
   {
     Serial.println F ("Error in writing erg data to file");
     file.close();
-    return ;
+    return false;
   }
 
   // Serial.println("File success: written bytes " + String(iBytesWritten));
@@ -772,6 +754,7 @@ void writeFile(const char * c)
   Serial.print F(" size now ");
   Serial.println (file.fileSize());
   file.sync();
+  return true ;
 }
 
 bool fileExists(const char * c)
@@ -928,7 +911,7 @@ void doreadFile (const char * c)
 
 }
 
-void collectSSVEPData ()
+bool collectSSVEPData ()
 {
   const long presamples = 102;
   long mean = 0;
@@ -1000,13 +983,13 @@ void collectSSVEPData ()
     doShuffle ();
   }
 
-  writeFile(cFile);
+  return writeFile(cFile);
 
 
 }
 
 
-void collect_fERG_Data ()
+bool collect_fERG_Data ()
 {
   const long presamples = 102;
   long mean = 0;
@@ -1059,7 +1042,7 @@ void collect_fERG_Data ()
   analogWrite(usedLED, 0);
   iThisContrast = maxContrasts ; //++;
 
-  writeFile(cFile);
+  return writeFile(cFile);
 
 
 }
@@ -1249,17 +1232,19 @@ void AppendSSVEPReport()
 
 
 void getData ()
-{ if (sampleCount < 0)
+{ 
+  if (sampleCount < 0)
   {
     if (bDoFlash)
     {
-      collect_fERG_Data ();
+      bFileOK = collect_fERG_Data ();
     }
     else
     {
-      collectSSVEPData ();
+      bFileOK = collectSSVEPData ();
     }
   }
+  
 }
 
 
@@ -1270,6 +1255,13 @@ void sendReply ()
   {
     sendHeader F("Card not working");
     client.println F("SD Card failed");
+    sendFooter();
+    return ;
+  }
+  if (!bFileOK)
+  {
+    sendHeader F("Card not working");
+    client.println F("File write failed on SD Card ");
     sendFooter();
     return ;
   }
