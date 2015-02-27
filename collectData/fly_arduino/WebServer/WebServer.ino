@@ -606,9 +606,9 @@ int br_Now(double t)
   return Get_br_Now( t,  F1contrast[randomnumber],  F2contrast[F2index]) ;
 }
 
-int Get_br_Now(double t, const int F1contrast, const int F2contrast)
+int Get_br_Now(double t, const double F1contrast, const double F2contrast)
 {
-    return int(sin((t / 1000.0) * PI * 2.0 * double(freq1)) * 1.270) * freq1 * F1contrast + int (sin((t / 1000.0) * PI * 2.0 * double(freq2)) * 1.270) * F2contrast + 127;
+    return int(sin((t / 1000.0) * PI * 2.0 * double(freq1)) * 1.270 * F1contrast + sin((t / 1000.0) * PI * 2.0 * double(freq2)) * 1.270 * F2contrast + 127.0);
 }
 
 
