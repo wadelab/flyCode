@@ -369,6 +369,7 @@ void sendFooter()
 
 void goColour(const byte r, const byte g, const byte b, const byte f, const bool boolUpdatePage)
 {
+  //Serial.println (" changing colour");
   analogWrite( redled, r );
   analogWrite( grnled, g );
   analogWrite( bluLED, b );
@@ -1280,13 +1281,11 @@ void sendReply ()
     if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
     if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
     if (MyInputString.indexOf F("col=fiber&") > 0 ) usedLED  = fiberLED ; //
-    //if (oldLED != usedLED)
-    goColour(0, 0, 0, 0, false);
-
+    
     //flash ERG or SSVEP?
     bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
 
-    //Serial.println F("saving ???");
+// find filename
     String sFile = MyInputString.substring(fPOS + 15); // ignore the leading / should be 9
     //Serial.println("  Position of filename= was:" + String(fPOS));
     //Serial.println(" Proposed saving filename " + sFile );
@@ -1309,6 +1308,8 @@ void sendReply ()
     {
         // new file
         nRepeats = iThisContrast = 0 ;
+        //turn off any lights we have on...
+        goColour(0, 0, 0, 0, false);
     }
     
     if (fileExists(cFile) && nRepeats >= maxRepeats)
