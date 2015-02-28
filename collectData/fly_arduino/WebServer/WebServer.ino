@@ -3,44 +3,8 @@
 //Digital pin 7 is used as a handshake pin between the WiFi shield and the Arduino, and should not be used
 // don't use pin 4 or 10-12 either...
 
-// mega1 biolpc2793
-// mega2 biolpc2804
-//#define test_on_mac
+
 //#define __wifisetup__
-
-#define due2
-
-//_____________________________________________________
-
-#ifdef mega1
-#define MAC_OK 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
-//biolpc2793 [in use in lab with Emily and Richard]
-#endif
-
-#ifdef mega2
-#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
-//biolpc2804
-
-#endif
-
-#ifdef due1
-#define MAC_OK 0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA2
-//90-A2-DA-0E-09-A2 biolpc2886 [in use for Sultan]
-#endif
-
-#ifdef due2
-#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x6F, 0x9E
-//90-A2-DA-0E-09-A2 biolpc2898 [used in testing...]
-#endif
-
-#ifdef due3
-#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x75, 0x17
-//90-A2-DA-0E-09-A2 biolpc2899
-#endif
-
-#ifdef __wifisetup__
-#define MAC_OK
-#endif
 
 
 //#if defined(__AVR_ATmega2560__  __SAM3X8E__
@@ -71,6 +35,7 @@ Prototype : put the grey wire in ground, and purple wire in pin7
 
 #ifndef __wifisetup__
 
+#include <EEPROM.h>
 #include <Ethernet.h>
 
 #else
@@ -151,16 +116,10 @@ char cFile [30];
 char cInput [MaxInputStr + 2] = "";
 
 
-#ifndef MAC_OK
-#error please define which arduino you are setting up
-#endif
-// Enter a MAC address and IP address for your controller below.
-// The IP address will be dependent on your local network:
-
 #ifndef __wifisetup__
 //
 
-byte mac[] = { MAC_OK } ;
+byte mac[6]  ;
 
 // Initialize the Ethernet server library
 // with the IP address and port you want to use
@@ -235,7 +194,7 @@ void setup() {
 int status = WL_IDLE_STATUS;
  while ( status != WL_CONNECTED)
  {
-    Serial.print("Attempting to connect to Network named: ");
+    Serial.print F("Attempting to connect to Network named: ");
     Serial.println(ssid);                   // print the network name (SSID);
 
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
@@ -248,11 +207,18 @@ int status = WL_IDLE_STATUS;
 
 #else
   Serial.println F("Setting up the Ethernet card...\n");
+  if (readaddress())
+  {
   // start the Ethernet connection and the server:
   Ethernet.begin(mac);
   server.begin();
   Serial.print F("server is at ");
   Serial.println(Ethernet.localIP());
+  }
+  else
+  {
+    Serial.println F("No Mac address found in EEPROM");
+  }
 #endif  
   
 #ifdef __AVR_ATmega2560__
@@ -280,7 +246,59 @@ int status = WL_IDLE_STATUS;
   doShuffle();
 }
 
-#ifdef __wifisetup__
+#ifndef __wifisetup__
+
+bool readaddress()
+{
+  // read a byte from the current address of the EEPROM
+  // start at 0
+  int address = 0;
+  byte value;
+  char cMac [4];
+  cMac[3] = '\0' ;
+  while (address < 20)
+  {
+    value = EEPROM.read(address);
+    char * c = " ";
+    *c = value ;
+    if (address < 3)
+    {
+      cMac [address] = (char)value  ;
+    }
+    else
+    {
+      if (address < 9)
+      {
+        mac [address - 3] = value ;
+      }
+    }
+
+//
+//    Serial.print(address);
+//    Serial.print("\t");
+//    Serial.print (c);
+//    Serial.print("\t");
+//    Serial.print(value, DEC);
+//    Serial.print("\t");
+//    Serial.print(value, HEX);
+//    Serial.println();
+
+    // advance to the next address of the EEPROM
+    address = address + 1;
+  }
+  int iComp = strncmp (cMac, "MAC", 3);
+  
+//  Serial.print ("Comparing :") ;
+//  Serial.print (cMac);
+//  Serial.print (" with MAC gives ");
+//  Serial.println (iComp);
+  
+  return ( 0 == iComp) ;
+
+}
+
+#else
+//ifdef __wifisetup__
 
 void printWifiStatus() {
   // print the SSID of the network you're attached to:
