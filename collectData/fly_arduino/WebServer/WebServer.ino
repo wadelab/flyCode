@@ -1280,8 +1280,14 @@ void sendReply ()
   if (!bFileOK)
   {
     sendHeader F("Card not working");
-    client.println F("File write failed on SD Card ");
+    client.print F("File write failed on SD Card : ");
+    client.print (cFile);
+    client.println F("<BR><BR>To setup for another test please  <A HREF=\"") ;
+    client.println (MyReferString) ;
+    client.println F("\">click here</A>  ");
     sendFooter();
+    
+    bFileOK = true ;
     return ;
   }
 
