@@ -1310,12 +1310,17 @@ void sendReply ()
     bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
 
 // find filename
-    String sFile = MyInputString.substring(fPOS + 15); // ignore the leading / should be 9
+    String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
     //Serial.println("  Position of filename= was:" + String(fPOS));
     //Serial.println(" Proposed saving filename " + sFile );
     fPOS = sFile.indexOf F(" ");  // or  & id filename is not the last paramtere
     //Serial.println("  Position of blankwas:" + String(fPOS));
     sFile = sFile.substring(0, fPOS);
+    while (sFile.length() > 8)
+    {
+      sFile = sFile.substring(1);
+      //Serial.println(" Proposed saving filename " + sFile );
+    }
     if (bDoFlash)
     {
       sFile = sFile + F(".ERG");
