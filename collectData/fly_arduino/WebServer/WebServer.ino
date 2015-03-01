@@ -1,6 +1,9 @@
 
 //try this http://gammon.com.au/forum/?id=11488&reply=5#reply5 for interrupts
 //Digital pin 7 is used as a handshake pin between the WiFi shield and the Arduino, and should not be used
+// http://www.arduino.cc/playground/Code/AvailableMemory
+// use dns to find if the referer is ourselves
+// IPaddress is a 4 byte array
 // don't use pin 4 or 10-12 either...
 
 
