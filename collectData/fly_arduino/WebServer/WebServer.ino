@@ -2,8 +2,7 @@
 //try this http://gammon.com.au/forum/?id=11488&reply=5#reply5 for interrupts
 //Digital pin 7 is used as a handshake pin between the WiFi shield and the Arduino, and should not be used
 // http://www.arduino.cc/playground/Code/AvailableMemory
-// use dns to find if the referer is ourselves
-// IPaddress is a 4 byte array
+
 // don't use pin 4 or 10-12 either...
 
 
@@ -123,12 +122,14 @@ char cInput [MaxInputStr + 2] = "";
 //
 
 byte mac[6]  ;
+IPAddress myIP, theirIP, dnsIP ;
 
 // Initialize the Ethernet server library
 // with the IP address and port you want to use
 // (port 80 is default for HTTP):
 EthernetServer server(80);
 EthernetClient client ;
+#include <dns.h>
 
 #else
 
@@ -143,9 +144,9 @@ void setup() {
   // ...
   pinMode(SS_SD_CARD, OUTPUT);
   pinMode(SS_ETHERNET, OUTPUT);
-  
+
   pinMode(noContactLED, OUTPUT);
-  
+
   digitalWrite(SS_SD_CARD, HIGH);  // HIGH means SD Card not active
   digitalWrite(SS_ETHERNET, HIGH); // HIGH means Ethernet not active
 
@@ -188,15 +189,15 @@ void setup() {
   {
     Serial.println F("SD card ok\n");
   }
-  
+
 #ifdef __wifisetup__
-//char ssid[] = "SSID";     //  your network SSID (name)
-//char pass[] = "PASSWD";  // your network password
+  //char ssid[] = "SSID";     //  your network SSID (name)
+  //char pass[] = "PASSWD";  // your network password
 #include "./secret.h"
 
-int status = WL_IDLE_STATUS;
- while ( status != WL_CONNECTED)
- {
+  int status = WL_IDLE_STATUS;
+  while ( status != WL_CONNECTED)
+  {
     Serial.print F("Attempting to connect to Network named: ");
     Serial.println(ssid);                   // print the network name (SSID);
 
@@ -210,20 +211,24 @@ int status = WL_IDLE_STATUS;
 
 #else
   Serial.println F("Setting up the Ethernet card...\n");
-  if (readaddress())
+  if (readMAC())
   {
-  // start the Ethernet connection and the server:
-  Ethernet.begin(mac);
-  server.begin();
-  Serial.print F("server is at ");
-  Serial.println(Ethernet.localIP());
+    // start the Ethernet connection and the server:
+    Ethernet.begin(mac);
+    server.begin();
+    Serial.print F("server is at ");
+    myIP = Ethernet.localIP() ;
+    dnsIP = Ethernet.dnsServerIP();
+    Serial.print(myIP);
+    Serial.print(" using dns server ");
+    Serial.println(dnsIP);
   }
   else
   {
     Serial.println F("No Mac address found in EEPROM");
   }
-#endif  
-  
+#endif
+
 #ifdef __AVR_ATmega2560__
   //set up PWM
   //http://forum.arduino.cc/index.php?topic=72092.0
@@ -251,7 +256,7 @@ int status = WL_IDLE_STATUS;
 
 #ifndef __wifisetup__
 
-bool readaddress()
+bool readMAC()
 {
   // read a byte from the current address of the EEPROM
   // start at 0
@@ -276,26 +281,26 @@ bool readaddress()
       }
     }
 
-//
-//    Serial.print(address);
-//    Serial.print("\t");
-//    Serial.print (c);
-//    Serial.print("\t");
-//    Serial.print(value, DEC);
-//    Serial.print("\t");
-//    Serial.print(value, HEX);
-//    Serial.println();
+    //
+    //    Serial.print(address);
+    //    Serial.print("\t");
+    //    Serial.print (c);
+    //    Serial.print("\t");
+    //    Serial.print(value, DEC);
+    //    Serial.print("\t");
+    //    Serial.print(value, HEX);
+    //    Serial.println();
 
     // advance to the next address of the EEPROM
     address = address + 1;
   }
   int iComp = strncmp (cMac, "MAC", 3);
-  
-//  Serial.print ("Comparing :") ;
-//  Serial.print (cMac);
-//  Serial.print (" with MAC gives ");
-//  Serial.println (iComp);
-  
+
+  //  Serial.print ("Comparing :") ;
+  //  Serial.print (cMac);
+  //  Serial.print (" with MAC gives ");
+  //  Serial.println (iComp);
+
   return ( 0 == iComp) ;
 
 }
@@ -309,7 +314,7 @@ void printWifiStatus() {
   Serial.println(WiFi.SSID());
 
   // print your WiFi shield's IP address:
-  IPAddress ip = WiFi.localIP();
+  myIP = WiFi.localIP();
   Serial.print F("IP Address: ");
   Serial.println(ip);
 
@@ -403,7 +408,7 @@ void goColour(const byte r, const byte g, const byte b, const byte f, const bool
     client.println F("function goBack() ");
     client.println F("{ window.history.back() }");
     client.println F("</script>");
-    
+
     client.println F("Click to reload <A HREF=\"") ;
     client.println (MyReferString) ;
     client.println F("\">the stimulus selection form</A>  <BR>");
@@ -426,20 +431,20 @@ void run_graph()
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   short sensorReading = analogRead(connectedPin);
-//  Serial.print(" sweep is : ");  
-//  Serial.println(sensorReading);
-  
+  //  Serial.print(" sweep is : ");
+  //  Serial.println(sensorReading);
+
   if (sensorReading < 2 || sensorReading > 4090)
-    {
+  {
     //probably no contact
     digitalWrite (noContactLED, HIGH);
-//    Serial.print("on");
+    //    Serial.print("on");
   }
-  else 
+  else
   {
     digitalWrite (noContactLED, LOW);
   }
-  
+
   sensorReading = analogRead(analogPin);
   myGraphData[iIndex] = sensorReading / iGainFactor ;
   iIndex ++ ;
@@ -624,13 +629,13 @@ int br_Now(double t)
 {
   int randomnumber = contrastOrder[iThisContrast];
   int F2index = 0 ;
-  if (randomnumber > F2contrastchange) F2index = 1;  
+  if (randomnumber > F2contrastchange) F2index = 1;
   return Get_br_Now( t,  F1contrast[randomnumber],  F2contrast[F2index]) ;
 }
 
 int Get_br_Now(double t, const double F1contrast, const double F2contrast)
 {
-    return int(sin((t / 1000.0) * PI * 2.0 * double(freq1)) * 1.270 * F1contrast + sin((t / 1000.0) * PI * 2.0 * double(freq2)) * 1.270 * F2contrast + 127.0);
+  return int(sin((t / 1000.0) * PI * 2.0 * double(freq1)) * 1.270 * F1contrast + sin((t / 1000.0) * PI * 2.0 * double(freq2)) * 1.270 * F2contrast + 127.0);
 }
 
 
@@ -648,7 +653,7 @@ void webTime ()
   WiFiClient timeclient;
 #else
   EthernetClient timeclient;
-#endif  
+#endif
   // default values ...
   year = 2015;
   second = myminute = hour = day = month = 0;
@@ -729,7 +734,7 @@ bool writeFile(const char * c)
       Serial.println (c);
       return false;
     }
- 
+
     if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
       Serial.println F ("Error in timestamping file");
       Serial.println (c);
@@ -787,7 +792,7 @@ bool fileExists(const char * c)
   return bExixsts ;
 }
 
- // find day of week http://stackoverflow.com/questions/6054016/c-program-to-find-day-of-week-given-date
+// find day of week http://stackoverflow.com/questions/6054016/c-program-to-find-day-of-week-given-date
 int DayOfWeek (int d, int m, int y)
 {
   return (d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) % 7   ;
@@ -808,7 +813,7 @@ void gmdate ( const dir_t & pFile)
 
 
 
-  iTmp = DayOfWeek (d,m,y) ;
+  iTmp = DayOfWeek (d, m, y) ;
   if (iTmp > 6) iTmp = 0;
   strncpy(cTmp, cDays + iTmp * 4, 3);
   cTmp[3] = 0;
@@ -1069,7 +1074,7 @@ bool collect_fERG_Data ()
 
 }
 
-void flickerPage() 
+void flickerPage()
 {
   Serial.print F("Sampling at :");
   Serial.println (String(sampleCount));
@@ -1113,7 +1118,7 @@ void AppendFlashReport()
   client.println F("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
   client.println F( "<BR> ");
-  
+
 
   if (nRepeats > 0)
   {
@@ -1171,7 +1176,7 @@ void AppendSSVEPReport()
   client.println F("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
   client.println F( "<BR> ");
-  
+
 
   if (iThisContrast < maxContrasts)
   {
@@ -1254,7 +1259,7 @@ void AppendSSVEPReport()
 
 
 void getData ()
-{ 
+{
   if (sampleCount < 0)
   {
     if (bDoFlash)
@@ -1266,7 +1271,7 @@ void getData ()
       bFileOK = collectSSVEPData ();
     }
   }
-  
+
 }
 
 
@@ -1289,7 +1294,7 @@ void sendReply ()
     client.println (MyReferString) ;
     client.println F("\">click here</A>  ");
     sendFooter();
-    
+
     bFileOK = true ;
     return ;
   }
@@ -1300,19 +1305,19 @@ void sendReply ()
   {
     // save the commandline....
     MyInputString.toCharArray(cInput, MaxInputStr + 2);
-    char * cP = strstr(cInput,"HTTP/");
-    if(cP) cP = '\0';
+    char * cP = strstr(cInput, "HTTP/");
+    if (cP) cP = '\0';
     // now choose the colour
     int oldLED = usedLED ;
     if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
     if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
     if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
     if (MyInputString.indexOf F("col=fiber&") > 0 ) usedLED  = fiberLED ; //
-    
+
     //flash ERG or SSVEP?
     bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
 
-// find filename
+    // find filename
     String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
     //Serial.println("  Position of filename= was:" + String(fPOS));
     //Serial.println(" Proposed saving filename " + sFile );
@@ -1332,41 +1337,41 @@ void sendReply ()
     {
       sFile = sFile + F(".SVP");
     }
-    
+
     //Serial.println(" Proposed filename now" + sFile + ";");
     //if file exists... ????
     sFile.toCharArray(cFile, 29); // adds terminating null
-    if (!fileExists(cFile)) 
+    if (!fileExists(cFile))
     {
-        // new file
-        nRepeats = iThisContrast = 0 ;
-        //turn off any lights we have on...
-        goColour(0, 0, 0, 0, false);
+      // new file
+      nRepeats = iThisContrast = 0 ;
+      //turn off any lights we have on...
+      goColour(0, 0, 0, 0, false);
     }
-    
+
     if (fileExists(cFile) && nRepeats >= maxRepeats)
-      {
-        // done so tidy up
-        nRepeats = iThisContrast = 0 ; // ready to start again
-        //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
-        file.close();
-  
-        sendHeader F("Sampling Complete!");
-        client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
-  
-        client.println F("To setup for another test please  <A HREF=\"") ;
-        client.println (MyReferString) ;
-        client.println F("\">click here</A>  <BR><BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
-        sendFooter ();
-        return ;
-      }
-  
-      flickerPage();
-      sampleCount = -102 ; //implies collectData();
+    {
+      // done so tidy up
+      nRepeats = iThisContrast = 0 ; // ready to start again
+      //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
+      file.close();
+
+      sendHeader F("Sampling Complete!");
+      client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
+
+      client.println F("To setup for another test please  <A HREF=\"") ;
+      client.println (MyReferString) ;
+      client.println F("\">click here</A>  <BR><BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
+      sendFooter ();
       return ;
+    }
+
+    flickerPage();
+    sampleCount = -102 ; //implies collectData();
+    return ;
   }
 
-// show directory
+  // show directory
   fPOS = MyInputString.indexOf F("dir=");
   //Serial.println("  Position of dir was:" + String(fPOS));
   if (fPOS > 0)
@@ -1375,7 +1380,7 @@ void sendReply ()
     return ;
   }
 
-//light up
+  //light up
   fPOS = MyInputString.indexOf F("white/");
   if (fPOS > 0)
   {
@@ -1386,7 +1391,7 @@ void sendReply ()
   if (fPOS > 0)
   {
     goColour(255, 0, 0, 0, true) ;
-   return ;
+    return ;
   }
   fPOS = MyInputString.indexOf F("blue/");
   if (fPOS > 0)
@@ -1413,7 +1418,7 @@ void sendReply ()
     return ;
   }
 
-// a file is requested...
+  // a file is requested...
   fPOS = MyInputString.indexOf F(".SVP");
   if (fPOS == -1)
   {
@@ -1434,7 +1439,7 @@ void sendReply ()
     return ;
 
   }
-  
+
   // default - any other url
   run_graph() ;
   MyInputString = "";
@@ -1442,22 +1447,22 @@ void sendReply ()
 
 void loop()
 {
-  
+
   String sTmp = "";
   MyInputString = "";
   getData ();
   boolean currentLineIsBlank = true;
   // listen for incoming clients
-  
- client = server.available();
+
+  client = server.available();
   if (client) {
     Serial.println F("new client");
     MyInputString = "";
     // an http request ends with a blank line
     while (client.connected()) {
       if (client.available()) {            // if there's bytes to read from the client,
-        char c = client.read();  
-        
+        char c = client.read();
+
         // if you've gotten to the end of the line (received a newline
         // character) and the line is blank, the http request has ended,
         // so you can send a reply
@@ -1477,13 +1482,34 @@ void loop()
           if (sTmp.indexOf F("GET") >= 0)
           {
             MyInputString = sTmp;
-          }          
+          }
           int iTmp = sTmp.indexOf F("Referer:") ;
           if (iTmp >= 0)
           {
-            MyReferString = sTmp.substring(iTmp + 9);
-//            Serial.print F("Ref string now :" );
-//            Serial.println (MyReferString);
+            String sHost = sTmp.substring(16);
+            Serial.println (sHost) ;
+            int iSlash = sHost.indexOf ("/");
+            sHost = sHost.substring(0, iSlash);
+            Serial.println (sHost) ;
+            DNSClient dc;
+            dc.begin(dnsIP);
+            dc.getHostByName(sHost.c_str(), theirIP);
+            Serial.print F("Their IP is ");
+            Serial.println (theirIP) ;
+            if (myIP == theirIP)
+            {
+              Serial.println F("this appears to be my ip");
+              Serial.print F("Ref string unchanged at :" );
+              Serial.println (MyReferString);
+            }
+            else
+            {
+              Serial.println F("this does not appear to be my ip");
+              MyReferString = sTmp.substring(iTmp + 9);
+              Serial.print F("Ref string now :" );
+              Serial.println (MyReferString);
+            }
+
           }
           sTmp = "";
 
