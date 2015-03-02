@@ -538,19 +538,19 @@ void myPrintFatDateTime(const dir_t & pFile)
   char * pErg_in = (char * ) erg_in ;
   erg_in [0] = 0;
 
-  strcat(pErg_in, " ");
+  strcat_P(pErg_in, PSTR("  "));
   itoa( FAT_YEAR(pFile.lastWriteDate), pErg_in + 1, 10);
-  strcat(pErg_in, "-");
+  strcat_P(pErg_in, PSTR("-"));
   printTwoDigits(pErg_in + strlen(pErg_in) , FAT_MONTH(pFile.lastWriteDate));
-  strcat(pErg_in, "-");
+  strcat_P(pErg_in, PSTR("-"));
   printTwoDigits(pErg_in + strlen(pErg_in) , FAT_DAY(pFile.lastWriteDate));
-  strcat(pErg_in, " ");
+  strcat_P(pErg_in, PSTR(" "));
   printTwoDigits(pErg_in + strlen(pErg_in) , FAT_HOUR(pFile.lastWriteTime));
-  strcat(pErg_in, ":");
+  strcat_P(pErg_in, PSTR(":"));
   printTwoDigits(pErg_in + strlen(pErg_in) , FAT_MINUTE(pFile.lastWriteTime));
-  strcat(pErg_in, ":");
+  strcat_P(pErg_in, PSTR(":"));
   printTwoDigits(pErg_in + strlen(pErg_in) , FAT_SECOND(pFile.lastWriteTime));
-  strcat(pErg_in, " ");
+  strcat_P(pErg_in, PSTR(" "));
   client.print(pErg_in);
 }
 
@@ -801,56 +801,54 @@ int DayOfWeek (int d, int m, int y)
 void gmdate ( const dir_t & pFile)
 {
   // Last-Modified: Tue, 15 Nov 1994 12:45:26 GMT
-  char * cDays = (char *)F("Sun,Mon,Tue,Wed,Thu,Fri,Sat,Sun");
-  char * cMonths = (char *)F("Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec,");
+  const char * cDays PROGMEM = "Sun,Mon,Tue,Wed,Thu,Fri,Sat,Sun";
+  const char * cMonths PROGMEM = "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec,";
   char * c  = (char *) erg_in ;
   erg_in [0] = 0;
-  char cTmp [4];
   int iTmp ;
   int d = FAT_DAY(pFile.lastWriteDate) ;
   int m = FAT_MONTH(pFile.lastWriteDate) ;
   int y = FAT_YEAR(pFile.lastWriteDate) ;
 
-
-
   iTmp = DayOfWeek (d, m, y) ;
   if (iTmp > 6) iTmp = 0;
-  strncpy(cTmp, cDays + iTmp * 4, 3);
-  cTmp[3] = 0;
-  strcat (c, cTmp ); // "Tue"
-  strcat (c, ", ");
-
+  strncpy(c, cDays + iTmp * 4, 3); // tue
+  c[3] = 0;
+  strcat_P(c, PSTR(", "));
+  //Serial.println (c);
 
   printTwoDigits(c + strlen(c) , FAT_DAY(pFile.lastWriteDate));
-  strcat (c, " ");
-
+  strcat_P (c, PSTR(" "));
+  
+  int iLen = strlen(c);
   iTmp = m - 1;
   if (iTmp > 11) iTmp = 0;
-  strncpy(cTmp, cMonths + iTmp * 4, 3);
-  cTmp[3] = 0;
-  strcat (c, cTmp ); // "Nov"
+  strncpy(c + iLen, cMonths + iTmp * 4, 3); //nov
+  c[iLen + 3] = 0;
+  //Serial.println (c);
 
-
-  strcat (c, " ");
+  strcat_P (c, PSTR(" "));
   itoa( y, c + strlen(c), 10);
-  strcat (c, " ");
+  strcat_P (c, PSTR(" "));
   printTwoDigits(c + strlen(c) , FAT_HOUR(pFile.lastWriteTime));
-  strcat (c, ":");
+  strcat_P (c, PSTR(":"));
   printTwoDigits(c + strlen(c) , FAT_MINUTE(pFile.lastWriteTime));
-  strcat (c, ":");
+  strcat_P (c, PSTR(":"));
   printTwoDigits(c + strlen(c) , FAT_SECOND(pFile.lastWriteTime));
-  strcat (c, " GMT");
-
-  Serial.println( c );
+  strcat_P (c, PSTR(" GMT"));
+  
+  //Serial.println( c );
 }
 
 void doreadFile (const char * c)
 {
-  String dataString ;
+  //String dataString ;
   char * cPtr;
   cPtr = (char *) erg_in ;
   int iOldContrast ;
 
+  //Serial.print F("trying to open:");
+  //Serial.println (c);
   if (file.isOpen()) file.close();
   file.open(root, c, O_READ);
   // fix me - open file first and then send the headers
@@ -904,31 +902,31 @@ void doreadFile (const char * c)
     for (int i = 0; i < max_data - 1; i++)
     {
       // make a string for assembling the data to log:
-      dataString = String(time_stamp[i]);
-      dataString += ", ";
+      client.print(time_stamp[i]);
+      client.print F( ", ");
       if (bERG)
       {
-        dataString += String( fERG_Now (time_stamp[i] - time_stamp[0] ) );
+        client.print( fERG_Now (time_stamp[i] - time_stamp[0] ) );
       }
       else
       {
-        dataString += String(Get_br_Now(time_stamp[i],  time_stamp [max_data - 1], erg_in [max_data - 1]));
+        client.print(Get_br_Now(time_stamp[i],  time_stamp [max_data - 1], erg_in [max_data - 1]));
       }
-      dataString += ", ";
+      client.print F(", ");
 
-      dataString += String(erg_in[i]);
-      client.println(dataString);
+      client.print(erg_in[i]);
+      client.println();
     } //for
 
     // write out contrast
 
-    dataString = "-99, ";
+    client.print F( "-99, " );
 
-    dataString += String(time_stamp[max_data - 1]);
-    dataString += ", ";
+    client.print(time_stamp[max_data - 1]);
+    client.print ( ", " );
 
-    dataString += String(erg_in[max_data - 1]);
-    client.println(dataString);
+    client.print(erg_in[max_data - 1]);
+    client.println();
     //read next block
     iBytesRequested = max_data * sizeof(int);
     iBytesRead = file.read(erg_in, iBytesRequested);
@@ -1431,7 +1429,7 @@ void sendReply ()
     fPOS = MyInputString.indexOf F("/");
     String sFile = MyInputString.substring(fPOS + 1); // ignore the leading /
     //Serial.println(" Proposed filename " + sFile );
-    fPOS = sFile.indexOf(" ");
+    fPOS = sFile.indexOf(" HTTP/");
     sFile = sFile.substring(0, fPOS);
     //Serial.println(" Proposed filename now" + sFile + ";");
     sFile.toCharArray(cFile, 29); // adds terminating null
@@ -1487,27 +1485,27 @@ void loop()
           if (iTmp >= 0)
           {
             String sHost = sTmp.substring(16);
-            Serial.println (sHost) ;
+            //Serial.println (sHost) ;
             int iSlash = sHost.indexOf ("/");
             sHost = sHost.substring(0, iSlash);
-            Serial.println (sHost) ;
+            //Serial.println (sHost) ;
             DNSClient dc;
             dc.begin(dnsIP);
             dc.getHostByName(sHost.c_str(), theirIP);
-            Serial.print F("Their IP is ");
-            Serial.println (theirIP) ;
-            if (myIP == theirIP)
+            //S//erial.print F("Their IP is ");
+            //Serial.println (theirIP) ;
+            if (myIP != theirIP)
+//            {
+//              Serial.println F("this appears to be my ip");
+//              Serial.print F("Ref string unchanged at :" );
+//              Serial.println (MyReferString);
+//            }
+//            else
             {
-              Serial.println F("this appears to be my ip");
-              Serial.print F("Ref string unchanged at :" );
-              Serial.println (MyReferString);
-            }
-            else
-            {
-              Serial.println F("this does not appear to be my ip");
+              //Serial.println F("this does not appear to be my ip");
               MyReferString = sTmp.substring(iTmp + 9);
-              Serial.print F("Ref string now :" );
-              Serial.println (MyReferString);
+              //Serial.print F("Ref string now :" );
+              //Serial.println (MyReferString);
             }
 
           }
