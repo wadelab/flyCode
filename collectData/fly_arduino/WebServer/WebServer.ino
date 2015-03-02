@@ -865,8 +865,8 @@ void doreadFile (const char * c)
     Serial.println F("file date not recovered") ;
   }
   gmdate ( dE );
-  Serial.print F("Last modified is:");
-  Serial.println( cPtr ) ;
+//  Serial.print F("Last modified is:");
+//  Serial.println( cPtr ) ;
   sendHeader(String(c), "", false, cPtr);
 
   int iBytesRequested, iBytesRead;
@@ -943,17 +943,17 @@ bool collectSSVEPData ()
   unsigned int iTime ;
   if (iThisContrast == 0 && file.isOpen()) file.close();
 
-
-
-  Serial.print F("collecting data with ");
-  Serial.print (nRepeats);
-  Serial.print F("r : c");
-  Serial.println (iThisContrast);
-
-  Serial.print F("update collecting data with ");
-  Serial.print (nRepeats);
-  Serial.print F("r : c");
-  Serial.println (iThisContrast);
+//
+//
+//  Serial.print F("collecting data with ");
+//  Serial.print (nRepeats);
+//  Serial.print F("r : c");
+//  Serial.println (iThisContrast);
+//
+//  Serial.print F("update collecting data with ");
+//  Serial.print (nRepeats);
+//  Serial.print F("r : c");
+//  Serial.println (iThisContrast);
 
   sampleCount = -presamples ;
   last_time = millis();
@@ -1023,10 +1023,10 @@ bool collect_fERG_Data ()
 
   iThisContrast = maxContrasts;
   nRepeats ++;
-  Serial.print F("collecting fERG data with ");
-  Serial.print (nRepeats);
-  Serial.print F("r : c");
-  Serial.println (iThisContrast);
+//  Serial.print F("collecting fERG data with ");
+//  Serial.print (nRepeats);
+//  Serial.print F("r : c");
+//  Serial.println (iThisContrast);
 
   sampleCount = -presamples ;
   last_time = millis();
@@ -1074,8 +1074,8 @@ bool collect_fERG_Data ()
 
 void flickerPage()
 {
-  Serial.print F("Sampling at :");
-  Serial.println (String(sampleCount));
+//  Serial.print F("Sampling at :");
+//  Serial.println (String(sampleCount));
 
   sendHeader F("Sampling");
 
@@ -1495,18 +1495,19 @@ void loop()
             //S//erial.print F("Their IP is ");
             //Serial.println (theirIP) ;
             if (myIP != theirIP)
-//            {
-//              Serial.println F("this appears to be my ip");
-//              Serial.print F("Ref string unchanged at :" );
-//              Serial.println (MyReferString);
-//            }
-//            else
             {
               //Serial.println F("this does not appear to be my ip");
               MyReferString = sTmp.substring(iTmp + 9);
               //Serial.print F("Ref string now :" );
               //Serial.println (MyReferString);
             }
+//            else            
+//            {
+//              Serial.println F("this appears to be my ip");
+//              Serial.print F("Ref string unchanged at :" );
+//              Serial.println (MyReferString);
+//            }
+
 
           }
           sTmp = "";
