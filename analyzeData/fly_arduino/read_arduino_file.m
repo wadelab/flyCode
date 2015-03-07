@@ -75,32 +75,49 @@ thisFlyData.phenotypes = line ;
 try
     alldata = csvread(fName, 1,0);
 catch
-    thisFlyData.Error = ['CSVfunction died with unknown error in file : ', fName]
+    thisFlyData.Error = ['CSVfunction died with unknown error in file : ', fName];
+    disp(thisFlyData.Error);
     success = false ;
     return
 end
 [nContrasts,c] = size(alldata);
 
 if (c < 3)
-    thisFlyData.Error = ['Less than 3 columns found in file : ', fName]
+    thisFlyData.Error = ['Less than 3 columns found in file : ', fName];
+    disp(thisFlyData.Error);
     success = false ;
     return
 end
 
 if (nContrasts < 1025)
-    thisFlyData.Error = ['Less than 1024 data lines found in file : ', fName]
+    thisFlyData.Error = ['Less than 1024 data lines found in file : ', fName];
+    disp(thisFlyData.Error);
     success = false ;
     return
 end
 
-nContrasts= nContrasts/1025
+nContrasts= nContrasts/1025;
 if (mod(nContrasts,1) ~= 0)
-    thisFlyData.Error = ['Not exactly 1024 data lines in file : ', fName]
+    thisFlyData.Error = ['Not exactly 1024 data lines in file : ', fName];
+    disp(thisFlyData.Error);
     success = false ;
     return
 end
+
+nReqContrasts = 45;
+if (nContrasts ~= nReqContrasts)
+    thisFlyData.Error = ['Not exactly ', num2str(nReqContrasts), ' contrasts in file : ', fName];
+    disp(thisFlyData.Error);
+    success = false ;
+    return
+end
+
+
+
 timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
+
+%%
 
 iStart = 1;
 iEnd = 1024;
@@ -109,18 +126,21 @@ figure ('Name', strcat('Rawdata of: ',fileName));
 n = 9;
 m = nContrasts / n;
 
+
 ymax = max(alldata(:,3)) ;
 ymin = min(alldata(:,3)) ;
 
 rawdata=zeros(nContrasts,1024);
+stimdata=zeros(nContrasts,1024);
 for i = 1:nContrasts
     
     rawdata(i,:)=alldata(iStart:iEnd,3) ;
+    stimdata(i,:)=alldata(iStart:iEnd,2) * 4 - 400  ;
     contrasts(i,:) = alldata(iEnd+1,:) ;
     
     %now we've read the data, lets plot it
     subplot(m,n,i);
-    plot (timedata, rawdata(i,:));
+    plot ( timedata, rawdata(i,:), timedata, stimdata(i,:));
     axis([0 4092 ymin ymax]);
     
     yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
@@ -130,6 +150,9 @@ for i = 1:nContrasts
     iEnd = iEnd + 1025;
 end;
 xlabel('xscale is in ms');
+
+
+%%
 
 printFilename = [pathstr, filesep, fileName, '_RawData', sExt];
 h=gcf;
