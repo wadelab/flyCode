@@ -88,8 +88,8 @@ end
 %% Plot mean CRFs
 [pathstr, fileName, ext] = fileparts(dirName);
 
-% definition of frequency names is also in anothr filr ...
-FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2', 'F2-F1' };
+% definition of frequency names is also in anothr file ...
+FreqNames = GetFreqNames();
 nUnMasked=flydata(1).nUnMasked ;
 
 for phen = 1 : nPhenotypes

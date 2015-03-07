@@ -199,12 +199,12 @@ end
 
 %% Extract fft data
 % sample rate was 4 ms, so these numbers are 4 times
-FreqNames = {'1F1', '1F2', '2F1', '2F2', '1F1+1F2', '2F2+2F2', 'F2-F1' };
+FreqNames = GetFreqNames();
 % FreqsToExtract = [ F1, F2, 2*F1, 2*F2, F1+F2, 2*(F1+F2), F2-F1 ];
 % FreqsToExtract = FreqsToExtract*4 + 1 ;
 % this next bit might be written more cleanly, but i want to check we get
 % the right section..
-FreqsToExtract = [49,62,98,123,111,214,12] ;
+FreqsToExtract = [49,61,98,123,111,233,12] ;
 
 y12Data = fftData(:,FreqsToExtract(1));
 y15Data = fftData(:,FreqsToExtract(2));
