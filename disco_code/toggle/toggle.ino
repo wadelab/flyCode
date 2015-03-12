@@ -1,21 +1,11 @@
 /// THIS IS THE CODE IS RUNNING IN ALL THE TUBES.
 
 // an array of pin numbers to which LEDs are attached
-int ledPins[] = { 
-  2,3,4,5,6,7,8,9}; 
+// blue pins 
+int ledPins[] = { 40, 48, 52 } ;
+  
 
-
-// These are percent contrast modulations
-float ledConts[] = {
-  .30,.30,.30,.30 ,0.0,.25,.50,.99};
-
-
-// These are expressed as percentages of the max (128)
-float ledMeanLum[] = {
-  .05,.2,.4,.75,.5,.5,.5,.5 };
-float flickerHz=5;
-
-int pinCount=8;
+int pinCount=3;
 
 int ledState = LOW;             // ledState used to set the LED
 long previousMillis = 0;        // will store last time LED was updated
@@ -39,7 +29,7 @@ void setup()
 
 
 void loop() {
-  unsigned long currentMillis = millis();
+  long currentMillis = (long)millis();
 
   if(currentMillis - previousMillis > interval) 
   {
@@ -55,7 +45,7 @@ void loop() {
         ledState = LOW;
       for (int thisPin = 0; thisPin < pinCount; thisPin++) 
       {
-        digitalWrite(thisPin, ledState);
+        digitalWrite(ledPins[thisPin], ledState);
       }
     }
   }
