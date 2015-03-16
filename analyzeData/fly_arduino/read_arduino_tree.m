@@ -127,7 +127,7 @@ for i = 1 : length(Collected_Data)
    for j=1 : length(Collected_Data(i).phenotypes)
       myTxt = [ myTxt, Collected_Data(i).phenotypes{j}, ' '];   
    end
-    myTxt = [myTxt,num2str(Collected_Data(i).sorted_CRF(5,3)),' 1F1 ', num2str(Collected_Data(i).sorted_CRF(5,5)),' 2F1']; 
+    myTxt = [myTxt,' 1F1=',num2str(Collected_Data(i).sorted_CRF(5,3)),' 2F1=', num2str(Collected_Data(i).sorted_CRF(5,5))]; 
     myTxt = [myTxt, ' ', Collected_Data(i).fileName, ' '];
     disp (myTxt);
 end

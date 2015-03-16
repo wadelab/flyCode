@@ -98,7 +98,7 @@ end
 
 nContrasts= nContrasts/1025;
 if (mod(nContrasts,1) ~= 0)
-    thisFlyData.Error = ['Not exactly 1024 data lines in file : ', fName];
+    thisFlyData.Error = ['Not exactly 1024 data lines in each block of the file : ', fName];
     disp(thisFlyData.Error);
     success = false ;
     return
@@ -170,10 +170,14 @@ fft_display_limit = 250 ;
 fftData= zeros(nContrasts,fft_display_limit);
 for i = 1:nContrasts
     rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
+    % limit it to 1 sec worth of data
     complx_fftData(i,:)=fft(rawdata(i,1:1000)); %% return this to main program and then average first and then calculate the abs
     %%%%%s    take angle too
+    % ignore dc component...
     fftData(i,:) = abs(complx_fftData(i,2:fft_display_limit+1));
 end
+% ignore dc component on complex fft too
+complx_fftData (:,1) = [];
 
 
 %% plot fft
@@ -218,31 +222,24 @@ FreqNames = GetFreqNames();
 % this next bit might be written more cleanly, but i want to check we get
 % the right section..
 FreqsToExtract = [48,60,96,120,108,216,12] ;
+[dummy, nFreqs ] = size(FreqsToExtract);
 
-y12Data = fftData(:,FreqsToExtract(1));
-y15Data = fftData(:,FreqsToExtract(2));
-y24Data = fftData(:,FreqsToExtract(3));
-y30Data = fftData(:,FreqsToExtract(4));
-y27Data = fftData(:,FreqsToExtract(5));
-y54Data = fftData(:,FreqsToExtract(6));
-y03Data = fftData(:,FreqsToExtract(7));
-
-
-CRF=zeros(nContrasts,5);
+CRF=zeros(nContrasts,nFreqs);
 
 CRF(:,1)= contrasts(:,3);
 CRF(:,2)= contrasts(:,2);
-CRF(:,3)= y12Data;
-CRF(:,4)= y15Data;
-CRF(:,5)= y24Data;
-CRF(:,6)= y30Data;
-CRF(:,7)= y27Data;
-CRF(:,8)= y54Data;
-CRF(:,9)= y03Data;
+
+for i = 1 : nFreqs
+CRF(:,i+2)= fftData(:,FreqsToExtract(i));
+end 
+
 
 %% Sort the data
 % calculate the sorted array; we count the zeros in the first column...
 [CRF, sortindex] = sortrows(CRF);
+
+thisFlyData.sortedContrasts = zeros(size(contrasts)) ;
+thisFlyData.sortedContrasts = contrasts( sortindex,:); 
 
 % sort the rawdata and fft to go with the CRFs
 thisFlyData.sortedRawData = zeros(size(rawdata)) ;
@@ -250,6 +247,28 @@ thisFlyData.sortedRawData( [1:nContrasts],: ) = rawdata(sortindex,:);
 
 thisFlyData.sortedComplex_FFTdata = zeros(size(complx_fftData)) ;
 thisFlyData.sortedComplex_FFTdata( [1:nContrasts],: ) = complx_fftData(sortindex,:);
+
+%% plot means
+%%FIXME sort out all these constants...
+thisFlyData.meanFFT=zeros(9,240);
+thisFlyData.meanContrasts=zeros(9,3);
+
+figure('Name', strcat('Mean FFT of: ',fileName));
+x=0.25:0.25:60 ;
+for i = 1 : 9  % nContrasts
+    subplot(3,3,i);
+    j = 5*(i-1) + 1 ;
+        %find mean and plot it        
+        meanFFT = mean(thisFlyData.sortedComplex_FFTdata(j:j+4,1:240))
+        bar(x,abs(meanFFT));
+        axis([0 max(x) 0 max_fft]);
+        
+            yTxt = strcat(num2str(thisFlyData.sortedContrasts(j,2)), '//', num2str(thisFlyData.sortedContrasts(j,3))) ;
+    ylabel(yTxt);
+    
+        thisFlyData.meanFFT(i,:) = meanFFT;
+        thisFlyData.meanContrasts(i,:) = thisFlyData.sortedContrasts(j,:)
+    end
 
 
 
