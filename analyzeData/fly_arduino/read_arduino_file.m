@@ -316,12 +316,21 @@ if (success)
     %% Plot 12 Hz CRF for this fly
     
     figure('Name', strcat('1F1 Hz CRF of: ',fileName));
-    plot (av_CRF([1:nUnMasked],2), av_CRF([1:nUnMasked],3), '-*', av_CRF([nUnMasked+1:nContrasts],2), av_CRF([nUnMasked+1:nContrasts],3), '-.O' );
+    subplot(1,2,1);
+    plot (av_CRF([1:nUnMasked],2), av_CRF([1:nUnMasked],3), '-*', av_CRF([nUnMasked+1:nContrasts],2), av_CRF([nUnMasked+1:nContrasts],3), '-.Om' );
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
     
     xlabel('contrast (%)');
     ylabel('response, a.u.');
+    
+    subplot(1,2,2);
+    [t,r] = cart2pol(real(complx_CRF(:,3)), imag(complx_CRF(:,3)));
+    polar (t(1:nUnMasked),r(1:nUnMasked), '-*');
+    hold on ;
+    polar (t(nUnMasked+1:end),r(nUnMasked+1:end), '--Om');
+    hold off; 
+    
     
     printFilename = [pathstr, filesep, fileName, '_', FreqNames{1}, '_CRF', sExt];
     h=gcf;
@@ -336,12 +345,21 @@ if (success)
     %% Plot 24 Hz av_CRF for this fly
     
     figure('Name', strcat('2F1 Hz av_CRF of: ',fileName));
-    plot (av_CRF([1:nUnMasked],2), av_CRF([1:nUnMasked],5), '-*', av_CRF([nUnMasked+1:nContrasts],2), av_CRF([nUnMasked+1:nContrasts],5), '-.O' );
+    subplot(1,2,1);
+    plot (av_CRF([1:nUnMasked],2), av_CRF([1:nUnMasked],5), '-*', av_CRF([nUnMasked+1:nContrasts],2), av_CRF([nUnMasked+1:nContrasts],5), '-.Om' );
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
     
     xlabel('contrast (%)');
     ylabel('response, a.u.');
+    
+    subplot(1,2,2);
+    [t,r] = cart2pol(real(complx_CRF(:,5)), imag(complx_CRF(:,5)));
+    polar (t(1:nUnMasked),r(1:nUnMasked), '-*');
+    hold on ;
+    polar (t(nUnMasked+1:end),r(nUnMasked+1:end), '--Om');
+    hold off; 
+    
     
     printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', sExt];
     print( printFilename );
