@@ -214,29 +214,12 @@ if (bCloseGraphs)
 end
 
 
-%% Extract fft data
-% sample rate was 4 ms, so these numbers are 4 times
-FreqNames = GetFreqNames();
-% FreqsToExtract = [ F1, F2, 2*F1, 2*F2, F1+F2, 2*(F1+F2), F2-F1 ];
-% FreqsToExtract = FreqsToExtract*4 + 1 ;
-% this next bit might be written more cleanly, but i want to check we get
-% the right section..
-FreqsToExtract = [48,60,96,120,108,216,12] ;
-[dummy, nFreqs ] = size(FreqsToExtract);
 
-CRF=zeros(nContrasts,nFreqs);
-
-CRF(:,1)= contrasts(:,3);
-CRF(:,2)= contrasts(:,2);
-
-for i = 1 : nFreqs
-CRF(:,i+2)= fftData(:,FreqsToExtract(i));
-end 
 
 
 %% Sort the data
 % calculate the sorted array; we count the zeros in the first column...
-[CRF, sortindex] = sortrows(CRF);
+[dummy_CRF, sortindex] = sortrows(fliplr(contrasts));
 
 thisFlyData.sortedContrasts = zeros(size(contrasts)) ;
 thisFlyData.sortedContrasts = contrasts( sortindex,:); 
@@ -248,50 +231,61 @@ thisFlyData.sortedRawData( [1:nContrasts],: ) = rawdata(sortindex,:);
 thisFlyData.sortedComplex_FFTdata = zeros(size(complx_fftData)) ;
 thisFlyData.sortedComplex_FFTdata( [1:nContrasts],: ) = complx_fftData(sortindex,:);
 
-%% plot means
+%% calculate and plot mean FFT
 %%FIXME sort out all these constants...
 thisFlyData.meanFFT=zeros(9,240);
 thisFlyData.meanContrasts=zeros(9,3);
 
 figure('Name', strcat('Mean FFT of: ',fileName));
-x=0.25:0.25:60 ;
+xScale=0.25:0.25:60 ;
 for i = 1 : 9  % nContrasts
     subplot(3,3,i);
     j = 5*(i-1) + 1 ;
-        %find mean and plot it        
-        meanFFT = mean(thisFlyData.sortedComplex_FFTdata(j:j+4,1:240))
-        bar(x,abs(meanFFT));
-        axis([0 max(x) 0 max_fft]);
-        
-            yTxt = strcat(num2str(thisFlyData.sortedContrasts(j,2)), '//', num2str(thisFlyData.sortedContrasts(j,3))) ;
+    %find mean and plot it
+    meanFFT = mean(thisFlyData.sortedComplex_FFTdata(j:j+4,1:240)) ;
+    bar(xScale,abs(meanFFT));
+    axis([0 max(xScale) 0 max_fft]);
+    
+    yTxt = strcat(num2str(thisFlyData.sortedContrasts(j,2)), '//', num2str(thisFlyData.sortedContrasts(j,3))) ;
     ylabel(yTxt);
     
-        thisFlyData.meanFFT(i,:) = meanFFT;
-        thisFlyData.meanContrasts(i,:) = thisFlyData.sortedContrasts(j,:)
-    end
-
-
-
-%% calculate the mean for each contrast
-c12 = CRF(:,[1:2]);
-
-i = 1;
-k = 1;
-while (i <= nContrasts)
-    j = i + 1;
-    while (j <= nContrasts && isequal(c12(i,:), c12(j,:)))
-        %disp ([i, '  ' ,j]);
-        j = j + 1;
-    end;
-    
-    av_CRF(k,:) = mean(CRF(i:j-1,:),1)  ; % need the ,1 to force it to work if i==j
-    
-    
-    k = k + 1 ;
-    i = j ;
+    thisFlyData.meanFFT(i,:) = meanFFT;
+    thisFlyData.meanContrasts(i,:) = thisFlyData.sortedContrasts(j,:);
 end
 
+xlabel('xscale is in Hz');
 
+printFilename = [pathstr, filesep, fileName, '_mean_FFT', sExt];
+h=gcf;
+set(h,'PaperOrientation','landscape');
+set(h,'PaperUnits','normalized');
+set(h,'PaperPosition', [0 0 1 1]);
+print( printFilename );
+
+if (bCloseGraphs)
+    delete(gcf) ;
+end
+
+%% Extract fft data
+% sample rate was 4 ms, so these numbers are 4 times
+FreqNames = GetFreqNames();
+% FreqsToExtract = [ F1, F2, 2*F1, 2*F2, F1+F2, 2*(F1+F2), F2-F1 ];
+% FreqsToExtract = FreqsToExtract*4 + 1 ;
+% this next bit might be written more cleanly, but i want to check we get
+% the right section..
+FreqsToExtract = [48,60,96,120,108,216,12] ;
+[dummy, nFreqs ] = size(FreqsToExtract);
+
+complx_CRF=zeros(9,nFreqs+2);
+
+complx_CRF(:,1)= thisFlyData.meanContrasts(:,3);
+complx_CRF(:,2)= thisFlyData.meanContrasts(:,2);
+
+for i = 1 : nFreqs
+complx_CRF(:,i+2)= thisFlyData.meanFFT(:,FreqsToExtract(i));
+end 
+
+av_CRF = abs(complx_CRF);
 
 % how many unmasked contrasts were given
 nUnMasked = sum(av_CRF(:,1)==0) ;
@@ -300,22 +294,6 @@ nUnMasked = sum(av_CRF(:,1)==0) ;
 %return the data
 thisFlyData.sorted_CRF = av_CRF;
 thisFlyData.nUnMasked = nUnMasked ;
-
-
-
-% figure('Name','Sanity check');
-% for i = 1:nContrasts
-%
-%     subplot(nContrasts,1,i);
-%     plot (timedata, thisFlyData.sortedRawData(i,:));
-%     %bar(sortedFFTdata(i,:));
-%
-% end;
-%%
-
-
-%success = ( nUnMasked < 6 );
-%success = strfind(fName, 'a.');
 
 
 %% everything here is a plot so we get pictures in the directory where the file was
