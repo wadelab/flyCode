@@ -170,7 +170,7 @@ fft_display_limit = 250 ;
 fftData= zeros(nContrasts,fft_display_limit);
 for i = 1:nContrasts
     rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
-    complx_fftData(i,:)=fft(rawdata(i,:)); %% return this to main program and then average first and then calculate the abs
+    complx_fftData(i,:)=fft(rawdata(i,1:1000)); %% return this to main program and then average first and then calculate the abs
     %%%%%s    take angle too
     fftData(i,:) = abs(complx_fftData(i,2:fft_display_limit+1));
 end
@@ -217,7 +217,7 @@ FreqNames = GetFreqNames();
 % FreqsToExtract = FreqsToExtract*4 + 1 ;
 % this next bit might be written more cleanly, but i want to check we get
 % the right section..
-FreqsToExtract = [49,61,98,123,111,233,12] ;
+FreqsToExtract = [48,60,96,120,108,216,12] ;
 
 y12Data = fftData(:,FreqsToExtract(1));
 y15Data = fftData(:,FreqsToExtract(2));
