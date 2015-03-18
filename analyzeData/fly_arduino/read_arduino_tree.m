@@ -69,20 +69,25 @@ end
 
 %% now we can process the data
 % ia tells us the starting value of each phenotype
-% ib tells us the end of each phenotype
+% ib tellsSo us the end of each phenotype
 % length(ia) tells us how many phenotypes we have 
 
 % copy data into matrix otherwise we can't get the mean...
-[r,c] = size(Collected_Data(1).sorted_CRF);
-Sortedmatrix = zeros(nFlies,r,c);
+[r,c] = size(Collected_Data(1).abs_CRF);
+Sortedabsmatrix = zeros(nFlies,r,c);
+SortedThetamatrix = zeros(nFlies,r,c);
 for i = 1 : nFlies
-    Sortedmatrix(i,:,:) = SortedData(i).sorted_CRF ;
+    Sortedabsmatrix(i,:,:) = SortedData(i).abs_CRF ;
+    SortedThetamatrix(i,:,:) = SortedData(i).theta_CRF ;
 end
 
 
 %% calculate mean for each phenotype
+mean_Abs_CRF = zeros(nPhenotypes,r,c);
+mean_theta_CRF = zeros(nPhenotypes,r,c);
 for phen = 1 : nPhenotypes
-    meanCRF(phen,:,:)=squeeze(mean(Sortedmatrix(ia(phen):ib(phen),:,:),1));
+    mean_Abs_CRF(phen,:,:)=squeeze(mean(Sortedabsmatrix(ia(phen):ib(phen),:,:),1));
+    mean_theta_CRF(phen,:,:)=squeeze(mean(SortedThetamatrix(ia(phen):ib(phen),:,:),1));
 end
     
 %% Plot mean CRFs
@@ -99,8 +104,8 @@ for phen = 1 : nPhenotypes
     for i = 1 : nPlots
         
         subplot ( mod(nPlots,4), floor(nPlots/2), i);
-        plot (meanCRF(phen, [1:nUnMasked],2), meanCRF(phen, [1:nUnMasked],i+2), '-*', meanCRF(phen, [nUnMasked+1:end],2), meanCRF(phen, [nUnMasked+1:end],i+2), '-.O' );
-        ylim([ 0, max(max(meanCRF(:,:,i+2))) ]);
+        plot (mean_Abs_CRF(phen, [1:nUnMasked],2), mean_Abs_CRF(phen, [1:nUnMasked],i+2), '-*', mean_Abs_CRF(phen, [nUnMasked+1:end],2), mean_Abs_CRF(phen, [nUnMasked+1:end],i+2), '-.O' );
+        ylim([ 0, max(max(mean_Abs_CRF(:,:,i+2))) ]);
         if (i==1)
             legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
         end;
@@ -109,7 +114,18 @@ for phen = 1 : nPhenotypes
         
     end
     
-    text(150,max(meanCRF(phen, [nUnMasked+1:end],i+2))/2, strrep(['N=', num2str(id(phen)), ' ', C{phen}],'&',' '));
+    pPlot = nPlots ;
+    for i = 1 : 2 : 3
+        pPlot = pPlot + 1 ;
+        subplot ( mod(nPlots,4), floor(nPlots/2), pPlot);
+        
+       polar (mean_theta_CRF(phen, [1:nUnMasked],i+2), mean_Abs_CRF(phen, [1:nUnMasked],2), '-*');
+       hold on ;
+       polar (mean_theta_CRF(phen, [nUnMasked+1:end],i+2), mean_Abs_CRF(phen, [nUnMasked+1:end],2), '-.O' );
+       hold off ;
+    end    
+    
+    text(150,max(mean_Abs_CRF(phen, [nUnMasked+1:end],i+2))/2, strrep(['N=', num2str(id(phen)), ' ', C{phen}],'&',' '));
     
     printFilename = [dirName, filesep, fileName, '_', num2str(phen), '_mean_CRF', sExt];
     print( printFilename );
@@ -127,7 +143,7 @@ for i = 1 : length(Collected_Data)
    for j=1 : length(Collected_Data(i).phenotypes)
       myTxt = [ myTxt, Collected_Data(i).phenotypes{j}, ' '];   
    end
-    myTxt = [myTxt,' 1F1=',num2str(Collected_Data(i).sorted_CRF(5,3)),' 2F1=', num2str(Collected_Data(i).sorted_CRF(5,5))]; 
+    myTxt = [myTxt,' 1F1=',num2str(Collected_Data(i).abs_CRF(5,3)),' 2F1=', num2str(Collected_Data(i).abs_CRF(5,5))]; 
     myTxt = [myTxt, ' ', Collected_Data(i).fileName, ' '];
     disp (myTxt);
 end

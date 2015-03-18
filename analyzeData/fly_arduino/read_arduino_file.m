@@ -285,14 +285,15 @@ for i = 1 : nFreqs
 complx_CRF(:,i+2)= thisFlyData.meanFFT(:,FreqsToExtract(i));
 end 
 
-av_CRF = abs(complx_CRF);
+[theta_CRF,abs_CRF] = cart2pol(real(complx_CRF(:,:)), imag(complx_CRF(:,:)))
 
 % how many unmasked contrasts were given
-nUnMasked = sum(av_CRF(:,1)==0) ;
-[nContrasts,c] = size(av_CRF);
+nUnMasked = sum(abs_CRF(:,1)==0) ;
+[nContrasts,c] = size(abs_CRF);
 
 %return the data
-thisFlyData.sorted_CRF = av_CRF;
+thisFlyData.abs_CRF = abs_CRF;
+thisFlyData.theta_CRF = theta_CRF;
 thisFlyData.nUnMasked = nUnMasked ;
 
 
@@ -317,7 +318,7 @@ if (success)
     
     figure('Name', strcat('1F1 Hz CRF of: ',fileName));
     subplot(1,2,1);
-    plot (av_CRF([1:nUnMasked],2), av_CRF([1:nUnMasked],3), '-*', av_CRF([nUnMasked+1:nContrasts],2), av_CRF([nUnMasked+1:nContrasts],3), '-.Om' );
+    plot (abs_CRF([1:nUnMasked],2), abs_CRF([1:nUnMasked],3), '-*', abs_CRF([nUnMasked+1:nContrasts],2), abs_CRF([nUnMasked+1:nContrasts],3), '-.Om' );
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
     
@@ -346,7 +347,7 @@ if (success)
     
     figure('Name', strcat('2F1 Hz av_CRF of: ',fileName));
     subplot(1,2,1);
-    plot (av_CRF([1:nUnMasked],2), av_CRF([1:nUnMasked],5), '-*', av_CRF([nUnMasked+1:nContrasts],2), av_CRF([nUnMasked+1:nContrasts],5), '-.Om' );
+    plot (abs_CRF([1:nUnMasked],2), abs_CRF([1:nUnMasked],5), '-*', abs_CRF([nUnMasked+1:nContrasts],2), abs_CRF([nUnMasked+1:nContrasts],5), '-.Om' );
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
     
