@@ -119,13 +119,14 @@ for phen = 1 : nPhenotypes
         pPlot = pPlot + 1 ;
         subplot ( mod(nPlots,4), floor(nPlots/2), pPlot);
         
-       polar (mean_theta_CRF(phen, [1:nUnMasked],i+2), mean_Abs_CRF(phen, [1:nUnMasked],2), '-*');
-       hold on ;
-       polar (mean_theta_CRF(phen, [nUnMasked+1:end],i+2), mean_Abs_CRF(phen, [nUnMasked+1:end],2), '-.O' );
-       hold off ;
-    end    
+        polar (mean_theta_CRF(phen, [1:nUnMasked],i+2), mean_Abs_CRF(phen, [1:nUnMasked],2), '-*');
+        hold on ;
+        polar (mean_theta_CRF(phen, [nUnMasked+1:end],i+2), mean_Abs_CRF(phen, [nUnMasked+1:end],2), '-.O' );
+        hold off ;
+    end
     
-    text(150,max(mean_Abs_CRF(phen, [nUnMasked+1:end],i+2))/2, strrep(['N=', num2str(id(phen)), ' ', C{phen}],'&',' '));
+    subplot ( mod(nPlots,4), floor(nPlots/2), nPlots);
+    text(1,max(mean_Abs_CRF(phen, [nUnMasked+1:end],i+2))/-5, strrep(['N=', num2str(id(phen)), ' ', C{phen}],'&',' '));
     
     printFilename = [dirName, filesep, fileName, '_', num2str(phen), '_mean_CRF', sExt];
     print( printFilename );
