@@ -9,6 +9,40 @@
 //#define __wifisetup__
 
 
+#define due2
+
+//_____________________________________________________
+
+#ifdef mega1
+#define MAC_OK 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
+//biolpc2793 [in use in lab with Emily and Richard]
+#endif
+
+#ifdef mega2
+#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
+//biolpc2804
+
+#endif
+
+#ifdef due1
+#define MAC_OK 0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA2
+//90-A2-DA-0E-09-A2 biolpc2886 [in use for Sultan]
+#endif
+
+#ifdef due2
+#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x6F, 0x9E
+//90-A2-DA-0E-09-A2 biolpc2898 [used in testing...]
+#endif
+ 
+#ifdef due3
+#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x75, 0x17
+//90-A2-DA-0E-09-A2 biolpc2899
+#endif
+
+#ifdef __wifisetup__
+#define MAC_OK
+#endif
+
 //#if defined(__AVR_ATmega2560__  __SAM3X8E__
 /*
 
@@ -37,7 +71,7 @@ Prototype : put the grey wire in ground, and purple wire in pin7
 
 #ifndef __wifisetup__
 
-#include <EEPROM.h>
+
 #include <Ethernet.h>
 
 #else
@@ -117,11 +151,14 @@ String MyReferString = String(MaxInputStr + 1);
 char cFile [30];
 char cInput [MaxInputStr + 2] = "";
 
+#ifndef MAC_OK
+#error please define which arduino you are setting up
+#endif
 
 #ifndef __wifisetup__
 //
 
-byte mac[6]  ;
+byte mac[] = { MAC_OK } ;
 IPAddress myIP, theirIP, dnsIP ;
 
 // Initialize the Ethernet server library
@@ -211,8 +248,6 @@ void setup() {
 
 #else
   Serial.println F("Setting up the Ethernet card...\n");
-  if (readMAC())
-  {
     // start the Ethernet connection and the server:
     Ethernet.begin(mac);
     server.begin();
@@ -222,32 +257,12 @@ void setup() {
     Serial.print(myIP);
     Serial.print(" using dns server ");
     Serial.println(dnsIP);
-  }
-  else
-  {
-    Serial.println F("No Mac address found in EEPROM");
-  }
+
 #endif
 
-#ifdef __AVR_ATmega2560__
-  //set up PWM
-  //http://forum.arduino.cc/index.php?topic=72092.0
-  // timer 4 (controls pin 8, 7, 6);
-  int myEraser = 7;             // this is 111 in binary and is used as an eraser
-  TCCR4B &= ~myEraser;   // this operation (AND plus NOT),  set the three bits in TCCR2B to 0
 
-  // CS02, CS01, CS00  are clear, we write on them a new value:
-  //prescaler = 1 ---> PWM frequency is 31000 Hz
-  //prescaler = 2 ---> PWM frequency is 4000 Hz
-  //prescaler = 3 ---> PWM frequency is 490 Hz (default value)
-  int myPrescaler = 1;         // this could be a number in [1 , 6]. In this case, 3 corresponds in binary to 011.
-  TCCR4B |= myPrescaler;  //this operation (OR), replaces the last three bits in TCCR2B with our new value 011
-#endif
-
-#ifdef __SAM3X8E__
   analogReadResolution(12);
   iGainFactor = 4 ;
-#endif
 
   goColour(0, 0, 0, 0, false);
 
@@ -256,54 +271,54 @@ void setup() {
 
 #ifndef __wifisetup__
 
-bool readMAC()
-{
-  // read a byte from the current address of the EEPROM
-  // start at 0
-  int address = 0;
-  byte value;
-  char cMac [4];
-  cMac[3] = '\0' ;
-  while (address < 20)
-  {
-    value = EEPROM.read(address);
-    char * c = " ";
-    *c = value ;
-    if (address < 3)
-    {
-      cMac [address] = (char)value  ;
-    }
-    else
-    {
-      if (address < 9)
-      {
-        mac [address - 3] = value ;
-      }
-    }
-
-    //
-    //    Serial.print(address);
-    //    Serial.print("\t");
-    //    Serial.print (c);
-    //    Serial.print("\t");
-    //    Serial.print(value, DEC);
-    //    Serial.print("\t");
-    //    Serial.print(value, HEX);
-    //    Serial.println();
-
-    // advance to the next address of the EEPROM
-    address = address + 1;
-  }
-  int iComp = strncmp (cMac, "MAC", 3);
-
-  //  Serial.print ("Comparing :") ;
-  //  Serial.print (cMac);
-  //  Serial.print (" with MAC gives ");
-  //  Serial.println (iComp);
-
-  return ( 0 == iComp) ;
-
-}
+//bool readMAC()
+//{
+//  // read a byte from the current address of the EEPROM
+//  // start at 0
+//  int address = 0;
+//  byte value;
+//  char cMac [4];
+//  cMac[3] = '\0' ;
+//  while (address < 20)
+//  {
+//    value = EEPROM.read(address);
+//    char * c = " ";
+//    *c = value ;
+//    if (address < 3)
+//    {
+//      cMac [address] = (char)value  ;
+//    }
+//    else
+//    {
+//      if (address < 9)
+//      {
+//        mac [address - 3] = value ;
+//      }
+//    }
+//
+//    //
+//    //    Serial.print(address);
+//    //    Serial.print("\t");
+//    //    Serial.print (c);
+//    //    Serial.print("\t");
+//    //    Serial.print(value, DEC);
+//    //    Serial.print("\t");
+//    //    Serial.print(value, HEX);
+//    //    Serial.println();
+//
+//    // advance to the next address of the EEPROM
+//    address = address + 1;
+//  }
+//  int iComp = strncmp (cMac, "MAC", 3);
+//
+//  //  Serial.print ("Comparing :") ;
+//  //  Serial.print (cMac);
+//  //  Serial.print (" with MAC gives ");
+//  //  Serial.println (iComp);
+//
+//  return ( 0 == iComp) ;
+//
+//}
 
 #else
 //ifdef __wifisetup__
