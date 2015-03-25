@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define mega1
+#define mega2
 
 //_____________________________________________________
 
@@ -64,7 +64,7 @@ Prototype : put the grey wire in ground, and purple wire in pin7
 
  */
 #define SS_SD_CARD   4
-#define SS_ETHERNET 53
+#define SS_ETHERNET 10
 // is 10 on normal uno
 
 #include <SPI.h>
@@ -80,7 +80,8 @@ Prototype : put the grey wire in ground, and purple wire in pin7
 
 #endif
 
-#include <SD.h>
+#include <SdFat.h>
+SdFat sd;
 //#include <FixFFT.h>
 
 const short max_graph_data = 32 ;
@@ -124,7 +125,7 @@ byte iThisContrast = 0 ;
 boolean has_filesystem = true;
 bool bFileOK = true ;
 Sd2Card card;
-SdVolume volume;
+//SdVolume volume;
 SdFile root;
 SdFile file;
 
@@ -175,6 +176,18 @@ WiFiClient client (80);
 
 #endif
 
+void Use_Ethernet ()
+{
+  digitalWrite(SS_SD_CARD, HIGH);  // HIGH means SD Card not active
+  digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
+}
+
+
+void Use_SDCard ()
+{
+  digitalWrite(SS_SD_CARD, LOW);  // HIGH means SD Card not active
+  digitalWrite(SS_ETHERNET, HIGH); // HIGH means Ethernet not active
+}
 
 void setup() {
 
@@ -202,29 +215,28 @@ void setup() {
   // initialize the SD card
   Serial.println F("Setting up SD card...\n");
 
-  if (!card.init(SPI_FULL_SPEED, 4))
-  {
-    Serial.println F("card failed full speed");
-    if (!card.init(SPI_HALF_SPEED, 4))
-    {
-      Serial.println F("card failed half speed");
-      if (!card.init(SPI_QUARTER_SPEED, 4))
-      {
-        Serial.println F("card failed quarter speed");
-        has_filesystem = false;
-      }
-    }
-  }
+  Serial.print("Initializing SD card...");
+  // On the Ethernet Shield, CS is pin 4. It's set as an output by default.
+  // Note that even if it's not used as the CS pin, the hardware SS pin
+  // (10 on most Arduino boards, 53 on the Mega) must be left as an output
+  // or the SD library functions will not work.
+  pinMode(10, OUTPUT);
 
-  // initialize a FAT volume
-  if (has_filesystem && !volume.init(&card)) {
-    Serial.println F("vol.init failed!\n");
+  if (!sd.begin(4, SPI_FULL_SPEED)) {
+    Serial.println F("initialization failed!");
     has_filesystem = false;
   }
-  if (has_filesystem && !root.openRoot(&volume)) {
-    Serial.println F("openRoot failed");
-    has_filesystem = false;
-  }
+  Serial.println F("initialization done.");
+
+  //  // initialize a FAT volume
+  //  if (has_filesystem && !volume.init(&card)) {
+  //    Serial.println F("vol.init failed!\n");
+  //    has_filesystem = false;
+  //  }
+  //  if (has_filesystem && !root.openRoot(&volume)) {
+  //    Serial.println F("openRoot failed");
+  //    has_filesystem = false;
+  //  }
   if (has_filesystem)
   {
     Serial.println F("SD card ok\n");
@@ -252,6 +264,8 @@ void setup() {
 #else
   Serial.println F("Setting up the Ethernet card...\n");
   // start the Ethernet connection and the server:
+
+  Use_Ethernet();
   Ethernet.begin(mac);
   server.begin();
   Serial.print F("server is at ");
@@ -569,60 +583,26 @@ void myPrintFatDateTime(const dir_t & pFile)
   client.print(pErg_in);
 }
 
-void printDirectory(uint8_t flags) {
-  // This code is just copied from SdFile.cpp in the SDFat library
-  // and tweaked to print to the client output in html!
-  dir_t p;
+void printDirectory(uint8_t flags) 
+{
+  if (file.isOpen()) file.close();
+
   int iFiles = 0 ;
-  root.rewind();
   client.println F("<ul>");
-  while (root.readDir(p) > 0) {
-    // done if past last used entry
-    if (p.name[0] == DIR_NAME_FREE) break;
-
-    // skip deleted entry and entries for . and  ..
-    if (p.name[0] == DIR_NAME_DELETED || p.name[0] == '.') continue;
-
-    // only list subdirectories and files
-    if (!DIR_IS_FILE_OR_SUBDIR(&p)) continue;
-
-    // print any indent spaces
+  while (file.openNext(sd.vwd(), O_READ))
+  {
     client.print F("<li><a href=\"");
-    for (uint8_t i = 0; i < 11; i++)
-    {
-      if (p.name[i] == ' ') continue;
-      if (i == 8) {
-        client.print('.');
-      }
-      client.print(char(p.name[i]));
-    }
+    file.printName(&client);
     client.print F("\">");
+    file.printName(&client);
+    client.println F("</a> ");
+    file.printFileSize(&client);
+    client.write(' ');
+    file.printModifyDateTime(&client);
 
-    // print file name with possible blank fill
-    for (uint8_t i = 0; i < 11; i++)
-    {
-      if (p.name[i] == ' ') continue;
-      if (i == 8) {
-        client.print('.');
-      }
-      client.print(char(p.name[i]));
-    }
-
-    client.print F("</a>");
-
-    if (DIR_IS_SUBDIR(&p))
-    {
-      client.print('/');
-    }
-    else
-      // print size
-    {
-      myPrintFatDateTime(p);
-      client.print F(" size: ");
-      client.print(p.fileSize);
-      iFiles ++;
-    }
     client.println F("</li>");
+    file.close();
+    iFiles ++ ;
   }
   client.println F("</ul>");
 
@@ -736,7 +716,7 @@ bool writeFile(const char * c)
   if (!fileExists(c))
   {
 
-    if ( !file.open(root, c /*myName*/,   O_CREAT | O_APPEND | O_WRITE))
+    if ( !file.open( c /*myName*/,   O_CREAT | O_APPEND | O_WRITE))
     {
       //      Serial.println F ("Error in opening file");
       //      Serial.println (c);
@@ -759,7 +739,7 @@ bool writeFile(const char * c)
   }
   else // file exists, so just append...
   {
-    if ( !file.open(root, c /*myName*/,  O_APPEND | O_WRITE))
+    if ( !file.open( c /*myName*/,  O_APPEND | O_WRITE))
     {
       //      Serial.println F ("Error in opening file");
       //      Serial.println (c);
@@ -796,7 +776,7 @@ bool writeFile(const char * c)
 bool fileExists(const char * c)
 {
   if (file.isOpen()) file.close();
-  bool bExixsts = file.open(root, c, O_READ);
+  bool bExixsts = file.open( c, O_READ);
   if (bExixsts) file.close();
   return bExixsts ;
 }
@@ -859,7 +839,7 @@ void doreadFile (const char * c)
   //Serial.print F("trying to open:");
   //Serial.println (c);
   if (file.isOpen()) file.close();
-  file.open(root, c, O_READ);
+  file.open( c, O_READ);
   // fix me - open file first and then send the headers
   // Content-Length: 1000000 [size in bytes
   // Last-Modified: Sat, 28 Nov 2009 03:50:37 GMT
