@@ -33,7 +33,7 @@
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x6F, 0x9E
 //90-A2-DA-0E-09-A2 biolpc2898 [used in testing...]
 #endif
-
+ 
 #ifdef due3
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x75, 0x17
 //90-A2-DA-0E-09-A2 biolpc2899
@@ -80,8 +80,7 @@ Prototype : put the grey wire in ground, and purple wire in pin7
 
 #endif
 
-#include <SdFat.h>
-SdFat sd;
+#include <SD.h>
 //#include <FixFFT.h>
 
 const short max_graph_data = 32 ;
@@ -125,7 +124,7 @@ byte iThisContrast = 0 ;
 boolean has_filesystem = true;
 bool bFileOK = true ;
 Sd2Card card;
-//SdVolume volume;
+SdVolume volume;
 SdFile root;
 SdFile file;
 
@@ -176,18 +175,6 @@ WiFiClient client (80);
 
 #endif
 
-void Use_Ethernet ()
-{
-  digitalWrite(SS_SD_CARD, HIGH);  // HIGH means SD Card not active
-  digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
-}
-
-
-void Use_SDCard ()
-{
-  digitalWrite(SS_SD_CARD, LOW);  // HIGH means SD Card not active
-  digitalWrite(SS_ETHERNET, HIGH); // HIGH means Ethernet not active
-}
 
 void setup() {
 
@@ -215,28 +202,25 @@ void setup() {
   // initialize the SD card
   Serial.println F("Setting up SD card...\n");
 
-  Serial.print("Initializing SD card...");
-  // On the Ethernet Shield, CS is pin 4. It's set as an output by default.
-  // Note that even if it's not used as the CS pin, the hardware SS pin
-  // (10 on most Arduino boards, 53 on the Mega) must be left as an output
-  // or the SD library functions will not work.
-  pinMode(10, OUTPUT);
+  if (!card.init(SPI_HALF_SPEED, 4))
+  {
+    Serial.println F("card failed half speed\n");
+    if (!card.init(SPI_QUARTER_SPEED, 4))
+    {
+      Serial.println F("card failed quarter speed\n");
+      has_filesystem = false;
+    }
+  }
 
-  if (!sd.begin(4, SPI_FULL_SPEED)) {
-    Serial.println F("initialization failed!");
+  // initialize a FAT volume
+  if (has_filesystem && !volume.init(&card)) {
+    Serial.println F("vol.init failed!\n");
     has_filesystem = false;
   }
-  Serial.println F("initialization done.");
-
-  //  // initialize a FAT volume
-  //  if (has_filesystem && !volume.init(&card)) {
-  //    Serial.println F("vol.init failed!\n");
-  //    has_filesystem = false;
-  //  }
-  //  if (has_filesystem && !root.openRoot(&volume)) {
-  //    Serial.println F("openRoot failed");
-  //    has_filesystem = false;
-  //  }
+  if (has_filesystem && !root.openRoot(&volume)) {
+    Serial.println F("openRoot failed");
+    has_filesystem = false;
+  }
   if (has_filesystem)
   {
     Serial.println F("SD card ok\n");
@@ -262,18 +246,17 @@ void setup() {
   printWifiStatus();                        // you're connected now, so print out the status
 
 #else
+digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
   Serial.println F("Setting up the Ethernet card...\n");
-  // start the Ethernet connection and the server:
-
-  Use_Ethernet();
-  Ethernet.begin(mac);
-  server.begin();
-  Serial.print F("server is at ");
-  myIP = Ethernet.localIP() ;
-  dnsIP = Ethernet.dnsServerIP();
-  Serial.print(myIP);
-  Serial.print(" using dns server ");
-  Serial.println(dnsIP);
+    // start the Ethernet connection and the server:
+    Ethernet.begin(mac);
+    server.begin();
+    Serial.print F("server is at ");
+    myIP = Ethernet.localIP() ;
+    dnsIP = Ethernet.dnsServerIP();
+    Serial.print(myIP);
+    Serial.print(" using dns server ");
+    Serial.println(dnsIP);
 
 #endif
 
@@ -433,10 +416,10 @@ void goColour(const byte r, const byte g, const byte b, const byte f, const bool
   {
     sendHeader ("Lit up ?", "onload=\"goBack()\" ");
 
-    //    client.println F(" <script>");
-    //    client.println F("function goBack() ");
-    //    client.println F("{ window.history.back() }");
-    //    client.println F("</script>");
+//    client.println F(" <script>");
+//    client.println F("function goBack() ");
+//    client.println F("{ window.history.back() }");
+//    client.println F("</script>");
 
     client.println F("Click to reload <A HREF=\"") ;
     client.println (MyReferString) ;
@@ -583,26 +566,60 @@ void myPrintFatDateTime(const dir_t & pFile)
   client.print(pErg_in);
 }
 
-void printDirectory(uint8_t flags) 
-{
-  if (file.isOpen()) file.close();
-
+void printDirectory(uint8_t flags) {
+  // This code is just copied from SdFile.cpp in the SDFat library
+  // and tweaked to print to the client output in html!
+  dir_t p;
   int iFiles = 0 ;
+  root.rewind();
   client.println F("<ul>");
-  while (file.openNext(sd.vwd(), O_READ))
-  {
-    client.print F("<li><a href=\"");
-    file.printName(&client);
-    client.print F("\">");
-    file.printName(&client);
-    client.println F("</a> ");
-    file.printFileSize(&client);
-    client.write(' ');
-    file.printModifyDateTime(&client);
+  while (root.readDir(p) > 0) {
+    // done if past last used entry
+    if (p.name[0] == DIR_NAME_FREE) break;
 
+    // skip deleted entry and entries for . and  ..
+    if (p.name[0] == DIR_NAME_DELETED || p.name[0] == '.') continue;
+
+    // only list subdirectories and files
+    if (!DIR_IS_FILE_OR_SUBDIR(&p)) continue;
+
+    // print any indent spaces
+    client.print F("<li><a href=\"");
+    for (uint8_t i = 0; i < 11; i++)
+    {
+      if (p.name[i] == ' ') continue;
+      if (i == 8) {
+        client.print('.');
+      }
+      client.print(char(p.name[i]));
+    }
+    client.print F("\">");
+
+    // print file name with possible blank fill
+    for (uint8_t i = 0; i < 11; i++)
+    {
+      if (p.name[i] == ' ') continue;
+      if (i == 8) {
+        client.print('.');
+      }
+      client.print(char(p.name[i]));
+    }
+
+    client.print F("</a>");
+
+    if (DIR_IS_SUBDIR(&p))
+    {
+      client.print('/');
+    }
+    else
+      // print size
+    {
+      myPrintFatDateTime(p);
+      client.print F(" size: ");
+      client.print(p.fileSize);
+      iFiles ++;
+    }
     client.println F("</li>");
-    file.close();
-    iFiles ++ ;
   }
   client.println F("</ul>");
 
@@ -716,22 +733,22 @@ bool writeFile(const char * c)
   if (!fileExists(c))
   {
 
-    if ( !file.open( c /*myName*/,   O_CREAT | O_APPEND | O_WRITE))
+    if ( !file.open(root, c /*myName*/,   O_CREAT | O_APPEND | O_WRITE))
     {
-      //      Serial.println F ("Error in opening file");
-      //      Serial.println (c);
+//      Serial.println F ("Error in opening file");
+//      Serial.println (c);
       return false;
     }
 
     if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
-      //      Serial.println F ("Error in timestamping file");
-      //      Serial.println (c);
+//      Serial.println F ("Error in timestamping file");
+//      Serial.println (c);
       return false ;
     }
     iBytesWritten = file.write(cInput, MaxInputStr + 2);
     if (iBytesWritten <= 0)
     {
-      //      Serial.println F ("Error in writing header to file");
+//      Serial.println F ("Error in writing header to file");
       file.close();
       return false ;
     }
@@ -739,10 +756,10 @@ bool writeFile(const char * c)
   }
   else // file exists, so just append...
   {
-    if ( !file.open( c /*myName*/,  O_APPEND | O_WRITE))
+    if ( !file.open(root, c /*myName*/,  O_APPEND | O_WRITE))
     {
-      //      Serial.println F ("Error in opening file");
-      //      Serial.println (c);
+//      Serial.println F ("Error in opening file");
+//      Serial.println (c);
       return false;
     }
 
@@ -753,7 +770,7 @@ bool writeFile(const char * c)
   iBytesWritten = file.write(erg_in, max_data * sizeof(int));
   if (iBytesWritten <= 0)
   {
-    //    Serial.println F ("Error in writing erg data to file");
+//    Serial.println F ("Error in writing erg data to file");
     file.close();
     return false;
   }
@@ -762,13 +779,13 @@ bool writeFile(const char * c)
   iBytesWritten = file.write(time_stamp, max_data * sizeof(unsigned int));
   if (iBytesWritten <= 0)
   {
-    //    Serial.println F ("Error in writing timing data to file");
+//    Serial.println F ("Error in writing timing data to file");
     return false ;
   }
-  //  Serial.print F(" More bytes writen to file.........");
-  //  Serial.print  (c);
-  //  Serial.print F(" size now ");
-  //  Serial.println (file.fileSize());
+  Serial.print F(" More bytes writen to file.........");
+  Serial.print  (c);
+  Serial.print F(" size now ");
+  Serial.println (file.fileSize());
   file.sync();
   return true ;
 }
@@ -776,7 +793,7 @@ bool writeFile(const char * c)
 bool fileExists(const char * c)
 {
   if (file.isOpen()) file.close();
-  bool bExixsts = file.open( c, O_READ);
+  bool bExixsts = file.open(root, c, O_READ);
   if (bExixsts) file.close();
   return bExixsts ;
 }
@@ -808,7 +825,7 @@ void gmdate ( const dir_t & pFile)
 
   printTwoDigits(c + strlen(c) , FAT_DAY(pFile.lastWriteDate));
   strcat_P (c, PSTR(" "));
-
+  
   int iLen = strlen(c);
   iTmp = m - 1;
   if (iTmp > 11) iTmp = 0;
@@ -825,7 +842,7 @@ void gmdate ( const dir_t & pFile)
   strcat_P (c, PSTR(":"));
   printTwoDigits(c + strlen(c) , FAT_SECOND(pFile.lastWriteTime));
   strcat_P (c, PSTR(" GMT"));
-
+  
   //Serial.println( c );
 }
 
@@ -839,7 +856,7 @@ void doreadFile (const char * c)
   //Serial.print F("trying to open:");
   //Serial.println (c);
   if (file.isOpen()) file.close();
-  file.open( c, O_READ);
+  file.open(root, c, O_READ);
   // fix me - open file first and then send the headers
   // Content-Length: 1000000 [size in bytes
   // Last-Modified: Sat, 28 Nov 2009 03:50:37 GMT
@@ -854,8 +871,8 @@ void doreadFile (const char * c)
     Serial.println F("file date not recovered") ;
   }
   gmdate ( dE );
-  //  Serial.print F("Last modified is:");
-  //  Serial.println( cPtr ) ;
+//  Serial.print F("Last modified is:");
+//  Serial.println( cPtr ) ;
   sendHeader(String(c), "", false, cPtr);
 
   int iBytesRequested, iBytesRead;
@@ -885,8 +902,8 @@ void doreadFile (const char * c)
     iBytesRequested = max_data * sizeof(unsigned int);
     iBytesRead = file.read (time_stamp, iBytesRequested );
     nBlocks ++;
-    //    Serial.print F("Reading file blocks ");
-    //    Serial.println (nBlocks);
+//    Serial.print F("Reading file blocks ");
+//    Serial.println (nBlocks);
 
     for (int i = 0; i < max_data - 1; i++)
     {
@@ -932,17 +949,17 @@ bool collectSSVEPData ()
   unsigned int iTime ;
   if (iThisContrast == 0 && file.isOpen()) file.close();
 
-  //
-  //
-  //  Serial.print F("collecting data with ");
-  //  Serial.print (nRepeats);
-  //  Serial.print F("r : c");
-  //  Serial.println (iThisContrast);
-  //
-  //  Serial.print F("update collecting data with ");
-  //  Serial.print (nRepeats);
-  //  Serial.print F("r : c");
-  //  Serial.println (iThisContrast);
+//
+//
+//  Serial.print F("collecting data with ");
+//  Serial.print (nRepeats);
+//  Serial.print F("r : c");
+//  Serial.println (iThisContrast);
+//
+//  Serial.print F("update collecting data with ");
+//  Serial.print (nRepeats);
+//  Serial.print F("r : c");
+//  Serial.println (iThisContrast);
 
   sampleCount = -presamples ;
   last_time = millis();
@@ -1012,10 +1029,10 @@ bool collect_fERG_Data ()
 
   iThisContrast = maxContrasts;
   nRepeats ++;
-  //  Serial.print F("collecting fERG data with ");
-  //  Serial.print (nRepeats);
-  //  Serial.print F("r : c");
-  //  Serial.println (iThisContrast);
+//  Serial.print F("collecting fERG data with ");
+//  Serial.print (nRepeats);
+//  Serial.print F("r : c");
+//  Serial.println (iThisContrast);
 
   sampleCount = -presamples ;
   last_time = millis();
@@ -1063,8 +1080,8 @@ bool collect_fERG_Data ()
 
 void flickerPage()
 {
-  //  Serial.print F("Sampling at :");
-  //  Serial.println (String(sampleCount));
+//  Serial.print F("Sampling at :");
+//  Serial.println (String(sampleCount));
 
   sendHeader F("Sampling");
 
@@ -1264,7 +1281,7 @@ void getData ()
 
 void sendReply ()
 {
-  Serial.print(MyInputString);
+  Serial.println(MyInputString);
   if (!has_filesystem)
   {
     sendHeader F("Card not working");
@@ -1490,12 +1507,12 @@ void loop()
               //Serial.print F("Ref string now :" );
               //Serial.println (MyReferString);
             }
-            //            else
-            //            {
-            //              Serial.println F("this appears to be my ip");
-            //              Serial.print F("Ref string unchanged at :" );
-            //              Serial.println (MyReferString);
-            //            }
+//            else            
+//            {
+//              Serial.println F("this appears to be my ip");
+//              Serial.print F("Ref string unchanged at :" );
+//              Serial.println (MyReferString);
+//            }
 
 
           }
