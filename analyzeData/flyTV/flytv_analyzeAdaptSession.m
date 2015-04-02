@@ -73,7 +73,7 @@ flyBin=squeeze(mean(abs(meanBinnedData),3));
 semBinnedData=squeeze(std((meanBinnedData),[],3))/sqrt(nFlies);
 figure(2);
 
-g=barweb(squeeze(abs(flyBin(:,2:61)))',squeeze(semBinnedData(:,2:61))',1,[],'Probe responses','Frequency','Amp',bone,[],{'Adapt','noAdapt','Ctrl'});
+g=barweb(squeeze(abs(flyBin(:,2:41)))',squeeze(semBinnedData(:,2:41))',1,[],'Probe responses','Frequency','Amp',bone,[],{'Adapt','noAdapt','Ctrl'});
 axis on
 
    
