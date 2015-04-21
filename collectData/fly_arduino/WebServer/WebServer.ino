@@ -84,7 +84,7 @@ Prototype : put the grey wire in ground, and purple wire in pin7
 //#include <FixFFT.h>
 
 const short max_graph_data = 32 ;
-short * myGraphData ;  // will share erg_in space, see below
+int * myGraphData ;  // will share erg_in space, see below
 short iIndex = 0 ;
 
 
@@ -133,8 +133,8 @@ byte freq1 = 12 ; // flicker of LED Hz
 byte freq2 = 15 ; // flicker of LED Hz
 // as of 18 June, maxdata of 2048 is too big for the mega....
 const short max_data = 1025  ;
-unsigned short time_stamp [max_data] ;
-short erg_in [max_data];
+unsigned int time_stamp [max_data] ;
+int erg_in [max_data];
 long sampleCount = 0;        // will store number of A/D samples taken
 unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0;
@@ -857,6 +857,7 @@ void doreadFile (const char * c)
   //Serial.println (c);
   if (file.isOpen()) file.close();
   file.open(root, c, O_READ);
+  
   // fix me - open file first and then send the headers
   // Content-Length: 1000000 [size in bytes
   // Last-Modified: Sat, 28 Nov 2009 03:50:37 GMT
@@ -871,8 +872,8 @@ void doreadFile (const char * c)
     Serial.println F("file date not recovered") ;
   }
   gmdate ( dE );
-//  Serial.print F("Last modified is:");
-//  Serial.println( cPtr ) ;
+  Serial.print F("Last modified is:");
+  Serial.println( cPtr ) ;
   sendHeader(String(c), "", false, cPtr);
 
   int iBytesRequested, iBytesRead;
@@ -896,14 +897,13 @@ void doreadFile (const char * c)
   // now on to the data
   iBytesRequested = max_data * sizeof(int);
   iBytesRead = file.read(erg_in, iBytesRequested);
+
   int nBlocks = 0;
   while (iBytesRead == iBytesRequested)
   {
     iBytesRequested = max_data * sizeof(unsigned int);
     iBytesRead = file.read (time_stamp, iBytesRequested );
     nBlocks ++;
-//    Serial.print F("Reading file blocks ");
-//    Serial.println (nBlocks);
 
     for (int i = 0; i < max_data - 1; i++)
     {
@@ -933,9 +933,11 @@ void doreadFile (const char * c)
 
     client.print(erg_in[max_data - 1]);
     client.println();
+        
     //read next block
     iBytesRequested = max_data * sizeof(int);
     iBytesRead = file.read(erg_in, iBytesRequested);
+
   } // end of while
 
   file.close();
