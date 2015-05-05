@@ -80,7 +80,7 @@ catch
     success = false ;
     return
 end
-[nContrasts,c] = size(alldata);
+[nSamples,c] = size(alldata);
 
 if (c < 3)
     thisFlyData.Error = ['Less than 3 columns found in file : ', fName];
@@ -89,15 +89,15 @@ if (c < 3)
     return
 end
 
-if (nContrasts < 1025)
+if (nSamples < 1025)
     thisFlyData.Error = ['Less than 1024 data lines found in file : ', fName];
     disp(thisFlyData.Error);
     success = false ;
     return
 end
 
-nContrasts= nContrasts/1025;
-if (mod(nContrasts,1) ~= 0)
+nSamples= nSamples/1025;
+if (mod(nSamples,1) ~= 0)
     thisFlyData.Error = ['Not exactly 1024 data lines in each block of the file : ', fName];
     disp(thisFlyData.Error);
     success = false ;
@@ -105,7 +105,7 @@ if (mod(nContrasts,1) ~= 0)
 end
 
 nReqContrasts = 45;
-if (nContrasts ~= nReqContrasts)
+if (nSamples ~= nReqContrasts)
     thisFlyData.Error = ['Not exactly ', num2str(nReqContrasts), ' contrasts in file : ', fName];
     disp(thisFlyData.Error);
     success = false ;
@@ -118,21 +118,21 @@ timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
 
 %%
-
+nContrasts = 9;
 iStart = 1;
 iEnd = 1024;
 
 figure ('Name', strcat('Rawdata of: ',fileName));
-n = 9;
-m = nContrasts / n;
+n = nContrasts;
+m = nSamples / n;
 
 
 ymax = max(alldata(:,3)) ;
 ymin = min(alldata(:,3)) ;
 
-rawdata=zeros(nContrasts,1024);
-stimdata=zeros(nContrasts,1024);
-for i = 1:nContrasts
+rawdata=zeros(nSamples,1024);
+stimdata=zeros(nSamples,1024);
+for i = 1:nSamples
     
     rawdata(i,:)=alldata(iStart:iEnd,3) ;
     stimdata(i,:)=alldata(iStart:iEnd,2) * 4 - 400  ;
@@ -167,8 +167,8 @@ end
 
 %%  do fft
 fft_display_limit = 250 ;
-fftData= zeros(nContrasts,fft_display_limit);
-for i = 1:nContrasts
+fftData= zeros(nSamples,fft_display_limit);
+for i = 1:nSamples
     rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
     % limit it to 1 sec worth of data
     complx_fftData(i,:)=fft(rawdata(i,1:1000)); %% return this to main program and then average first and then calculate the abs
@@ -183,7 +183,7 @@ complx_fftData (:,1) = [];
 %% plot fft
 figure('Name', strcat('FFT of: ',fileName));
 max_fft = max(max(fftData));
-for i = 1:nContrasts
+for i = 1:nSamples
     subplot(m,n,i);
     bar(fftData(i,:));
     axis([0 fft_display_limit 0 max_fft]); % plot to 25Hz
@@ -226,19 +226,20 @@ thisFlyData.sortedContrasts = contrasts( sortindex,:);
 
 % sort the rawdata and fft to go with the CRFs
 thisFlyData.sortedRawData = zeros(size(rawdata)) ;
-thisFlyData.sortedRawData( [1:nContrasts],: ) = rawdata(sortindex,:);
+thisFlyData.sortedRawData( [1:nSamples],: ) = rawdata(sortindex,:);
 
 thisFlyData.sortedComplex_FFTdata = zeros(size(complx_fftData)) ;
-thisFlyData.sortedComplex_FFTdata( [1:nContrasts],: ) = complx_fftData(sortindex,:);
+thisFlyData.sortedComplex_FFTdata( [1:nSamples],: ) = complx_fftData(sortindex,:);
 
 %% calculate and plot mean FFT
 %%FIXME sort out all these constants...
-thisFlyData.meanFFT=zeros(9,240);
-thisFlyData.meanContrasts=zeros(9,3);
+
+thisFlyData.meanFFT=zeros(nContrasts,240);
+thisFlyData.meanContrasts=zeros(nContrasts,3);
 
 figure('Name', strcat('Mean FFT of: ',fileName));
 xScale=0.25:0.25:60 ;
-for i = 1 : 9  % nContrasts
+for i = 1 : nContrasts
     subplot(3,3,i);
     j = 5*(i-1) + 1 ;
     %find mean and plot it
@@ -289,7 +290,7 @@ end
 
 % how many unmasked contrasts were given
 nUnMasked = sum(abs_CRF(:,1)==0) ;
-[nContrasts,c] = size(abs_CRF);
+
 
 %return the data
 thisFlyData.abs_CRF = abs_CRF;
