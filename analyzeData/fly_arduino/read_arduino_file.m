@@ -117,11 +117,12 @@ end
 timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
 
-%%
+%% These constants are fixed 
 nContrasts = 9;
 iStart = 1;
 iEnd = 1024;
 
+%% plot raw data
 figure ('Name', strcat('Rawdata of: ',fileName));
 n = nContrasts;
 m = nSamples / n;
@@ -135,7 +136,7 @@ stimdata=zeros(nSamples,1024);
 for i = 1:nSamples
     
     rawdata(i,:)=alldata(iStart:iEnd,3) ;
-    stimdata(i,:)=alldata(iStart:iEnd,2) * 4 - 400  ;
+    stimdata(i,:)=alldata(iStart:iEnd,2) * 4 - 400  ; % stimdata only used for plotting
     contrasts(i,:) = alldata(iEnd+1,:) ;
     
     %now we've read the data, lets plot it
@@ -152,8 +153,6 @@ end;
 xlabel('xscale is in ms');
 
 
-%%
-
 printFilename = [pathstr, filesep, fileName, '_RawData', sExt];
 h=gcf;
 set(h,'PaperOrientation','landscape');
@@ -167,25 +166,22 @@ end
 
 %%  do fft
 fft_display_limit = 250 ;
-fftData= zeros(nSamples,fft_display_limit);
+complx_fftData= zeros(nSamples,1000);
 for i = 1:nSamples
     rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
     % limit it to 1 sec worth of data
     complx_fftData(i,:)=fft(rawdata(i,1:1000)); %% return this to main program and then average first and then calculate the abs
-    %%%%%s    take angle too
-    % ignore dc component...
-    fftData(i,:) = abs(complx_fftData(i,2:fft_display_limit+1));
 end
-% ignore dc component on complex fft too
+% ignore dc component on complex fft 
 complx_fftData (:,1) = [];
 
 
 %% plot fft
 figure('Name', strcat('FFT of: ',fileName));
-max_fft = max(max(fftData));
+max_fft = max(max(abs(complx_fftData)));
 for i = 1:nSamples
     subplot(m,n,i);
-    bar(fftData(i,:));
+    bar(abs(complx_fftData(i,1:fft_display_limit)));
     axis([0 fft_display_limit 0 max_fft]); % plot to 25Hz
     set(gca,'XTickLabel',''); % no tick labels (unless bottom row, see below)
     
@@ -286,15 +282,15 @@ for i = 1 : nFreqs
 complx_CRF(:,i+2)= thisFlyData.meanFFT(:,FreqsToExtract(i));
 end 
 
-[theta_CRF,abs_CRF] = cart2pol(real(complx_CRF(:,:)), imag(complx_CRF(:,:)))
+%[theta_CRF,abs_CRF] = cart2pol(real(complx_CRF(:,:)), imag(complx_CRF(:,:)))
+theta_CRF=angle(complx_CRF);
+abs_CRF = abs(complx_CRF);
 
 % how many unmasked contrasts were given
 nUnMasked = sum(abs_CRF(:,1)==0) ;
 
 
 %return the data
-thisFlyData.abs_CRF = abs_CRF;
-thisFlyData.theta_CRF = theta_CRF;
 thisFlyData.nUnMasked = nUnMasked ;
 
 
@@ -327,10 +323,10 @@ if (success)
     ylabel('response, a.u.');
     
     subplot(1,2,2);
-    [t,r] = cart2pol(real(complx_CRF(:,3)), imag(complx_CRF(:,3)));
-    polar (t(1:nUnMasked),r(1:nUnMasked), '-*');
+    %[t,r] = cart2pol(real(complx_CRF(:,3)), imag(complx_CRF(:,3)));
+    polar (theta_CRF(1:nUnMasked,3),abs_CRF(1:nUnMasked,3), '-*');
     hold on ;
-    polar (t(nUnMasked+1:end),r(nUnMasked+1:end), '--Om');
+    polar (theta_CRF(nUnMasked+1:end,3),abs_CRF(nUnMasked+1:end,3), '--Om');
     hold off; 
     
     
@@ -356,10 +352,10 @@ if (success)
     ylabel('response, a.u.');
     
     subplot(1,2,2);
-    [t,r] = cart2pol(real(complx_CRF(:,5)), imag(complx_CRF(:,5)));
-    polar (t(1:nUnMasked),r(1:nUnMasked), '-*');
+    %[t,r] = cart2pol(real(complx_CRF(:,5)), imag(complx_CRF(:,5)));
+    polar (theta_CRF(1:nUnMasked,5),abs_CRF(1:nUnMasked,5), '-*');
     hold on ;
-    polar (t(nUnMasked+1:end),r(nUnMasked+1:end), '--Om');
+    polar (theta_CRF(nUnMasked+1:end,5),abs_CRF(nUnMasked+1:end,5), '--Om');
     hold off; 
     
     
