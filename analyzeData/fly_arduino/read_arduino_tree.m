@@ -73,23 +73,25 @@ end
 % length(ia) tells us how many phenotypes we have 
 
 % copy data into matrix otherwise we can't get the mean...
-[r,c] = size(Collected_Data(1).abs_CRF);
-Sortedabsmatrix = zeros(nFlies,r,c);
-SortedThetamatrix = zeros(nFlies,r,c);
+[r,c] = size(SortedData(1).meanFFT);
+SortedFFTmatrix = zeros(nFlies,r,c);
+
 for i = 1 : nFlies
-    Sortedabsmatrix(i,:,:) = SortedData(i).abs_CRF ;
-    SortedThetamatrix(i,:,:) = SortedData(i).theta_CRF ;
+    SortedFFTmatrix(i,:,:) = SortedData(i).meanFFT ;
 end
 
 
 %% calculate mean for each phenotype
-mean_Abs_CRF = zeros(nPhenotypes,r,c);
-mean_theta_CRF = zeros(nPhenotypes,r,c);
+[pathstr, fileName, ext] = fileparts(dirName);
+mean_phenotypeFFT = zeros(nPhenotypes,r,c);
+
 for phen = 1 : nPhenotypes
-    mean_Abs_CRF(phen,:,:)=squeeze(mean(Sortedabsmatrix(ia(phen):ib(phen),:,:),1));
-    mean_theta_CRF(phen,:,:)=squeeze(mean(SortedThetamatrix(ia(phen):ib(phen),:,:),1));
+    mean_phenotypeFFT(phen,:,:)=squeeze(mean(SortedFFTmatrix(ia(phen):ib(phen),:,:),1));    
+    phenFFT =squeeze(mean_phenotypeFFT(phen,:,:));
+    Calculate_CRF(SortedData(1).meanContrasts, phenFFT, pathstr, fileName, false);
 end
     
+
 % %% Plot mean CRFs
 % [pathstr, fileName, ext] = fileparts(dirName);
 % 
