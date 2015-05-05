@@ -100,11 +100,11 @@ disp ('Now writing mean max 1F1 and 2F1');
 disp(' ');
 for i = 1 : nPhenotypes
    myTxt = ['']; 
-   for j=1 : length(SortedData(i).phenotypes)
-      myTxt = [ myTxt, SortedData(i).phenotypes{j}, ' '];   
+   for j=1 : length(SortedData(ia(i)).phenotypes)
+      myTxt = [ myTxt, SortedData(ia(i)).phenotypes{j}, ' '];   
    end
     myTxt = [myTxt,' 1F1=',num2str(abs(meanCRF(i,5,3))),' 2F1=', num2str(abs(meanCRF(i,5,5)))]; 
-    myTxt = [myTxt, ' ', SortedData(i).fileName, ' '];
+    %myTxt = [myTxt, ' ', SortedData(i).fileName, ' '];
     disp (myTxt);
 end
 
