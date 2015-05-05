@@ -81,75 +81,32 @@ for i = 1 : nFlies
 end
 
 
-%% calculate mean for each phenotype
+%% calculate and plot mean for each phenotype
 [pathstr, fileName, ext] = fileparts(dirName);
 mean_phenotypeFFT = zeros(nPhenotypes,r,c);
+meanCRF = zeros(nPhenotypes,length(SortedData(1).meanContrasts), 2+length(GetFreqNames()));
 
 for phen = 1 : nPhenotypes
     mean_phenotypeFFT(phen,:,:)=squeeze(mean(SortedFFTmatrix(ia(phen):ib(phen),:,:),1));    
     phenFFT =squeeze(mean_phenotypeFFT(phen,:,:));
-    Calculate_CRF(SortedData(1).meanContrasts, phenFFT, pathstr, fileName, false);
+    meanCRF(phen,:,:) = Calculate_CRF(SortedData(phen).meanContrasts, phenFFT, pathstr, fileName, false);
 end
     
 
-% %% Plot mean CRFs
-% [pathstr, fileName, ext] = fileparts(dirName);
-% 
-% % definition of frequency names is also in anothr file ...
-% FreqNames = GetFreqNames();
-% nUnMasked=flydata(1).nUnMasked ;
-% 
-% for phen = 1 : nPhenotypes
-%     figure('Name', strcat(' mean CRFs of: ',fileName, ' Phenotype: ', num2str(phen)));
-%     
-%     nPlots = length(FreqNames);
-%     for i = 1 : nPlots
-%         
-%         subplot ( mod(nPlots,4), floor(nPlots/2), i);
-%         plot (mean_Abs_CRF(phen, [1:nUnMasked],2), mean_Abs_CRF(phen, [1:nUnMasked],i+2), '-*', mean_Abs_CRF(phen, [nUnMasked+1:end],2), mean_Abs_CRF(phen, [nUnMasked+1:end],i+2), '-.O' );
-%         ylim([ 0, max(max(mean_Abs_CRF(:,:,i+2))) ]);
-%         if (i==1)
-%             legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
-%         end;
-%         set(gca,'XScale','log');
-%         title(FreqNames{i});
-%         
-%     end
-%     
-%     pPlot = nPlots ;
-%     for i = 1 : 2 : 3
-%         pPlot = pPlot + 1 ;
-%         subplot ( mod(nPlots,4), floor(nPlots/2), pPlot);
-%         
-%         polar (mean_theta_CRF(phen, [1:nUnMasked],i+2), mean_Abs_CRF(phen, [1:nUnMasked],2), '-*');
-%         hold on ;
-%         polar (mean_theta_CRF(phen, [nUnMasked+1:end],i+2), mean_Abs_CRF(phen, [nUnMasked+1:end],2), '-.O' );
-%         hold off ;
-%     end
-%     
-%     subplot ( mod(nPlots,4), floor(nPlots/2), nPlots);
-%     text(1,max(mean_Abs_CRF(phen, [nUnMasked+1:end],i+2))/-5, strrep(['N=', num2str(id(phen)), ' ', C{phen}],'&',' '));
-%     
-%     printFilename = [dirName, filesep, fileName, '_', num2str(phen), '_mean_CRF', sExt];
-%     print( printFilename );
-%     
-% end
-% 
-% 
-% disp (['done! ', dirName]);
-% 
-% % %% write out the max CRF
-% % disp ('Now writing max 1F1 and 2F1');
-% % disp(' ');
-% % for i = 1 : length(Collected_Data)
-% %    myTxt = ['']; 
-% %    for j=1 : length(Collected_Data(i).phenotypes)
-% %       myTxt = [ myTxt, Collected_Data(i).phenotypes{j}, ' '];   
-% %    end
-% %     myTxt = [myTxt,' 1F1=',num2str(Collected_Data(i).abs_CRF(5,3)),' 2F1=', num2str(Collected_Data(i).abs_CRF(5,5))]; 
-% %     myTxt = [myTxt, ' ', Collected_Data(i).fileName, ' '];
-% %     disp (myTxt);
-% % end
-% 
+disp (['done! ', dirName]);
+
+%% write out the max CRF for each phenotype
+disp ('Now writing mean max 1F1 and 2F1');
+disp(' ');
+for i = 1 : nPhenotypes
+   myTxt = ['']; 
+   for j=1 : length(SortedData(i).phenotypes)
+      myTxt = [ myTxt, SortedData(i).phenotypes{j}, ' '];   
+   end
+    myTxt = [myTxt,' 1F1=',num2str(abs(meanCRF(i,5,3))),' 2F1=', num2str(abs(meanCRF(i,5,5)))]; 
+    myTxt = [myTxt, ' ', SortedData(i).fileName, ' '];
+    disp (myTxt);
+end
+
 
 

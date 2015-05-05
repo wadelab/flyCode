@@ -1,4 +1,4 @@
-function Calculate_CRF (my_meanContrasts,my_meanFFT,pathstr,fileName,bCloseGraphs)
+function complx_CRF = Calculate_CRF (my_meanContrasts,my_meanFFT,pathstr,fileName,bCloseGraphs)
 
 %% Extract fft data
 % sample rate was 4 ms, so these numbers are 4 times
