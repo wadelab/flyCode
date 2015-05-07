@@ -1,4 +1,13 @@
-function plot_mean_crf (complx_CRF, pathstr, fileName, bCloseGraphs)
+function plot_mean_crf (complx_CRF, pathstr, fileName, bCloseGraphs, varargin)
+
+% variable argument is the error bars...
+
+if (nargin ~= 5)
+   % missing error bars
+   eb = zeros(size(complx_CRF));
+else
+   eb = varargin{1};
+end
 
 FreqNames = GetFreqNames();
 sExt = getPictExt () ;
@@ -7,6 +16,7 @@ sExt = getPictExt () ;
 %[theta_CRF,abs_CRF] = cart2pol(real(complx_CRF(:,:)), imag(complx_CRF(:,:)))
 theta_CRF=angle(complx_CRF);
 abs_CRF = abs(complx_CRF);
+eb_CRF = abs(eb) ;
 
 % how many unmasked contrasts were given
 nUnMasked = sum(abs_CRF(:,1)==0) ;
@@ -38,15 +48,29 @@ thisFlyData.nUnMasked = nUnMasked ;
     
     figure('Name', strcat('1F1 Hz CRF of: ',fileName));
     subplot(1,2,1);
-    plot (abs_CRF([1:nUnMasked],2), abs_CRF([1:nUnMasked],3), '-*', abs_CRF([nUnMasked+1:nContrasts],2), abs_CRF([nUnMasked+1:nContrasts],3), '-.Om' );
+          
+    p = errorbar (abs_CRF([1:nUnMasked],2), abs_CRF([1:nUnMasked],3), eb_CRF([1:nUnMasked],3)) ;
+    set (p, 'color', 'red');
+set (p, 'Marker', 'o');
+set (p, 'MarkerFaceColor', 'red');
+hold on ;
+     p = errorbar (abs_CRF([nUnMasked+1:nContrasts],2), abs_CRF([nUnMasked+1:nContrasts],3), eb_CRF([nUnMasked+1:nContrasts],3));
+    set (p, 'color', 'blue');
+set (p, 'Marker', 's');
+set (p, 'MarkerFaceColor', 'blue');
+hold off ;
+     
+    
+    
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
+    axis([0 110 0 inf]);
     
     xlabel('contrast (%)');
     ylabel('response, a.u.');
     
     subplot(1,2,2);
-    %[t,r] = cart2pol(real(complx_CRF(:,3)), imag(complx_CRF(:,3)));
+
     polar (theta_CRF(1:nUnMasked,3),abs_CRF(1:nUnMasked,3), '-*');
     hold on ;
     polar (theta_CRF(nUnMasked+1:end,3),abs_CRF(nUnMasked+1:end,3), '--Om');
@@ -67,9 +91,20 @@ thisFlyData.nUnMasked = nUnMasked ;
     
     figure('Name', strcat('2F1 Hz av_CRF of: ',fileName));
     subplot(1,2,1);
-    plot (abs_CRF([1:nUnMasked],2), abs_CRF([1:nUnMasked],5), '-*', abs_CRF([nUnMasked+1:nContrasts],2), abs_CRF([nUnMasked+1:nContrasts],5), '-.Om' );
+     p = errorbar (abs_CRF([1:nUnMasked],2), abs_CRF([1:nUnMasked],5), eb_CRF([1:nUnMasked],5)) ;
+    set (p, 'color', 'red');
+set (p, 'Marker', 'o');
+set (p, 'MarkerFaceColor', 'red');
+hold on ;
+     p = errorbar (abs_CRF([nUnMasked+1:nContrasts],2), abs_CRF([nUnMasked+1:nContrasts],5), eb_CRF([nUnMasked+1:nContrasts],5));
+    set (p, 'color', 'blue');
+set (p, 'Marker', 's');
+set (p, 'MarkerFaceColor', 'blue');
+hold off ;
+
     legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
     set(gca,'XScale','log');
+    axis([0 110 0 inf]);
     
     xlabel('contrast (%)');
     ylabel('response, a.u.');

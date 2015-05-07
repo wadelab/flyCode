@@ -81,30 +81,47 @@ for i = 1 : nFlies
 end
 
 
-%% calculate and plot mean for each phenotype
+%% calculate and plot mean and SD for each phenotype (SD on per fly basis)
 [pathstr, fileName, ext] = fileparts(dirName);
 mean_phenotypeFFT = zeros(nPhenotypes,r,c);
 meanCRF = zeros(nPhenotypes,length(SortedData(1).meanContrasts), 2+length(GetFreqNames()));
 
+SD_phenotypeFFT = zeros(nPhenotypes,r,c);
+SE_CRF = zeros(nPhenotypes,length(SortedData(1).meanContrasts), 2+length(GetFreqNames()));
+nFlies = zeros(nPhenotypes);
+
+
 for phen = 1 : nPhenotypes
-    mean_phenotypeFFT(phen,:,:)=squeeze(mean(SortedFFTmatrix(ia(phen):ib(phen),:,:),1));    
-    phenFFT =squeeze(mean_phenotypeFFT(phen,:,:));
-    meanCRF(phen,:,:) = Calculate_CRF(SortedData(phen).meanContrasts, phenFFT, pathstr, fileName, false);
+    nFlies (phen) = ib(phen) - ia(phen) ;
+    mean_phenotypeFFT(phen,:,:)=squeeze(mean(SortedFFTmatrix(ia(phen):ib(phen),:,:),1));
+    SD_phenotypeFFT(phen,:,:)=squeeze(std(SortedFFTmatrix(ia(phen):ib(phen),:,:),1)); 
+    
+    phenFFT =squeeze(mean_phenotypeFFT(phen,:,:)); % complex
+    phenSD  =squeeze( SD_phenotypeFFT (phen,:,:)); % scalar
+    
+    meanCRF(phen,:,:) = Calculate_CRF(SortedData(phen).meanContrasts, phenFFT);
+    tmpCRF = Calculate_CRF(SortedData(phen).meanContrasts, phenSD);
+    
+    SE_CRF (phen,:,:) = tmpCRF / sqrt(nFlies(phen)) ;
+    plot_mean_crf (squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)));
 end
     
+for phen = 1 : nPhenotypes
+    plot_mean_crf (squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)));
+end
 
 disp (['done! ', dirName]);
+disp(' ');
 
 %% write out the max CRF for each phenotype
-disp ('Now writing mean max 1F1 and 2F1');
+disp ('Now writing mean max 1F1 and 2F1 with SE');
 disp(' ');
 for i = 1 : nPhenotypes
    myTxt = ['']; 
    for j=1 : length(SortedData(ia(i)).phenotypes)
       myTxt = [ myTxt, SortedData(ia(i)).phenotypes{j}, ' '];   
    end
-    myTxt = [myTxt,' 1F1=',num2str(abs(meanCRF(i,5,3))),' 2F1=', num2str(abs(meanCRF(i,5,5)))]; 
-    %myTxt = [myTxt, ' ', SortedData(i).fileName, ' '];
+    myTxt = [myTxt,' 1F1=',num2str(abs(meanCRF(i,5,3))),'=',num2str(abs(SE_CRF(i,5,3))),' 2F1=', num2str(abs(meanCRF(i,5,5))), '=', num2str(abs(SE_CRF(i,5,5))), ' nFlies=', num2str(nFlies(i))]; 
     disp (myTxt);
 end
 

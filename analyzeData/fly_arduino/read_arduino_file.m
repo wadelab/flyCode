@@ -264,7 +264,8 @@ if (bCloseGraphs)
 end
 
 %% calculate + plot CRF for this fly...
-Calculate_CRF(thisFlyData.meanContrasts, thisFlyData.meanFFT, pathstr, fileName, bCloseGraphs);
+complx_CRF = Calculate_CRF(thisFlyData.meanContrasts, thisFlyData.meanFFT);
+plot_mean_crf (complx_CRF,pathstr,fileName, bCloseGraphs);
 
 
 

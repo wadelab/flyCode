@@ -1,4 +1,4 @@
-function complx_CRF = Calculate_CRF (my_meanContrasts,my_meanFFT,pathstr,fileName,bCloseGraphs)
+function complx_CRF = Calculate_CRF (my_meanContrasts,my_meanFFT)
 
 %% Extract fft data
 % sample rate was 4 ms, so these numbers are 4 times
@@ -19,5 +19,5 @@ for i = 1 : nFreqs
 complx_CRF(:,i+2)= my_meanFFT(:,FreqsToExtract(i));
 end 
 
-plot_mean_crf (complx_CRF,pathstr,fileName, bCloseGraphs);
+
 
