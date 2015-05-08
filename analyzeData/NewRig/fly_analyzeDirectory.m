@@ -202,11 +202,12 @@ toc
 
 
 
-%%
+%% plot graph of each phenotype
 plotScales=[ .005 .0005 .001]; % Scales
 
 [sortednames,sortIndex] = sort(ptypeList);
 
+sExt = getPictExt () ;
 
 for thisFlyTypeIDX=1:nUniqueFlies
     
@@ -230,27 +231,28 @@ for thisFlyTypeIDX=1:nUniqueFlies
         plotParams.lineWidthPolar=1.5;
         plotParams.lineWidthCart=2;
         plotParams.errorEnvelope=1;
-        plotParams.doPhasePlot=0;
-        plotParams.doCartPlot=0; %% make this 1 again
+        plotParams.doPhasePlot=1;
+        plotParams.doCartPlot=1; %% make this 1 again
         plotParams.XAxisType='Log';
         plotParams.plotColors=[0 0 0];
         plotParams.doFitPlot=1;
+        plotParams.doSavePlot=1;
         
         if (plotParams.doFitPlot)
             %We can plot these fitted data separately
-            figure(99);
+            figure('name', '2F1');
             subplot(1,nUniqueFlies,thisFlyTypeIDX);
-            %%%% for 2F1 
+            %for 2F1 
             handles=fly_plotFittedData(analysisStruct.contRange,meanFlyDataCoh(thisFlyTypeIndex,3,1:7),fittedCRFParamsUnmasked1_2F1(thisFlyTypeIndex,:),plotParams);
-            %%handles=fly_plotFittedData(analysisStruct.contRange,meanFlyDataCoh(thisFlyTypeIndex,1,1:7),fittedCRFParamsUnmasked1_1F1(thisFlyTypeIndex,:),plotParams);
+            %handles=fly_plotFittedData(analysisStruct.contRange,meanFlyDataCoh(thisFlyTypeIndex,1,1:7),fittedCRFParamsUnmasked1_1F1(thisFlyTypeIndex,:),plotParams);
             set(handles(1),'Color','k');
             set(handles(1),'LineWidth',2);
             set(handles(2),'MarkerFaceColor','k');
             set(handles(2),'MarkerEdgeColor','k');
             hold on;
-            %%% for 2f1 
+            % for 2f1 
             handles=fly_plotFittedData(analysisStruct.contRange,meanFlyDataCoh(thisFlyTypeIndex,3,1:7),fittedCRFParamsUnmasked1_2F1(thisFlyTypeIndex,:),plotParams);
-            %%%handles=fly_plotFittedData(analysisStruct.contRange,meanFlyDataCoh(thisFlyTypeIndex,1,8:14),fittedCRFParamsMasked1_1F1(thisFlyTypeIndex,:),plotParams);
+            %handles=fly_plotFittedData(analysisStruct.contRange,meanFlyDataCoh(thisFlyTypeIndex,1,8:14),fittedCRFParamsMasked1_1F1(thisFlyTypeIndex,:),plotParams);
             
             set(gca,'XScale', plotParams.XAxisType);
             grid on;
@@ -262,12 +264,12 @@ for thisFlyTypeIDX=1:nUniqueFlies
             set(gca,'YLim',[0 plotParams.maxYLim(3)]);
             grid on;
             v=axis(gca);
-            %% we may want to shorten the names being displayed
-%             sTmp = [ptypeList{thisFlyTypeIndex}, ' ', num2str(nFliesInThisType(thisFlyTypeIndex))] ;
-%             sTmp = strrep (sTmp,'D_7', '');
-%             sTmp = strrep (sTmp,'_', ' ');
-%             sTmp = strrep (sTmp,'instant', '');
-%             sTmp = strrep (sTmp,'Instant', '');
+            % we may want to shorten the names being displayed
+            sTmp = [ptypeList{thisFlyTypeIndex}, ' ', num2str(nFliesInThisType(thisFlyTypeIndex))] ;
+            %sTmp = strrep (sTmp,'D_7', '');
+            sTmp = strrep (sTmp,'_', ' ');
+            sTmp = strrep (sTmp,'instant', '');
+            sTmp = strrep (sTmp,'Instant', '');
             
             
             g=title(sTmp);
@@ -275,7 +277,7 @@ for thisFlyTypeIDX=1:nUniqueFlies
             set(g,'Rotation',30); % was 90
             set(g,'FontSize',18); % was 8
             
-            
+            plotParams.figName = sTmp ;
         end
 
         if (plotParams.doCartPlot)
@@ -294,7 +296,22 @@ for thisFlyTypeIDX=1:nUniqueFlies
         
         
         hc= fly_plotCartData(abs(dataToPlot),semToPlot,plotParams);
-        set(gcf,'Name',ptypeList{thisFlyTypeIndex});     
+        set(gcf,'Name', ptypeList{thisFlyTypeIndex});   
+        
+        sTmp = strrep (sTmp,' ', '_');
+        sTmp = strrep (sTmp,'__', '_');
+        printFilename = [baseDir, filesep,  sTmp, sExt] ;
+        
+        if(plotParams.doSavePlot)
+        
+        h=gcf;
+        set(h,'PaperOrientation','landscape');
+        set(h,'PaperUnits','normalized');
+        set(h,'PaperPosition', [0 0 1 1]);
+        print( printFilename );
+        
+        end;
+        
         end
         if (plotParams.doPhasePlot)
         plotParams.subPlotIndices=[1:6]; % Odd- numbered subplots are phase
