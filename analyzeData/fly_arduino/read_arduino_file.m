@@ -124,8 +124,8 @@ iEnd = 1024;
 
 %% plot raw data
 figure ('Name', strcat('Rawdata of: ',fileName));
-n = nContrasts;
-m = nSamples / n;
+
+m = nSamples / nContrasts;
 
 
 ymax = max(alldata(:,3)) ;
@@ -140,7 +140,7 @@ for i = 1:nSamples
     contrasts(i,:) = alldata(iEnd+1,:) ;
     
     %now we've read the data, lets plot it
-    subplot(m,n,i);
+    subplot(m,nContrasts,i);
     plot ( timedata, rawdata(i,:), timedata, stimdata(i,:));
     axis([0 4092 ymin ymax]);
     
@@ -180,7 +180,7 @@ complx_fftData (:,1) = [];
 figure('Name', strcat('FFT of: ',fileName));
 max_fft = max(max(abs(complx_fftData)));
 for i = 1:nSamples
-    subplot(m,n,i);
+    subplot(m,nContrasts,i);
     bar(abs(complx_fftData(i,1:fft_display_limit)));
     axis([0 fft_display_limit 0 max_fft]); % plot to 25Hz
     set(gca,'XTickLabel',''); % no tick labels (unless bottom row, see below)
@@ -188,7 +188,7 @@ for i = 1:nSamples
     yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
     ylabel(yTxt);
     
-    if (i> (m-1)*n)
+    if (i> (m-1)*nContrasts)
         % label bottom row
         set(gca,'XTickmode','manual');
         set(gca,'XTick',[0,12.5,25,37.5,50,62.5]*4);
@@ -237,17 +237,25 @@ figure('Name', strcat('Mean FFT of: ',fileName));
 xScale=0.25:0.25:60 ;
 for i = 1 : nContrasts
     subplot(3,3,i);
-    j = 5*(i-1) + 1 ;
+    RPT = 5*(i-1) + 1 ;
+    
+    % to extract just some repeats alter code here; 
+    % don't add more than 4 [5 repeats, inclusive counting]
+    % eg to ignore 1st round 
+    % startRPT = RPT + 1
+    startRPT = RPT ;
+    end_RPT = RPT + 4 ;
     %find mean and plot it
-    meanFFT = mean(thisFlyData.sortedComplex_FFTdata(j:j+4,1:240)) ;
+    
+    meanFFT = mean(thisFlyData.sortedComplex_FFTdata(startRPT:end_RPT,1:240)) ;
     bar(xScale,abs(meanFFT));
     axis([0 max(xScale) 0 max_fft]);
     
-    yTxt = strcat(num2str(thisFlyData.sortedContrasts(j,2)), '//', num2str(thisFlyData.sortedContrasts(j,3))) ;
+    yTxt = strcat(num2str(thisFlyData.sortedContrasts(RPT,2)), '//', num2str(thisFlyData.sortedContrasts(RPT,3))) ;
     ylabel(yTxt);
     
     thisFlyData.meanFFT(i,:) = meanFFT;
-    thisFlyData.meanContrasts(i,:) = thisFlyData.sortedContrasts(j,:);
+    thisFlyData.meanContrasts(i,:) = thisFlyData.sortedContrasts(RPT,:);
 end
 
 xlabel('xscale is in Hz');
