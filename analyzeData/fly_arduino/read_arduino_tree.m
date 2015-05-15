@@ -81,7 +81,7 @@ for i = 1 : nFlies
 end
 
 
-%% calculate and plot mean and SD for each phenotype (SD on per fly basis)
+%% calculate  mean and SE for each phenotype (SE on per fly basis)
 [pathstr, fileName, ext] = fileparts(dirName);
 mean_phenotypeFFT = zeros(nPhenotypes,r,c);
 meanCRF = zeros(nPhenotypes,length(SortedData(1).meanContrasts), 2+length(GetFreqNames()));
@@ -103,11 +103,14 @@ for phen = 1 : nPhenotypes
     tmpCRF = Calculate_CRF(SortedData(phen).meanContrasts, phenSD);
     
     SE_CRF (phen,:,:) = tmpCRF / sqrt(nFlies(phen)) ;
-    plot_mean_crf (squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)));
+    % plot_mean_crf (squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)));
 end
     
+%% calculate max response
+maxCRR = max(squeeze(abs(max (meanCRF, [], 2))));
+%% plot mean and SE for each phenotype
 for phen = 1 : nPhenotypes
-    plot_mean_crf (squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)));
+    plot_mean_crf (SortedData(ia(phen)).phenotypes, squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)), maxCRR);
 end
 
 disp (['done! ', dirName]);
