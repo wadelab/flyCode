@@ -279,6 +279,9 @@ for thisPhenotype=1:length(phenotypeList)
     plotParams.lineWidthCart=2;
     plotParams.errorEnvelope=1;
     
+    plotParams.figName = strrep (plotParams.ptypeName,'all', '');
+    plotParams.figName = strrep (plotParams.figName,'_', ' ');
+    ptName{thisPhenotype}=plotParams.figName ;
     % *******8***
     
     
@@ -310,7 +313,7 @@ end
 % TODO: ANOVA
 % First generate a set of lables : phenotype name + n
 for thisPType=1:length(phenotypeList)
-    ptName{thisPType}=phenotypeList{thisPType}.type;
+    
 end
 
 fout = fopen (F2Name, 'w');
@@ -320,7 +323,7 @@ end
 fclose (fout);
 
 
-% Check sorting. Check for singleton flies / reps
+%% Check sorting. Check for singleton flies / reps
 g=find(~isnan(meanF2Masked))
 gd1=meanF2Masked(g);
 gc1=categoryType(g);
@@ -337,7 +340,7 @@ title(summaryStatisticName);
 %%% the Ynames appear to be in reverse order
 set(gca,'YTickLabel',fliplr(ptName)); 
 
-%%maxfig(gcf,1);
+%% maxfig(gcf,1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%export_fig(bookName,'-pdf','-transparent','-append');
 save(allDataName);
@@ -426,7 +429,7 @@ set(gca,'YTickLabel',fliplr(ptName));
 % grid on
 % legend(ptName);
 
-%%%
+%%
 %%Here, we want to compute the binned amplitudes across the endogenous
 % frequency bands - ignoring the ones containing actual signal.
 % To do that, we first compute the f's containing signal - then work
@@ -463,7 +466,7 @@ ylabel('Average RMS amplitude (AU)');
 legend(ptName)
 
 
-
+%%
 
 
 %  %%
@@ -572,7 +575,7 @@ legend(ptName)
  compass(p2F1Phase2);
 %}
 
-%%% This bit writes data to XL format. You can disable it if you
+%% This bit writes data to XL format. You can disable it if you
 %%% want...
 
 xlParams=plotParams; % xlParams doesn't need all the fields here but it's quicker just to clone plotParams. We need labels, contRange and the number of mask conditions
