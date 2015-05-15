@@ -273,7 +273,7 @@ end
 
 %% calculate + plot CRF for this fly...
 complx_CRF = Calculate_CRF(thisFlyData.meanContrasts, thisFlyData.meanFFT);
-plot_mean_crf (complx_CRF,pathstr,fileName, bCloseGraphs);
+plot_mean_crf (cellstr(fileName), complx_CRF,pathstr,fileName, bCloseGraphs);
 
 
 

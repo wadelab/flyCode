@@ -90,11 +90,15 @@ SD_phenotypeFFT = zeros(nPhenotypes,r,c);
 SE_CRF = zeros(nPhenotypes,length(SortedData(1).meanContrasts), 2+length(GetFreqNames()));
 nFlies = zeros(nPhenotypes);
 
+%%
+
 
 for phen = 1 : nPhenotypes
     nFlies (phen) = ib(phen) - ia(phen) ;
     mean_phenotypeFFT(phen,:,:)=squeeze(mean(SortedFFTmatrix(ia(phen):ib(phen),:,:),1));
+    if ia(phen) ~= ib(phen)
     SD_phenotypeFFT(phen,:,:)=squeeze(std(SortedFFTmatrix(ia(phen):ib(phen),:,:),1)); 
+    end 
     
     phenFFT =squeeze(mean_phenotypeFFT(phen,:,:)); % complex
     phenSD  =squeeze( SD_phenotypeFFT (phen,:,:)); % scalar
