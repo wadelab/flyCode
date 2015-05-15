@@ -19,3 +19,5 @@ analyzeData/flyTV/prototype_ContModNoise.m
 generalToolboxFunctions/Matteobox/fit_powFunction_Mean.m
 
 analyzeData/flyTV/flytv_sweep_analysis_goodBins5c.m
+
+analyzeData/NewRig/fly_analyzeDirectory.m
