@@ -244,10 +244,11 @@ for i = 1 : nContrasts
     % eg to ignore 1st round 
     % startRPT = RPT + 1
     startRPT = RPT ;
-    end_RPT = RPT + 4 ;
+    end_RPT = RPT + 4 ; % RPT ;
     %find mean and plot it
+    %keyboard;
     
-    meanFFT = mean(thisFlyData.sortedComplex_FFTdata(startRPT:end_RPT,1:240)) ;
+    meanFFT = mean(thisFlyData.sortedComplex_FFTdata(startRPT:end_RPT,1:240),1) ;
     bar(xScale,abs(meanFFT));
     axis([0 max(xScale) 0 max_fft]);
     

@@ -96,6 +96,7 @@ nFlies = zeros(nPhenotypes);
 for phen = 1 : nPhenotypes
     nFlies (phen) = ib(phen) - ia(phen) ;
     mean_phenotypeFFT(phen,:,:)=squeeze(mean(SortedFFTmatrix(ia(phen):ib(phen),:,:),1));
+    % don't try to calculate a SD of 1 fly
     if ia(phen) ~= ib(phen)
     SD_phenotypeFFT(phen,:,:)=squeeze(std(SortedFFTmatrix(ia(phen):ib(phen),:,:),1)); 
     end 
