@@ -124,7 +124,7 @@ iEnd = 1024;
 ss = get (0,'screensize') ;
 
 %% plot raw data
-figure ('Name', strcat('Rawdata of: ',fileName));
+figure ('Name', strcat('Rawdata of: ',fileName), 'Position', myPos);
 myPos = get(gcf, 'Position');
 myPos(1) = 10 ;
 myPos(3) = ss(3) - 10 ;
@@ -185,7 +185,7 @@ complx_fftData (:,1) = [];
 figure('Name', strcat('FFT of: ',fileName));
 myPos = get(gcf, 'Position');
 myPos(1) = 10 ;
-myPos(2) = ss(4) / 3 ;
+myPos(2) = 30 ;
 
 myPos(3) = ss(3) - 10 ;
 set(gcf, 'Position', myPos );
