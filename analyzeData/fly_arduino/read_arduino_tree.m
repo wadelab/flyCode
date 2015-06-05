@@ -61,15 +61,10 @@ nPhenotypes = length(ia)
 ib = ia(2:end) - 1;
 ib(nPhenotypes) = length(ic) ;
 
-%% count how many flies in each phenotype
-id (1) = ib (1);
-for i = 2 : length(ib)
-    id(i) = ib(i) - ib(i-1);
-end
 
 %% now we can process the data
 % ia tells us the starting value of each phenotype
-% ib tellsSo us the end of each phenotype
+% ib tells us the end of each phenotype
 % length(ia) tells us how many phenotypes we have 
 
 % copy data into matrix otherwise we can't get the mean...
@@ -94,7 +89,7 @@ nFlies = zeros(nPhenotypes);
 
 
 for phen = 1 : nPhenotypes
-    nFlies (phen) = ib(phen) - ia(phen) ;
+    nFlies (phen) = 1 + ib(phen) - ia(phen) ;
     mean_phenotypeFFT(phen,:,:)=squeeze(mean(SortedFFTmatrix(ia(phen):ib(phen),:,:),1));
     % don't try to calculate a SD of 1 fly
     if ia(phen) ~= ib(phen)
@@ -129,7 +124,8 @@ for i = 1 : nPhenotypes
    for j=1 : length(SortedData(ia(i)).phenotypes)
       myTxt = [ myTxt, SortedData(ia(i)).phenotypes{j}, ' '];   
    end
-    myTxt = [myTxt,' 1F1=',num2str(abs(meanCRF(i,5,3))),'=',num2str(abs(SE_CRF(i,5,3))),' 2F1=', num2str(abs(meanCRF(i,5,5))), '=', num2str(abs(SE_CRF(i,5,5))), ' nFlies=', num2str(nFlies(i))]; 
+    myTxt = [myTxt,' 1F1=',num2str(abs(meanCRF(i,5,3))),'=',num2str(abs(SE_CRF(i,5,3))), ...
+        ' 2F1=', num2str(abs(meanCRF(i,5,5))), '=', num2str(abs(SE_CRF(i,5,5))), ' nFlies=', num2str(nFlies(i))]; 
     disp (myTxt);
 end
 
