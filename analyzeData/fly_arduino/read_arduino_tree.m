@@ -107,7 +107,10 @@ for phen = 1 : nPhenotypes
 end
     
 %% calculate max response
-maxCRR = max(squeeze(abs(max (meanCRF, [], 2))));
+maxCRR = squeeze(abs(max (meanCRF, [], 2)));
+if (nPhenotypes > 1)
+    maxCRR = max(maxCRR);
+end
 %% plot mean and SE for each phenotype
 for phen = 1 : nPhenotypes
     plot_mean_crf (SortedData(ia(phen)).phenotypes, squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)), maxCRR);
