@@ -121,9 +121,14 @@ timedata = timedata - timedata(1);
 nContrasts = 9;
 iStart = 1;
 iEnd = 1024;
+ss = get (0,'screensize') ;
 
 %% plot raw data
 figure ('Name', strcat('Rawdata of: ',fileName));
+myPos = get(gcf, 'Position');
+myPos(1) = 10 ;
+myPos(3) = ss(3) - 10 ;
+set(gcf, 'Position', myPos );
 
 m = nSamples / nContrasts;
 
@@ -178,6 +183,13 @@ complx_fftData (:,1) = [];
 
 %% plot fft
 figure('Name', strcat('FFT of: ',fileName));
+myPos = get(gcf, 'Position');
+myPos(1) = 10 ;
+myPos(2) = ss(4) / 3 ;
+
+myPos(3) = ss(3) - 10 ;
+set(gcf, 'Position', myPos );
+
 max_fft = max(max(abs(complx_fftData)));
 for i = 1:nSamples
     subplot(m,nContrasts,i);
