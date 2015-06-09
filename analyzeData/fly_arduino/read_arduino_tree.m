@@ -112,13 +112,14 @@ maxCRR = squeeze(abs(max (meanCRF, [], 2)));
 if (nPhenotypes > 1)
     maxCRR = max(maxCRR);
 end
+
 %% plot mean and SE for each phenotype
 for phen = 1 : nPhenotypes
-    plot_mean_crf (SortedData(ia(phen)).phenotypes, squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)), maxCRR);
+       myTxt = ['N=',num2str(nFlies (phen)),' '];
+       C = SortedData(ia(phen)).phenotypes;
+    plot_mean_crf ({myTxt,strjoin(C)}, squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)), maxCRR);
 end
 
-disp (['done! ', dirName]);
-disp(' ');
 
 %% write out the max CRF for each phenotype
 disp ('Now writing mean max 1F1 and 2F1 with SE');
@@ -133,5 +134,7 @@ for i = 1 : nPhenotypes
     disp (myTxt);
 end
 
-
+disp(' ');
+disp ([dirName, ' done! ']);
+disp(' ');
 
