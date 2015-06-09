@@ -1,7 +1,8 @@
 function addmetothepath
 
 mydir = mfilename('fullpath')
-mytoolbox= [mydir,'../../generalToolboxFunctions/']
+myroot=strrep(mydir, 'analyzeData/fly_arduino/addmetothepath','')
+mytoolbox= [myroot,'generalToolboxFunctions']
 addpath(genpath(mytoolbox));
 
 end

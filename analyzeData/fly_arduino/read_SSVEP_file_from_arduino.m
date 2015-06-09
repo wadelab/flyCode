@@ -1,6 +1,7 @@
 
 close all;
 clear all; 
+addmetothepath ;
 
 [f,p]=uigetfile('*.SVP');
 fName=fullfile(p,f);

@@ -1,6 +1,7 @@
 
 close all;
 clear all; 
+addmetothepath ;
 
 global SVPfiles ;
 

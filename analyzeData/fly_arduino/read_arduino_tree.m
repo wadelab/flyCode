@@ -4,6 +4,7 @@ clear all;
 
 global SVPfiles ;
 SVPfiles = {};
+addmetothepath ;
 sExt = getPictExt () ;
 
 dirName=uigetdir();

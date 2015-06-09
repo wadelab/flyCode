@@ -1,5 +1,10 @@
+%%read_arduino_ERG
+
 close all;
-clear all;%%read_arduino_ERG
+clear all;
+
+addmetothepath ;
+
 
 success = true ;
 
