@@ -124,11 +124,12 @@ iEnd = 1024;
 ss = get (0,'screensize') ;
 
 %% plot raw data
-figure ('Name', strcat('Rawdata of: ',fileName), 'Position', myPos);
 myPos = get(gcf, 'Position');
 myPos(1) = 10 ;
 myPos(3) = ss(3) - 10 ;
-set(gcf, 'Position', myPos );
+figure ('Name', strcat('Rawdata of: ',fileName), 'Position', myPos);
+
+%set(gcf, 'Position', myPos );
 
 m = nSamples / nContrasts;
 
