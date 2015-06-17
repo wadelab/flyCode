@@ -52,7 +52,7 @@ f=sin(linspace(0,2*pi*600,4000));
 wavelengths = invoke(Ocean, 'getWavelengths', spectrometerIndex, channelIndex);
 
 
-
+startTime=now;
 if (DOCALIBRATION)
     %% Now set up the screen
 WhichScreen=1
