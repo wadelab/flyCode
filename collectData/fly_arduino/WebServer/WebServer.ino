@@ -249,7 +249,16 @@ void setup() {
 digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
   Serial.println F("Setting up the Ethernet card...\n");
     // start the Ethernet connection and the server:
-    Ethernet.begin(mac);
+    if (1 != Ethernet.begin(mac))
+    {
+      // Setup for eg an ethernet cable from Macbook to Arduino Ethernet shield
+      // other macbooks or mac airs may assign differnt local networks
+      //
+      Serial.print F("DHCP failed, trying 172, 16, 1, 10");
+      Serial.print F("Please set your mac ethernet to Manually and '172.16.1.1'");
+      byte ip[] = { 172, 16, 1, 10 };
+      Ethernet.begin(mac, ip);
+    };
     server.begin();
     Serial.print F("server is at ");
     myIP = Ethernet.localIP() ;
