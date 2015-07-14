@@ -130,7 +130,7 @@ myPos(1) = myPos (1) +  myPos (3)/2 ;
 set(gcf, 'Position', myPos );
 
 printFilename = [pathstr, filesep, fileName, '_', FreqNames{3}, '_CRF', sExt];
-print( printFilename );
+print('-dpsc', printFilename );
 if (bCloseGraphs)
     delete(gcf) ;
 end
