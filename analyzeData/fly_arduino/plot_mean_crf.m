@@ -89,7 +89,7 @@ h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print( printFilename );
+print( '-dpsc', printFilename );
 if (bCloseGraphs)
     delete(gcf) ;
 end
@@ -105,6 +105,7 @@ set (p, 'MarkerFaceColor', 'red');
 hold on ;
 p = errorbar (abs_CRF([nUnMasked+1:nContrasts],2), abs_CRF([nUnMasked+1:nContrasts],5), eb_CRF([nUnMasked+1:nContrasts],5));
 set (p, 'color', 'blue');
+set (p, 'LineStyle', '--');
 set (p, 'Marker', 's');
 set (p, 'MarkerFaceColor', 'blue');
 hold off ;
@@ -119,9 +120,9 @@ text( 150, 0, strjoin(myLabel) );
 
 subplot(1,2,2);
 %[t,r] = cart2pol(real(complx_CRF(:,5)), imag(complx_CRF(:,5)));
-polar (theta_CRF(1:nUnMasked,5),abs_CRF(1:nUnMasked,5), '-*');
+polar (theta_CRF(1:nUnMasked,5),abs_CRF(1:nUnMasked,5), '-*r');
 hold on ;
-polar (theta_CRF(nUnMasked+1:end,5),abs_CRF(nUnMasked+1:end,5), '--Om');
+polar (theta_CRF(nUnMasked+1:end,5),abs_CRF(nUnMasked+1:end,5), '--Ob');
 hold off;
 
 % move picture to right
