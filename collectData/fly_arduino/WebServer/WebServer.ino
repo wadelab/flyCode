@@ -1,4 +1,6 @@
 
+
+
 //try this http://gammon.com.au/forum/?id=11488&reply=5#reply5 for interrupts
 //Digital pin 7 is used as a handshake pin between the WiFi shield and the Arduino, and should not be used
 // http://www.arduino.cc/playground/Code/AvailableMemory
@@ -9,7 +11,7 @@
 //#define __wifisetup__
 
 
-#define mega2
+#define due1
 
 //_____________________________________________________
 
@@ -171,7 +173,7 @@ IPAddress myIP, theirIP, dnsIP ;
 // (port 80 is default for HTTP):
 EthernetServer server(80);
 EthernetClient client ;
-#include <dns.h>
+#include <Dns.h>
 
 #else
 
