@@ -1,6 +1,4 @@
 
-
-
 //try this http://gammon.com.au/forum/?id=11488&reply=5#reply5 for interrupts
 //Digital pin 7 is used as a handshake pin between the WiFi shield and the Arduino, and should not be used
 // http://www.arduino.cc/playground/Code/AvailableMemory
@@ -11,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define due1
+#define due4
 
 //_____________________________________________________
 
@@ -28,7 +26,7 @@
 
 #ifdef due1
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA2
-//90-A2-DA-0E-09-A2 biolpc2886 [in use for Sultan]
+//90-A2-DA-0E-09-A2 biolpc2886 [in use for Sultan, has fiber]
 #endif
 
 #ifdef due2
@@ -99,6 +97,18 @@ short iIndex = 0 ;
 byte usedLED  = 0;
 const byte fiberLED = 8 ;
 const byte noContactLED = 2;
+
+// define LED mapping here
+  const byte bluvioletLED = 8 ;
+  const byte amberled = 6;
+  const byte whiteled = 11;  
+  const byte cyaled = 9;
+  
+#ifdef due4
+  const byte redled = 7;
+  const byte grnled = 3;
+  const byte bluLED = 5;
+#else  
 #ifdef __SAM3X8E__
 // fix the LED order in hardware....
 const byte redled = 6;
@@ -108,6 +118,7 @@ const byte bluLED = 7;
 const byte redled = 5;
 const byte grnled = 6;
 const byte bluLED = 8;
+#endif
 #endif
 
 const byte analogPin = 0 ;
@@ -421,15 +432,10 @@ void sendFooter()
   client.println F("</body></html>");
 }
 
-void goColour(const byte r, const byte g, const byte b, const byte f, const bool boolUpdatePage)
-{
-  //Serial.println (" changing colour");
-  analogWrite( redled, r );
-  analogWrite( grnled, g );
-  analogWrite( bluLED, b );
-  analogWrite( fiberLED, f );
-  if (boolUpdatePage)
+void updateColour (const bool boolUpdatePage)
   {
+    if (boolUpdatePage)
+    {
     sendHeader ("Lit up ?", "onload=\"goBack()\" ");
 
 //    client.println F(" <script>");
@@ -443,6 +449,33 @@ void goColour(const byte r, const byte g, const byte b, const byte f, const bool
 
     sendFooter();
   }
+}  
+
+void goColour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
+{
+  analogWrite( redled, r );
+  analogWrite( grnled, g );
+  analogWrite( bluLED, b );
+#ifdef due4  
+  analogWrite( amberled, a );
+  analogWrite( whiteled, w );
+  analogWrite( bluvioletLED, l );
+  analogWrite( cyaled, c );
+#endif
+#ifdef due1
+  analogWrite( fiberLED, f );
+#endif
+  updateColour( boolUpdatePage);
+}  
+
+void goColour(const byte r, const bool boolUpdatePage)
+{
+  goColour (r,r,r,0,r,0,0,boolUpdatePage);
+}
+
+void goColour(const byte r, const byte g, const byte b, const byte f, const bool boolUpdatePage)
+{
+  goColour (r,g,b,f,0,0,0,boolUpdatePage);
 }
 
 void serve_dir ()
@@ -1335,6 +1368,10 @@ void sendReply ()
     if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
     if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
     if (MyInputString.indexOf F("col=fiber&") > 0 ) usedLED  = fiberLED ; //
+//due4 is special
+    if (MyInputString.indexOf F("col=amber&") > 0 ) usedLED  = amberled ; //
+    if (MyInputString.indexOf F("col=cyan&") > 0 ) usedLED  = cyaled ; //
+    if (MyInputString.indexOf F("col=blueviolet&") > 0 ) usedLED  = bluvioletLED ; //
 
     //flash ERG or SSVEP?
     bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
@@ -1405,10 +1442,33 @@ void sendReply ()
   //light up
   fPOS = MyInputString.indexOf F("white/");
   if (fPOS > 0)
-  {
-    goColour(255, 255, 255, 0, true) ;
+  {  
+    goColour(255, true) ;    
     return ;
   }
+
+  fPOS = MyInputString.indexOf F("amber/");
+  if (fPOS > 0)
+  {
+    //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
+    goColour(0, 0, 0, 255, 0, 0, 0, true) ;
+    return ;
+  }
+    fPOS = MyInputString.indexOf F("cyan/");
+  if (fPOS > 0)
+  {
+    //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
+    goColour(0, 0, 0, 0, 0, 0, 255, true) ;
+    return ;  
+  }
+    fPOS = MyInputString.indexOf F("blueviolet/");
+  if (fPOS > 0)
+  {
+    //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
+    goColour(0, 0, 0, 0, 0, 255, 0, true) ;
+    return ;
+  }
+
   fPOS = MyInputString.indexOf F("red/");
   if (fPOS > 0)
   {
