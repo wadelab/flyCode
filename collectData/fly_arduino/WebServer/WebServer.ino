@@ -710,7 +710,7 @@ void webTime ()
 #endif
   // default values ...
   year = 2015;
-  second = myminute = hour = day = month = 0;
+  second = myminute = hour = day = month = 1;
 
   // Just choose any reasonably busy web server, the load is really low
   if (timeclient.connect ("www.york.ac.uk", 80))
