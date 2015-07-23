@@ -23,7 +23,7 @@ end
 
 %% read all the rest of them (well, the first 40)
 iSuccesseses = 1;
-maxFilesToRead = 40 ;
+maxFilesToRead = length(SVPfiles) + 3 ;
 for i=1:min(length(SVPfiles),maxFilesToRead)
     disp(['Reading:', SVPfiles{i}]);
     [flydata, success] = read_arduino_file ( SVPfiles{i} , true );
