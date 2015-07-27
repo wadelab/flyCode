@@ -84,9 +84,12 @@ meanCRF = zeros(nPhenotypes,length(SortedData(1).meanContrasts), 2+length(GetFre
 
 SD_phenotypeFFT = zeros(nPhenotypes,r,c);
 SE_CRF = zeros(nPhenotypes,length(SortedData(1).meanContrasts), 2+length(GetFreqNames()));
-nFlies = zeros(nPhenotypes);
+nFlies = zeros(nPhenotypes,1);
 
-%%
+
+
+
+%% Calculate average and SD
 
 
 for phen = 1 : nPhenotypes
@@ -106,6 +109,29 @@ for phen = 1 : nPhenotypes
     SE_CRF (phen,:,:) = tmpCRF / sqrt(nFlies(phen)) ;
     % plot_mean_crf (squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)));
 end
+
+
+%% HB and GDS:  Initialise matrices to save out individual fly amplitudes
+%% and phases for 1F1 and 2F1
+CRF_Max = max(nPhenotypes, max(nFlies));
+% FreqsToExtract = [ F1, F2, 2*F1, 2*F2, F1+F2, 2*(F1+F2), F2-F1 ];
+FreqsToExtract = [48,60,96,120,108,216,12] ;
+phenotypeAmps=NaN(CRF_Max,nPhenotypes,length(FreqsToExtract));
+phenotypePh=NaN(CRF_Max,nPhenotypes, length(FreqsToExtract));
+
+
+%% HB and GDS:  Calculate and save individual fly amplitudes
+%% and phases for  the 100% contrast condition
+%% Column 5 = 100% contrast;  
+
+
+for phen = 1 : nPhenotypes
+    nFlies (phen) = 1 + ib(phen) - ia(phen) ;
+    for j = 1 : length(FreqsToExtract)
+    phenotypeAmps(1:nFlies(phen,1),phen,j)= squeeze(abs(SortedFFTmatrix(ia(phen):ib(phen),5,FreqsToExtract(j))));
+    phenotypePh(1:nFlies(phen,1),phen,j)= squeeze(angle(SortedFFTmatrix(ia(phen):ib(phen),5,FreqsToExtract(j))));
+    end
+end
     
 %% calculate max response
 maxCRR = squeeze(abs(max (meanCRF, [], 2)));
@@ -115,11 +141,18 @@ end
 
 %% plot mean and SE for each phenotype
 for phen = 1 : nPhenotypes
-       myTxt = ['N=',num2str(nFlies (phen)),' '];
-       C = SortedData(ia(phen)).phenotypes;
-    plot_mean_crf ({myTxt,strjoin(C)}, squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)), maxCRR);
+    myTxt = ['N=',num2str(nFlies (phen)),' '];
+    
+    phenName{phen} = strjoin(SortedData(ia(phen)).phenotypes);
+    tmpTxt = SortedData(ia(phen)).phenotypes ;
+    for q = 1 : length(tmpTxt)
+        qPos = strfind(tmpTxt{q},'=');
+        tmpTxt{q} = tmpTxt{q}(qPos+1:end);
+    end
+    phenName{phen} = strjoin(tmpTxt);
+        
+    plot_mean_crf ({myTxt,phenName{phen}}, squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)), maxCRR);
 end
-
 
 %% write out the max CRF for each phenotype
 disp ('Now writing mean max 1F1 and 2F1 with SE');
@@ -133,7 +166,30 @@ for i = 1 : nPhenotypes
         ' 2F1=', num2str(abs(meanCRF(i,5,5))), '=', num2str(abs(SE_CRF(i,5,5))), ' nFlies=', num2str(nFlies(i))]; 
     disp (myTxt);
 end
+%% add extra path..
 
+%% Initialisation of POI Libs
+% Add Java POI Libs to matlab javapath
+%%%%%%a='/data_biology/SSERG/toolbox/git/flyCode/generalToolboxFunctions/xlwrite/';
+POIPATH=[fileparts(which ('writeFlyDataToXL.m')),filesep,'xlwrite/']
+
+javaaddpath(fullfile(POIPATH,'poi_library/poi-3.8-20120326.jar'));
+javaaddpath(fullfile(POIPATH,'poi_library/poi-ooxml-3.8-20120326.jar'));
+javaaddpath(fullfile(POIPATH,'poi_library/poi-ooxml-schemas-3.8-20120326.jar'));
+javaaddpath(fullfile(POIPATH,'poi_library/xmlbeans-2.3.0.jar'));
+javaaddpath(fullfile(POIPATH,'poi_library/dom4j-1.6.1.jar'));
+javaaddpath(fullfile(POIPATH,'poi_library/stax-api-1.0.1.jar'));
+
+
+%%  [status, message]=xlwrite(filename,A,sheet, range)
+filename = [ dirName, '/summary.xls']
+status=xlwrite(filename, phenName, '1F1', 'A1');
+status=xlwrite(filename, phenName, '2F1', 'A1');
+status=xlwrite(filename, phenotypeAmps(:,:,1), '1F1', 'A2');
+status=xlwrite(filename, phenotypeAmps(:,:,3), '2F1', 'A2');
+
+
+%% 
 disp(' ');
 disp ([dirName, ' done! ']);
 disp(' ');
