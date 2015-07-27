@@ -11,6 +11,7 @@ else
     ymax = varargin{2};
 end
 
+myLabel = strrep (myLabel, '_', ' ');
 FreqNames = GetFreqNames();
 sExt = getPictExt () ;
 
