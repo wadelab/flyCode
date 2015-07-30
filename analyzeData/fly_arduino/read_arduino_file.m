@@ -40,6 +40,11 @@ line = strsplit(line1c, '&');
 % find and delete the filename
 ix = strfind(line, 'filename=') ;
 ix = find(~cellfun(@isempty,ix));
+if (isempty(ix))
+    thisFlyData.Error = ['Not a proper SVP file: ', fName]
+    success = false ;
+    return
+end
 thisFlyData.fileName = line{ix};
 line (ix)=[];
 
@@ -279,7 +284,7 @@ h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print( printFilename );
+print( '-dpsc', printFilename );
 
 if (bCloseGraphs)
     delete(gcf) ;
