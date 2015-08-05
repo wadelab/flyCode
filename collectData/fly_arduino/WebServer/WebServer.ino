@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define due4
+#define due5
 
 //_____________________________________________________
 
@@ -18,7 +18,7 @@
 //biolpc2793 [in use in lab with Emily and Richard]
 #endif
 
-#ifdef mega2
+#ifdef due5
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
 //biolpc2804
 
@@ -151,6 +151,7 @@ byte freq1 = 12 ; // flicker of LED Hz
 byte freq2 = 15 ; // flicker of LED Hz
 // as of 18 June, maxdata of 2048 is too big for the mega....
 const short max_data = 1025  ;
+const int data_block_size = 8 * max_data ;
 unsigned int time_stamp [max_data] ;
 int erg_in [max_data];
 long sampleCount = 0;        // will store number of A/D samples taken
@@ -1332,6 +1333,7 @@ void getData ()
 
 void sendReply ()
 {
+  int exp_size = MaxInputStr + 2 ;
   Serial.println(MyInputString);
   if (!has_filesystem)
   {
@@ -1391,10 +1393,12 @@ void sendReply ()
     if (bDoFlash)
     {
       sFile = sFile + F(".ERG");
+      exp_size = exp_size + (maxRepeats * data_block_size) ;
     }
     else
     {
       sFile = sFile + F(".SVP");
+      exp_size = exp_size + (maxRepeats * maxContrasts * data_block_size) ;
     }
 
     //Serial.println(" Proposed filename now" + sFile + ";");
@@ -1408,7 +1412,7 @@ void sendReply ()
       goColour(0, 0, 0, 0, false);
     }
 
-    if (fileExists(cFile) && nRepeats >= maxRepeats)
+    if (fileExists(cFile) && file.fileSize() >= exp_size ) //nRepeats >= maxRepeats)
     {
       // done so tidy up
       nRepeats = iThisContrast = 0 ; // ready to start again
@@ -1416,7 +1420,12 @@ void sendReply ()
       file.close();
 
       sendHeader F("Sampling Complete!");
-      client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
+      client.print( "Sampling Now Complete <BR><BR>");
+      client.print( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " size: ");
+      client.print(file.fileSize());
+      client.print(" bytes; expected size "); 
+      client.print(exp_size);
+      client.println("<BR><BR>");
 
       client.println F("To setup for another test please  <A HREF=\"") ;
       client.println (MyReferString) ;
