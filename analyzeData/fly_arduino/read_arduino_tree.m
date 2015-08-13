@@ -2,13 +2,13 @@
 close all;
 clear all;
 
-global SVPfiles ;
+
 SVPfiles = {};
 addmetothepath ;
 sExt = getPictExt () ;
 
 dirName=uigetdir();
-walk_a_directory_recursively(dirName, '*.SVP');
+SVPfiles = walk_a_directory_recursively(dirName, '*.SVP');
 
 %% now we have a list of all the files with .SVP in that tree
 if (length(SVPfiles) ==0)

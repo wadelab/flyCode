@@ -3,8 +3,7 @@
 close all;
 clear all;
 
-global SVPfiles ;
-SVPfiles = {};
+ERGfiles = {};
 
 addmetothepath ;
 
@@ -15,25 +14,25 @@ success = true ;
 % filName=fullfile(dirName,f);
 
 dirName=uigetdir();
-walk_a_directory_recursively(dirName, '*.ERG');
+ERGfiles = walk_a_directory_recursively(dirName, '*.ERG');
 
 %% now we have a list of all the files with .SVP in that tree
-if (length(SVPfiles) ==0)
+if (length(ERGfiles) ==0)
    disp(['Exiting becuase No SVP files were found in ',dirName]);
    return 
 end
 
-for i=1:length(SVPfiles)
-    SVPfiles{i} = deblank(SVPfiles{i});
+for i=1:length(ERGfiles)
+    ERGfiles{i} = deblank(ERGfiles{i});
 end
 
 
 %% read all the rest of them (well, the first 40)
 iSuccesseses = 1;
-maxFilesToRead = length(SVPfiles) + 3 ;
-for i=1:min(length(SVPfiles),maxFilesToRead)
-    disp(['Reading:', SVPfiles{i}]);
-    [success, ERGData] = read_arduino_ERG_file ( SVPfiles{i}  );
+maxFilesToRead = length(ERGfiles) + 3 ;
+for i=1:min(length(ERGfiles),maxFilesToRead)
+    disp(['Reading:', ERGfiles{i}]);
+    [success, ERGData] = read_arduino_ERG_file ( ERGfiles{i}  );
     if (success)
         Collected_ERG_Data=[Collected_ERG_Data;ERGData];
         iSuccesseses = iSuccesseses + 1 ;
