@@ -26,9 +26,10 @@ for i=1:length(ERGfiles)
     ERGfiles{i} = deblank(ERGfiles{i});
 end
 
-
+Collected_ERG_Data = {} ;
 %% read all the rest of them (well, the first 40)
 iSuccesseses = 1;
+
 maxFilesToRead = length(ERGfiles) + 3 ;
 for i=1:min(length(ERGfiles),maxFilesToRead)
     disp(['Reading:', ERGfiles{i}]);
