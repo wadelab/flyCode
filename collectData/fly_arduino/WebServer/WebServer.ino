@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define due5
+#define due4
 
 //_____________________________________________________
 
@@ -433,21 +433,38 @@ void sendFooter()
   client.println F("</body></html>");
 }
 
-void updateColour (const bool boolUpdatePage)
-  {
-    if (boolUpdatePage)
+
+void send_GoBack_to_Stim_page ()
+{
+  client.println F("<A HREF=\"") ;
+  if (MyReferString != String("131"))
     {
-    sendHeader ("Lit up ?", "onload=\"goBack()\" ");
 
 //    client.println F(" <script>");
 //    client.println F("function goBack() ");
 //    client.println F("{ window.history.back() }");
 //    client.println F("</script>");
 
-    client.println F("Click to reload <A HREF=\"") ;
     client.println (MyReferString) ;
-    client.println F("\">the stimulus selection form</A>  <BR>");
+    
+    }
+//    Serial.print("My reference is :");
+//    Serial.println (MyReferString) ;
+else
+    {
+    client.print F("javascript:void(0)\" onclick=\"window.home(); \"") ;
+    }
+    client.println F(">the stimulus selection form</A>  <BR>");
+}
 
+void updateColour (const bool boolUpdatePage)
+  {
+    if (boolUpdatePage)
+    {
+    sendHeader ("Lit up ?", "onload=\"goBack()\" ");
+    client.println F("Click to reload");
+    send_GoBack_to_Stim_page ();
+        
     sendFooter();
   }
 }  
@@ -575,9 +592,9 @@ void run_graph()
   client.println F("</script>");
   client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
 
-  client.println F("To run a test please stop and then load   <A HREF=\"") ;
-  client.println (MyReferString) ;
-  client.println F("\">the stimulus selection form</A>  <BR>");
+  client.println F("To run a test please stop and then load ") ;
+ 
+  send_GoBack_to_Stim_page ();
 
   sendFooter();
 
@@ -1139,15 +1156,23 @@ void flickerPage()
 
   // script to reload ...
   client.println F("<script>");
-  client.println F("var myVar = setInterval(function(){myTimer()}, 7500);"); //mu sec
+  client.println F("var myVar = setInterval(function(){myTimer()}, 8500);"); //mu sec
   client.println F("function myTimer() {");
   client.println F("location.reload(true);");
   client.println F("};");
 
   client.println F("function myStopFunction() {");
   client.println F("var b = confirm(\"Really Stop Data Acqusition ?\"); \n if ( b == true )  ");
-  client.print F("{ \n clearInterval(myVar);  \n location.assign(\"");
+  client.print F("{ \n clearInterval(myVar); ");
+  if (MyReferString != String("131") )
+  {
+  client.print F("\n location.assign(\"");
   client.print (MyReferString);
+  }
+  else
+  {
+    client.print F("\n window.home();");
+  }
   client.print F("\") } }");
   //client.println F("location.assign(\"stop/\");");
   client.println F("");
@@ -1347,9 +1372,9 @@ void sendReply ()
     sendHeader F("Card not working");
     client.print F("File write failed on SD Card : ");
     client.print (cFile);
-    client.println F("<BR><BR>To setup for another test please  <A HREF=\"") ;
-    client.println (MyReferString) ;
-    client.println F("\">click here</A>  ");
+    client.println F("<BR><BR>To setup for another test please ");
+   
+    send_GoBack_to_Stim_page ();
     sendFooter();
 
     bFileOK = true ;
@@ -1427,9 +1452,9 @@ void sendReply ()
       client.print(exp_size);
       client.println("<BR><BR>");
 
-      client.println F("To setup for another test please  <A HREF=\"") ;
-      client.println (MyReferString) ;
-      client.println F("\">click here</A>  <BR><BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
+      client.println F("To setup for another test please ") ;
+      send_GoBack_to_Stim_page ();
+      client.println F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
       sendFooter ();
       return ;
     }
