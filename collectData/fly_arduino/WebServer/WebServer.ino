@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define due4
+#define due5
 
 //_____________________________________________________
 
@@ -446,7 +446,7 @@ void send_GoBack_to_Stim_page ()
 //    client.println F("</script>");
 
     client.println (MyReferString) ;
-    
+    client.println F("\"" );
     }
 //    Serial.print("My reference is :");
 //    Serial.println (MyReferString) ;
@@ -454,7 +454,7 @@ else
     {
     client.print F("javascript:void(0)\" onclick=\"window.home(); \"") ;
     }
-    client.println F(">the stimulus selection form</A>  <BR>");
+    client.println F("\">the stimulus selection form</A>  <BR>");
 }
 
 void updateColour (const bool boolUpdatePage)
@@ -1168,7 +1168,7 @@ void flickerPage()
   {
   client.print F("\n location.assign(\"");
   client.print (MyReferString);
-  client.print F("\" ") ;
+  client.print F("\") ") ;
   }
   else
   {
