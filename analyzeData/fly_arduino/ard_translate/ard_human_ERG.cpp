@@ -16,11 +16,11 @@
 const double freq1 = 12.0 ; // flicker of LED Hz
 const double freq2 = 15.0 ; // flicker of LED Hz
 
-const int MaxInputStr = 135 ; // note this value was changed after 26 jan commit
+const int MaxInputStr = 130 ; // note this value was changed after 26 jan commit
 
 const short max_data = 1025  ;
-unsigned short time_stamp [max_data] ;
-short erg_in [max_data];
+unsigned int time_stamp [max_data] ;
+int erg_in [max_data];
 
 
 int Get_br_Now(double t, const int F1contrast, const int F2contrast)
@@ -54,18 +54,18 @@ int doreadFile (const char * c)
     
     // write out the string ....
     std::cout << (cPtr);
-    //std::cout << '\n' ;
+    std::cout << '\n' ;
     // test if its an ERG
     bool bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
     
     // now on to the data
-    iBytesRequested = max_data * sizeof (short);
+    iBytesRequested = max_data * sizeof (int);
     file.read((char *)erg_in, iBytesRequested);
     iBytesRead = file.gcount() ;
     int nBlocks = 0;
     while (iBytesRead == iBytesRequested)
     {
-        iBytesRequested = max_data * sizeof (short);
+        iBytesRequested = max_data * sizeof (int);
         file.read ((char *)time_stamp, iBytesRequested );
         nBlocks ++;
 //        Serial.print ("Reading file blocks ");
@@ -100,7 +100,7 @@ int doreadFile (const char * c)
         std::cout <<(erg_in[max_data - 1]);
         std::cout << "\n";
         //read next block
-        iBytesRequested = max_data * sizeof (short);
+        iBytesRequested = max_data * sizeof (int);
         file.read((char *)erg_in, iBytesRequested);
         iBytesRead = file.gcount() ;
     } // end of while

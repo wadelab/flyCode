@@ -103,6 +103,7 @@ for thisSubDir=1:length(subDirList) % Loop over all subdirectories
             % Make a list of hashes 
             allPTHashes(thisStatIndex)=cellstr(params.outType(exptIndex).flyHash(thisFlyInResp));
             allFlyNames{thisStatIndex}=params.outType(exptIndex).flyName(thisFlyInResp);
+            allFlyStartTimes{thisStatIndex} = subDirData{thisSubDir}.expt{thisExptIndex}.StartTime;
             
             thisStatIndex=thisStatIndex+1;
         end % End which fly in resp
@@ -136,6 +137,10 @@ for thisFlyTypeIndex=1:nUniqueFlies
     nFliesInThisType(thisFlyTypeIndex)=sum((uniqueJ==thisFlyTypeIndex));
     
     analysisStruct.allFlyDataCoh{thisFlyTypeIndex}=allExptResponses(find(uniqueJ==thisFlyTypeIndex),:,:); % Store all coherent responses for each fly type for later analysis...
+    myIndices = find(uniqueJ==thisFlyTypeIndex);
+    for k=1:length(myIndices)
+       analysisStruct.startingTime{thisFlyTypeIndex,k}= allFlyStartTimes{myIndices(k)} ;
+    end
     
 end
 

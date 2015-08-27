@@ -163,6 +163,8 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
                 
             phenotypeData{thisSubDir}.expt{thisExptIndex}.allfCondDat=meanDat; % Average in the complex fourier domain across bins, then across repetitions
             phenotypeData{thisSubDir}.expt{thisExptIndex}.allAbsfCondDat=absMeanDat; % Average of abs data (incoherent)
+            phenotypeData{thisSubDir}.expt{thisExptIndex}.StartTime=params.startTimeString{1};
+            
                         
             overallExptIndex=overallExptIndex+1;
             

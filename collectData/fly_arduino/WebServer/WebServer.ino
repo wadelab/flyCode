@@ -18,7 +18,7 @@
 //biolpc2793 [in use in lab with Emily and Richard]
 #endif
 
-#ifdef mega2
+#ifdef due5
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
 //biolpc2804
 
@@ -151,6 +151,7 @@ byte freq1 = 12 ; // flicker of LED Hz
 byte freq2 = 15 ; // flicker of LED Hz
 // as of 18 June, maxdata of 2048 is too big for the mega....
 const short max_data = 1025  ;
+const int data_block_size = 8 * max_data ;
 unsigned int time_stamp [max_data] ;
 int erg_in [max_data];
 long sampleCount = 0;        // will store number of A/D samples taken
@@ -278,7 +279,7 @@ digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
       Ethernet.begin(mac, ip);
     };
     server.begin();
-    Serial.print F("server is at ");
+    Serial.println F("server is at ");
     myIP = Ethernet.localIP() ;
     dnsIP = Ethernet.dnsServerIP();
     Serial.print(myIP);
@@ -432,21 +433,38 @@ void sendFooter()
   client.println F("</body></html>");
 }
 
-void updateColour (const bool boolUpdatePage)
-  {
-    if (boolUpdatePage)
+
+void send_GoBack_to_Stim_page ()
+{
+  client.println F("<A HREF=\"") ;
+  if (MyReferString != String("131"))
     {
-    sendHeader ("Lit up ?", "onload=\"goBack()\" ");
 
 //    client.println F(" <script>");
 //    client.println F("function goBack() ");
 //    client.println F("{ window.history.back() }");
 //    client.println F("</script>");
 
-    client.println F("Click to reload <A HREF=\"") ;
     client.println (MyReferString) ;
+    client.println F("\"" );
+    }
+//    Serial.print("My reference is :");
+//    Serial.println (MyReferString) ;
+else
+    {
+    client.print F("javascript:void(0)\" onclick=\"window.home(); \"") ;
+    }
     client.println F("\">the stimulus selection form</A>  <BR>");
+}
 
+void updateColour (const bool boolUpdatePage)
+  {
+    if (boolUpdatePage)
+    {
+    sendHeader ("Lit up ?", "onload=\"goBack()\" ");
+    client.println F("Click to reload");
+    send_GoBack_to_Stim_page ();
+        
     sendFooter();
   }
 }  
@@ -574,9 +592,9 @@ void run_graph()
   client.println F("</script>");
   client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
 
-  client.println F("To run a test please stop and then load   <A HREF=\"") ;
-  client.println (MyReferString) ;
-  client.println F("\">the stimulus selection form</A>  <BR>");
+  client.println F("To run a test please stop and then load ") ;
+ 
+  send_GoBack_to_Stim_page ();
 
   sendFooter();
 
@@ -1145,9 +1163,18 @@ void flickerPage()
 
   client.println F("function myStopFunction() {");
   client.println F("var b = confirm(\"Really Stop Data Acqusition ?\"); \n if ( b == true )  ");
-  client.print F("{ \n clearInterval(myVar);  \n location.assign(\"");
+  client.print F("{ \n clearInterval(myVar); ");
+  if (MyReferString != String("131") )
+  {
+  client.print F("\n location.assign(\"");
   client.print (MyReferString);
-  client.print F("\") } }");
+  client.print F("\") ") ;
+  }
+  else
+  {
+    client.print F("\n window.home();");
+  }
+  client.print F(" } }");
   //client.println F("location.assign(\"stop/\");");
   client.println F("");
   client.println F("</script>");
@@ -1253,14 +1280,15 @@ void AppendSSVEPReport()
     if (iThisContrast > 0)
     {
       iThisContrast -- ;
-      client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+      client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"450\" style=\"border:1px solid #d3d3d3;\">");
       client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
 
       client.println F("<script>");
       client.println F("var c = document.getElementById(\"myCanvas\");");
       client.println F("var ctx = c.getContext(\"2d\");");
-
-      for (int i = 0; i < 5 * max_graph_data - 2; i++)
+      
+      int iStep = 2;
+      for (int i = 0; i < 5 * max_graph_data - 2; i=i+iStep)
       {
         client.print F("ctx.moveTo(");
         client.print(i * 4);
@@ -1268,24 +1296,28 @@ void AppendSSVEPReport()
         client.print(myGraphData[i] + 350);
         client.println F(");");
         client.print F("ctx.lineTo(");
-        client.print((i + 1) * 4);
+        client.print((i + iStep) * 4);
         client.print F(",");
-        client.print(myGraphData[i + 1] + 350);
+        client.print(myGraphData[i + iStep] + 350);
         client.println F(");");
-        client.println F("ctx.stroke();");
+      }
+      client.println F("ctx.stroke();");
 
+      for (int i = 0; i < 5 * max_graph_data - 2; i=i+iStep)
+      {
         client.print F("ctx.moveTo(");
         client.print(i * 4);
         client.print F(",");
         client.print(br_Now(time_stamp[i]) );
         client.println F(");");
         client.print F("ctx.lineTo(");
-        client.print((i + 1) * 4);
+        client.print((i + iStep) * 4);
         client.print F(",");
-        client.print(br_Now(time_stamp[i + 1]));
+        client.print(br_Now(time_stamp[i + iStep]));
         client.println F(");");
-        client.println F("ctx.stroke();");
       }
+      client.println F("ctx.stroke();");
+      
       client.println F("</script>");
       iThisContrast ++ ;
     }
@@ -1332,6 +1364,7 @@ void getData ()
 
 void sendReply ()
 {
+  int exp_size = MaxInputStr + 2 ;
   Serial.println(MyInputString);
   if (!has_filesystem)
   {
@@ -1345,9 +1378,9 @@ void sendReply ()
     sendHeader F("Card not working");
     client.print F("File write failed on SD Card : ");
     client.print (cFile);
-    client.println F("<BR><BR>To setup for another test please  <A HREF=\"") ;
-    client.println (MyReferString) ;
-    client.println F("\">click here</A>  ");
+    client.println F("<BR><BR>To setup for another test please ");
+   
+    send_GoBack_to_Stim_page ();
     sendFooter();
 
     bFileOK = true ;
@@ -1391,10 +1424,12 @@ void sendReply ()
     if (bDoFlash)
     {
       sFile = sFile + F(".ERG");
+      exp_size = exp_size + (maxRepeats * data_block_size) ;
     }
     else
     {
       sFile = sFile + F(".SVP");
+      exp_size = exp_size + (maxRepeats * maxContrasts * data_block_size) ;
     }
 
     //Serial.println(" Proposed filename now" + sFile + ";");
@@ -1407,9 +1442,9 @@ void sendReply ()
       //turn off any lights we have on...
       goColour(0, 0, 0, 0, false);
     }
-Serial.print("repeats now ");
-Serial.println(nRepeats);
-    if (fileExists(cFile) && nRepeats >= maxRepeats)
+//Serial.print("repeats now ");
+//Serial.println(nRepeats);
+    if (fileExists(cFile) && file.fileSize() >= exp_size ) //nRepeats >= maxRepeats)
     {
       // done so tidy up
       nRepeats = iThisContrast = 0 ; // ready to start again
@@ -1417,11 +1452,16 @@ Serial.println(nRepeats);
       file.close();
 
       sendHeader F("Sampling Complete!");
-      client.println( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " Now Complete <BR><BR>");
+      client.print( "Sampling Now Complete <BR><BR>");
+      client.print( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " size: ");
+      client.print(file.fileSize());
+      client.print(" bytes; expected size "); 
+      client.print(exp_size);
+      client.println("<BR><BR>");
 
-      client.println F("To setup for another test please  <A HREF=\"") ;
-      client.println (MyReferString) ;
-      client.println F("\">click here</A>  <BR><BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
+      client.println F("To setup for another test please ") ;
+      send_GoBack_to_Stim_page ();
+      client.println F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
       sendFooter ();
       return ;
     }
