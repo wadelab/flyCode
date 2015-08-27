@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define due4
+#define due1
 
 //_____________________________________________________
 
@@ -272,8 +272,8 @@ digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
       // Setup for eg an ethernet cable from Macbook to Arduino Ethernet shield
       // other macbooks or mac airs may assign differnt local networks
       //
-      Serial.print F("DHCP failed, trying 172, 16, 1, 10");
-      Serial.print F("Please set your mac ethernet to Manually and '172.16.1.1'");
+      Serial.println F("DHCP failed, trying 172, 16, 1, 10");
+      Serial.println F("Please set your mac ethernet to Manually and '172.16.1.1'");
       byte ip[] = { 172, 16, 1, 10 };
       Ethernet.begin(mac, ip);
     };
@@ -463,7 +463,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
   analogWrite( cyaled, c );
 #endif
 #ifdef due1
-  analogWrite( fiberLED, f );
+  analogWrite( fiberLED, a );
 #endif
   updateColour( boolUpdatePage);
 }  
@@ -784,20 +784,20 @@ bool writeFile(const char * c)
 
     if ( !file.open(root, c /*myName*/,   O_CREAT | O_APPEND | O_WRITE))
     {
-//      Serial.println F ("Error in opening file");
-//      Serial.println (c);
+      Serial.println F ("Error in opening file");
+      Serial.println (c);
       return false;
     }
 
     if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
-//      Serial.println F ("Error in timestamping file");
-//      Serial.println (c);
+      Serial.println F ("Error in timestamping file");
+      Serial.println (c);
       return false ;
     }
     iBytesWritten = file.write(cInput, MaxInputStr + 2);
     if (iBytesWritten <= 0)
     {
-//      Serial.println F ("Error in writing header to file");
+      Serial.println F ("Error in writing header to file");
       file.close();
       return false ;
     }
@@ -807,8 +807,8 @@ bool writeFile(const char * c)
   {
     if ( !file.open(root, c /*myName*/,  O_APPEND | O_WRITE))
     {
-//      Serial.println F ("Error in opening file");
-//      Serial.println (c);
+      Serial.println F ("Error in reopening file");
+      Serial.println (c);
       return false;
     }
 
@@ -819,7 +819,7 @@ bool writeFile(const char * c)
   iBytesWritten = file.write(erg_in, max_data * sizeof(int));
   if (iBytesWritten <= 0)
   {
-//    Serial.println F ("Error in writing erg data to file");
+    Serial.println F ("Error in writing erg data to file");
     file.close();
     return false;
   }
@@ -828,7 +828,7 @@ bool writeFile(const char * c)
   iBytesWritten = file.write(time_stamp, max_data * sizeof(unsigned int));
   if (iBytesWritten <= 0)
   {
-//    Serial.println F ("Error in writing timing data to file");
+    Serial.println F ("Error in writing timing data to file");
     return false ;
   }
   Serial.print F(" More bytes writen to file.........");
@@ -1138,7 +1138,7 @@ void flickerPage()
 
   // script to reload ...
   client.println F("<script>");
-  client.println F("var myVar = setInterval(function(){myTimer()}, 7500);"); //mu sec
+  client.println F("var myVar = setInterval(function(){myTimer()}, 8500);"); //mu sec
   client.println F("function myTimer() {");
   client.println F("location.reload(true);");
   client.println F("};");
@@ -1367,7 +1367,7 @@ void sendReply ()
     if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
     if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
     if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
-    if (MyInputString.indexOf F("col=fiber&") > 0 ) usedLED  = fiberLED ; //
+    if (MyInputString.indexOf F("col=fiber") > 0 ) usedLED  = fiberLED ; //
 //due4 is special
     if (MyInputString.indexOf F("col=amber&") > 0 ) usedLED  = amberled ; //
     if (MyInputString.indexOf F("col=cyan&") > 0 ) usedLED  = cyaled ; //
@@ -1407,7 +1407,8 @@ void sendReply ()
       //turn off any lights we have on...
       goColour(0, 0, 0, 0, false);
     }
-
+Serial.print("repeats now ");
+Serial.println(nRepeats);
     if (fileExists(cFile) && nRepeats >= maxRepeats)
     {
       // done so tidy up
