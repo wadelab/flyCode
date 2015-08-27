@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define due5
+#define due4
 
 //_____________________________________________________
 
@@ -1280,14 +1280,15 @@ void AppendSSVEPReport()
     if (iThisContrast > 0)
     {
       iThisContrast -- ;
-      client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+      client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"450\" style=\"border:1px solid #d3d3d3;\">");
       client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
 
       client.println F("<script>");
       client.println F("var c = document.getElementById(\"myCanvas\");");
       client.println F("var ctx = c.getContext(\"2d\");");
-
-      for (int i = 0; i < 5 * max_graph_data - 2; i++)
+      
+      int iStep = 2;
+      for (int i = 0; i < 5 * max_graph_data - 2; i=i+iStep)
       {
         client.print F("ctx.moveTo(");
         client.print(i * 4);
@@ -1295,24 +1296,28 @@ void AppendSSVEPReport()
         client.print(myGraphData[i] + 350);
         client.println F(");");
         client.print F("ctx.lineTo(");
-        client.print((i + 1) * 4);
+        client.print((i + iStep) * 4);
         client.print F(",");
-        client.print(myGraphData[i + 1] + 350);
+        client.print(myGraphData[i + iStep] + 350);
         client.println F(");");
-        client.println F("ctx.stroke();");
+      }
+      client.println F("ctx.stroke();");
 
+      for (int i = 0; i < 5 * max_graph_data - 2; i=i+iStep)
+      {
         client.print F("ctx.moveTo(");
         client.print(i * 4);
         client.print F(",");
         client.print(br_Now(time_stamp[i]) );
         client.println F(");");
         client.print F("ctx.lineTo(");
-        client.print((i + 1) * 4);
+        client.print((i + iStep) * 4);
         client.print F(",");
-        client.print(br_Now(time_stamp[i + 1]));
+        client.print(br_Now(time_stamp[i + iStep]));
         client.println F(");");
-        client.println F("ctx.stroke();");
       }
+      client.println F("ctx.stroke();");
+      
       client.println F("</script>");
       iThisContrast ++ ;
     }
