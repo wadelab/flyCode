@@ -452,7 +452,7 @@ void send_GoBack_to_Stim_page ()
 //    Serial.println (MyReferString) ;
 else
     {
-    client.print F("javascript:void(0)\" onclick=\"window.home(); \"") ;
+    client.print F("javascript:void(0)\" onclick=\"window.home(); ") ;
     }
     client.println F("\">the stimulus selection form</A>  <BR>");
 }
