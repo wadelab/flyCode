@@ -122,7 +122,7 @@ for phen = 1 : nPhenotypes
     text(150,max(meanCRF(phen, [nUnMasked+1:end],i+2))/2, strrep(['N=', num2str(id(phen)), ' ', C{phen}],'&',' '));
     
     printFilename = [dirName, filesep, fileName, '_', num2str(phen), '_', num2str(iBlock), '_mean_CRF', sExt];
-    print( printFilename );
+    print( '-dpsc', printFilename );
     
 end
 

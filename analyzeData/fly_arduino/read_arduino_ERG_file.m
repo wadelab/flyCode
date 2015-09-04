@@ -92,7 +92,7 @@ ylabel('mean');
 
 sExt = getPictExt ();
 printFilename = [pathstr, filesep, fileName, '_MyData', sExt];
-print( printFilename );
+print( '-dpsc', printFilename );
 
 %% get some data out
 disp('mean ERG:');
