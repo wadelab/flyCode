@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define due1
+#define mega1
 
 //_____________________________________________________
 
@@ -268,7 +268,7 @@ void setup() {
 digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
   Serial.println F("Setting up the Ethernet card...\n");
     // start the Ethernet connection and the server:
-    if (1 != Ethernet.begin(mac))
+    if (true) // (1 != Ethernet.begin(mac))
     {
       // Setup for eg an ethernet cable from Macbook to Arduino Ethernet shield
       // other macbooks or mac airs may assign differnt local networks
@@ -452,7 +452,7 @@ void send_GoBack_to_Stim_page ()
 //    Serial.println (MyReferString) ;
 else
     {
-    client.print F("javascript:void(0)\" onclick=\"window.home(); \"") ;
+    client.print F("javascript:void(0)\" onclick=\"window.home(); ") ;
     }
     client.println F("\">the stimulus selection form</A>  <BR>");
 }
@@ -1216,12 +1216,12 @@ void AppendFlashReport()
       client.print F("ctx.moveTo(");
       client.print((8 * i) / 10 );
       client.print F(",");
-      client.print(350 - myGraphData[i]);
+      client.print(350 - myGraphData[i]/4);
       client.println F(");");
       client.print F("ctx.lineTo(");
       client.print((8 * (i + 15)) / 10 );
       client.print F(",");
-      client.print(350 - myGraphData[i + 15]);
+      client.print(350 - myGraphData[i + 15]/4);
       client.println F(");");
       client.println F("ctx.stroke();");
 
@@ -1293,12 +1293,12 @@ void AppendSSVEPReport()
         client.print F("ctx.moveTo(");
         client.print(i * 4);
         client.print F(",");
-        client.print(myGraphData[i] + 350);
+        client.print(myGraphData[i]/4 + 350);
         client.println F(");");
         client.print F("ctx.lineTo(");
         client.print((i + iStep) * 4);
         client.print F(",");
-        client.print(myGraphData[i + iStep] + 350);
+        client.print(myGraphData[i + iStep]/4 + 350);
         client.println F(");");
       }
       client.println F("ctx.stroke();");
