@@ -268,7 +268,7 @@ void setup() {
 digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
   Serial.println F("Setting up the Ethernet card...\n");
     // start the Ethernet connection and the server:
-    if (true) // (1 != Ethernet.begin(mac))
+    if (1 != Ethernet.begin(mac))
     {
       // Setup for eg an ethernet cable from Macbook to Arduino Ethernet shield
       // other macbooks or mac airs may assign differnt local networks
