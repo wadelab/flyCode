@@ -261,7 +261,7 @@ for i = 1 : nContrasts
     % don't add more than 4 [5 repeats, inclusive counting]
     % eg to ignore 1st round 
     % startRPT = RPT + 1
-    startRPT = RPT ;
+    startRPT = RPT + 1 ;
     end_RPT = RPT + 4 ; % RPT ;
     %find mean and plot it
     %keyboard;

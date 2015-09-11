@@ -149,7 +149,8 @@ for phen = 1 : nPhenotypes
         qPos = strfind(tmpTxt{q},'=');
         tmpTxt{q} = tmpTxt{q}(qPos+1:end);
     end
-    phenName{phen} = strjoin(tmpTxt);
+    %if we are here, its bound to be an SSVEP...
+    phenName{phen} = strrep(strjoin(tmpTxt),'SSVEP','');
         
     plot_mean_crf ({myTxt,phenName{phen}}, squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)), maxCRR);
 end
@@ -182,11 +183,30 @@ javaaddpath(fullfile(POIPATH,'poi_library/stax-api-1.0.1.jar'));
 
 
 %%  [status, message]=xlwrite(filename,A,sheet, range)
-filename = [ dirName, '/summary.xls']
+filename = [ dirName, '/SSVEP_summary.xls']
 status=xlwrite(filename, phenName, '1F1', 'A1');
 status=xlwrite(filename, phenName, '2F1', 'A1');
 status=xlwrite(filename, phenotypeAmps(:,:,1), '1F1', 'A2');
 status=xlwrite(filename, phenotypeAmps(:,:,3), '2F1', 'A2');
+
+%% could write meanCRF here...
+sTxt=[{'Mask','Contrast'},GetFreqNames()];
+sSheet = ['CRF', num2str(phen)] ;
+for phen = 1:nPhenotypes
+    % phenotype..
+    % mask, contrast, 1F1..
+    % CRF
+    status=xlwrite(filename, [{'CRF for :'}, phenName{1}], sSheet, 'A1');
+    status=xlwrite(filename, sTxt, sSheet,'A2');
+    status=xlwrite(filename, abs(squeeze(meanCRF(phen,:,:))),sSheet,'A3');
+    
+    if ia(phen) ~= ib(phen)
+        %dont bother writing zeros..
+        status=xlwrite(filename, 'SE', sSheet,'A14');
+        status=xlwrite(filename, abs(squeeze(SE_CRF(phen,:,:))),sSheet,'A15');
+    end
+    
+end
 
 
 %% 

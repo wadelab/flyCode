@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define due4
+#define mega1
 
 //_____________________________________________________
 
@@ -268,7 +268,7 @@ void setup() {
 digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
   Serial.println F("Setting up the Ethernet card...\n");
     // start the Ethernet connection and the server:
-    if (1 != Ethernet.begin(mac))
+    if (true) // (1 != Ethernet.begin(mac))
     {
       // Setup for eg an ethernet cable from Macbook to Arduino Ethernet shield
       // other macbooks or mac airs may assign differnt local networks
@@ -452,7 +452,7 @@ void send_GoBack_to_Stim_page ()
 //    Serial.println (MyReferString) ;
 else
     {
-    client.print F("javascript:void(0)\" onclick=\"window.home(); \"") ;
+    client.print F("javascript:void(0)\" onclick=\"window.home(); ") ;
     }
     client.println F("\">the stimulus selection form</A>  <BR>");
 }
@@ -481,7 +481,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
   analogWrite( cyaled, c );
 #endif
 #ifdef due1
-  analogWrite( fiberLED, f );
+  analogWrite( fiberLED, a );
 #endif
   updateColour( boolUpdatePage);
 }  
@@ -802,20 +802,20 @@ bool writeFile(const char * c)
 
     if ( !file.open(root, c /*myName*/,   O_CREAT | O_APPEND | O_WRITE))
     {
-//      Serial.println F ("Error in opening file");
-//      Serial.println (c);
+      Serial.println F ("Error in opening file");
+      Serial.println (c);
       return false;
     }
 
     if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
-//      Serial.println F ("Error in timestamping file");
-//      Serial.println (c);
+      Serial.println F ("Error in timestamping file");
+      Serial.println (c);
       return false ;
     }
     iBytesWritten = file.write(cInput, MaxInputStr + 2);
     if (iBytesWritten <= 0)
     {
-//      Serial.println F ("Error in writing header to file");
+      Serial.println F ("Error in writing header to file");
       file.close();
       return false ;
     }
@@ -825,8 +825,8 @@ bool writeFile(const char * c)
   {
     if ( !file.open(root, c /*myName*/,  O_APPEND | O_WRITE))
     {
-//      Serial.println F ("Error in opening file");
-//      Serial.println (c);
+      Serial.println F ("Error in reopening file");
+      Serial.println (c);
       return false;
     }
 
@@ -837,7 +837,7 @@ bool writeFile(const char * c)
   iBytesWritten = file.write(erg_in, max_data * sizeof(int));
   if (iBytesWritten <= 0)
   {
-//    Serial.println F ("Error in writing erg data to file");
+    Serial.println F ("Error in writing erg data to file");
     file.close();
     return false;
   }
@@ -846,7 +846,7 @@ bool writeFile(const char * c)
   iBytesWritten = file.write(time_stamp, max_data * sizeof(unsigned int));
   if (iBytesWritten <= 0)
   {
-//    Serial.println F ("Error in writing timing data to file");
+    Serial.println F ("Error in writing timing data to file");
     return false ;
   }
   Serial.print F(" More bytes writen to file.........");
@@ -1216,12 +1216,12 @@ void AppendFlashReport()
       client.print F("ctx.moveTo(");
       client.print((8 * i) / 10 );
       client.print F(",");
-      client.print(350 - myGraphData[i]);
+      client.print(350 - myGraphData[i]/4);
       client.println F(");");
       client.print F("ctx.lineTo(");
       client.print((8 * (i + 15)) / 10 );
       client.print F(",");
-      client.print(350 - myGraphData[i + 15]);
+      client.print(350 - myGraphData[i + 15]/4);
       client.println F(");");
       client.println F("ctx.stroke();");
 
@@ -1293,12 +1293,12 @@ void AppendSSVEPReport()
         client.print F("ctx.moveTo(");
         client.print(i * 4);
         client.print F(",");
-        client.print(myGraphData[i] + 350);
+        client.print(myGraphData[i]/4 + 350);
         client.println F(");");
         client.print F("ctx.lineTo(");
         client.print((i + iStep) * 4);
         client.print F(",");
-        client.print(myGraphData[i + iStep] + 350);
+        client.print(myGraphData[i + iStep]/4 + 350);
         client.println F(");");
       }
       client.println F("ctx.stroke();");
@@ -1400,7 +1400,7 @@ void sendReply ()
     if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
     if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
     if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
-    if (MyInputString.indexOf F("col=fiber&") > 0 ) usedLED  = fiberLED ; //
+    if (MyInputString.indexOf F("col=fiber") > 0 ) usedLED  = fiberLED ; //
 //due4 is special
     if (MyInputString.indexOf F("col=amber&") > 0 ) usedLED  = amberled ; //
     if (MyInputString.indexOf F("col=cyan&") > 0 ) usedLED  = cyaled ; //
@@ -1442,7 +1442,8 @@ void sendReply ()
       //turn off any lights we have on...
       goColour(0, 0, 0, 0, false);
     }
-
+//Serial.print("repeats now ");
+//Serial.println(nRepeats);
     if (fileExists(cFile) && file.fileSize() >= exp_size ) //nRepeats >= maxRepeats)
     {
       // done so tidy up
