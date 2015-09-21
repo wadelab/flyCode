@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define mega1
+#define due5
 
 //_____________________________________________________
 
@@ -124,6 +124,7 @@ const byte bluLED = 8;
 const byte analogPin = 0 ;
 const byte connectedPin = A1;
 byte iGainFactor = 1 ;
+bool bIsSine = true ;
 
 byte nRepeats = 0;
 const byte maxRepeats = 5;
@@ -695,7 +696,12 @@ void printDirectory(uint8_t flags) {
 
 }
 
-
+double sgn (double x)
+{
+  if (x > 0) return 1;
+  if (x < 0) return -1;
+  return 0;
+}
 
 int br_Now(double t)
 {
@@ -707,7 +713,14 @@ int br_Now(double t)
 
 int Get_br_Now(double t, const double F1contrast, const double F2contrast)
 {
-  return int(sin((t / 1000.0) * PI * 2.0 * double(freq1)) * 1.270 * F1contrast + sin((t / 1000.0) * PI * 2.0 * double(freq2)) * 1.270 * F2contrast + 127.0);
+  double s1 = sin((t / 1000.0) * PI * 2.0 * double(freq1));
+  double s2 = sin((t / 1000.0) * PI * 2.0 * double(freq2));
+  if (!bIsSine)
+  {
+    s1=sgn(s1);
+    s2=sgn(s2);
+  }
+  return int(s1 * 1.270 * F1contrast + s2 * 1.270 * F2contrast + 127.0);
 }
 
 
@@ -1408,6 +1421,7 @@ void sendReply ()
 
     //flash ERG or SSVEP?
     bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
+    bIsSine = MyInputString.indexOf F("stm=SQ&") < 0  ; // -1 if not found
 
     // find filename
     String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
