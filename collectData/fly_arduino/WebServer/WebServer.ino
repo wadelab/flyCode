@@ -973,7 +973,7 @@ void doreadFile (const char * c)
   client.println();
   // test if its an ERG
   boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
-  bIsSine = ( NULL != strstr ( cPtr, "stm=SQ") ) ;
+  bIsSine = ( NULL == strstr ( cPtr, "stm=SQ") ) ;
 
   // now on to the data
   iBytesRequested = max_data * sizeof(int);
