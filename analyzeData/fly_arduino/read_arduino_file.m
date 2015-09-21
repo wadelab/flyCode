@@ -129,7 +129,7 @@ iEnd = 1024;
 ss = get (0,'screensize') ;
 
 %% plot raw data
-myPos = get(gcf, 'Position');
+myPos = ss ;
 myPos(1) = 10 ;
 myPos(3) = ss(3) - 10 ;
 figure ('Name', strcat('Rawdata of: ',fileName), 'Position', myPos);
