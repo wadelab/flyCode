@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<base href="http://172.16.1.10/" >
+<script>
+
+
+function getTimeString() {
+    var today=new Date();
+    var mo=today.getMonth() + 1;
+    var d=today.getDate();
+    var h=today.getHours();
+    var m=today.getMinutes();
+    var s = today.getSeconds()
+    m = checkTime(m);
+	mo = checkTime(mo);
+	h = checkTime(h);
+	s = checkTime(s);
+    return d + "_" + mo + "_" + h + "h" + m + "m" + s ;
+    }
+    
+function startTime()
+{
+    document.getElementById('txt').innerHTML = getTimeString();
+    var t = setTimeout(function(){startTime()},500);
+}
+
+function checkTime(i) {
+    if (i<10) {i = "0" + i};  // add zero in front of numbers < 10
+    return i;
+}
+
+function changeText() 
+{
+    x = document.getElementById("FileID");
+    x.value = getTimeString() 
+}
+</script>
+</head>
+
+<!-- body onload="startTime()" -->
+<body>
+
+<div id="txt">Arduino SSVEP starter page</div>
+<br><br>
+
+<form action="/">
+
+<table style="text-align: left; width: 50%;" border="1" cellpadding="2" cellspacing="2">
+<tbody>
+<tr>
+<td style="vertical-align: top; width = 33%">GAL4:</td>
+<td style="vertical-align: top; width = 33%">UAS:</td>
+<td style="vertical-align: top; width = 33%">Age:</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">
+<select name="GAL4" size="6">
+
+<option value="w">w-</option>
+<option value="PINK1">PINK1 B9</option>
+<option value="kcc D">kcc DHS</option>
+<option value="DJ1a">DJ1a</option>
+<option value="DJ1b">DJ1b</option>
+<option value="CS">CS</option>
+<option value="ort" selected="selected">ort-</option>
+</select><br>
+</td>
+<td style="vertical-align: top;">
+<select name="UAS" size="6">
+<option value="homoz" selected="selected">homozygote</option>
+<option value="het" selected="selected">heterozygoted</option>
+<option value="w">w-</option>
+<option value="DJ1a">DJ1a</option>
+
+</select><br>
+</td>
+<td style="vertical-align: top;">
+<select name="Age" size="6">
+<option value="0.4">4-8 hours</option>
+<option selected="selected" value="1">1 day</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="5">5</option>
+<option value="7">7</option>
+<option value="14">14</option>
+<option value="21">21</option>
+<option value="-1">unknown</option>
+</select><br>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+<table style="text-align: left; width: 50%;" border="1" cellpadding="2" cellspacing="2">
+<tbody>
+<tr>
+<td style="vertical-align: top; width = 20%"><br> Sex: <br></td>
+<td style="vertical-align: top; width = 20%"><br>Organism: <br></td>
+<td style="vertical-align: top; width = 20%"><br>Colour</td>
+<td style="vertical-align: top; width = 20%"><br>Frequencies</td>
+<td style="vertical-align: top; width = 20%"><br>Protocol</td>
+</tr>
+<tr>
+<td style="vertical-align: top;"><br>
+<input name="sex" value="male" type="radio">Male<br>
+<input checked="checked" name="sex" value="female" type="radio">Female
+<br><br>
+</td>
+<td style="vertical-align: top;"><br> 
+<input name="org" value="fly" checked="checked" type="radio">fly<br>
+<input name="org" value="zfish" type="radio">zebrafish<br>
+<input name="org" value="mouse" type="radio">mouse<br>
+<input name="org" value="locust" type="radio">locust<br>
+<br><br>
+</td>
+
+<td style="vertical-align: top;"><br>
+<input name="col" value="blue" checked="checked" type="radio">blue<br>
+<input name="col" value="green" type="radio">green<br>
+<input name="col" value="red" type="radio">red<br>
+
+</td>
+
+<td style="vertical-align: top;"><br>
+<input name="F1" value="12" checked="checked" type="checkbox"> F1: 12 Hz<br>
+<input name="F2" value="15" checked="checked" type="checkbox"> F2: 15 Hz<br>
+</td>
+
+<td style="vertical-align: top;"><br>
+<input name="stim" value="fERG" type="radio">flash ERG<br>
+<input name="stim" value="SSVEP" checked="checked" type="radio">SSVEP<br>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+
+
+
+<br>
+File name: <input id="FileID" name="filename" type="text"> 
+<button onclick="changeText()" type="button">Auto</button><br>
+
+<br><br>
+<input value="Submit" type="submit">
+
+</form>
+
+<br><br>
+
+<table>
+<tbody><tr><td>
+<a href="http://172.16.1.10/white/">White</a>
+</td>
+
+<td bgcolor="Red">
+<a href="http://172.16.1.10/red/"><font color="White">Red </font></a>
+</td>
+
+<td bgcolor="Green">
+<a href="http://172.16.1.10/green/"><font color="White">Green </font></a>
+</td>
+<td bgcolor="Blue">
+<a href="http://172.16.1.10/blue/"><font color="White">Blue </font></a>
+</td>
+<td bgcolor="Black">
+<a href="http://172.16.1.10/black/"><font color="White">Black</font></a>
+</td>
+
+
+<td>
+<a href="http://172.16.1.10/">Test setup</a>
+</td><td>
+<a href="http://172.16.1.10/dir=">Directory</a>
+</td></tr></tbody></table>
+
+
+</body></html>

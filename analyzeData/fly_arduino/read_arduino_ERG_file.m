@@ -64,6 +64,12 @@ for i = 1:nContrasts
     yTxt = strcat(num2str(i), '//') ;
     ylabel(yTxt);
     
+    if (i==1)
+        line1d = strrep(line1c, '&',' ');
+        line1e = strrep(line1d, '_',' ');
+        text(-500,ymax*1.2,line1e);
+    end
+    
     fft1=abs(fft(rawdata(i,1:200)));
     subplot(nContrasts +1, 3, (i*3)-1);
     plot (xdata, fft1(1:100));
@@ -86,7 +92,7 @@ ylabel('mean');
 
 sExt = getPictExt ();
 printFilename = [pathstr, filesep, fileName, '_MyData', sExt];
-print( printFilename );
+print( '-dpsc', printFilename );
 
 %% get some data out
 disp('mean ERG:');

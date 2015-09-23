@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define due4
+#define due5
 
 //_____________________________________________________
 
@@ -124,6 +124,7 @@ const byte bluLED = 8;
 const byte analogPin = 0 ;
 const byte connectedPin = A1;
 byte iGainFactor = 1 ;
+bool bIsSine = true ;
 
 byte nRepeats = 0;
 const byte maxRepeats = 5;
@@ -481,7 +482,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
   analogWrite( cyaled, c );
 #endif
 #ifdef due1
-  analogWrite( fiberLED, f );
+  analogWrite( fiberLED, a );
 #endif
   updateColour( boolUpdatePage);
 }  
@@ -695,7 +696,12 @@ void printDirectory(uint8_t flags) {
 
 }
 
-
+double sgn (double x)
+{
+  if (x > 0) return 1;
+  if (x < 0) return -1;
+  return 0;
+}
 
 int br_Now(double t)
 {
@@ -707,7 +713,14 @@ int br_Now(double t)
 
 int Get_br_Now(double t, const double F1contrast, const double F2contrast)
 {
-  return int(sin((t / 1000.0) * PI * 2.0 * double(freq1)) * 1.270 * F1contrast + sin((t / 1000.0) * PI * 2.0 * double(freq2)) * 1.270 * F2contrast + 127.0);
+  double s1 = sin((t / 1000.0) * PI * 2.0 * double(freq1));
+  double s2 = sin((t / 1000.0) * PI * 2.0 * double(freq2));
+  if (!bIsSine)
+  {
+    s1=sgn(s1);
+    s2=sgn(s2);
+  }
+  return int(s1 * 1.270 * F1contrast + s2 * 1.270 * F2contrast + 127.0);
 }
 
 
@@ -802,20 +815,20 @@ bool writeFile(const char * c)
 
     if ( !file.open(root, c /*myName*/,   O_CREAT | O_APPEND | O_WRITE))
     {
-//      Serial.println F ("Error in opening file");
-//      Serial.println (c);
+      Serial.println F ("Error in opening file");
+      Serial.println (c);
       return false;
     }
 
     if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
-//      Serial.println F ("Error in timestamping file");
-//      Serial.println (c);
+      Serial.println F ("Error in timestamping file");
+      Serial.println (c);
       return false ;
     }
     iBytesWritten = file.write(cInput, MaxInputStr + 2);
     if (iBytesWritten <= 0)
     {
-//      Serial.println F ("Error in writing header to file");
+      Serial.println F ("Error in writing header to file");
       file.close();
       return false ;
     }
@@ -825,8 +838,8 @@ bool writeFile(const char * c)
   {
     if ( !file.open(root, c /*myName*/,  O_APPEND | O_WRITE))
     {
-//      Serial.println F ("Error in opening file");
-//      Serial.println (c);
+      Serial.println F ("Error in reopening file");
+      Serial.println (c);
       return false;
     }
 
@@ -837,7 +850,7 @@ bool writeFile(const char * c)
   iBytesWritten = file.write(erg_in, max_data * sizeof(int));
   if (iBytesWritten <= 0)
   {
-//    Serial.println F ("Error in writing erg data to file");
+    Serial.println F ("Error in writing erg data to file");
     file.close();
     return false;
   }
@@ -846,7 +859,7 @@ bool writeFile(const char * c)
   iBytesWritten = file.write(time_stamp, max_data * sizeof(unsigned int));
   if (iBytesWritten <= 0)
   {
-//    Serial.println F ("Error in writing timing data to file");
+    Serial.println F ("Error in writing timing data to file");
     return false ;
   }
   Serial.print F(" More bytes writen to file.........");
@@ -960,6 +973,7 @@ void doreadFile (const char * c)
   client.println();
   // test if its an ERG
   boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
+  bIsSine = ( NULL == strstr ( cPtr, "stm=SQ") ) ;
 
   // now on to the data
   iBytesRequested = max_data * sizeof(int);
@@ -1216,12 +1230,12 @@ void AppendFlashReport()
       client.print F("ctx.moveTo(");
       client.print((8 * i) / 10 );
       client.print F(",");
-      client.print(350 - myGraphData[i]);
+      client.print(350 - myGraphData[i]/4);
       client.println F(");");
       client.print F("ctx.lineTo(");
       client.print((8 * (i + 15)) / 10 );
       client.print F(",");
-      client.print(350 - myGraphData[i + 15]);
+      client.print(350 - myGraphData[i + 15]/4);
       client.println F(");");
       client.println F("ctx.stroke();");
 
@@ -1293,12 +1307,12 @@ void AppendSSVEPReport()
         client.print F("ctx.moveTo(");
         client.print(i * 4);
         client.print F(",");
-        client.print(myGraphData[i] + 350);
+        client.print(myGraphData[i]/4 + 350);
         client.println F(");");
         client.print F("ctx.lineTo(");
         client.print((i + iStep) * 4);
         client.print F(",");
-        client.print(myGraphData[i + iStep] + 350);
+        client.print(myGraphData[i + iStep]/4 + 350);
         client.println F(");");
       }
       client.println F("ctx.stroke();");
@@ -1400,7 +1414,7 @@ void sendReply ()
     if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
     if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
     if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
-    if (MyInputString.indexOf F("col=fiber&") > 0 ) usedLED  = fiberLED ; //
+    if (MyInputString.indexOf F("col=fiber") > 0 ) usedLED  = fiberLED ; //
 //due4 is special
     if (MyInputString.indexOf F("col=amber&") > 0 ) usedLED  = amberled ; //
     if (MyInputString.indexOf F("col=cyan&") > 0 ) usedLED  = cyaled ; //
@@ -1408,6 +1422,7 @@ void sendReply ()
 
     //flash ERG or SSVEP?
     bDoFlash = MyInputString.indexOf F("stim=fERG&") > 0  ;
+    bIsSine = MyInputString.indexOf F("stm=SQ&") < 0  ; // -1 if not found
 
     // find filename
     String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
@@ -1442,7 +1457,8 @@ void sendReply ()
       //turn off any lights we have on...
       goColour(0, 0, 0, 0, false);
     }
-
+//Serial.print("repeats now ");
+//Serial.println(nRepeats);
     if (fileExists(cFile) && file.fileSize() >= exp_size ) //nRepeats >= maxRepeats)
     {
       // done so tidy up

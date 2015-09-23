@@ -96,8 +96,8 @@ cellspacing="2">
 <td style="vertical-align: top; width = 20%"><BR> Sex: <BR></td>
 <td style="vertical-align: top; width = 20%"><BR>Organism: <BR></td>
 <td style="vertical-align: top; width = 20%"><BR>Colour</td>
-<td style="vertical-align: top; width = 20%"><BR>Frequencies</td>
 <td style="vertical-align: top; width = 20%"><BR>Protocol</td>
+<td style="vertical-align: top; width = 20%"><BR>SSVEP wave shape</td>
 </tr>
 <tr>
 <td style="vertical-align: top;"><BR>
@@ -119,15 +119,21 @@ cellspacing="2">
 <input type="radio" name="col" value="red">red<br>
 </td>
 
-<td style="vertical-align: top;"><BR>
-<input type="checkbox" name="F1" value="12" checked> F1: 12 Hz<br>
-<input type="checkbox" name="F2" value="15" checked> F2: 15 Hz<br>
-</td>
+
+<input type="hidden" name="F1" value="12" checked> F1: 12 Hz<br>
+<input type="hidden" name="F2" value="15" checked> F2: 15 Hz<br>
+
 
 <td style="vertical-align: top;"><BR>
 <input type="radio" name="stim" value="fERG" checked>flash ERG<br>
 <input type="radio" name="stim" value="SSVEP" checked>SSVEP<br>
 </td>
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="stm" value="SI" >Sine Wave<br>
+<input type="radio" name="stm" value="SQ" checked>Square wave<br>
+</td>
+
 </tr>
 </tbody>
 </table>

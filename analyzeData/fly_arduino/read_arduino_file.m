@@ -129,7 +129,7 @@ iEnd = 1024;
 ss = get (0,'screensize') ;
 
 %% plot raw data
-myPos = get(gcf, 'Position');
+myPos = ss ;
 myPos(1) = 10 ;
 myPos(3) = ss(3) - 10 ;
 figure ('Name', strcat('Rawdata of: ',fileName), 'Position', myPos);
@@ -261,7 +261,7 @@ for i = 1 : nContrasts
     % don't add more than 4 [5 repeats, inclusive counting]
     % eg to ignore 1st round 
     % startRPT = RPT + 1
-    startRPT = RPT ;
+    startRPT = RPT + 1 ;
     end_RPT = RPT + 4 ; % RPT ;
     %find mean and plot it
     %keyboard;
