@@ -74,7 +74,7 @@ ylabel('response, a.u.');
 text( 150, 0, strjoin(myLabel) );
 subplot(1,2,2);
 
-polar (theta_CRF(1:nUnMasked,3),abs_CRF(1:nUnMasked,3), '-*');
+polar (theta_CRF(1:nUnMasked,3),abs_CRF(1:nUnMasked,3), '-*r');
 hold on ;
 polar (theta_CRF(nUnMasked+1:end,3),abs_CRF(nUnMasked+1:end,3), '--Ob');
 hold off;
@@ -146,38 +146,41 @@ myPos(1) = 10 ;
 myPos(3) = ss(3) - 10 ;
 
 figure('Name', strcat('CRFs of: ',fileName), 'Position', myPos);
+%% loop
 for i=1:7
-subplot(1,7,i);
-
-j= i+2 ; %% first 2 cols are x axis
-
-p = errorbar (abs_CRF([1:nUnMasked],2), abs_CRF([1:nUnMasked],j), eb_CRF([1:nUnMasked],j)) ;
-set (p, 'color', 'red');
-set (p, 'Marker', 'o');
-set (p, 'MarkerFaceColor', 'red');
-hold on ;
-p = errorbar (abs_CRF([nUnMasked+1:nContrasts],2), abs_CRF([nUnMasked+1:nContrasts],j), eb_CRF([nUnMasked+1:nContrasts],j));
-set (p, 'color', 'blue');
-set (p, 'Marker', 's');
-set (p, 'MarkerFaceColor', 'blue');
-hold off ;
-
-
-if (i==1)
-    legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
-end
-set(gca,'XScale','log');
-ymax(j) = max(abs_CRF(:,j)+eb_CRF(:,j));
-axis([0 110 0 ymax(j)]);
-
-if (i==7)
-  xlabel('contrast (%)');
-  ylabel('response, a.u.');
-end 
-text( 20, 1.05 * ymax(j), FreqNames{i} );
+    subplot(1,7,i);
+    
+    j= i+2 ; %% first 2 cols are x axis
+    
+    p = errorbar (abs_CRF([1:nUnMasked],2), abs_CRF([1:nUnMasked],j), eb_CRF([1:nUnMasked],j)) ;
+    set (p, 'color', 'red');
+    set (p, 'Marker', 'o');
+    set (p, 'MarkerFaceColor', 'red');
+    hold on ;
+    p = errorbar (abs_CRF([nUnMasked+1:nContrasts],2), abs_CRF([nUnMasked+1:nContrasts],j), eb_CRF([nUnMasked+1:nContrasts],j));
+    set (p, 'color', 'blue');
+    set (p, 'Marker', 's');
+    set (p, 'MarkerFaceColor', 'blue');
+    hold off ;
+    
+    set(gca,'XScale','log');
+    ymax(j) = max(abs_CRF(:,j)+eb_CRF(:,j));
+    axis([0 110 0 ymax(j)]);
+    
+    if (i==1)
+        legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
+        text( 20, -0.15 * ymax(3), strjoin(myLabel) );
+    end
+    
+    if (i==7)
+        xlabel('contrast (%)');
+        ylabel('response, a.u.');
+    end
+    text( 20, 1.05 * ymax(j), FreqNames{i} );
 end
 
 %% and save eps
+
 
 printFilename = [pathstr, filesep, fileName, '_all_CRFs', sExt];
 h=gcf;
