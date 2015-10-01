@@ -203,7 +203,7 @@ for phen = 1:nPhenotypes
     
     if ia(phen) ~= ib(phen)
         %dont bother writing zeros..
-        status=xlwrite(filename, 'SE', sSheet,'A14');
+        status=xlwrite(filename, {'SE'}, sSheet,'A14');
         status=xlwrite(filename, abs(squeeze(meanCRF(phen,:,1:2))), sSheet,'A15');
         status=xlwrite(filename, abs(squeeze(SE_CRF(phen,:,3:end))),sSheet,'C15');
     end
