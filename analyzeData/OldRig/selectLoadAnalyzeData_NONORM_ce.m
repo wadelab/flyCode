@@ -7,7 +7,8 @@
 % Fieldtrip?), parameter extraction and better plotting.
 % This version adds incoherent averaging to look at evoked power.
 
-
+%%
+addmetothepath;
 %% Generate a list of all the directories to examine in the destination dir.
 clear all; close all; % Housekeeping
 MAX_FREQ=100; % Maximum frequency to retain during F-domain analysis.
