@@ -31,38 +31,47 @@ thisSubDirIndex=0;
 
 for thisSubDir=1:length(allSubDirList);
     if  (allSubDirList(thisSubDir).isdir)
-        thisSubDirIndex=thisSubDirIndex+1;
-        subDirList{thisSubDirIndex}.dirName=fullfile(baseDir,allSubDirList(thisSubDir).name);
-        subDirList{thisSubDirIndex}.type=allSubDirList(thisSubDir).name;
+        
+        subDirList_element.dirName=fullfile(baseDir,allSubDirList(thisSubDir).name);
+        subDirList_element.type=allSubDirList(thisSubDir).name;
         
         % Now go into each phenotype and find how many expts...
-        exptList=dir([subDirList{thisSubDirIndex}.dirName,'/Fly*']);
+        exptList=dir([subDirList_element.dirName,'/Fly*']);
+         
         
         exptIndex=0;
+        subDirList_element.nFlies=0;
         for thisExpt=1:length(exptList)
             if(exptList(thisExpt).isdir)
-                exptIndex=exptIndex+1;
                 
-                subDirList{thisSubDirIndex}.flyDir{exptIndex}=fullfile(subDirList{thisSubDirIndex}.dirName,exptList(thisExpt).name);
-                subDirList{thisSubDirIndex}.nFlies=length(exptList);
+                
+                ff=fullfile(subDirList_element.dirName,exptList(thisExpt).name);
+                
                 
                 % At this point, we can delve into the individual expt
                 % directories and find out how many reps we ran on each
                 % one. Note - each expt now contains data from more than a
                 % single fly
-                repeatedMeasureList=dir([subDirList{thisSubDirIndex}.flyDir{exptIndex},'/*.mat']);
-                subDirList{thisSubDirIndex}.flyData{exptIndex}.nReps=length(repeatedMeasureList);
-                if ((subDirList{thisSubDirIndex}.flyData{exptIndex}.nReps) <1)
+                repeatedMeasureList=dir([ff,'/*.mat']);
+                nMats = length(repeatedMeasureList);
+                
+                if (nMats <1)
                     warning('***---No data files found in this directory:');
-                    disp((subDirList{thisSubDirIndex}.flyDir{exptIndex}));
-                end
+                    disp(ff);
+                else
+                    exptIndex=exptIndex+1;
+                    subDirList_element.flyDir{exptIndex}=ff;
+                    subDirList_element.nFlies=subDirList_element.nFlies+1;
+                    subDirList_element.flyData{exptIndex}.nReps=nMats ;
+                    dname=struct2cell(repeatedMeasureList);
+                    subDirList_element.flyData{exptIndex}.dname=dname;
+                    for thisDatFile=1:subDirList_element.flyData{exptIndex}.nReps
+                        subDirList_element.flyData{exptIndex}.fileNames{thisDatFile}=dname{1,thisDatFile};
+                    end
                 
-                dname=struct2cell(repeatedMeasureList);
-                subDirList{thisSubDirIndex}.flyData{exptIndex}.dname=dname;
-                for thisDatFile=1:subDirList{thisSubDirIndex}.flyData{exptIndex}.nReps
-                subDirList{thisSubDirIndex}.flyData{exptIndex}.fileNames{thisDatFile}=dname{1,thisDatFile};
+                thisSubDirIndex=thisSubDirIndex+1;
+                subDirList{thisSubDirIndex} = subDirList_element ;
                 end
-                
             else
                 disp('Not a valid Experimental data directory');
             end % End check on expt directory validity
@@ -71,6 +80,7 @@ for thisSubDir=1:length(allSubDirList);
             
             
         end % Next expt
+        
         
     else
         disp('Not a directory...');
