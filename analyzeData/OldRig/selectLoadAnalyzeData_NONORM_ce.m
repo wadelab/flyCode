@@ -399,7 +399,7 @@ set(gca,'YTickLabel',fliplr(ptName));
 
 %%%export_fig(bookName,'-pdf','-transparent','-append');
 
-
+%%
 
 %
 %
@@ -595,7 +595,7 @@ set(gca,'YTickLabel',fliplr(ptName));
 
 xlParams=plotParams; % xlParams doesn't need all the fields here but it's quicker just to clone plotParams. We need labels, contRange and the number of mask conditions
 xlParams.phenotypeList=phenotypeList;
-[s]=writeFlyDataToXL([bookName,'.xls'],meanNormFlyResp,semNormFlyResp, xlParams); % Write out the data into an xl spreadsheet . We think this is really just a step on the way to R or SPSS...
+[s]=writeFlyDataToXL([strrep(bookName,'.pdf','.xls')],meanNormFlyResp,semNormFlyResp, xlParams); % Write out the data into an xl spreadsheet . We think this is really just a step on the way to R or SPSS...
 % The format of the written data is going to be 1 sheet per frequency. All
 % the phenotypes will be on the same sheet. They will be coded
 % 1,2,3,4,..... All the mask conditions will, similarly, be on the same
