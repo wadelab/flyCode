@@ -79,6 +79,7 @@ for thisSubDir=1:length(allSubDirList);
         if subDirList_element.nFlies > 0
             thisSubDirIndex=thisSubDirIndex+1;
             subDirList{thisSubDirIndex} = subDirList_element ;
+            clear subDirList_element ;
         end
     else
         disp('Not a directory...');
