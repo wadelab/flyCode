@@ -200,11 +200,11 @@ for thisPhenotype=1:length(phenotypeList)
             nfr=squeeze((allNormFlyResponses));
             nmagfr=squeeze((abs(allNormFlyResponses)));
             
-            stdFlyResp{thisPhenotype}=squeeze((allFlyResponses));
-            semFlyResp{thisPhenotype}=squeeze(stdFlyResp{thisPhenotype}/sqrt(thisFlyIndex));
+            stdFlyResp{thisPhenotype}=zeros(size(mfr));
+            semFlyResp{thisPhenotype}=stdFlyResp{thisPhenotype}
             
-            stdNormFlyResp{thisPhenotype}=squeeze((abs(allNormFlyResponses)));
-            semNormFlyResp{thisPhenotype}=squeeze(stdNormFlyResp{thisPhenotype}/sqrt(thisFlyIndex));
+            stdNormFlyResp{thisPhenotype}=zeros(size(nmagfr));
+            semNormFlyResp{thisPhenotype}=stdNormFlyResp{thisPhenotype};
         else
             mfr=squeeze(nanmean(allFlyResponses));
             nfr=squeeze(nanmean(allNormFlyResponses));
