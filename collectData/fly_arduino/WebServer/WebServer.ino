@@ -692,7 +692,6 @@ void printDirectory(uint8_t flags) {
     }
 
 
-
     if (DIR_IS_SUBDIR(&p))
     {
       client.print('/');
@@ -896,6 +895,7 @@ bool writeFile(const char * c)
     webTime ();
   }
 
+/*
   Serial.println F ("Filetime determined..");
 
   Serial.println( year );
@@ -909,7 +909,7 @@ bool writeFile(const char * c)
   Serial.flush();
   Serial.println( second );
   Serial.flush();
-
+*/
   if (!fileExists(c))
   {
 
@@ -1030,8 +1030,10 @@ void gmdate ( const dir_t & pFile)
 
 
 void doplotFile (const char * c)
-{
-  sendHeader ("Plotting");
+{ 
+  String Sc = (c);
+  Sc = String (F("Plotting ")) + Sc ;
+  sendHeader (Sc); 
   //based on doReadFile...
 
   //String dataString ;
@@ -1057,11 +1059,15 @@ void doplotFile (const char * c)
   }
 
   // write out the string ....
-  client.print(cPtr);
-  client.println();
+  client.println(cPtr);
+  client.println("<BR>");
   // test if its an ERG
-  boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
-
+  //boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
+  client.print("Download file <a HREF=\"");
+  client.print(c);
+  client.print("\">");
+  client.print(c);
+  client.println("</a><BR>");
 
   // now on to the data
   int nBlocks = 0;
@@ -1398,40 +1404,7 @@ void AppendFlashReport()
 
   if (nRepeats > 0)
   {
-    client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
-    client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
-
-    client.println F("<script>");
-    client.println F("var c = document.getElementById(\"myCanvas\");");
-    client.println F("var ctx = c.getContext(\"2d\");");
-
-    for (int i = 0; i < max_data - max_data / 6; i = i + 15)
-    {
-      client.print F("ctx.moveTo(");
-      client.print((8 * i) / 10 );
-      client.print F(",");
-      client.print(350 - myGraphData[i] / 4);
-      client.println F(");");
-      client.print F("ctx.lineTo(");
-      client.print((8 * (i + 15)) / 10 );
-      client.print F(",");
-      client.print(350 - myGraphData[i + 15] / 4);
-      client.println F(");");
-      client.println F("ctx.stroke();");
-
-      client.print F("ctx.moveTo(");
-      client.print((8 * i) / 10 );
-      client.print F(",");
-      client.print(10 + fERG_Now(time_stamp[i] - time_stamp[0]) );
-      client.println F(");");
-      client.print F("ctx.lineTo(");
-      client.print((8 * (i + 13)) / 10 );
-      client.print F(",");
-      client.print(10 + fERG_Now(time_stamp[i + 13] - time_stamp[0]));
-      client.println F(");");
-      client.println F("ctx.stroke();");
-    }
-    client.println F("</script>");
+   sendGraphic();
   }
 }
 
@@ -1690,6 +1663,9 @@ void sendReply ()
       client.print(file.fileSize());
       client.print(" bytes; expected size ");
       client.print(exp_size);
+      String sPicture = sFile;
+      sPicture.replace ("ERG", "ERP" );
+      client.print("<A HREF= \"" + sPicture + "\" > (picture) </A>" );
       client.println("<BR><BR>");
 
       client.println F("To setup for another test please ") ;
