@@ -455,7 +455,8 @@ void send_GoBack_to_Stim_page ()
   //    Serial.println (MyReferString) ;
   else
   {
-    client.print F("javascript:void(0)\" onclick=\"window.home(); ") ;
+    // i think this migth work everywhere with firefox > 31 - seems to work in Safari too
+    client.print F("javascript:void(0)\" onclick=\"history.back(); ") ;
   }
   client.println F("\">the stimulus selection form</A>  <BR>");
 }
@@ -1372,7 +1373,7 @@ void flickerPage()
   }
   else
   {
-    client.print F("\n window.home();");
+    client.print F("\n history.back();");
   }
   client.print F(" } }");
   //client.println F("location.assign(\"stop/\");");
