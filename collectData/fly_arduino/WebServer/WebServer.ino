@@ -1461,6 +1461,44 @@ void getData ()
 
 }
 
+void sendGraphic()
+{
+  client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+  client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
+
+  client.println F("<script>");
+  client.println F("var c = document.getElementById(\"myCanvas\");");
+  client.println F("var ctx = c.getContext(\"2d\");");
+
+  for (int i = 0; i < max_data - max_data / 6; i = i + 15)
+  {
+    client.print F("ctx.moveTo(");
+    client.print((8 * i) / 10 );
+    client.print F(",");
+    client.print(350 - myGraphData[i] / 4);
+    client.println F(");");
+    client.print F("ctx.lineTo(");
+    client.print((8 * (i + 15)) / 10 );
+    client.print F(",");
+    client.print(350 - myGraphData[i + 15] / 4);
+    client.println F(");");
+    client.println F("ctx.stroke();");
+
+    client.print F("ctx.moveTo(");
+    client.print((8 * i) / 10 );
+    client.print F(",");
+    client.print(10 + fERG_Now(time_stamp[i] - time_stamp[0]) );
+    client.println F(");");
+    client.print F("ctx.lineTo(");
+    client.print((8 * (i + 13)) / 10 );
+    client.print F(",");
+    client.print(10 + fERG_Now(time_stamp[i + 13] - time_stamp[0]));
+    client.println F(");");
+    client.println F("ctx.stroke();");
+  }
+  client.println F("</script>");
+}
+
 
 void sendReply ()
 {
@@ -1563,6 +1601,10 @@ void sendReply ()
       client.println F("To setup for another test please ") ;
       send_GoBack_to_Stim_page ();
       client.println F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
+      if (bDoFlash) 
+      {
+        sendGraphic();
+      }
       sendFooter ();
       return ;
     }
