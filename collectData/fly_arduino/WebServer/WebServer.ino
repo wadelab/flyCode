@@ -242,6 +242,7 @@ void setup() {
     Serial.println F("openRoot failed");
     has_filesystem = false;
   }
+
   if (has_filesystem)
   {
     Serial.println F("SD card ok\n");
@@ -637,14 +638,18 @@ void myPrintFatDateTime(const dir_t & pFile)
   client.print(pErg_in);
 }
 
+
+
 void printDirectory(uint8_t flags) {
   // This code is just copied from SdFile.cpp in the SDFat library
   // and tweaked to print to the client output in html!
-  dir_t p;
+  dir_t pAll[512];
+  dir_t p ;
   int iFiles = 0 ;
   root.rewind();
-  client.println F("<ul>");
-  while (root.readDir(p) > 0) {
+
+  while (root.readDir(p) > 0)
+  {
     // done if past last used entry
     if (p.name[0] == DIR_NAME_FREE) break;
 
@@ -653,7 +658,16 @@ void printDirectory(uint8_t flags) {
 
     // only list subdirectories and files
     if (!DIR_IS_FILE_OR_SUBDIR(&p)) continue;
+    memcpy (&pAll[iFiles], &p, sizeof(dir_t));
+    iFiles ++ ;
+  }
+  iFiles -- ; // allow for last increment...
+  client.println F("<ul>");
 
+  for (int i = iFiles; i--; i >= 0)
+  {
+    // now print them out in reverse order
+    memcpy (&p, &pAll[i], sizeof(p));
     // print any indent spaces
     client.print F("<li><a href=\"");
     for (uint8_t i = 0; i < 11; i++)
@@ -703,7 +717,7 @@ void printDirectory(uint8_t flags) {
       myPrintFatDateTime(p);
       client.print F(" size: ");
       client.print(p.fileSize);
-      iFiles ++;
+
     }
     client.println F("</li>");
   }
@@ -896,21 +910,21 @@ bool writeFile(const char * c)
     webTime ();
   }
 
-/*
-  Serial.println F ("Filetime determined..");
+  /*
+    Serial.println F ("Filetime determined..");
 
-  Serial.println( year );
-  Serial.println( month );
-  Serial.flush();
-  Serial.println( day );
-  Serial.flush();
-  Serial.println( hour );
-  Serial.flush();
-  Serial.println( myminute );
-  Serial.flush();
-  Serial.println( second );
-  Serial.flush();
-*/
+    Serial.println( year );
+    Serial.println( month );
+    Serial.flush();
+    Serial.println( day );
+    Serial.flush();
+    Serial.println( hour );
+    Serial.flush();
+    Serial.println( myminute );
+    Serial.flush();
+    Serial.println( second );
+    Serial.flush();
+  */
   if (!fileExists(c))
   {
 
@@ -1031,10 +1045,10 @@ void gmdate ( const dir_t & pFile)
 
 
 void doplotFile (const char * c)
-{ 
+{
   String Sc = (c);
   Sc = String (F("Plotting ")) + Sc ;
-  sendHeader (Sc); 
+  sendHeader (Sc);
   //based on doReadFile...
 
   //String dataString ;
@@ -1074,12 +1088,12 @@ void doplotFile (const char * c)
   int nBlocks = 0;
   unsigned int time_stamp2 [max_data];
   int erg_in2 [max_data] ;
-  
-      for (int i = 0; i < max_data; i++)
-    {
-      erg_in[i] = 0;
-      time_stamp[i] = 0;
-    }
+
+  for (int i = 0; i < max_data; i++)
+  {
+    erg_in[i] = 0;
+    time_stamp[i] = 0;
+  }
 
   iBytesRequested = max_data * sizeof(int);
   iBytesRead = file.read(erg_in2, iBytesRequested);
@@ -1405,7 +1419,7 @@ void AppendFlashReport()
 
   if (nRepeats > 0)
   {
-   sendGraphic();
+    sendGraphic();
   }
 }
 
