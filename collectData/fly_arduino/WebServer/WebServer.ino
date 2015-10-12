@@ -674,8 +674,24 @@ void printDirectory(uint8_t flags) {
       }
       client.print(char(p.name[i]));
     }
+    client.print F("</a> ");
+    /////////////////////////////// now put in a link for a picture
+    if (char(p.name[10]) == 'G')
+    { // print any indent spaces
+      client.print F(" <a href=\"");
+      for (uint8_t i = 0; i < 10; i++)
+      {
+        if (p.name[i] == ' ') continue;
+        if (i == 8) {
+          client.print('.');
+        }
+        client.print(char(p.name[i]));
+      }
+      client.print F("P\"> (picture)</a>");
+      ///////////////////////////////
+    }
 
-    client.print F("</a>");
+
 
     if (DIR_IS_SUBDIR(&p))
     {
@@ -1012,6 +1028,85 @@ void gmdate ( const dir_t & pFile)
   //Serial.println( c );
 }
 
+
+void doplotFile (const char * c)
+{
+  sendHeader ("Plotting");
+  //based on doReadFile...
+
+  //String dataString ;
+  char * cPtr;
+  cPtr = (char *) erg_in ;
+  int iOldContrast ;
+
+  //Serial.print F("trying to open:");
+  //Serial.println (c);
+  if (file.isOpen()) file.close();
+  file.open(root, c, O_READ);
+
+  int iBytesRequested, iBytesRead;
+  // note this overwrites any data already in memeory...
+  //first read the header string ...
+  iBytesRequested = MaxInputStr + 2;
+  iBytesRead = file.read(cPtr, iBytesRequested);
+  if (iBytesRead < iBytesRequested)
+  {
+    client.println F("Error reading header data in file ");
+    client.println(c);
+    return ;
+  }
+
+  // write out the string ....
+  client.print(cPtr);
+  client.println();
+  // test if its an ERG
+  boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
+
+
+  // now on to the data
+  int nBlocks = 0;
+  unsigned int time_stamp2 [max_data];
+  int erg_in2 [max_data] ;
+  
+      for (int i = 0; i < max_data; i++)
+    {
+      erg_in[i] = 0;
+      time_stamp[i] = 0;
+    }
+
+  iBytesRequested = max_data * sizeof(int);
+  iBytesRead = file.read(erg_in2, iBytesRequested);
+
+
+  while (iBytesRead == iBytesRequested)
+  {
+    iBytesRequested = max_data * sizeof(unsigned int);
+    iBytesRead = file.read (time_stamp2, iBytesRequested );
+    nBlocks ++;
+
+    for (int i = 0; i < max_data; i++)
+    {
+      erg_in[i] = erg_in[i] + erg_in2[i];
+      time_stamp[i] = time_stamp[i] + time_stamp2[i];
+    }
+
+    //read next block
+    iBytesRequested = max_data * sizeof(int);
+    iBytesRead = file.read(erg_in2, iBytesRequested);
+
+  } // end of while
+
+  file.close();
+
+  for (int i = 0; i < max_data; i++)
+  {
+    erg_in[i] = erg_in [i] / nBlocks;
+    time_stamp[i] = time_stamp [i] / nBlocks;
+  }
+  sendGraphic ();
+  sendFooter();
+
+}
 void doreadFile (const char * c)
 {
   //String dataString ;
@@ -1024,7 +1119,6 @@ void doreadFile (const char * c)
   if (file.isOpen()) file.close();
   file.open(root, c, O_READ);
 
-  // fix me - open file first and then send the headers
   // Content-Length: 1000000 [size in bytes
   // Last-Modified: Sat, 28 Nov 2009 03:50:37 GMT
   // make erg_in buffer do the dirty work of getting the date...
@@ -1601,7 +1695,7 @@ void sendReply ()
       client.println F("To setup for another test please ") ;
       send_GoBack_to_Stim_page ();
       client.println F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
-      if (bDoFlash) 
+      if (bDoFlash)
       {
         sendGraphic();
       }
@@ -1690,6 +1784,10 @@ void sendReply ()
   {
     fPOS = MyInputString.indexOf F(".ERG");
   }
+  if (fPOS == -1)
+  {
+    fPOS = MyInputString.indexOf F(".ERP");
+  }
   //Serial.println("  Position of .SVP was:" + String(fPOS));
   if (fPOS > 0)
   {
@@ -1700,8 +1798,18 @@ void sendReply ()
     fPOS = sFile.indexOf(" HTTP/");
     sFile = sFile.substring(0, fPOS);
     //Serial.println(" Proposed filename now" + sFile + ";");
-    sFile.toCharArray(cFile, 29); // adds terminating null
-    doreadFile(cFile) ;
+
+    if (MyInputString.indexOf F(".ERP") > 0)
+    {
+      sFile.replace(F(".ERP"), F(".ERG"));
+      sFile.toCharArray(cFile, 29); // adds terminating null
+      doplotFile(cFile) ;
+    }
+    else
+    {
+      sFile.toCharArray(cFile, 29); // adds terminating null
+      doreadFile(cFile) ;
+    }
     return ;
 
   }
