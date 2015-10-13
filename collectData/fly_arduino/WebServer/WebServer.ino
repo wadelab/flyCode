@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define due4
+#define due1
 
 //_____________________________________________________
 
@@ -661,7 +661,10 @@ void printDirectory(uint8_t flags) {
     memcpy (&pAll[iFiles], &p, sizeof(dir_t));
     iFiles ++ ;
   }
-  iFiles -- ; // allow for last increment...
+  //iFiles -- ; // allow for last increment...
+
+  client.print (iFiles);
+  client.println F(" files found on disk ");
   client.println F("<ul>");
 
   for (int i = iFiles; i--; i >= 0)
@@ -723,8 +726,7 @@ void printDirectory(uint8_t flags) {
   }
   client.println F("</ul>");
 
-  client.print (iFiles);
-  client.println F(" files found on disk ");
+
 
 }
 
