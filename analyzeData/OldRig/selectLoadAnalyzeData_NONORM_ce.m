@@ -7,7 +7,8 @@
 % Fieldtrip?), parameter extraction and better plotting.
 % This version adds incoherent averaging to look at evoked power.
 
-
+%%
+addmetothepath;
 %% Generate a list of all the directories to examine in the destination dir.
 clear all; close all; % Housekeeping
 MAX_FREQ=100; % Maximum frequency to retain during F-domain analysis.
@@ -191,24 +192,38 @@ for thisPhenotype=1:length(phenotypeList)
             
             
         end % Next fly
-          analysisStruct.allFlyDataCoh{thisPhenotype}=allFlyResponses; % We make this analysis struct with the same data format for the old and new rigs so that we can analyze all our data in one place...         
-          analysisStruct.allNormFlyDataCoh{thisPhenotype}=allNormFlyResponses;
-          
-          
-        mfr=squeeze(nanmean(allFlyResponses));
-        nfr=squeeze(nanmean(allNormFlyResponses));
-        nmagfr=squeeze(nanmean(abs(allNormFlyResponses)));
+        analysisStruct.allFlyDataCoh{thisPhenotype}=allFlyResponses; % We make this analysis struct with the same data format for the old and new rigs so that we can analyze all our data in one place...
+        analysisStruct.allNormFlyDataCoh{thisPhenotype}=allNormFlyResponses;
+        
+        if  nFlies == 1
+            mfr=squeeze((allFlyResponses));
+            nfr=squeeze((allNormFlyResponses));
+            nmagfr=squeeze((abs(allNormFlyResponses)));
+            
+            stdFlyResp{thisPhenotype}=zeros(size(mfr));
+            semFlyResp{thisPhenotype}=stdFlyResp{thisPhenotype}
+            
+            stdNormFlyResp{thisPhenotype}=zeros(size(nmagfr));
+            semNormFlyResp{thisPhenotype}=stdNormFlyResp{thisPhenotype};
+        else
+            mfr=squeeze(nanmean(allFlyResponses));
+            nfr=squeeze(nanmean(allNormFlyResponses));
+            nmagfr=squeeze(nanmean(abs(allNormFlyResponses)));
+            
+            
+            stdFlyResp{thisPhenotype}=squeeze(nanstd(allFlyResponses));
+            semFlyResp{thisPhenotype}=squeeze(stdFlyResp{thisPhenotype}/sqrt(thisFlyIndex));
+            
+            stdNormFlyResp{thisPhenotype}=squeeze(nanstd(abs(allNormFlyResponses)));
+            semNormFlyResp{thisPhenotype}=squeeze(stdNormFlyResp{thisPhenotype}/sqrt(thisFlyIndex));
+            
+        end % more trhan one fly...
         
         meanFlyResp{thisPhenotype}=mfr;
-        stdFlyResp{thisPhenotype}=squeeze(nanstd(allFlyResponses));
-        semFlyResp{thisPhenotype}=squeeze(stdFlyResp{thisPhenotype}/sqrt(thisFlyIndex));
-        
         allResp{thisPhenotype}=allFlyResponses;
         allnResp{thisPhenotype}=allNormFlyResponses;
         meanNormFlyResp{thisPhenotype}=nfr;
         meanAbsNormFlyResp{thisPhenotype}=nmagfr;
-        stdNormFlyResp{thisPhenotype}=squeeze(nanstd(abs(allNormFlyResponses)));
-        semNormFlyResp{thisPhenotype}=squeeze(stdNormFlyResp{thisPhenotype}/sqrt(thisFlyIndex));
     end % End of isfield if statement
     
     
@@ -221,13 +236,13 @@ end % Next phenotype
 analysisStruct.contRange=linspace(min(params.contRange(:,1)),max(params.contRange(:,1)),length(params.contRange(:,1)));
 
 for thisPhenotype=1:length(phenotypeList)
-     analysisStruct.params{thisPhenotype}=params;
-     analysisStruct.phenotypeName{thisPhenotype}=phenotypeList{thisPhenotype}.type;
-     analysisStruct.nFlies{thisPhenotype}=phenotypeList{thisPhenotype}.nFlies;
-     analysisStruct.avWaveform{thisPhenotype}=phenotypeData{thisPhenotype}.avWaveform;
-     analysisStruct.meanSpectrum{thisPhenotype}=phenotypeData{thisPhenotype}.meanSpectrum;
-     analysisStruct.semSpectrum{thisPhenotype}=phenotypeData{thisPhenotype}.semSpectrum;
-     analysisStruct.meanCompSpectrum{thisPhenotype}=phenotypeData{thisPhenotype}.meanCompSpectrum;
+    analysisStruct.params{thisPhenotype}=params;
+    analysisStruct.phenotypeName{thisPhenotype}=phenotypeList{thisPhenotype}.type;
+    analysisStruct.nFlies{thisPhenotype}=phenotypeList{thisPhenotype}.nFlies;
+    analysisStruct.avWaveform{thisPhenotype}=phenotypeData{thisPhenotype}.avWaveform;
+    analysisStruct.meanSpectrum{thisPhenotype}=phenotypeData{thisPhenotype}.meanSpectrum;
+    analysisStruct.semSpectrum{thisPhenotype}=phenotypeData{thisPhenotype}.semSpectrum;
+    analysisStruct.meanCompSpectrum{thisPhenotype}=phenotypeData{thisPhenotype}.meanCompSpectrum;
 end
 
 %% At this point we have extracted the data - the rest of this crufty script is some quick and dirty plotting. It would be better to pass off to a separate analysis function at this point...
@@ -338,7 +353,7 @@ figure;
 c = multcompare(Mystats, 0.05)
 title(summaryStatisticName);
 %%% the Ynames appear to be in reverse order
-set(gca,'YTickLabel',fliplr(ptName)); 
+set(gca,'YTickLabel',fliplr(ptName));
 
 %% maxfig(gcf,1);
 
@@ -377,210 +392,210 @@ end
 set(gca,'XTickLabel',ptName);
 
 figure;
-c = multcompare(MyPhstats, 0.05) 
+c = multcompare(MyPhstats, 0.05)
 title('Normalization values');
 set(gca,'YTickLabel',fliplr(ptName));
 %%%%maxfig(gcf,1);
 
 %%%export_fig(bookName,'-pdf','-transparent','-append');
 
+%%
 
-
-
-
-%% __-- Plot all the spectra from the phenotypes
-% figure(30);
-%     hold off;
-%     subplot(1,1,1);
-%     grid on
 %
 %
+% %% __-- Plot all the spectra from the phenotypes
+% % figure(30);
+% %     hold off;
+% %     subplot(1,1,1);
+% %     grid on
+% %
+% %
+% % for thisPhenotype=1:length(phenotypeList)
+% %
+% %     mSpect=squeeze(phenotypeData{thisPhenotype}.meanSpectrum(:,11,1));
+% %
+% %     semSpect=squeeze(phenotypeData{thisPhenotype}.semSpectrum(:,11,1));
+% %     mSpect(50)=0;
+% %     semSpect(50)=0;
+% %    % [handleL(thisPhenotype),handleP(thisPhenotype)]=boundedline(1:199,mSpect,semSpect); % The zero term is already out.
+% %   handleL(thisPhenotype)=errorbar(mSpect,semSpect);
+% %    %set(gca,'XLim',[1 nFreqs]);
+% %     % set(gca,'YScale','log');
+% %     hold on;
+% %
+% %
+% % end
+% % legend(ptName);
+% % colMaps=hsv(length(phenotypeList));
+% %
+% % for thisPhenotype=1:length(phenotypeList)
+% %        set(handleL(thisPhenotype),'Color',colMaps(thisPhenotype,:));
+% %     set(handleL(thisPhenotype),'LineWidth',2);
+% %    % set(handleP(thisPhenotype),'FaceColor',colMaps(thisPhenotype,:));
+% %   %  set(handleP(thisPhenotype),'FaceAlpha',0.5);
+% % end
+%
+% %     subplot(2,1,2);
+% % hold off;
+% % plot(log(mean(flyMeanSpectrum{2}.data(2:end,:),2))-log(mean(flyMeanSpectrum{4}.data(2:end,:),2)),'g');
+% % hold on;
+% % plot(log(mean(flyMeanSpectrum{1}.data(2:end,:),2))-log(mean(flyMeanSpectrum{3}.data(2:end,:),2)),'r');
+% % hold on;
+% % grid on
+% % legend(ptName);
+%
+% %%
+% %%Here, we want to compute the binned amplitudes across the endogenous
+% % frequency bands - ignoring the ones containing actual signal.
+% % To do that, we first compute the f's containing signal - then work
+% % out which ones are noise
+%
+% signalBinMultiples=[1 0;0 1;2 0; 0 2;1 1; 1 -1; 2 -2; 2 2];
+% signalFs=abs(signalBinMultiples(:,1)*params.F(1)+signalBinMultiples(:,2)*params.F(2));
+% noiseFs=setdiff(1:99,signalFs);
+% binBoundaries=[1,10;11,20;21,30;31,40]
 % for thisPhenotype=1:length(phenotypeList)
+%     for thisBin=1:size(binBoundaries,1)
+%         validFs=intersect((binBoundaries(thisBin,1):binBoundaries(thisBin,2)),noiseFs);
 %
-%     mSpect=squeeze(phenotypeData{thisPhenotype}.meanSpectrum(:,11,1));
+%         totalPower=squeeze(sqrt(sum(phenotypeData{thisPhenotype}.meanSpectrum(noiseFs,:).^2)));
+%         dataToAverage=(squeeze(phenotypeData{thisPhenotype}.meanSpectrum(validFs,:,:)));
+%         semToAverage=(squeeze(phenotypeData{thisPhenotype}.semSpectrum(validFs,:,:))).^2;
 %
-%     semSpect=squeeze(phenotypeData{thisPhenotype}.semSpectrum(:,11,1));
-%     mSpect(50)=0;
-%     semSpect(50)=0;
-%    % [handleL(thisPhenotype),handleP(thisPhenotype)]=boundedline(1:199,mSpect,semSpect); % The zero term is already out.
-%   handleL(thisPhenotype)=errorbar(mSpect,semSpect);
-%    %set(gca,'XLim',[1 nFreqs]);
-%     % set(gca,'YScale','log');
-%     hold on;
+%         thisBinRMS(thisPhenotype,thisBin)=sqrt(nanmean(dataToAverage(:).^2))./sum(totalPower'); % This is the average across all mask and probe conrast conditions.
+%         thisBinSEM(thisPhenotype,thisBin)=sqrt(nanmean(semToAverage(:)))./sum(totalPower');
+%         binLabel{thisBin}=sprintf('%d to %d',binBoundaries(thisBin,1),binBoundaries(thisBin,2));
+%
+%
+%     end
 %
 %
 % end
-% legend(ptName);
-% colMaps=hsv(length(phenotypeList));
+% figure(50);
+% barwitherr(thisBinSEM',thisBinRMS');
+% title('Normed endogenous RMS activity in different frequency bands')
+% set(gca,'XTickLabel',binLabel);
+% xlabel('Bin ranges (Hz)');
+% ylabel('Average RMS amplitude (AU)');
 %
-% for thisPhenotype=1:length(phenotypeList)
-%        set(handleL(thisPhenotype),'Color',colMaps(thisPhenotype,:));
-%     set(handleL(thisPhenotype),'LineWidth',2);
-%    % set(handleP(thisPhenotype),'FaceColor',colMaps(thisPhenotype,:));
-%   %  set(handleP(thisPhenotype),'FaceAlpha',0.5);
-% end
-
-%     subplot(2,1,2);
-% hold off;
-% plot(log(mean(flyMeanSpectrum{2}.data(2:end,:),2))-log(mean(flyMeanSpectrum{4}.data(2:end,:),2)),'g');
-% hold on;
-% plot(log(mean(flyMeanSpectrum{1}.data(2:end,:),2))-log(mean(flyMeanSpectrum{3}.data(2:end,:),2)),'r');
-% hold on;
-% grid on
-% legend(ptName);
-
-%%
-%%Here, we want to compute the binned amplitudes across the endogenous
-% frequency bands - ignoring the ones containing actual signal.
-% To do that, we first compute the f's containing signal - then work
-% out which ones are noise
-
-signalBinMultiples=[1 0;0 1;2 0; 0 2;1 1; 1 -1; 2 -2; 2 2];
-signalFs=abs(signalBinMultiples(:,1)*params.F(1)+signalBinMultiples(:,2)*params.F(2));
-noiseFs=setdiff(1:99,signalFs);
-binBoundaries=[1,10;11,20;21,30;31,40]
-for thisPhenotype=1:length(phenotypeList)
-    for thisBin=1:size(binBoundaries,1)
-        validFs=intersect((binBoundaries(thisBin,1):binBoundaries(thisBin,2)),noiseFs);
-        
-        totalPower=squeeze(sqrt(sum(phenotypeData{thisPhenotype}.meanSpectrum(noiseFs,:).^2)));
-        dataToAverage=(squeeze(phenotypeData{thisPhenotype}.meanSpectrum(validFs,:,:)));
-        semToAverage=(squeeze(phenotypeData{thisPhenotype}.semSpectrum(validFs,:,:))).^2;
-        
-        thisBinRMS(thisPhenotype,thisBin)=sqrt(nanmean(dataToAverage(:).^2))./sum(totalPower'); % This is the average across all mask and probe conrast conditions.
-        thisBinSEM(thisPhenotype,thisBin)=sqrt(nanmean(semToAverage(:)))./sum(totalPower');
-        binLabel{thisBin}=sprintf('%d to %d',binBoundaries(thisBin,1),binBoundaries(thisBin,2));
-        
-        
-    end
-    
-    
-end
-figure(50);
-barwitherr(thisBinSEM',thisBinRMS');
-title('Normed endogenous RMS activity in different frequency bands')
-set(gca,'XTickLabel',binLabel);
-xlabel('Bin ranges (Hz)');
-ylabel('Average RMS amplitude (AU)');
-
-legend(ptName)
-
-
-%%
-
-
+% legend(ptName)
+%
+%
+% %%
+%
+%
+% %  %%
+% %  r1=phenotypeData{1}.avWaveform;
+% %   r2=phenotypeData{2}.avWaveform;
+% %
+% %  pdat=squeeze(r1(:,:,1));
+% %  pdat=pdat-repmat(mean(pdat),size(pdat,1),1);
+% %
+% %
+% %  figure(120);
+% % surf(pdat);
+% % shading interp
+% % %}
+% %
+% % % Plot the mean phase of the high contrast conditions
+% %
+% % % allResp contains these complex amplitudes - it is nFlies x nFreqComp *
+% % % nConts x nExpts
+% % totalList=[];
+% % catType=[];
+% % for thisPhenotype=1:length(phenotypeList)
+% %     tempData=allResp{thisPhenotype};
+% %     tempData=squeeze(nanmean(tempData(:,3,((nConts-1):(nConts-1)),1),3));
+% %     phenoMean(thisPhenotype)=squeeze(nanmean(tempData));
+% %     phenoSem(thisPhenotype)=squeeze(nanstd(tempData)/sqrt(size(tempData,1)));
+% %
+% %      totalList=[totalList;tempData];
+% %     catType=[catType;thisPhenotype*ones(length(tempData),1)];
+% % end
+% % [d,p,stats]=manova1([real(totalList(:)), imag(totalList(:))],catType)
+% % [d2,p2,stats2]=manova1([abs(totalList(:)), (angle(totalList(:)))],catType)
+% %
+% % % Circular statistic test of phase
+% % circ_cmtest(angle(totalList(:)),catType)
+% %
+% %
+% %
+% %
+% %
+% % figure(250);
+% % hold off;
+% % plotParams.DO_ERRORCIRCS=1;
+% %      % Plot a dummy function to set the scale
+% %         theta  = linspace(0,2*pi,100);
+% %         r      = sin(2*theta) .* cos(2*theta);
+% %         r_max  = 125; % was 25 also been 3
+% %         h_fake = polar(theta,r_max*ones(size(theta)));
+% %         set(h_fake,'Color',[1 1 1]);
+% %
+% %         hold on;
+% %         g=compass(real(phenoMean),imag(phenoMean),'k');
+% %         set(gca,'FontSize',8);
+% %
+% %         comap=hsv(length(g));
+% %
+% %         for th=1:length(g)
+% %             %set(g(th),'Color',[1 0.6 0.6]-0.05*th);
+% %             set(g(th),'Color',comap(th,:));
+% %             set(g(th),'LineWidth',plotParams.lineWidthPolar);
+% %             a = get(g(th), 'xdata');  % Get rid of arrows. Thanks StackOverflow!
+% %             b = get(g(th), 'ydata');
+% %             set(g(th), 'xdata', a(1:2), 'ydata', b(1:2))
+% %
+% %             if (plotParams.DO_ERRORCIRCS)
+% %
+% %             x=get(g(th),'XData');
+% %             y=get(g(th),'YData');
+% %             rad=phenoSem(th);
+% %
+% %             xPos=rad*cos(linspace(0,2*pi,30))+x(2);
+% %             yPos=rad*sin(linspace(0,2*pi,30))+y(2);
+% %             p(th)=patch(xPos,yPos,'r');
+% %             set(p(th),'FaceAlpha',.5);
+% %             set(p(th),'FaceColor',comap(th,:));
+% %             end
+% %
+% %
+% %         end
+% % legend(p,ptName);
+% %        maxfig(gcf,1);
+% %
+% %   export_fig(bookName,'-pdf','-transparent','-append','-opengl');
+% %      % export_fig('polar.eps','-transparent','-opengl');
+% %
+% %
+% %
+%
+%
+% %{
+% % Compute a single minumum bin from the two Fs.
+% % This is the smallest time interval with an integer number of both cycles
+% % in it.
+%
+%  % Quiick look at phase scatter - is it normal or bimodal?
 %  %%
-%  r1=phenotypeData{1}.avWaveform;
-%   r2=phenotypeData{2}.avWaveform;
+%  p2F1Phase1=squeeze(allResp{1}(:,1,11,1));
 %
-%  pdat=squeeze(r1(:,:,1));
-%  pdat=pdat-repmat(mean(pdat),size(pdat,1),1);
+%  p2F1Phase2=squeeze(allResp{2}(:,1,11,1));
 %
+%  figure(301);
+%  subplot(2,1,1);
 %
-%  figure(120);
-% surf(pdat);
-% shading interp
-% %}
-%
-% % Plot the mean phase of the high contrast conditions
-%
-% % allResp contains these complex amplitudes - it is nFlies x nFreqComp *
-% % nConts x nExpts
-% totalList=[];
-% catType=[];
-% for thisPhenotype=1:length(phenotypeList)
-%     tempData=allResp{thisPhenotype};
-%     tempData=squeeze(nanmean(tempData(:,3,((nConts-1):(nConts-1)),1),3));
-%     phenoMean(thisPhenotype)=squeeze(nanmean(tempData));
-%     phenoSem(thisPhenotype)=squeeze(nanstd(tempData)/sqrt(size(tempData,1)));
-%
-%      totalList=[totalList;tempData];
-%     catType=[catType;thisPhenotype*ones(length(tempData),1)];
-% end
-% [d,p,stats]=manova1([real(totalList(:)), imag(totalList(:))],catType)
-% [d2,p2,stats2]=manova1([abs(totalList(:)), (angle(totalList(:)))],catType)
-%
-% % Circular statistic test of phase
-% circ_cmtest(angle(totalList(:)),catType)
-%
-%
-%
-%
-%
-% figure(250);
-% hold off;
-% plotParams.DO_ERRORCIRCS=1;
-%      % Plot a dummy function to set the scale
-%         theta  = linspace(0,2*pi,100);
-%         r      = sin(2*theta) .* cos(2*theta);
-%         r_max  = 125; % was 25 also been 3
-%         h_fake = polar(theta,r_max*ones(size(theta)));
-%         set(h_fake,'Color',[1 1 1]);
-%
-%         hold on;
-%         g=compass(real(phenoMean),imag(phenoMean),'k');
-%         set(gca,'FontSize',8);
-%
-%         comap=hsv(length(g));
-%
-%         for th=1:length(g)
-%             %set(g(th),'Color',[1 0.6 0.6]-0.05*th);
-%             set(g(th),'Color',comap(th,:));
-%             set(g(th),'LineWidth',plotParams.lineWidthPolar);
-%             a = get(g(th), 'xdata');  % Get rid of arrows. Thanks StackOverflow!
-%             b = get(g(th), 'ydata');
-%             set(g(th), 'xdata', a(1:2), 'ydata', b(1:2))
-%
-%             if (plotParams.DO_ERRORCIRCS)
-%
-%             x=get(g(th),'XData');
-%             y=get(g(th),'YData');
-%             rad=phenoSem(th);
-%
-%             xPos=rad*cos(linspace(0,2*pi,30))+x(2);
-%             yPos=rad*sin(linspace(0,2*pi,30))+y(2);
-%             p(th)=patch(xPos,yPos,'r');
-%             set(p(th),'FaceAlpha',.5);
-%             set(p(th),'FaceColor',comap(th,:));
-%             end
-%
-%
-%         end
-% legend(p,ptName);
-%        maxfig(gcf,1);
-%
-%   export_fig(bookName,'-pdf','-transparent','-append','-opengl');
-%      % export_fig('polar.eps','-transparent','-opengl');
-%
-%
-%
-
-
-%{
-% Compute a single minumum bin from the two Fs.
-% This is the smallest time interval with an integer number of both cycles
-% in it.
-
- % Quiick look at phase scatter - is it normal or bimodal?
- %%
- p2F1Phase1=squeeze(allResp{1}(:,1,11,1));
- 
- p2F1Phase2=squeeze(allResp{2}(:,1,11,1));
- 
- figure(301);
- subplot(2,1,1);
- 
- compass(p2F1Phase1);
- subplot(2,1,2);
- compass(p2F1Phase2);
-%}
+%  compass(p2F1Phase1);
+%  subplot(2,1,2);
+%  compass(p2F1Phase2);
+% % %}
 
 %% This bit writes data to XL format. You can disable it if you
 %%% want...
 
 xlParams=plotParams; % xlParams doesn't need all the fields here but it's quicker just to clone plotParams. We need labels, contRange and the number of mask conditions
 xlParams.phenotypeList=phenotypeList;
-[s]=writeFlyDataToXL([bookName,'.xls'],meanNormFlyResp,semNormFlyResp, xlParams); % Write out the data into an xl spreadsheet . We think this is really just a step on the way to R or SPSS...
+[s]=writeFlyDataToXL([strrep(bookName,'.pdf','.xls')],meanNormFlyResp,semNormFlyResp, xlParams); % Write out the data into an xl spreadsheet . We think this is really just a step on the way to R or SPSS...
 % The format of the written data is going to be 1 sheet per frequency. All
 % the phenotypes will be on the same sheet. They will be coded
 % 1,2,3,4,..... All the mask conditions will, similarly, be on the same
