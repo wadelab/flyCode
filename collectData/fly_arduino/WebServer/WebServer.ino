@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define due5
+#define due4
 
 //_____________________________________________________
 
@@ -880,8 +880,8 @@ void file__time ()
     Serial.println();
     // 12_10_10h26m55
 
-    month = atoi(calcTime);
-    day = atoi(calcTime + 3);
+    day = atoi(calcTime);
+    month = atoi(calcTime + 3);
     hour = atoi(calcTime + 6);
     myminute = atoi(calcTime + 9);
     second = atoi(calcTime + 12) ;
