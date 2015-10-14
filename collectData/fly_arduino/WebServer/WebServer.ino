@@ -9,7 +9,8 @@
 //#define __wifisetup__
 
 
-#define due1
+#define due5
+#define USE_DHCP
 
 //_____________________________________________________
 
@@ -103,6 +104,7 @@ const byte bluvioletLED = 8 ;
 const byte amberled = 6;
 const byte whiteled = 11;
 const byte cyaled = 9;
+const byte extrawhitepin = 53;
 
 #ifdef due4
 const byte redled = 7;
@@ -204,6 +206,7 @@ void setup() {
   pinMode(SS_ETHERNET, OUTPUT);
 
   pinMode(noContactLED, OUTPUT);
+  pinMode(extrawhitepin, OUTPUT);
 
   digitalWrite(SS_SD_CARD, HIGH);  // HIGH means SD Card not active
   digitalWrite(SS_ETHERNET, HIGH); // HIGH means Ethernet not active
@@ -271,7 +274,11 @@ void setup() {
   digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
   Serial.println F("Setting up the Ethernet card...\n");
   // start the Ethernet connection and the server:
+#ifdef USE_DHCP  
+  if (1 != Ethernet.begin(mac))
+#else
   if (true) //1 != Ethernet.begin(mac))
+#endif
   {
     // Setup for eg an ethernet cable from Macbook to Arduino Ethernet shield
     // other macbooks or mac airs may assign differnt local networks
@@ -489,11 +496,14 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
   analogWrite( fiberLED, a );
 #endif
   updateColour( boolUpdatePage);
+  
+  digitalWrite (extrawhitepin, 0);
 }
 
 void goColour(const byte r, const bool boolUpdatePage)
 {
   goColour (r, r, r, 0, r, 0, 0, boolUpdatePage);
+  digitalWrite (extrawhitepin, r);
 }
 
 void goColour(const byte r, const byte g, const byte b, const byte f, const bool boolUpdatePage)
@@ -511,7 +521,7 @@ void serve_dir ()
 void run_graph()
 {
   // turn off any LEDs, always do flash with blue
-  goColour(0, 0, 0, 0, false);
+  goColour(255, false);
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   short sensorReading = analogRead(connectedPin);
@@ -532,14 +542,14 @@ void run_graph()
   sensorReading = analogRead(analogPin);
   myGraphData[iIndex] = sensorReading / iGainFactor ;
   iIndex ++ ;
-  if (iIndex > max_graph_data / 10 && iIndex < max_graph_data / 2)
-  {
-    analogWrite(bluLED, 255);
-  }
-  else
-  {
-    analogWrite(bluLED, 0);
-  }
+//  if (iIndex > max_graph_data / 10 && iIndex < max_graph_data / 2)
+//  {
+//    analogWrite(bluLED, 255);
+//  }
+//  else
+//  {
+//    analogWrite(bluLED, 0);
+//  }
 
   sendHeader ("Graph of last sweep") ;
   client.println F("<script>");
@@ -1663,7 +1673,7 @@ void sendReply ()
       // new file
       nRepeats = iThisContrast = 0 ;
       //turn off any lights we have on...
-      goColour(0, 0, 0, 0, false);
+      goColour(0, false);
     }
     //Serial.print("repeats now ");
     //Serial.println(nRepeats);
@@ -1761,7 +1771,7 @@ void sendReply ()
   fPOS = MyInputString.indexOf F("black/");
   if (fPOS > 0)
   {
-    goColour(0, 0, 0, 0, true) ;
+    goColour(0, true) ;
     return ;
   }
   fPOS = MyInputString.indexOf F("fiber/");
