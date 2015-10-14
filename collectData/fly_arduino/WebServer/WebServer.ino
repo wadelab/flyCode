@@ -9,8 +9,8 @@
 //#define __wifisetup__
 
 
-#define due5
-#define USE_DHCP
+#define due4
+//#define USE_DHCP
 
 //_____________________________________________________
 
@@ -206,7 +206,10 @@ void setup() {
   pinMode(SS_ETHERNET, OUTPUT);
 
   pinMode(noContactLED, OUTPUT);
-  pinMode(extrawhitepin, OUTPUT);
+  for (int i=extrawhitepin; i > extrawhitepin - 7; i=i-2)
+  {
+    pinMode(i, OUTPUT);
+  }
 
   digitalWrite(SS_SD_CARD, HIGH);  // HIGH means SD Card not active
   digitalWrite(SS_ETHERNET, HIGH); // HIGH means Ethernet not active
@@ -497,13 +500,19 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
 #endif
   updateColour( boolUpdatePage);
   
-  digitalWrite (extrawhitepin, 0);
+  for (int i=extrawhitepin; i > extrawhitepin - 7; i=i-2)
+  {
+    digitalWrite (i, 0);
+  }
 }
 
 void goColour(const byte r, const bool boolUpdatePage)
 {
   goColour (r, r, r, 0, r, 0, 0, boolUpdatePage);
-  digitalWrite (extrawhitepin, r);
+  for (int i=extrawhitepin; i > extrawhitepin - 7; i=i-2)
+  {
+  digitalWrite (i, r);
+  }
 }
 
 void goColour(const byte r, const byte g, const byte b, const byte f, const bool boolUpdatePage)
