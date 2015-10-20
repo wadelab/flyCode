@@ -66,6 +66,8 @@ maskmax = 2 ;
 FreqLabels ={'1F1','1F2','2F1','2F2', '1F1+1F2','2F1+2F2'};
 
 freqmax=length(FreqLabels);
+
+%%
 for freqFF = 1: freqmax;
     
     
@@ -98,8 +100,8 @@ for freqFF = 1: freqmax;
                 else
                     offset = genotypemax + 3;
                 end
-                outcells{ contrast + 7 , genotype + offset} = { num2str(meanresponse) };
-                outcells{ contrast + 9 + contrastmax, genotype + offset} = { num2str(se_response) };
+                outcells{ contrast + 7 , genotype + offset} =  meanresponse ;
+                outcells{ contrast + 9 + contrastmax, genotype + offset} =  se_response ;
             end % contrast
         end
         
