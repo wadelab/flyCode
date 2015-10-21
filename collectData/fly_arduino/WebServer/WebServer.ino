@@ -9,7 +9,7 @@
 //#define __wifisetup__
 
 
-#define due4
+#define due1
 //#define USE_DHCP
 
 //_____________________________________________________
@@ -206,7 +206,7 @@ void setup() {
   pinMode(SS_ETHERNET, OUTPUT);
 
   pinMode(noContactLED, OUTPUT);
-  for (int i=extrawhitepin; i > extrawhitepin - 7; i=i-2)
+  for (int i=extrawhitepin; i > extrawhitepin - 5; i=i-2)
   {
     pinMode(i, OUTPUT);
   }
@@ -500,7 +500,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
 #endif
   updateColour( boolUpdatePage);
   
-  for (int i=extrawhitepin; i > extrawhitepin - 7; i=i-2)
+  for (int i=extrawhitepin; i > extrawhitepin - 5; i=i-2)
   {
     digitalWrite (i, 0);
   }
@@ -509,7 +509,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
 void goColour(const byte r, const bool boolUpdatePage)
 {
   goColour (r, r, r, 0, r, 0, 0, boolUpdatePage);
-  for (int i=extrawhitepin; i > extrawhitepin - 7; i=i-2)
+  for (int i=extrawhitepin; i > extrawhitepin - 5; i=i-2)
   {
   digitalWrite (i, r);
   }
