@@ -717,7 +717,18 @@ void printDirectory(uint8_t flags) {
   //iFiles -- ; // allow for last increment...
 
   client.print (iFiles);
-  client.println F(" files found on disk ");
+  client.print F(" files found on disk  ");
+#ifdef __USE_SDFAT
+  // Free KB on SD.
+  uint32_t freeKB = sd.vol()->freeClusterCount() * sd.vol()->blocksPerCluster() / 2;
+  uint32_t diskKB = sd.vol()->clusterCount()    *  sd.vol()->blocksPerCluster() / 2;
+  client.print F(" (free space ");
+  client.print (freeKB/1024);
+  client.print F(" of ");
+  client.print (diskKB/1024);
+  client.print F(" MBytes)");  
+#endif
+  client.println ();
   client.println F("<ul>");
 
   for (int i = iFiles; i--; i >= 0)
