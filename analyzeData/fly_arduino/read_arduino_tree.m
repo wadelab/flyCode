@@ -189,7 +189,24 @@ status=xlwrite(filename, phenName, '2F1', 'A1');
 status=xlwrite(filename, phenotypeAmps(:,:,1), '1F1', 'A2');
 status=xlwrite(filename, phenotypeAmps(:,:,3), '2F1', 'A2');
 
-%% could write meanCRF here...
+%% now add a page with the data tabulated vertically
+outcells={'genotype','1F1','2F1'};
+iPreviousFlies = 1;
+sZ = size(phenotypeAmps(:,:,1));
+myNAN = isnan(phenotypeAmps(:,:,1));
+for j = 1: sZ(2)
+    for i = 1 : sZ(1)
+        if (~myNAN(i,j))
+            iPreviousFlies = iPreviousFlies + 1;
+            outcells{iPreviousFlies,1} = phenName{j};
+            outcells{iPreviousFlies,2} = phenotypeAmps(i,j,1);
+            outcells{iPreviousFlies,3} = phenotypeAmps(i,j,3);
+        end
+    end
+end
+
+status=xlwrite(filename, outcells, 'SPSS', 'A1');
+%% write meanCRF here...
 sTxt=[{'Mask','Contrast'},GetFreqNames()];
 
 for phen = 1:nPhenotypes

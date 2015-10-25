@@ -10,7 +10,7 @@
 //#define __wifisetup__
 
 
-#define due4
+#define due1
 //#define USE_DHCP
 
 #define __USE_SDFAT
@@ -218,6 +218,7 @@ void setup() {
   pinMode(SS_ETHERNET, OUTPUT);
 
   pinMode(noContactLED, OUTPUT);
+
   for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
   {
     pinMode(i, OUTPUT);
@@ -531,6 +532,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
   updateColour( boolUpdatePage);
 
   for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
+
   {
     digitalWrite (i, 0);
   }
@@ -540,6 +542,7 @@ void goColour(const byte r, const bool boolUpdatePage)
 {
   goColour (r, r, r, 0, r, 0, 0, boolUpdatePage);
   for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
+
   {
     digitalWrite (i, r);
   }
@@ -723,10 +726,10 @@ void printDirectory(uint8_t flags) {
   uint32_t freeKB = sd.vol()->freeClusterCount() * sd.vol()->blocksPerCluster() / 2;
   uint32_t diskKB = sd.vol()->clusterCount()    *  sd.vol()->blocksPerCluster() / 2;
   client.print F(" (free space ");
-  client.print (freeKB/1024);
+  client.print (freeKB / 1024);
   client.print F(" of ");
-  client.print (diskKB/1024);
-  client.print F(" MBytes)");  
+  client.print (diskKB / 1024);
+  client.print F(" MBytes)");
 #endif
   client.println ();
   client.println F("<ul>");
