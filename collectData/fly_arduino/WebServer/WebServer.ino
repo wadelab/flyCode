@@ -1,4 +1,5 @@
 
+
 //try this http://gammon.com.au/forum/?id=11488&reply=5#reply5 for interrupts
 //Digital pin 7 is used as a handshake pin between the WiFi shield and the Arduino, and should not be used
 // http://www.arduino.cc/playground/Code/AvailableMemory
@@ -11,6 +12,8 @@
 
 #define due4
 //#define USE_DHCP
+
+#define __USE_SDFAT
 
 //_____________________________________________________
 
@@ -86,14 +89,22 @@ Prototype : put the grey wire in ground, and purple wire in pin7
 
 #endif
 
+#ifdef __USE_SDFAT
+#include <SdFat.h>
+#else
 #include <SD.h>
+#endif
+
+
 //#include <FixFFT.h>
 
 const short max_graph_data = 32 ;
 int * myGraphData ;  // will share erg_in space, see below
 short iIndex = 0 ;
 
-
+#ifdef __USE_SDFAT
+SdFat sd;
+#endif
 //
 byte usedLED  = 0;
 const byte fiberLED = 8 ;
@@ -145,9 +156,11 @@ byte iThisContrast = 0 ;
 bool bNoInternet = false ;
 boolean has_filesystem = true;
 bool bFileOK = true ;
+#ifndef __USE_SDFAT
 Sd2Card card;
 SdVolume volume;
 SdFile root;
+#endif
 SdFile file;
 
 boolean bDoFlash = false ;
@@ -198,7 +211,6 @@ WiFiClient client (80);
 
 #endif
 
-
 void setup() {
 
   // ...
@@ -206,7 +218,7 @@ void setup() {
   pinMode(SS_ETHERNET, OUTPUT);
 
   pinMode(noContactLED, OUTPUT);
-  for (int i=extrawhitepin; i > extrawhitepin - 7; i=i-2)
+  for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
   {
     pinMode(i, OUTPUT);
   }
@@ -228,7 +240,7 @@ void setup() {
 
   // initialize the SD card
   Serial.println F("Setting up SD card...\n");
-
+#ifndef __USE_SDFAT
   if (!card.init(SPI_HALF_SPEED, 4))
   {
     Serial.println F("card failed half speed\n");
@@ -240,18 +252,32 @@ void setup() {
   }
 
   // initialize a FAT volume
-  if (has_filesystem && !volume.init(&card)) {
+  if (has_filesystem && !volume.init(&card))
+  {
     Serial.println F("vol.init failed!\n");
     has_filesystem = false;
   }
-  if (has_filesystem && !root.openRoot(&volume)) {
+  if (has_filesystem && !root.openRoot(&volume))
+  {
     Serial.println F("openRoot failed");
     has_filesystem = false;
   }
+#else
+
+  if (!sd.begin(4)) {
+    sd.initErrorHalt();
+  }
+
+#endif
 
   if (has_filesystem)
   {
     Serial.println F("SD card ok\n");
+#ifdef __USE_SDFAT
+    Serial.println F("Testing SD Fat");
+#else
+    Serial.println F("Using old SD card code");
+#endif
   }
 
 #ifdef __wifisetup__
@@ -277,26 +303,29 @@ void setup() {
   digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
   Serial.println F("Setting up the Ethernet card...\n");
   // start the Ethernet connection and the server:
-#ifdef USE_DHCP  
-  if (1 != Ethernet.begin(mac))
-#else
-  if (true) //1 != Ethernet.begin(mac))
+#ifdef USE_DHCP
+  //  if (Ethernet.begin(mac))
+  //  {
+  //  Serial.println F("DHCP failed, trying 172, 16, 1, 10");
+  //#else
+
 #endif
-  {
-    // Setup for eg an ethernet cable from Macbook to Arduino Ethernet shield
-    // other macbooks or mac airs may assign differnt local networks
-    //
-    Serial.println F("DHCP failed, trying 172, 16, 1, 10");
-    Serial.println F("Please set your mac ethernet to Manually and '172.16.1.1'");
-    byte ip[] = { 172, 16, 1, 10 };
-    Ethernet.begin(mac, ip);
-    bNoInternet = true ;
-  };
+
+  // Setup for eg an ethernet cable from Macbook to Arduino Ethernet shield
+  // other macbooks or mac airs may assign differnt local networks
+  //
+  Serial.println F("Please set your mac ethernet to Manually and '172.16.1.1'");
+  byte ip[] = { 172, 16, 1, 10 };
+  Ethernet.begin(mac, ip);
+  bNoInternet = true ;
+#ifdef USE_DHCP
+  //};
+#endif
   server.begin();
-  Serial.println F("server is at ");
+  Serial.print F("server is at ");
   myIP = Ethernet.localIP() ;
   dnsIP = Ethernet.dnsServerIP();
-  Serial.print(myIP);
+  Serial.println(myIP);
   Serial.print(" using dns server ");
   Serial.println(dnsIP);
 
@@ -310,6 +339,7 @@ void setup() {
 
   doShuffle();
 }
+
 
 #ifndef __wifisetup__
 
@@ -499,8 +529,8 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
   analogWrite( fiberLED, a );
 #endif
   updateColour( boolUpdatePage);
-  
-  for (int i=extrawhitepin; i > extrawhitepin - 7; i=i-2)
+
+  for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
   {
     digitalWrite (i, 0);
   }
@@ -509,9 +539,9 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
 void goColour(const byte r, const bool boolUpdatePage)
 {
   goColour (r, r, r, 0, r, 0, 0, boolUpdatePage);
-  for (int i=extrawhitepin; i > extrawhitepin - 7; i=i-2)
+  for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
   {
-  digitalWrite (i, r);
+    digitalWrite (i, r);
   }
 }
 
@@ -551,14 +581,14 @@ void run_graph()
   sensorReading = analogRead(analogPin);
   myGraphData[iIndex] = sensorReading / iGainFactor ;
   iIndex ++ ;
-//  if (iIndex > max_graph_data / 10 && iIndex < max_graph_data / 2)
-//  {
-//    analogWrite(bluLED, 255);
-//  }
-//  else
-//  {
-//    analogWrite(bluLED, 0);
-//  }
+  //  if (iIndex > max_graph_data / 10 && iIndex < max_graph_data / 2)
+  //  {
+  //    analogWrite(bluLED, 255);
+  //  }
+  //  else
+  //  {
+  //    analogWrite(bluLED, 0);
+  //  }
 
   sendHeader ("Graph of last sweep") ;
   client.println F("<script>");
@@ -665,9 +695,13 @@ void printDirectory(uint8_t flags) {
   dir_t pAll[512];
   dir_t p ;
   int iFiles = 0 ;
+#ifdef __USE_SDFAT
+  sd.vwd()->rewind();
+  while (sd.vwd()->readDir(&p) > 0)
+#else
   root.rewind();
-
   while (root.readDir(p) > 0)
+#endif
   {
     // done if past last used entry
     if (p.name[0] == DIR_NAME_FREE) break;
@@ -946,6 +980,10 @@ bool writeFile(const char * c)
     Serial.println( second );
     Serial.flush();
   */
+#ifdef __USE_SDFAT
+#define root sd.vwd()
+#endif
+
   if (!fileExists(c))
   {
 
