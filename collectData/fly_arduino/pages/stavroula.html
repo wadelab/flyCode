@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
 <Head>
+<base href="http://biolpc2886.york.ac.uk/">
 <script>
 
 
 function getTimeString() {
     var today=new Date();
-    var mo=today.getMonth();
+    var mo=today.getMonth() + 1;
     var d=today.getDate();
     var h=today.getHours();
     var m=today.getMinutes();
@@ -43,7 +44,7 @@ function changeText()
 <div id="txt">Arduino SSVEP starter page</div>
 <BR><BR>
 
-<form action="http://biolpc2793.york.ac.uk/">
+<form action="/">
 
 <table style="text-align: left; width: 50%;" border="1" cellpadding="2"
 cellspacing="2">
@@ -56,13 +57,12 @@ cellspacing="2">
 <tr>
 <td style="vertical-align: top;">
 <select name="GAL4" size = 6>
+<option value="GMR">GMR</option>
+<option value="TH">TH</option>
 <option value="w">w-</option>
 <option value="w_apr">w^apr</option>
 <option value="CS">CS</option>
-<option value="TH">TH</option>
-<option value="TH G2019S">TH,G2019S</option>
 <option value="ort" selected>ort-</option>
-
 </select><br>
 </td>
 <td style="vertical-align: top;">
@@ -72,11 +72,6 @@ cellspacing="2">
 <option value="w_apr">w^apr</option>
 <option value="G2019S">G2019S</option>
 <option value="hLRRK2">hLRRK2</option>
-<option value="a-Syn-WT">a-Syn-WT</option>
-<option value="a-Syn-129A">a-Syn-129A</option>
-<option value="a-Syn-129D">a-Syn-129D</option>
-<option value="a-Syn-A30P">a-Syn-A30P</option>
-
 </select><br>
 </td>
 <td style="vertical-align: top;">
@@ -124,6 +119,7 @@ cellspacing="2">
 <input type="radio" name="col" value="blue" checked>blue<br>
 <input type="radio" name="col" value="green">green<br>
 <input type="radio" name="col" value="red">red<br>
+<input type="radio" name="col" value="fiber">fiber<br>
 </td>
 
 <td style="vertical-align: top;"><BR>
@@ -155,27 +151,30 @@ File name: <input id="FileID" type="text" name="filename">
 
 <table>
 <tr><td>
-<A href="http://biolpc2793.york.ac.uk/white/">White</a>
+<A href="/white/">White</a>
 </td>
 
 <td bgcolor="Red">
-<A href="http://biolpc2793.york.ac.uk/red/"><font color="White">Red </font></a>
+<A href="/red/"><font color="White">Red </font></a>
 </td>
 
 <td bgcolor="Green">
-<A href="http://biolpc2793.york.ac.uk/green/"><font color="White">Green </font></a>
+<A href="/green/"><font color="White">Green </font></a>
 </td>
 <td bgcolor="Blue">
-<A href="http://biolpc2793.york.ac.uk/blue/"><font color="White">Blue </font></a>
+<A href="/blue/"><font color="White">Blue </font></a>
 </td>
 <td bgcolor="Black">
-<A href="http://biolpc2793.york.ac.uk/black/"><font color="White">Black</font></a>
+<A href="/black/"><font color="White">Black</font></a>
+</td>
+<td bgcolor="Cyan">
+<A href="http://biolpc2886.york.ac.uk/fiber/"><font color="White">Fiber</font></a>
 </td>
 
 <td>
-<a href="http://biolpc2793.york.ac.uk/">Test setup</a>
+<a href="/">Test setup</a>
 </td><td>
-<a href="http://biolpc2793.york.ac.uk/dir=">Directory</a>
+<a href="/dir=">Directory</a>
 </table>
 </body>
 </html>

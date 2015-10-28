@@ -40,6 +40,11 @@ line = strsplit(line1c, '&');
 % find and delete the filename
 ix = strfind(line, 'filename=') ;
 ix = find(~cellfun(@isempty,ix));
+if (isempty(ix))
+    thisFlyData.Error = ['Not a proper SVP file: ', fName]
+    success = false ;
+    return
+end
 thisFlyData.fileName = line{ix};
 line (ix)=[];
 
@@ -124,7 +129,7 @@ iEnd = 1024;
 ss = get (0,'screensize') ;
 
 %% plot raw data
-myPos = get(gcf, 'Position');
+myPos = ss ;
 myPos(1) = 10 ;
 myPos(3) = ss(3) - 10 ;
 figure ('Name', strcat('Rawdata of: ',fileName), 'Position', myPos);
@@ -164,7 +169,7 @@ h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print( printFilename );
+print( '-dpsc', printFilename );
 if (bCloseGraphs)
     delete(gcf) ;
 end
@@ -216,7 +221,7 @@ h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print( printFilename );
+print( '-dpsc', printFilename );
 
 if (bCloseGraphs)
     delete(gcf) ;
@@ -256,7 +261,7 @@ for i = 1 : nContrasts
     % don't add more than 4 [5 repeats, inclusive counting]
     % eg to ignore 1st round 
     % startRPT = RPT + 1
-    startRPT = RPT ;
+    startRPT = RPT + 1 ;
     end_RPT = RPT + 4 ; % RPT ;
     %find mean and plot it
     %keyboard;
@@ -279,7 +284,7 @@ h=gcf;
 set(h,'PaperOrientation','landscape');
 set(h,'PaperUnits','normalized');
 set(h,'PaperPosition', [0 0 1 1]);
-print( printFilename );
+print( '-dpsc', printFilename );
 
 if (bCloseGraphs)
     delete(gcf) ;

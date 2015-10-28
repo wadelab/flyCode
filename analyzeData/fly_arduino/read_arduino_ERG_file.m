@@ -1,15 +1,7 @@
 %%read_arduino_ERG
-
-close all;
-clear all;
-
-addmetothepath ;
+function [success,lineSaved] = read_arduino_ERG_file (fName);
 
 
-success = true ;
-
-[f,p]=uigetfile('*.ERG');
-fName=fullfile(p,f);
 [pathstr, fileName, ext] = fileparts(fName) ;
 
 %% read header line
@@ -72,6 +64,12 @@ for i = 1:nContrasts
     yTxt = strcat(num2str(i), '//') ;
     ylabel(yTxt);
     
+    if (i==1)
+        line1d = strrep(line1c, '&',' ');
+        line1e = strrep(line1d, '_',' ');
+        text(-500,ymax*1.2,line1e);
+    end
+    
     fft1=abs(fft(rawdata(i,1:200)));
     subplot(nContrasts +1, 3, (i*3)-1);
     plot (xdata, fft1(1:100));
@@ -94,18 +92,21 @@ ylabel('mean');
 
 sExt = getPictExt ();
 printFilename = [pathstr, filesep, fileName, '_MyData', sExt];
-print( printFilename );
+print( '-dpsc', printFilename );
 
 %% get some data out
 disp('mean ERG:');
-disp(['nRepeats =',num2str(nContrasts)]);
-disp(['max =', num2str(max(meandata))]);
-disp(['min =', num2str(min(meandata))]);
-disp(['off-transient =', num2str(min(meandata(680:720))-mean(meandata(650:680)))]);
+lineSaved = [lineSaved, {['nRepeats =',num2str(nContrasts  )]}];
+lineSaved = [lineSaved, {['max =',     num2str(max(meandata))]}];
+lineSaved = [lineSaved, {['min =',     num2str(min(meandata))]}];
+lineSaved = [lineSaved, {['off-transient =', num2str(min(meandata(680:720))-mean(meandata(650:680)))]}];
 
 for i = 1:length(lineSaved)
    disp(lineSaved{i});
 end 
+
+success = true ;
+return
 
 
 

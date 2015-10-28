@@ -2,13 +2,13 @@
 close all;
 clear all;
 
-global SVPfiles ;
+
 SVPfiles = {};
 addmetothepath ;
 sExt = getPictExt () ;
 
 dirName=uigetdir();
-walk_a_directory_recursively(dirName, '*.SVP');
+SVPfiles = walk_a_directory_recursively(dirName, '*.SVP');
 
 %% now we have a list of all the files with .SVP in that tree
 if (length(SVPfiles) ==0)
@@ -23,7 +23,7 @@ end
 
 %% read all the rest of them (well, the first 40)
 iSuccesseses = 1;
-maxFilesToRead = 40 ;
+maxFilesToRead = length(SVPfiles) + 3 ;
 for i=1:min(length(SVPfiles),maxFilesToRead)
     disp(['Reading:', SVPfiles{i}]);
     [flydata, success] = read_arduino_file ( SVPfiles{i} , true );
@@ -84,9 +84,12 @@ meanCRF = zeros(nPhenotypes,length(SortedData(1).meanContrasts), 2+length(GetFre
 
 SD_phenotypeFFT = zeros(nPhenotypes,r,c);
 SE_CRF = zeros(nPhenotypes,length(SortedData(1).meanContrasts), 2+length(GetFreqNames()));
-nFlies = zeros(nPhenotypes);
+nFlies = zeros(nPhenotypes,1);
 
-%%
+
+
+
+%% Calculate average and SD
 
 
 for phen = 1 : nPhenotypes
@@ -106,6 +109,29 @@ for phen = 1 : nPhenotypes
     SE_CRF (phen,:,:) = tmpCRF / sqrt(nFlies(phen)) ;
     % plot_mean_crf (squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)));
 end
+
+
+%% HB and GDS:  Initialise matrices to save out individual fly amplitudes
+%% and phases for 1F1 and 2F1
+CRF_Max = max(nPhenotypes, max(nFlies));
+% FreqsToExtract = [ F1, F2, 2*F1, 2*F2, F1+F2, 2*(F1+F2), F2-F1 ];
+FreqsToExtract = [48,60,96,120,108,216,12] ;
+phenotypeAmps=NaN(CRF_Max,nPhenotypes,length(FreqsToExtract));
+phenotypePh=NaN(CRF_Max,nPhenotypes, length(FreqsToExtract));
+
+
+%% HB and GDS:  Calculate and save individual fly amplitudes
+%% and phases for  the 100% contrast condition
+%% Column 5 = 100% contrast;  
+
+
+for phen = 1 : nPhenotypes
+    nFlies (phen) = 1 + ib(phen) - ia(phen) ;
+    for j = 1 : length(FreqsToExtract)
+    phenotypeAmps(1:nFlies(phen,1),phen,j)= squeeze(abs(SortedFFTmatrix(ia(phen):ib(phen),5,FreqsToExtract(j))));
+    phenotypePh(1:nFlies(phen,1),phen,j)= squeeze(angle(SortedFFTmatrix(ia(phen):ib(phen),5,FreqsToExtract(j))));
+    end
+end
     
 %% calculate max response
 maxCRR = squeeze(abs(max (meanCRF, [], 2)));
@@ -115,11 +141,19 @@ end
 
 %% plot mean and SE for each phenotype
 for phen = 1 : nPhenotypes
-       myTxt = ['N=',num2str(nFlies (phen)),' '];
-       C = SortedData(ia(phen)).phenotypes;
-    plot_mean_crf ({myTxt,strjoin(C)}, squeeze(meanCRF(phen,:,:)),pathstr,[' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)), maxCRR);
+    myTxt = ['N=',num2str(nFlies (phen)),' '];
+    
+    phenName{phen} = strjoin(SortedData(ia(phen)).phenotypes);
+    tmpTxt = SortedData(ia(phen)).phenotypes ;
+    for q = 1 : length(tmpTxt)
+        qPos = strfind(tmpTxt{q},'=');
+        tmpTxt{q} = tmpTxt{q}(qPos+1:end);
+    end
+    %if we are here, its bound to be an SSVEP...
+    phenName{phen} = strrep(strjoin(tmpTxt),'SSVEP','');
+        
+    plot_mean_crf ({myTxt,phenName{phen}}, squeeze(meanCRF(phen,:,:)), dirName, [' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)), maxCRR);
 end
-
 
 %% write out the max CRF for each phenotype
 disp ('Now writing mean max 1F1 and 2F1 with SE');
@@ -133,7 +167,68 @@ for i = 1 : nPhenotypes
         ' 2F1=', num2str(abs(meanCRF(i,5,5))), '=', num2str(abs(SE_CRF(i,5,5))), ' nFlies=', num2str(nFlies(i))]; 
     disp (myTxt);
 end
+%% add extra path..
 
+%% Initialisation of POI Libs
+% Add Java POI Libs to matlab javapath
+%%%%%%a='/data_biology/SSERG/toolbox/git/flyCode/generalToolboxFunctions/xlwrite/';
+POIPATH=[fileparts(which ('writeFlyDataToXL.m')),filesep,'xlwrite/']
+
+javaaddpath(fullfile(POIPATH,'poi_library/poi-3.8-20120326.jar'));
+javaaddpath(fullfile(POIPATH,'poi_library/poi-ooxml-3.8-20120326.jar'));
+javaaddpath(fullfile(POIPATH,'poi_library/poi-ooxml-schemas-3.8-20120326.jar'));
+javaaddpath(fullfile(POIPATH,'poi_library/xmlbeans-2.3.0.jar'));
+javaaddpath(fullfile(POIPATH,'poi_library/dom4j-1.6.1.jar'));
+javaaddpath(fullfile(POIPATH,'poi_library/stax-api-1.0.1.jar'));
+
+
+%%  [status, message]=xlwrite(filename,A,sheet, range)
+filename = [ dirName, '/SSVEP_summary.xls']
+status=xlwrite(filename, phenName, '1F1', 'A1');
+status=xlwrite(filename, phenName, '2F1', 'A1');
+status=xlwrite(filename, phenotypeAmps(:,:,1), '1F1', 'A2');
+status=xlwrite(filename, phenotypeAmps(:,:,3), '2F1', 'A2');
+
+%% now add a page with the data tabulated vertically
+outcells={'genotype','1F1','2F1'};
+iPreviousFlies = 1;
+sZ = size(phenotypeAmps(:,:,1));
+myNAN = isnan(phenotypeAmps(:,:,1));
+for j = 1: sZ(2)
+    for i = 1 : sZ(1)
+        if (~myNAN(i,j))
+            iPreviousFlies = iPreviousFlies + 1;
+            outcells{iPreviousFlies,1} = phenName{j};
+            outcells{iPreviousFlies,2} = phenotypeAmps(i,j,1);
+            outcells{iPreviousFlies,3} = phenotypeAmps(i,j,3);
+        end
+    end
+end
+
+status=xlwrite(filename, outcells, 'SPSS', 'A1');
+%% write meanCRF here...
+sTxt=[{'Mask','Contrast'},GetFreqNames()];
+
+for phen = 1:nPhenotypes
+    % phenotype..
+    % mask, contrast, 1F1..
+    % CRF
+    sSheet = ['CRF of phen ', num2str(phen)] ;
+    status=xlwrite(filename, [{'CRF for :'}, phenName{phen}], sSheet, 'A1');
+    status=xlwrite(filename, sTxt, sSheet,'A2');
+    status=xlwrite(filename, abs(squeeze(meanCRF(phen,:,:))),sSheet,'A3');
+    
+    if ia(phen) ~= ib(phen)
+        %dont bother writing zeros..
+        status=xlwrite(filename, {'SE'}, sSheet,'A14');
+        status=xlwrite(filename, abs(squeeze(meanCRF(phen,:,1:2))), sSheet,'A15');
+        status=xlwrite(filename, abs(squeeze(SE_CRF(phen,:,3:end))),sSheet,'C15');
+    end
+    
+end
+
+
+%% 
 disp(' ');
 disp ([dirName, ' done! ']);
 disp(' ');
