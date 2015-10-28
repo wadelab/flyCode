@@ -138,11 +138,11 @@ Screen('Flip',win,[],1);
     
     
     % Save out the data
-    save('CalibrationData_200514.mat','sumPower','spectralData','meanSpectData','nLevels','contLevels');
+    save('CalibrationData_170615.mat','sumPower','spectralData','meanSpectData','nLevels','contLevels');
     
     
 else
-    load('CalibrationData_200514.mat');
+    load('CalibrationData_170615.mat');
 end
 
 %% Remaining to do: Fit a gamma function to the curves. The best thing to do here is look at the Psychtoolbox routines for calibration. They will do this last part in a function.

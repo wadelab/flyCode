@@ -23,7 +23,7 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\NewSweep\PINK1\1DPE\w1male\';
+datadir='C:\data\SSERG\data\NewSweep\PINK1\1DPE\PunchR1male\NewFood\';
 flyTV_startTime=now;
 
 
@@ -94,11 +94,11 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.TimeStamps=d.TimeStamps;
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
-            finalData.flyName{1}='repo-G2019s_1_1dpe';
-            finalData.flyName{2}='repo-G2019s_2_1dpe';
+            finalData.flyName{1}='mecp2r106w_longGMR_1';
+            finalData.flyName{2}='mecp2r106w_longGMR_2';
             
             
-            finalData.comment='1:w1male_1DPE_11 2:w1male_1DPE_12 '; % Here : the first data channel ('ai0') is the bottom fly.
+            finalData.comment='1:PunchR1male_male_1DPE_18 2:PunchR1male_male_1DPE_19 '; % Here : the first data channel ('ai0') is the bottom fly.
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;
