@@ -10,10 +10,10 @@
 //#define __wifisetup__
 
 
-#define due1
-//#define USE_DHCP
+#define due4
+#define USE_DHCP
 
-#define __USE_SDFAT
+//#define __USE_SDFAT
 
 //_____________________________________________________
 
@@ -305,10 +305,10 @@ void setup() {
   Serial.println F("Setting up the Ethernet card...\n");
   // start the Ethernet connection and the server:
 #ifdef USE_DHCP
-  //  if (Ethernet.begin(mac))
-  //  {
-  //  Serial.println F("DHCP failed, trying 172, 16, 1, 10");
-  //#else
+  if (! Ethernet.begin(mac))
+  {
+  Serial.println F("DHCP failed, trying 172, 16, 1, 10");
+#else
 
 #endif
 
@@ -320,7 +320,7 @@ void setup() {
   Ethernet.begin(mac, ip);
   bNoInternet = true ;
 #ifdef USE_DHCP
-  //};
+  };
 #endif
   server.begin();
   Serial.print F("server is at ");
