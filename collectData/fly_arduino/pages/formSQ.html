@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<Head>
+<base href="http://biolpc2939.york.ac.uk/">
+<script>
+
+
+function getTimeString() {
+    var today=new Date();
+    var mo=today.getMonth();
+    var d=today.getDate();
+    var h=today.getHours();
+    var m=today.getMinutes();
+    var s = today.getSeconds()
+    m = checkTime(m);
+	mo = checkTime(mo);
+	h = checkTime(h);
+	s = checkTime(s);
+    return d + "_" + mo + "_" + h + "h" + m + "m" + s ;
+    }
+    
+function startTime()
+{
+    document.getElementById('txt').innerHTML = getTimeString();
+    var t = setTimeout(function(){startTime()},500);
+}
+
+function checkTime(i) {
+    if (i<10) {i = "0" + i};  // add zero in front of numbers < 10
+    return i;
+}
+
+function changeText() 
+{
+    x = document.getElementById("FileID");
+    x.value = getTimeString() 
+}
+</script>
+</head>
+
+<!-- body onload="startTime()" -->
+<body>
+
+<div id="txt">Arduino SSVEP starter page</div>
+<BR><BR>
+
+<form action="/">
+
+<table style="text-align: left; width: 50%;" border="1" cellpadding="2"
+cellspacing="2">
+<tbody>
+<tr>
+<td style="vertical-align: top; width = 33%">GAL4:</td>
+<td style="vertical-align: top; width = 33%">UAS:</td>
+<td style="vertical-align: top; width = 33%">Age:</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">
+<select name="GAL4" size = 6>
+<option value="w">w-</option>
+<option value="w_apr">w^apr</option>
+<option value="CS">CS</option>
+<option value="ort" selected>ort-</option>
+</select><br>
+</td>
+<td style="vertical-align: top;">
+<select name="UAS" size = 6>
+<option value="homoz" selected>homozygote</option>
+<option value="w">w-</option>
+<option value="w_apr">w^apr</option>
+<option value="G2019S">G2019S</option>
+<option value="hLRRK2">hLRRK2</option>
+</select><br>
+</td>
+<td style="vertical-align: top;">
+<select name="Age" size = 6>
+<option value="0.4">4-8 hours</option>
+<option selected value="1">1 day</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="5">5</option>
+<option value="7">7</option>
+<option value="14">14</option>
+<option value="21">21</option>
+<option value="-1">unknown</option>
+</select><br>
+</td>
+</tr>
+</tbody>
+</table>
+<BR>
+<table style="text-align: left; width: 50%;" border="1" cellpadding="2"
+cellspacing="2">
+<tbody >
+<tr>
+<td style="vertical-align: top; width = 20%"><BR> Sex: <BR></td>
+<td style="vertical-align: top; width = 20%"><BR>Organism: <BR></td>
+<td style="vertical-align: top; width = 20%"><BR>Colour</td>
+<td style="vertical-align: top; width = 20%"><BR>Protocol</td>
+<td style="vertical-align: top; width = 20%"><BR>SSVEP wave shape</td>
+</tr>
+<tr>
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="sex" value="male">Male<br>
+<input type="radio" checked name="sex" value="female">Female
+<BR><br>
+</td>
+<td style="vertical-align: top;"><BR> 
+<input type="radio" name="org" value="fly" checked>fly<br>
+<input type="radio" name="org" value="zfish">zebrafish<br>
+<input type="radio" name="org" value="mouse">mouse<br>
+<input type="radio" name="org" value="locust">locust<br>
+<BR><br>
+</td>
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="col" value="blue" checked>blue<br>
+<input type="radio" name="col" value="green">green<br>
+<input type="radio" name="col" value="red">red<br>
+</td>
+
+
+<input type="hidden" name="F1" value="12" checked> F1: 12 Hz<br>
+<input type="hidden" name="F2" value="15" checked> F2: 15 Hz<br>
+
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="stim" value="fERG" checked>flash ERG<br>
+<input type="radio" name="stim" value="SSVEP" checked>SSVEP<br>
+</td>
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="stm" value="SI" >Sine Wave<br>
+<input type="radio" name="stm" value="SQ" checked>Square wave<br>
+</td>
+
+</tr>
+</tbody>
+</table>
+<br>
+
+
+
+<BR>
+File name: <input id="FileID" type="text" name="filename"> 
+<button onclick="changeText()" type="button">Auto</button><br>
+
+<BR><BR>
+<input type="submit" value="Submit">
+
+</form>
+
+<BR><BR>
+
+<table>
+<tr><td>
+<A href="/white/">White</a>
+</td>
+
+<td bgcolor="Red">
+<A href="/red/"><font color="White">Red </font></a>
+</td>
+
+<td bgcolor="Green">
+<A href="/green/"><font color="White">Green </font></a>
+</td>
+<td bgcolor="Blue">
+<A href="/blue/"><font color="White">Blue </font></a>
+</td>
+<td bgcolor="Black">
+<A href="/black/"><font color="White">Black</font></a>
+</td>
+
+<td>
+<a href="/">Test setup</a>
+</td><td>
+<a href="/dir=">Directory</a>
+</table>
+</body>
+</html>
