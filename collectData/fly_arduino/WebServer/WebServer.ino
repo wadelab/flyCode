@@ -10,7 +10,7 @@
 //#define __wifisetup__
 
 
-#define due4
+#define due5
 #define USE_DHCP
 
 //#define __USE_SDFAT
@@ -307,18 +307,18 @@ void setup() {
 #ifdef USE_DHCP
   if (! Ethernet.begin(mac))
   {
-  Serial.println F("DHCP failed, trying 172, 16, 1, 10");
+    Serial.println F("DHCP failed, trying 172, 16, 1, 10");
 #else
 
 #endif
 
-  // Setup for eg an ethernet cable from Macbook to Arduino Ethernet shield
-  // other macbooks or mac airs may assign differnt local networks
-  //
-  Serial.println F("Please set your mac ethernet to Manually and '172.16.1.1'");
-  byte ip[] = { 172, 16, 1, 10 };
-  Ethernet.begin(mac, ip);
-  bNoInternet = true ;
+    // Setup for eg an ethernet cable from Macbook to Arduino Ethernet shield
+    // other macbooks or mac airs may assign differnt local networks
+    //
+    Serial.println F("Please set your mac ethernet to Manually and '172.16.1.1'");
+    byte ip[] = { 172, 16, 1, 10 };
+    Ethernet.begin(mac, ip);
+    bNoInternet = true ;
 #ifdef USE_DHCP
   };
 #endif
@@ -841,7 +841,7 @@ void webTime ()
   EthernetClient timeclient;
 #endif
   // default values ...
-  year = 2015;
+  //year = 2015;
   second = myminute = hour = day = month = 1;
 
   // Just choose any reasonably busy web server, the load is really low
@@ -851,9 +851,10 @@ void webTime ()
     // compliant servers are required to answer with an error that includes
     // a Date: header.
     timeclient.print(F("GET / HTTP/1.1 \r\n\r\n"));
+    delay (10);
 
     char buf[5];			// temporary buffer for characters
-    timeclient.setTimeout(5000);
+    timeclient.setTimeout(8000);
     if (timeclient.find((char *)"\r\nDate: ") // look for Date: header
         && timeclient.readBytes(buf, 5) == 5) // discard
     {
@@ -891,6 +892,8 @@ void webTime ()
       //month -- ; // zero based, I guess
 
     }
+    Serial.print("webtime:");
+    Serial.println (buf);
   }
   delay(10);
   timeclient.flush();
@@ -970,13 +973,11 @@ bool writeFile(const char * c)
   //    int erg_in [max_data];
 
   int16_t iBytesWritten ;
-  if (bNoInternet)
+  year = 2014 ;
+  webTime ();
+  if (year == 2014)
   {
     file__time();
-  }
-  else
-  {
-    webTime ();
   }
 
   /*
