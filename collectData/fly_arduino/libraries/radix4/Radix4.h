@@ -8,9 +8,9 @@
 #include <inttypes.h>
 #include <avr/pgmspace.h>
 
-#define    FFT_SIZE          2048 //256
+#define    FFT_SIZE          1024 //256
 #define    MIRROR        FFT_SIZE / 2
-#define    LOG2_FFT            11                   /* log2 FFT_SIZE */
+#define    LOG2_FFT            10                   /* log2 FFT_SIZE */
 //#define    NWAVE              256                   /* full length of Sinewave[] */
 #define    NWAVE             2048                   /* full length of Sinewave[] */
 /*
