@@ -188,6 +188,14 @@ String MyReferString = String(MaxInputStr + 1);
 char cFile [30];
 char cInput [MaxInputStr + 2] = "";
 
+// for graphic plotting
+  int istep = 15;
+  int plot_limit = max_data - max_data / 6 ;
+  int iXFactor = 4;
+  int iYFactor = 25 ;
+  int iBaseline = 260 ;
+  int iXDiv = 6 ;
+
 #ifndef MAC_OK
 #error please define which arduino you are setting up
 #endif
@@ -1303,10 +1311,10 @@ void doFFTFile (const char * c)
   } // end of while
 
   file.close();
-        for (int ii = 0; ii < max_data; ii++)
-      {
-        erg_in[ii] = erg_in2[ii] / maxRepeats;
-      }
+  for (int ii = 0; ii < max_data; ii++)
+  {
+    erg_in[ii] = erg_in2[ii] / maxRepeats;
+  }
   Serial.println F("about to do FFT");
   do_fft();
   // now plot data in erg_in
@@ -1732,7 +1740,34 @@ void getData ()
   }
 
 }
-
+void plotInColour (int iStart, const String & str_col)
+{
+ // 12 Hz in blue ?
+    // 4 ms per point 0.25 Hz per point, so 12 Hz expected at 48
+    client.println F("ctx.beginPath();");
+    client.print F("ctx.moveTo(");
+    client.print((iXFactor * iStart) / iXDiv );
+    client.print F(",");
+    client.print(iBaseline - (10 * myGraphData[iStart]) / iYFactor);
+    client.println F(");");
+    for (int i = iStart + istep; i < iStart + 5; i = i + istep)
+    {
+      client.print F("ctx.lineTo(");
+      client.print((iXFactor * i) / iXDiv );
+      client.print F(",");
+      client.print(iBaseline - (10 * myGraphData[i]) / iYFactor);
+      client.println F(");");
+    }
+    client.print F("ctx.strokeStyle = '");
+    client.print (str_col);
+    client.println F("';");
+    client.println F("ctx.closePath();");
+    client.print F("ctx.fillStyle='");
+    client.print (str_col);
+    client.println F("';");
+    client.println F("ctx.fill();");
+    client.println F("ctx.stroke();");
+}
 void sendGraphic()
 {
   sendGraphic(true);
@@ -1747,12 +1782,12 @@ void sendGraphic(bool plot_stimulus)
   client.println F("var c = document.getElementById(\"myCanvas\");");
   client.println F("var ctx = c.getContext(\"2d\");");
 
-  int istep = 15;
-  int plot_limit = max_data - max_data / 6 ;
-  int iXFactor = 4;
-  int iYFactor = 25 ;
-  int iBaseline = 260 ;
-  int iXDiv = 6 ;
+   istep = 15;
+   plot_limit = max_data - max_data / 6 ;
+   iXFactor = 4;
+   iYFactor = 25 ;
+   iBaseline = 260 ;
+   iXDiv = 6 ;
   if (!plot_stimulus)
   {
     istep = 1;
@@ -1762,19 +1797,21 @@ void sendGraphic(bool plot_stimulus)
     iBaseline = 420 ;
     iXDiv = 5 ;
   }
+  // move to start of line
   client.println F("ctx.beginPath();");
-  for (int i = istep; i < plot_limit; i = i + istep)
+  client.print F("ctx.moveTo(");
+  client.print((iXFactor * istep) / iXDiv );
+  client.print F(",");
+  client.print(iBaseline - (10 * myGraphData[istep]) / iYFactor);
+  client.println F(");");
+
+  //now join up the line
+  for (int i = 2 * istep; i < plot_limit; i = i + istep)
   {
-    int j = i + istep ;
-    client.print F("ctx.moveTo(");
+    client.print F("ctx.lineTo(");
     client.print((iXFactor * i) / iXDiv );
     client.print F(",");
     client.print(iBaseline - (10 * myGraphData[i]) / iYFactor);
-    client.println F(");");
-    client.print F("ctx.lineTo(");
-    client.print((iXFactor * j) / iXDiv );
-    client.print F(",");
-    client.print(iBaseline - (10 * myGraphData[j]) / iYFactor);
     client.println F(");");
   }
   client.println F("ctx.stroke();");
@@ -1782,21 +1819,27 @@ void sendGraphic(bool plot_stimulus)
   if (plot_stimulus)
   {
     client.println F("ctx.beginPath();");
-    for (int i = istep; i < plot_limit; i = i + istep)
+    client.print F("ctx.moveTo(");
+    client.print((iXFactor * 1) / iXDiv );
+    client.print F(",");
+    client.print(10 + (4 * fERG_Now(time_stamp[1] - time_stamp[0])) / iYFactor);
+    client.println F(");");
+
+    for (int i = 2 * istep; i < plot_limit; i = i + istep)
     {
-      int j = i + istep ;
-      client.print F("ctx.moveTo(");
-      client.print((iXFactor * i) / iXDiv );
-      client.print F(",");
-      client.print(10 + (4 * fERG_Now(time_stamp[i] - time_stamp[0])) / iYFactor);
-      client.println F(");");
       client.print F("ctx.lineTo(");
-      client.print((iXFactor * (j)) / iXDiv );
+      client.print((iXFactor * (i)) / iXDiv );
       client.print F(",");
-      client.print(10 + (4 * fERG_Now(time_stamp[j] - time_stamp[0]) ) / iYFactor);
+      client.print(10 + (4 * fERG_Now(time_stamp[i] - time_stamp[0]) ) / iYFactor);
       client.println F(");");
     }
     client.println F("ctx.stroke();");
+  }
+  else
+  {
+   plotInColour (4 * 12, String("#0000FF"));
+   plotInColour (4 * 12 * 2, String("#8A2BE2"));
+   plotInColour (4 * 27, String("#FF8C00"));
   }
 
   client.println F("</script>");
