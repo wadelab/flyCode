@@ -11,7 +11,7 @@
 
 
 #define due5
-#define USE_DHCP
+//#define USE_DHCP
 
 //#define __USE_SDFAT
 
@@ -55,23 +55,23 @@
 //#if defined(__AVR_ATmega2560__  __SAM3X8E__
 /*
 
-Prototype : put the grey wire in ground, and purple wire in pin7
+  Prototype : put the grey wire in ground, and purple wire in pin7
 
- Based on Web Server
+  Based on Web Server
 
- A simple web server that shows the value of the analog input pins.
- using an Arduino Wiznet Ethernet shield.
+  A simple web server that shows the value of the analog input pins.
+  using an Arduino Wiznet Ethernet shield.
 
- Circuit:
- * Ethernet shield attached to pins 10, 11, 12, 13
- * Analog inputs attached to pins A0 through A5 (optional)
+  Circuit:
+   Ethernet shield attached to pins 10, 11, 12, 13
+   Analog inputs attached to pins A0 through A5 (optional)
 
- created 18 Dec 2009
- by David A. Mellis
- modified 9 Apr 2012
- by Tom Igoe
+  created 18 Dec 2009
+  by David A. Mellis
+  modified 9 Apr 2012
+  by Tom Igoe
 
- */
+*/
 #define SS_SD_CARD   4
 #define SS_ETHERNET 10
 // is 10 on normal uno
@@ -95,7 +95,8 @@ Prototype : put the grey wire in ground, and purple wire in pin7
 #include <SD.h>
 #endif
 
-
+// include fft
+#include <Radix4.h>
 //#include <FixFFT.h>
 
 const short max_graph_data = 32 ;
@@ -1202,6 +1203,97 @@ void doplotFile (const char * c)
   sendFooter();
 
 }
+
+void doFFTFile (const char * c)
+{
+  String Sc = (c);
+  Sc = String (F("FFT of ")) + Sc ;
+  sendHeader (Sc);
+
+  //String dataString ;
+  char * cPtr;
+  cPtr = (char *) erg_in ;
+  int iOldContrast ;
+
+  Serial.print F("trying to open:");
+  Serial.println (c);
+  if (file.isOpen()) file.close();
+  file.open(root, c, O_READ);
+
+  // Content-Length: 1000000 [size in bytes
+  // Last-Modified: Sat, 28 Nov 2009 03:50:37 GMT
+  // make erg_in buffer do the dirty work of getting the date...
+  dir_t  dE;
+  if (file.dirEntry (&dE))
+  {
+    Serial.println F("file date recovered") ;
+  }
+  else
+  {
+    Serial.println F("file date not recovered") ;
+  }
+  gmdate ( dE );
+  Serial.print F("Last modified is:");
+  Serial.println( cPtr ) ;
+  //sendHeader(String(c), "", false, cPtr);
+
+  int iBytesRequested, iBytesRead;
+  // note this overwrites any data already in memeory...
+  //first read the header string ...
+  iBytesRequested = MaxInputStr + 2;
+  iBytesRead = file.read(cPtr, iBytesRequested);
+  if (iBytesRead < iBytesRequested)
+  {
+    client.println F("Error reading header data in file ");
+    client.println(c);
+    return ;
+  }
+
+  // write out the string ....
+  client.print(cPtr);
+  client.println();
+
+  // now on to the data
+  iBytesRequested = max_data * sizeof(int);
+  iBytesRead = file.read(erg_in, iBytesRequested);
+
+  int nBlocks = 0;
+  while (iBytesRead == iBytesRequested)
+  {
+    iBytesRequested = max_data * sizeof(unsigned int);
+    iBytesRead = file.read (time_stamp, iBytesRequested );
+    nBlocks ++;
+    // stop when mask and probe are both 30%
+    Serial.print("time ");
+    Serial.print(time_stamp[max_data - 1]);
+    Serial.print(" erg ");
+    Serial.println(erg_in[max_data - 1]);
+    if ( time_stamp[max_data - 1] == 30 && erg_in[max_data - 1] == 30 )
+    {
+      file.close();
+      Serial.println F("about to do FFT");
+      do_fft();
+      // now plot data in erg_in
+      Serial.println F("done FFT");
+      sendGraphic(false);
+      Serial.println F("plotted FFT");
+      sendFooter ();
+      return ;
+
+    }
+
+    //read next block
+    iBytesRequested = max_data * sizeof(int);
+    iBytesRead = file.read(erg_in, iBytesRequested);
+
+  } // end of while
+
+  file.close();
+  sendFooter ();
+
+}
+
+
 void doreadFile (const char * c)
 {
   //String dataString ;
@@ -1619,6 +1711,11 @@ void getData ()
 
 void sendGraphic()
 {
+  sendGraphic(true);
+}
+
+void sendGraphic(bool plot_stimulus)
+{
   client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
   client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
 
@@ -1626,31 +1723,47 @@ void sendGraphic()
   client.println F("var c = document.getElementById(\"myCanvas\");");
   client.println F("var ctx = c.getContext(\"2d\");");
 
-  for (int i = 0; i < max_data - max_data / 6; i = i + 15)
+  int istep = 15;
+  int plot_limit = max_data - max_data / 6 ;
+  int iXFactor = 3;
+  int iYFactor = 0.25 ;
+  int iBaseline = 300 ;
+  if (!plot_stimulus)
   {
+    istep = 1;
+    plot_limit = plot_limit / 2;
+    iXFactor = 8 ;
+    iYFactor = 20 ;
+    iBaseline = 390 ;
+  }
+  for (int i = 0; i < plot_limit; i = i + istep)
+  {
+    int j = i + istep ;
     client.print F("ctx.moveTo(");
-    client.print((8 * i) / 10 );
+    client.print((iXFactor * i) /4 );
     client.print F(",");
-    client.print(350 - myGraphData[i] / 4);
+    client.print(iBaseline - myGraphData[i] * iXFactor);
     client.println F(");");
     client.print F("ctx.lineTo(");
-    client.print((8 * (i + 15)) / 10 );
+    client.print((iXFactor * j) /4 );
     client.print F(",");
-    client.print(350 - myGraphData[i + 15] / 4);
+    client.print(iBaseline - myGraphData[j] * iXFactor);
     client.println F(");");
     client.println F("ctx.stroke();");
-
-    client.print F("ctx.moveTo(");
-    client.print((8 * i) / 10 );
-    client.print F(",");
-    client.print(10 + fERG_Now(time_stamp[i] - time_stamp[0]) );
-    client.println F(");");
-    client.print F("ctx.lineTo(");
-    client.print((8 * (i + 13)) / 10 );
-    client.print F(",");
-    client.print(10 + fERG_Now(time_stamp[i + 13] - time_stamp[0]));
-    client.println F(");");
-    client.println F("ctx.stroke();");
+    if (plot_stimulus)
+    {
+      client.print F("ctx.moveTo(");
+      client.print((iXFactor * i) /4 );
+      client.print F(",");
+      client.print(10 + fERG_Now(time_stamp[i] - time_stamp[0]) );
+      client.println F(");");
+      client.print F("ctx.lineTo(");
+      client.print((iXFactor * (j)) /4 );
+      client.print F(",");
+      client.print(10 + fERG_Now(time_stamp[j] - time_stamp[0]));
+      client.println F(");");
+      client.println F("ctx.stroke();");
+    }
   }
   client.println F("</script>");
 }
@@ -1847,6 +1960,10 @@ void sendReply ()
   fPOS = MyInputString.indexOf F(".SVP");
   if (fPOS == -1)
   {
+    fPOS = MyInputString.indexOf F(".SVV");
+  }
+  if (fPOS == -1)
+  {
     fPOS = MyInputString.indexOf F(".ERG");
   }
   if (fPOS == -1)
@@ -1872,8 +1989,18 @@ void sendReply ()
     }
     else
     {
-      sFile.toCharArray(cFile, 29); // adds terminating null
-      doreadFile(cFile) ;
+
+      if (MyInputString.indexOf F(".SVV") > 0)
+      {
+        sFile.replace(F(".SVV"), F(".SVP"));
+        sFile.toCharArray(cFile, 29); // adds terminating null
+        doFFTFile(cFile) ;
+      }
+      else
+      {
+        sFile.toCharArray(cFile, 29); // adds terminating null
+        doreadFile(cFile) ;
+      }
     }
     return ;
 
@@ -1973,5 +2100,36 @@ void loop()
     client.stop();
     //Serial.println("client disonnected: Input now:" + MyInputString + "::::");
   }
+}
+
+
+void do_fft()
+{
+
+  //  read it  in erg_in, transfer it to f_ and then put the fft back in erg_in
+
+
+  // FFT_SIZE IS DEFINED in Header file Radix4.h
+  // #define   FFT_SIZE           1024
+
+  int         f_r[FFT_SIZE]   = { 0};
+  int         f_i[FFT_SIZE]   = { 0};
+  int         out[FFT_SIZE / 2]     = { 0};     // Magnitudes
+
+  Radix4     radix;
+  for ( uint16_t i = 0, k = (NWAVE / FFT_SIZE); i < FFT_SIZE; i++ )
+  {
+    f_r[i] = erg_in[i];
+  }
+  memset( f_i, 0, sizeof(f_i));                   // Image -zero.
+
+
+
+  radix.rev_bin( f_r, FFT_SIZE);
+  radix.fft_radix4_I( f_r, f_i, LOG2_FFT);
+  radix.gain_Reset( f_r, LOG2_FFT - 1);
+  radix.gain_Reset( f_i, LOG2_FFT - 1);
+  radix.get_Magnit( f_r, f_i, erg_in);
+
 }
 
