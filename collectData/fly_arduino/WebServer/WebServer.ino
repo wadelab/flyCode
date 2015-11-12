@@ -763,7 +763,8 @@ void printDirectory(uint8_t flags) {
     client.print F("</a> ");
     /////////////////////////////// now put in a link for a picture
     if (char(p.name[10]) == 'G')
-    { // print any indent spaces
+    {
+      // print any indent spaces
       client.print F(" <a href=\"");
       for (uint8_t i = 0; i < 10; i++)
       {
@@ -776,7 +777,24 @@ void printDirectory(uint8_t flags) {
       client.print F("P\"> (picture)</a>");
       ///////////////////////////////
     }
+    if (char(p.name[10]) == 'P')
+    {
+      // print any indent spaces
+      client.print F(" <a href=\"");
+      for (uint8_t i = 0; i < 10; i++)
+      {
+        if (p.name[i] == ' ') continue;
+        if (i == 8) {
+          client.print('.');
+        }
+        client.print(char(p.name[i]));
+      }
+      client.print F("V\"> (fft (30,30))</a>");
+      ///////////////////////////////
+    }
 
+
+    ////////////////////////////////////////
 
     if (DIR_IS_SUBDIR(&p))
     {
@@ -1214,6 +1232,8 @@ void doFFTFile (const char * c)
   char * cPtr;
   cPtr = (char *) erg_in ;
   int iOldContrast ;
+  int erg_in2 [max_data] ;
+  memset (erg_in2, 0, sizeof(int) * max_data);
 
   Serial.print F("trying to open:");
   Serial.println (c);
@@ -1251,7 +1271,7 @@ void doFFTFile (const char * c)
 
   // write out the string ....
   client.print(cPtr);
-  client.println();
+  client.println("<BR>");
 
   // now on to the data
   iBytesRequested = max_data * sizeof(int);
@@ -1270,16 +1290,10 @@ void doFFTFile (const char * c)
     Serial.println(erg_in[max_data - 1]);
     if ( time_stamp[max_data - 1] == 30 && erg_in[max_data - 1] == 30 )
     {
-      file.close();
-      Serial.println F("about to do FFT");
-      do_fft();
-      // now plot data in erg_in
-      Serial.println F("done FFT");
-      sendGraphic(false);
-      Serial.println F("plotted FFT");
-      sendFooter ();
-      return ;
-
+      for (int ii = 0; ii < max_data; ii++)
+      {
+        erg_in2[ii] = erg_in2[ii] + erg_in[ii];
+      }
     }
 
     //read next block
@@ -1289,6 +1303,16 @@ void doFFTFile (const char * c)
   } // end of while
 
   file.close();
+        for (int ii = 0; ii < max_data; ii++)
+      {
+        erg_in[ii] = erg_in2[ii] / maxRepeats;
+      }
+  Serial.println F("about to do FFT");
+  do_fft();
+  // now plot data in erg_in
+  Serial.println F("done FFT");
+  sendGraphic(false);
+  Serial.println F("plotted FFT");
   sendFooter ();
 
 }
@@ -1725,46 +1749,56 @@ void sendGraphic(bool plot_stimulus)
 
   int istep = 15;
   int plot_limit = max_data - max_data / 6 ;
-  int iXFactor = 3;
-  int iYFactor = 0.25 ;
-  int iBaseline = 300 ;
+  int iXFactor = 4;
+  int iYFactor = 25 ;
+  int iBaseline = 260 ;
+  int iXDiv = 6 ;
   if (!plot_stimulus)
   {
     istep = 1;
     plot_limit = plot_limit / 2;
-    iXFactor = 8 ;
-    iYFactor = 20 ;
-    iBaseline = 390 ;
+    iXFactor = 10 ;
+    iYFactor = 5;
+    iBaseline = 420 ;
+    iXDiv = 5 ;
   }
-  for (int i = 0; i < plot_limit; i = i + istep)
+  client.println F("ctx.beginPath();");
+  for (int i = istep; i < plot_limit; i = i + istep)
   {
     int j = i + istep ;
     client.print F("ctx.moveTo(");
-    client.print((iXFactor * i) /4 );
+    client.print((iXFactor * i) / iXDiv );
     client.print F(",");
-    client.print(iBaseline - myGraphData[i] * iXFactor);
+    client.print(iBaseline - (10 * myGraphData[i]) / iYFactor);
     client.println F(");");
     client.print F("ctx.lineTo(");
-    client.print((iXFactor * j) /4 );
+    client.print((iXFactor * j) / iXDiv );
     client.print F(",");
-    client.print(iBaseline - myGraphData[j] * iXFactor);
+    client.print(iBaseline - (10 * myGraphData[j]) / iYFactor);
     client.println F(");");
-    client.println F("ctx.stroke();");
-    if (plot_stimulus)
+  }
+  client.println F("ctx.stroke();");
+
+  if (plot_stimulus)
+  {
+    client.println F("ctx.beginPath();");
+    for (int i = istep; i < plot_limit; i = i + istep)
     {
+      int j = i + istep ;
       client.print F("ctx.moveTo(");
-      client.print((iXFactor * i) /4 );
+      client.print((iXFactor * i) / iXDiv );
       client.print F(",");
-      client.print(10 + fERG_Now(time_stamp[i] - time_stamp[0]) );
+      client.print(10 + (4 * fERG_Now(time_stamp[i] - time_stamp[0])) / iYFactor);
       client.println F(");");
       client.print F("ctx.lineTo(");
-      client.print((iXFactor * (j)) /4 );
+      client.print((iXFactor * (j)) / iXDiv );
       client.print F(",");
-      client.print(10 + fERG_Now(time_stamp[j] - time_stamp[0]));
+      client.print(10 + (4 * fERG_Now(time_stamp[j] - time_stamp[0]) ) / iYFactor);
       client.println F(");");
-      client.println F("ctx.stroke();");
     }
+    client.println F("ctx.stroke();");
   }
+
   client.println F("</script>");
 }
 
