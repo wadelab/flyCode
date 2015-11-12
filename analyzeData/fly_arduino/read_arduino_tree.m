@@ -226,7 +226,10 @@ for phen = 1:nPhenotypes
     end
     
 end
+%%
 
+savefileName = [dirName, filesep, 'CollectedArduinoData.mat'];
+save(savefileName);
 
 %% 
 disp(' ');
