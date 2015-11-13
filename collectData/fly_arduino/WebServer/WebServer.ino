@@ -11,7 +11,7 @@
 
 
 #define due5
-//#define USE_DHCP
+#define USE_DHCP
 
 //#define __USE_SDFAT
 
@@ -189,12 +189,12 @@ char cFile [30];
 char cInput [MaxInputStr + 2] = "";
 
 // for graphic plotting
-  int istep = 15;
-  int plot_limit = max_data - max_data / 6 ;
-  int iXFactor = 4;
-  int iYFactor = 25 ;
-  int iBaseline = 260 ;
-  int iXDiv = 6 ;
+int istep = 15;
+int plot_limit = max_data - max_data / 6 ;
+int iXFactor = 4;
+int iYFactor = 25 ;
+int iBaseline = 260 ;
+int iXDiv = 6 ;
 
 #ifndef MAC_OK
 #error please define which arduino you are setting up
@@ -1230,11 +1230,11 @@ void doplotFile (const char * c)
 
 }
 
-void doFFTFile (const char * c)
+void doFFTFile (const char * c, bool bNeedHeadFooter)
 {
   String Sc = (c);
   Sc = String (F("FFT of ")) + Sc ;
-  sendHeader (Sc);
+  if (bNeedHeadFooter) sendHeader (Sc);
 
   //String dataString ;
   char * cPtr;
@@ -1298,10 +1298,14 @@ void doFFTFile (const char * c)
     Serial.println(erg_in[max_data - 1]);
     if ( time_stamp[max_data - 1] == 30 && erg_in[max_data - 1] == 30 )
     {
+      Serial.print F("about to do FFT ");
+      do_fft();
       for (int ii = 0; ii < max_data; ii++)
       {
         erg_in2[ii] = erg_in2[ii] + erg_in[ii];
       }
+      Serial.print (erg_in[48]);
+      Serial.println F(" done FFT");
     }
 
     //read next block
@@ -1315,13 +1319,11 @@ void doFFTFile (const char * c)
   {
     erg_in[ii] = erg_in2[ii] / maxRepeats;
   }
-  Serial.println F("about to do FFT");
-  do_fft();
+  Serial.print (erg_in[48]);
   // now plot data in erg_in
-  Serial.println F("done FFT");
   sendGraphic(false);
-  Serial.println F("plotted FFT");
-  sendFooter ();
+  Serial.println F(" plotted FFT");
+  if (bNeedHeadFooter) sendFooter ();
 
 }
 
@@ -1742,31 +1744,31 @@ void getData ()
 }
 void plotInColour (int iStart, const String & str_col)
 {
- // 12 Hz in blue ?
-    // 4 ms per point 0.25 Hz per point, so 12 Hz expected at 48
-    client.println F("ctx.beginPath();");
-    client.print F("ctx.moveTo(");
-    client.print((iXFactor * iStart) / iXDiv );
+  // 12 Hz in blue ?
+  // 4 ms per point 0.25 Hz per point, so 12 Hz expected at 48
+  client.println F("ctx.beginPath();");
+  client.print F("ctx.moveTo(");
+  client.print((iXFactor * iStart) / iXDiv );
+  client.print F(",");
+  client.print(iBaseline - (10 * myGraphData[iStart]) / iYFactor);
+  client.println F(");");
+  for (int i = iStart + istep; i < iStart + 5; i = i + istep)
+  {
+    client.print F("ctx.lineTo(");
+    client.print((iXFactor * i) / iXDiv );
     client.print F(",");
-    client.print(iBaseline - (10 * myGraphData[iStart]) / iYFactor);
+    client.print(iBaseline - (10 * myGraphData[i]) / iYFactor);
     client.println F(");");
-    for (int i = iStart + istep; i < iStart + 5; i = i + istep)
-    {
-      client.print F("ctx.lineTo(");
-      client.print((iXFactor * i) / iXDiv );
-      client.print F(",");
-      client.print(iBaseline - (10 * myGraphData[i]) / iYFactor);
-      client.println F(");");
-    }
-    client.print F("ctx.strokeStyle = '");
-    client.print (str_col);
-    client.println F("';");
-    client.println F("ctx.closePath();");
-    client.print F("ctx.fillStyle='");
-    client.print (str_col);
-    client.println F("';");
-    client.println F("ctx.fill();");
-    client.println F("ctx.stroke();");
+  }
+  client.print F("ctx.strokeStyle = '");
+  client.print (str_col);
+  client.println F("';");
+  client.println F("ctx.closePath();");
+  client.print F("ctx.fillStyle='");
+  client.print (str_col);
+  client.println F("';");
+  client.println F("ctx.fill();");
+  client.println F("ctx.stroke();");
 }
 void sendGraphic()
 {
@@ -1782,12 +1784,12 @@ void sendGraphic(bool plot_stimulus)
   client.println F("var c = document.getElementById(\"myCanvas\");");
   client.println F("var ctx = c.getContext(\"2d\");");
 
-   istep = 15;
-   plot_limit = max_data - max_data / 6 ;
-   iXFactor = 4;
-   iYFactor = 25 ;
-   iBaseline = 260 ;
-   iXDiv = 6 ;
+  istep = 15;
+  plot_limit = max_data - max_data / 6 ;
+  iXFactor = 4;
+  iYFactor = 25 ;
+  iBaseline = 260 ;
+  iXDiv = 6 ;
   if (!plot_stimulus)
   {
     istep = 1;
@@ -1837,9 +1839,11 @@ void sendGraphic(bool plot_stimulus)
   }
   else
   {
-   plotInColour (4 * 12, String("#0000FF"));
-   plotInColour (4 * 12 * 2, String("#8A2BE2"));
-   plotInColour (4 * 27, String("#FF8C00"));
+    plotInColour (4 * 12, String F("#0000FF"));
+    plotInColour (4 * 12 * 2, String F("#8A2BE2"));
+    plotInColour (4 * 27, String F("#FF8C00"));
+    // 1024 rather than 1000
+    plotInColour (4 * 51, String F("#FF0000"));
   }
 
   client.println F("</script>");
@@ -1942,17 +1946,26 @@ void sendReply ()
       client.print(file.fileSize());
       client.print(" bytes; expected size ");
       client.print(exp_size);
-      String sPicture = sFile;
-      sPicture.replace ("ERG", "ERP" );
-      client.print("<A HREF= \"" + sPicture + "\" > (picture) </A>" );
+
+      if (bDoFlash)
+      {
+        String sPicture = sFile;
+        sPicture.replace ("ERG", "ERP" );
+        client.print("<A HREF= \"" + sPicture + "\" > (averaged picture) </A>" );
+      }
       client.println("<BR><BR>");
 
       client.println F("To setup for another test please ") ;
       send_GoBack_to_Stim_page ();
-      client.println F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR>");
+      client.println F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR><BR>");
+      
       if (bDoFlash)
       {
         sendGraphic();
+      }
+      else
+      {
+        doFFTFile (cFile, false) ;
       }
       sendFooter ();
       return ;
@@ -2071,7 +2084,7 @@ void sendReply ()
       {
         sFile.replace(F(".SVV"), F(".SVP"));
         sFile.toCharArray(cFile, 29); // adds terminating null
-        doFFTFile(cFile) ;
+        doFFTFile(cFile, true) ;
       }
       else
       {
