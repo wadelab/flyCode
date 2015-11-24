@@ -22,13 +22,15 @@ load(fullfile(newpathToLoad,newfileToLoad)); % This is the file you got from the
 % uigetfile to browse .
 
 
-%% now calculate a csv file name
+%% now calculate a xls file name
 [pathstr, name, ext] = fileparts([newpathToLoad,newfileToLoad]);
-outfile = [pathstr, '/', name,'_MAX_forSPSS_v2.csv'];
-fileID = fopen(outfile, 'w+');
-if fileID < 3
-    error (['file not opened', outfile]);
-end
+outfile = [pathstr, '/', name,'.xls'];
+outfile = strrep (outfile,'_AnalysisData_noNorm', '');
+
+% fileID = fopen(outfile, 'w+');
+% if fileID < 3
+%     error (['file not opened', outfile]);
+% end
 %% Now we have to write out the data in the format
 % Fly, F, contrast, mask, response, genotype
 % we put genotype last so it can be split in Excel%
@@ -97,19 +99,43 @@ for genotype = 1 : genotypemax
     end
 end
 
+%% Initialisation of POI Libs
+% Add Java POI Libs to matlab javapath
+%%%%%%a='/data_biology/SSERG/toolbox/git/flyCode/generalToolboxFunctions/xlwrite/';
+a=[fileparts(which ('writeFlyDataToXL.m')),filesep,'xlwrite/']
+
+available=exist('xlwrite');
+if (available ~=2)
+    disp('You should add xlwrite to your path (it''s in the toolbox directory');
+    
+    addpath(a);
+end
+
+javaaddpath(fullfile(a,'poi_library/poi-3.8-20120326.jar'));
+javaaddpath(fullfile(a,'poi_library/poi-ooxml-3.8-20120326.jar'));
+javaaddpath(fullfile(a,'poi_library/poi-ooxml-schemas-3.8-20120326.jar'));
+javaaddpath(fullfile(a,'poi_library/xmlbeans-2.3.0.jar'));
+javaaddpath(fullfile(a,'poi_library/dom4j-1.6.1.jar'));
+javaaddpath(fullfile(a,'poi_library/stax-api-1.0.1.jar'));
+% fileID = fopen(outfile, 'w+');
+% if fileID < 3
+%     error (['file not opened', outfile]);
+% end
+
 
 %% well csvwrite doesn't like my cell matrix, so do it outselves
 %outM = celltomat(outcells);
 %csvwrite(outfile, outM);
 
-cSize = size(outcells);
-for i =1:cSize(1)
-    for j = 1: cSize(2)
-        a = outcells{i,j} ;
-        fprintf (fileID, '%s,', a{:});
-    end
-    fprintf (fileID,'\n');
-end
+% cSize = size(outcells);
+% for i =1:cSize(1)
+%     for j = 1: cSize(2)
+%         a = outcells{i,j} ;
+%         fprintf (fileID, '%s,', a{:});
+%     end
+%     fprintf (fileID,'\n');
+% end
 
+[status]=xlwrite(outfile, outcells,'SPSS','A1');
 
 disp (['file written ', outfile]);
