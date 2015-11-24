@@ -73,7 +73,7 @@ stim(13)=stim(3); % First order adaptor - change direction
 stim(13).temporal.modulation.direction=[1 1]; % This is the direction in which the grating moves. 1 means a leftward drift, -1 means rightward
 stim(13).label='LeftwardAdapt';
 
-stim(14)=stim(4); % First order reverse probe again - 6Hz reversal
+stim(14)=stim(4); % First order reverse probe again - 8Hz reversal
 stim(14).temporal.modulation.frequency=[8 8]; % This is the reversal frequency for stimuli that drift
 stim(14).label='1stOrder8HzProbe';
 
