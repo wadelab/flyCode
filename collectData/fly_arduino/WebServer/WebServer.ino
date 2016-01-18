@@ -1,6 +1,6 @@
 
 
-//try this http://gammon.com.au/forum/?id=11488&reply=5#reply5 for interrupts
+//try this http://gammon.com.au/forum/?id=11488&reply=5#reply5  for interrupts
 //Digital pin 7 is used as a handshake pin between the WiFi shield and the Arduino, and should not be used
 // http://www.arduino.cc/playground/Code/AvailableMemory
 
@@ -94,6 +94,8 @@
 #else
 #include <SD.h>
 #endif
+
+#include <include/adc.h>
 
 // include fft
 #include <Radix4.h>
@@ -227,6 +229,7 @@ void setup() {
   pinMode(SS_ETHERNET, OUTPUT);
 
   pinMode(noContactLED, OUTPUT);
+  pinMode(analogPin, INPUT);
 
   for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
   {
@@ -1426,6 +1429,29 @@ void doreadFile (const char * c)
 
 }
 
+// from http://nicecircuits.com/playing-with-analog-to-digital-converter-on-arduino-due/
+
+void myADCsetup()
+{
+  pmc_enable_periph_clk(ID_ADC); // To use peripheral, we must enable clock distributon to it
+  adc_init(ADC, SystemCoreClock, 250, ADC_STARTUP_FAST); // initialize, 250 Hz so 4 ms per sample
+  adc_disable_interrupt(ADC, 0xFFFFFFFF);
+  adc_set_resolution(ADC, ADC_12_BITS);
+  adc_configure_power_save(ADC, 0, 0); // Disable sleep
+  adc_configure_timing(ADC, 0, ADC_SETTLING_TIME_3, 1); // Set timings - standard values
+  adc_set_bias_current(ADC, 1); // Bias current - maximum performance over current consumption
+  adc_stop_sequencer(ADC); // not using it
+  adc_disable_tag(ADC); // it has to do with sequencer, not using it
+  adc_disable_ts(ADC); // deisable temperature sensor
+  adc_disable_channel_differential_input(ADC, ADC_CHANNEL_7);
+  adc_configure_trigger(ADC, ADC_TRIG_SW, 1); // triggering from software, freerunning mode
+  adc_disable_all_channel(ADC);
+  adc_enable_channel(ADC, ADC_CHANNEL_7); // just one channel enabled
+  adc_start(ADC);
+}
+
+
+
 bool collectSSVEPData ()
 {
   const long presamples = 102;
@@ -1448,6 +1474,7 @@ bool collectSSVEPData ()
   sampleCount = -presamples ;
   last_time = millis();
   start_time = last_time;
+  myADCsetup();
   while (sampleCount < max_data)
   {
     unsigned long now_time = millis();
@@ -1464,21 +1491,28 @@ bool collectSSVEPData ()
       {
         mean = mean / presamples ;
       }
+      while ((adc_get_status(ADC) & ADC_ISR_DRDY) != ADC_ISR_DRDY)
+      {}; //Wait for end of conversion
+      int val = adc_get_latest_value(ADC);
+
       if (sampleCount >= 0)
       {
         // read  sensor
-        erg_in[sampleCount] = analogRead(analogPin) - mean ; // subtract 512 so we get it in the range...
+        erg_in[sampleCount] = val - mean ; // subtract 512 so we get it in the range...
         time_stamp[sampleCount] = iTime ;
       }
       else
       {
-        mean = mean + long(analogRead(analogPin));
+        mean = mean + long(val);
       }
       int intensity = br_Now(iTime) ;
       analogWrite(usedLED, intensity);
       sampleCount ++ ;
     }
   }
+
+
+  adc_stop(ADC);
 
   // now done with sampling....
   //save contrasts we've used...
@@ -1518,6 +1552,8 @@ bool collect_fERG_Data ()
   //  Serial.print F("r : c");
   //  Serial.println (iThisContrast);
 
+  myADCsetup() ;
+
   sampleCount = -presamples ;
   last_time = millis();
   start_time = last_time;
@@ -1537,15 +1573,19 @@ bool collect_fERG_Data ()
       {
         mean = mean / presamples ;
       }
+      while ((adc_get_status(ADC) & ADC_ISR_DRDY) != ADC_ISR_DRDY)
+      {}; //Wait for end of conversion
+      int val = adc_get_latest_value(ADC);
+
       if (sampleCount >= 0)
       {
         // read  sensor
-        erg_in[sampleCount] = analogRead(analogPin) - mean ; // subtract 512 so we get it in the range...
+        erg_in[sampleCount] = val - mean ; // subtract 512 so we get it in the range...
         time_stamp[sampleCount] = iTime ;
       }
       else
       {
-        mean = mean + long(analogRead(analogPin));
+        mean = mean + long(val);
       }
       int intensity = fERG_Now(iTime - time_stamp[0]) ;
       analogWrite(usedLED, intensity);
@@ -1553,6 +1593,8 @@ bool collect_fERG_Data ()
     }
   }
 
+
+  adc_stop(ADC);
   sampleCount ++ ;
   analogWrite(usedLED, 0);
   iThisContrast = maxContrasts ; //++;
@@ -1958,7 +2000,7 @@ void sendReply ()
       client.println F("To setup for another test please ") ;
       send_GoBack_to_Stim_page ();
       client.println F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR><BR>");
-      
+
       if (bDoFlash)
       {
         sendGraphic();
