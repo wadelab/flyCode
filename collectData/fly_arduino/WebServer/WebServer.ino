@@ -11,7 +11,7 @@
 
 
 #define due5
-#define USE_DHCP
+//#define USE_DHCP
 
 //#define __USE_SDFAT
 
@@ -487,6 +487,14 @@ void sendFooter()
   client.println F("</body></html>");
 }
 
+
+void sendError (const String & sError)
+{
+  sendHeader (String(F("Arduino System Error")));
+  client.print F("Error in system, Please check for update <BR>");
+  client.println (sError) ;
+  sendFooter();
+}
 
 void send_GoBack_to_Stim_page ()
 {
@@ -1958,7 +1966,7 @@ void sendReply ()
       client.println F("To setup for another test please ") ;
       send_GoBack_to_Stim_page ();
       client.println F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR><BR>");
-      
+
       if (bDoFlash)
       {
         sendGraphic();
