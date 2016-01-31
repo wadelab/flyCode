@@ -937,66 +937,70 @@ void webTime ()
   return ;
 }
 
-void file__time ()
+bool file__time ()
 {
   year = 2016;
   second = myminute = hour = day = month = 1;
 
-  //GET /?GAL4=JoB&UAS=w&Age=-1&Antn=Ok&sex=male&org=fly&col=blue&F1=12&F2=15&stim=fERG&filename=7_04_14h35m44 HTTP/1.1
+  //GET /?GAL4=JoB&UAS=w&Age=-1&Antn=Ok&sex=male&org=fly&col=blue&F1=12&F2=15&stim=fERG&filename=2016_31_01_15h02m25 HTTP/1.1
   Serial.print ("INPUT is " );
   Serial.flush();
   //Serial.println (String(cInput));
   const int calcTimemax = 17 ;
   char calcTime [calcTimemax] ; //= "0000000000000" ;
+  for (int i = 0; i < calcTimemax ; i++)
+  {
+    calcTime[i] = 0;
+  }
+
+  char * fPOS = strstr (cInput, "filename=");
+  if (!fPOS)
+  {
+    sendError (F("No filename in request to serve page"));
+    return false;
+  }
+  char * gPOS = strstr (fPOS, "HTTP/1.1");
+  if (!gPOS)
+  {
+    sendError (F("No HHTP in request to serve page"));
+    return false;
+  }
+  *gPOS = 0;
+
+
+  Serial.print ("fpos is " );
+  Serial.println (fPOS);
+  Serial.flush();
+  fPOS = fPOS + 9;
+  Serial.print ("fpos is now" );
+  Serial.println (fPOS);
+  Serial.flush();
+
+  if (strlen(fPOS) < 20)
+  {
+    sendError (F("Wrong length of date in request to serve page"));
+    return false;
+  }
+
+  strcpy (calcTime, fPOS);
+
+  Serial.print ("time is:");
   for (int i = 0; i < calcTimemax - 1; i++)
   {
-    calcTime[i] = '0';
-  }
-  calcTime[calcTimemax] = 0;
-  char * fPOS = strstr (cInput, "filename=");
-  if (fPOS)
-  {
-    Serial.print ("fpos is " );
-    Serial.println (*fPOS);
+    Serial.print( calcTime[i] );
     Serial.flush();
-    fPOS = fPOS + 9;
-    Serial.print ("fpos is now" );
-    Serial.println (*fPOS);
-    Serial.flush();
-
-    //Serial.println ("time is" + String(fPOS));
-    char * cU = (strstr(fPOS, "_")) ;
-    int iUnderline = cU - fPOS ;
-    Serial.print ("underline is at" );
-    Serial.println (iUnderline);
-    Serial.flush();
-    if (cU && (iUnderline) < 2)
-    {
-      strcpy (calcTime + 1, fPOS);
-    }
-    else
-    {
-      strcpy (calcTime, fPOS);
-    }
-    Serial.print ("time is:");
-    for (int i = 0; i < calcTimemax - 1; i++)
-    {
-      Serial.print( calcTime[i] );
-      Serial.flush();
-    }
-    Serial.println();
-    // 12_10_10h26m55
-
-    day = atoi(calcTime);
-    month = atoi(calcTime + 3);
-    hour = atoi(calcTime + 6);
-    myminute = atoi(calcTime + 9);
-    second = atoi(calcTime + 12) ;
   }
-  else // filname= not found
-  {
-    Serial.print("No filename code");
-  }
+  Serial.println();
+  // 2016_31_01_15h02m25
+  year = atoi(calcTime);
+  day = atoi(calcTime + 5);
+  month = atoi(calcTime + 8);
+  hour = atoi(calcTime + 11);
+  myminute = atoi(calcTime + 15);
+  second = atoi(calcTime + 18) ;
+  Serial.print ("year is (if zero, atoi error):");
+  Serial.print (year) ;
+  return (year != 0) ;
 }
 
 bool writeFile(const char * c)
@@ -1008,12 +1012,7 @@ bool writeFile(const char * c)
   //    int erg_in [max_data];
 
   int16_t iBytesWritten ;
-  year = 2014 ;
-  webTime ();
-  if (year == 2014)
-  {
-    file__time();
-  }
+
 
   /*
     Serial.println F ("Filetime determined..");
@@ -1748,8 +1747,8 @@ void getData ()
       bFileOK = collectSSVEPData ();
     }
   }
-
 }
+
 void plotInColour (int iStart, const String & str_col)
 {
   // 12 Hz in blue ?
@@ -1938,6 +1937,14 @@ void sendReply ()
       nRepeats = iThisContrast = 0 ;
       //turn off any lights we have on...
       goColour(0, false);
+      // get time...
+      year = 2014 ;
+      //webTime ();
+      if (year == 2014)
+      {
+        if (!file__time())
+          return ;
+      }
     }
     //Serial.print("repeats now ");
     //Serial.println(nRepeats);
@@ -1982,7 +1989,7 @@ void sendReply ()
     flickerPage();
     sampleCount = -102 ; //implies collectData();
     return ;
-  }
+  } // end of fPOS for filename=
 
   // show directory
   fPOS = MyInputString.indexOf F("dir=");
