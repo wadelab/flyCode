@@ -999,36 +999,47 @@ bool file__time ()
   myminute = atoi(calcTime + 15);
   second = atoi(calcTime + 18) ;
   Serial.print ("year is (if zero, atoi error):");
-  Serial.print (year) ;
+  Serial.println (year) ;
   return (year != 0) ;
 }
 
-bool writeFile(const char * c)
+
+bool writeSummaryFile(const char * cMain)
 {
-  // file format
-  //    MyInputString viz. char cInput [MaxInputStr+2];
-  //    int contrastOrder[ maxContrasts ];
-  //    unsigned int time_stamp [max_data] ;
-  //    int erg_in [max_data];
+  int iCharMaxHere = 60 ;
+  char c [iCharMaxHere]; // will hold filename
+  char cTmp [iCharMaxHere]; // to hold text to write
+  char * pDot = strchr (cMain, '.');
+
+  Serial.print("Summarising filename ");
+  Serial.println (cMain);
+  Serial.flush();
+  if (!pDot)
+  {
+    Serial.print("Error in filename");
+    Serial.println (c);
+    Serial.flush();
+    return false ;
+  }
+  Serial.print("filenam extension:");
+  Serial.println (pDot);
+  Serial.flush();
+  int iBytes = pDot - cMain ;
+
+  Serial.print("length of string:");
+  Serial.println (iBytes);
+  Serial.flush();
+
+  strncpy (c, cMain , iBytes);
+  c[iBytes] = 0;
+  strcat (c, ".csv");
+
+  Serial.print("now summarising");
+  Serial.println (c);
+  Serial.flush();
 
   int16_t iBytesWritten ;
 
-
-  /*
-    Serial.println F ("Filetime determined..");
-
-    Serial.println( year );
-    Serial.println( month );
-    Serial.flush();
-    Serial.println( day );
-    Serial.flush();
-    Serial.println( hour );
-    Serial.flush();
-    Serial.println( myminute );
-    Serial.flush();
-    Serial.println( second );
-    Serial.flush();
-  */
 #ifdef __USE_SDFAT
 #define root sd.vwd()
 #endif
@@ -1048,6 +1059,117 @@ bool writeFile(const char * c)
       Serial.println F ("Error in timestamping file");
       Serial.println (c);
       Serial.flush();
+      file.close();
+      return false ;
+    }
+    iBytesWritten = file.write(cInput, MaxInputStr + 2);
+    if (iBytesWritten <= 0)
+    {
+      Serial.println F ("Error in writing header to file");
+      file.close();
+      return false ;
+    }
+    strcpy (cTmp, "probe contrast, mask, repeat, 1F1, 2F1, 1F2, 50 Hz\n");
+    iBytesWritten = file.write(cTmp, strlen(cTmp)) ;
+    if (iBytesWritten <= 0)
+    {
+      Serial.println F ("Error in writing header to file");
+      file.close();
+      return false ;
+    }
+
+  }
+  else // file exists, so just append...
+  {
+    if ( !file.open(root, c /*myName*/,  O_APPEND | O_WRITE))
+    {
+      Serial.println F ("Error in reopening file");
+      Serial.println (c);
+      file.close();
+      return false;
+    }
+
+  }
+
+
+  //    plotInColour (4 * 12, String F("#0000FF"));
+  //    plotInColour (4 * 12 * 2, String F("#8A2BE2"));
+  //    plotInColour (4 * 27, String F("#FF8C00"));
+  //    // 1024 rather than 1000
+  //    plotInColour (4 * 51, String F("#FF0000"));
+
+  iBytesWritten = file.print(time_stamp[max_data - 1]) ;
+  iBytesWritten = iBytesWritten + file.print(',') ;
+
+  iBytesWritten = file.print(erg_in[max_data - 1]) ;
+  iBytesWritten = iBytesWritten + file.print(',') ;
+
+    iBytesWritten = file.print(nRepeats/maxContrasts) ;
+  iBytesWritten = iBytesWritten + file.print(',') ;
+
+  
+
+  iBytesWritten = file.print(erg_in[4 * 12]) ;
+  iBytesWritten = iBytesWritten + file.print(',') ;
+
+  iBytesWritten = file.print(erg_in[4 * 12 * 2]) ;
+  iBytesWritten = iBytesWritten + file.print(',') ;
+
+  iBytesWritten = file.print(erg_in[4 * 27]) ;
+  iBytesWritten = iBytesWritten + file.print(',') ;
+
+  iBytesWritten = file.print(erg_in[4 * 51]) ;
+  iBytesWritten = iBytesWritten + file.print('\n') ;
+
+  if (iBytesWritten <= 0)
+  {
+    Serial.println F ("Error in writing erg data to file");
+    file.close();
+    return false;
+  }
+
+  // Serial.println("File success: written bytes " + String(iBytesWritten));
+
+  Serial.print F(" More bytes writen to file.........");
+  Serial.print  (c);
+  Serial.print F(" size now ");
+  Serial.println (file.fileSize());
+  file.sync();
+  file.close();
+  return true ;
+}
+
+
+bool writeFile(const char * c)
+{
+  // file format
+  //    MyInputString viz. char cInput [MaxInputStr+2];
+  //    int contrastOrder[ maxContrasts ];
+  //    unsigned int time_stamp [max_data] ;
+  //    int erg_in [max_data];
+
+  int16_t iBytesWritten ;
+
+#ifdef __USE_SDFAT
+#define root sd.vwd()
+#endif
+
+  if (!fileExists(c))
+  {
+
+    if ( !file.open(root, c /*myName*/,   O_CREAT | O_APPEND | O_WRITE))
+    {
+      Serial.println F ("Error in opening file");
+      Serial.println (c);
+      Serial.flush();
+      return false;
+    }
+
+    if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
+      Serial.println F ("Error in timestamping file");
+      Serial.println (c);
+      Serial.flush();
+      file.close();
       return false ;
     }
     iBytesWritten = file.write(cInput, MaxInputStr + 2);
@@ -1065,6 +1187,7 @@ bool writeFile(const char * c)
     {
       Serial.println F ("Error in reopening file");
       Serial.println (c);
+      file.close();
       return false;
     }
 
@@ -1085,6 +1208,7 @@ bool writeFile(const char * c)
   if (iBytesWritten <= 0)
   {
     Serial.println F ("Error in writing timing data to file");
+    file.close();
     return false ;
   }
   Serial.print F(" More bytes writen to file.........");
@@ -1092,6 +1216,7 @@ bool writeFile(const char * c)
   Serial.print F(" size now ");
   Serial.println (file.fileSize());
   file.sync();
+  file.close();
   return true ;
 }
 
@@ -1178,6 +1303,7 @@ void doplotFile (const char * c)
   {
     client.println F("Error reading header data in file ");
     client.println(c);
+    file.close();
     return ;
   }
 
@@ -1281,6 +1407,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   {
     client.println F("Error reading header data in file ");
     client.println(c);
+    file.close();
     return ;
   }
 
@@ -1306,13 +1433,17 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
     if ( time_stamp[max_data - 1] == 30 && erg_in[max_data - 1] == 30 )
     {
       Serial.print F("about to do FFT ");
+      int m = millis();
       do_fft();
+      // add to the average
       for (int ii = 0; ii < max_data; ii++)
       {
         erg_in2[ii] = erg_in2[ii] + erg_in[ii];
       }
       Serial.print (erg_in[48]);
-      Serial.println F(" done FFT");
+      Serial.print F(" done FFT in");
+      Serial.print(millis() - m);
+      Serial.println(" milliseconds");
     }
 
     //read next block
@@ -1373,6 +1504,7 @@ void doreadFile (const char * c)
   {
     client.println F("Error reading header data in file ");
     client.println(c);
+    file.close();
     return ;
   }
 
@@ -1433,6 +1565,73 @@ void doreadFile (const char * c)
 
 }
 
+
+void doreadSummaryFile (const char * c)
+{
+  //String dataString ;
+  char * cPtr;
+  cPtr = (char *) erg_in ;
+
+  //Serial.print F("trying to open:");
+  //Serial.println (c);
+  if (file.isOpen()) file.close();
+  file.open(root, c, O_READ);
+
+  // Content-Length: 1000000 [size in bytes
+  // Last-Modified: Sat, 28 Nov 2009 03:50:37 GMT
+  // make erg_in buffer do the dirty work of getting the date...
+  dir_t  dE;
+  if (file.dirEntry (&dE))
+  {
+    Serial.println F("file date recovered") ;
+  }
+  else
+  {
+    Serial.println F("file date not recovered") ;
+  }
+  gmdate ( dE );
+  Serial.print F("Last modified is:");
+  Serial.println( cPtr ) ;
+  sendHeader(String(c), "", false, cPtr);
+
+  int iBytesRequested, iBytesRead;
+  // note this overwrites any data already in memeory...
+  //first read the header string ...
+  iBytesRequested = MaxInputStr + 2;
+  iBytesRead = file.read(cPtr, iBytesRequested);
+  if (iBytesRead < iBytesRequested)
+  {
+    client.println F("Error reading header data in file ");
+    client.println(c);
+    file.close();
+    return ;
+  }
+
+  // write out the string ....
+  client.print(cPtr);
+  client.println();
+
+  // inefficiently read the file a byte at a time, and send it to the client
+  // replace \n with <BR>
+  memset (cPtr, 0, 20 );
+  bool b = file.read(cPtr, 1);
+  while (b)
+  {
+    if (*cPtr == '\n')
+    {
+      client.println();
+    }
+    else
+    {
+      client.print (cPtr);
+    }
+    b = file.read(cPtr, 1);
+  }
+
+
+  file.close();
+
+}
 bool collectSSVEPData ()
 {
   const long presamples = 102;
@@ -1505,8 +1704,17 @@ bool collectSSVEPData ()
     doShuffle ();
   }
 
-  return writeFile(cFile);
+  bool bResult = writeFile(cFile);
 
+  if (bResult)
+  {
+    Serial.print F("about to do FFT ....");
+    do_fft();
+    Serial.print F("done FFT ");
+    bResult = writeSummaryFile(cFile);
+  }
+
+  return bResult ;
 
 }
 
@@ -1563,6 +1771,7 @@ bool collect_fERG_Data ()
   sampleCount ++ ;
   analogWrite(usedLED, 0);
   iThisContrast = maxContrasts ; //++;
+
 
   return writeFile(cFile);
 
@@ -2075,6 +2284,11 @@ void sendReply ()
   {
     fPOS = MyInputString.indexOf F(".ERP");
   }
+
+  if (fPOS == -1)
+  {
+    fPOS = MyInputString.indexOf F(".CSV");
+  }
   //Serial.println("  Position of .SVP was:" + String(fPOS));
   if (fPOS > 0)
   {
@@ -2091,23 +2305,31 @@ void sendReply ()
       sFile.replace(F(".ERP"), F(".ERG"));
       sFile.toCharArray(cFile, 29); // adds terminating null
       doplotFile(cFile) ;
+      return ;
     }
-    else
-    {
 
-      if (MyInputString.indexOf F(".SVV") > 0)
-      {
-        sFile.replace(F(".SVV"), F(".SVP"));
-        sFile.toCharArray(cFile, 29); // adds terminating null
-        doFFTFile(cFile, true) ;
-      }
-      else
-      {
-        sFile.toCharArray(cFile, 29); // adds terminating null
-        doreadFile(cFile) ;
-      }
+
+    if (MyInputString.indexOf F(".SVV") > 0)
+    {
+      sFile.replace(F(".SVV"), F(".SVP"));
+      sFile.toCharArray(cFile, 29); // adds terminating null
+      doFFTFile(cFile, true) ;
+      return ;
     }
+
+    if (MyInputString.indexOf F(".CSV") > 0)
+    {
+      sFile.toCharArray(cFile, 29); // adds terminating null
+      doreadSummaryFile(cFile) ;
+      return ;
+    }
+
+    //its an ERG or SVP format file ...
+    sFile.toCharArray(cFile, 29); // adds terminating null
+    doreadFile(cFile) ;
     return ;
+
+
 
   }
 
@@ -2227,8 +2449,6 @@ void do_fft()
     f_r[i] = erg_in[i];
   }
   memset( f_i, 0, sizeof(f_i));                   // Image -zero.
-
-
 
   radix.rev_bin( f_r, FFT_SIZE);
   radix.fft_radix4_I( f_r, f_i, LOG2_FFT);
