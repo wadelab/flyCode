@@ -1069,7 +1069,14 @@ bool writeSummaryFile(const char * cMain)
       file.close();
       return false ;
     }
-    strcpy (cTmp, "probe contrast, mask, repeat, 1F1, 2F1, 1F2, 50 Hz\n");
+    if (bDoFlash)
+    {
+      strcpy (cTmp, "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2\n");
+    }
+    else
+    {
+      strcpy (cTmp, "probe contrast, mask, repeat, 1F1, 2F1, 1F2, 50 Hz\n");
+    }
     iBytesWritten = file.write(cTmp, strlen(cTmp)) ;
     if (iBytesWritten <= 0)
     {
@@ -1091,35 +1098,75 @@ bool writeSummaryFile(const char * cMain)
 
   }
 
+  if (bDoFlash)
+  {
+    // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2");
+    iBytesWritten = file.print(erg_in[1]) ;
+    iBytesWritten = iBytesWritten + file.print(',') ;
 
-  //    plotInColour (4 * 12, String F("#0000FF"));
-  //    plotInColour (4 * 12 * 2, String F("#8A2BE2"));
-  //    plotInColour (4 * 27, String F("#FF8C00"));
-  //    // 1024 rather than 1000
-  //    plotInColour (4 * 51, String F("#FF0000"));
+    for (int ii = max_data / 10; ii < max_data - 1; ii = ii + max_data / 10)
+    {
+      iBytesWritten = file.print(erg_in[ii]) ;
+      iBytesWritten = iBytesWritten + file.print(',') ;
+    }
+    int myminsofar = erg_in[0];
+    int mymaxsofar = erg_in[0];
+    for (int ii = 1; ii < (max_data - 1) / 2; ii++)
+    {
+      if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;
+      if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;
+    }
+    iBytesWritten = file.print(mymaxsofar) ;
+    iBytesWritten = iBytesWritten + file.print(',') ;
+    iBytesWritten = file.print(myminsofar) ;
+    iBytesWritten = iBytesWritten + file.print(',') ;
 
-  iBytesWritten = file.print(time_stamp[max_data - 1]) ;
-  iBytesWritten = iBytesWritten + file.print(',') ;
 
-  iBytesWritten = file.print(erg_in[max_data - 1]) ;
-  iBytesWritten = iBytesWritten + file.print(',') ;
+    myminsofar = erg_in[(max_data - 1) / 2];
+    mymaxsofar = erg_in[(max_data - 1) / 2];
+    for (int ii = (max_data - 1) / 2; ii < max_data - 1; ii++)
+    {
+      if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;
+      if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;
+    }
+    iBytesWritten = file.print(mymaxsofar) ;
+    iBytesWritten = iBytesWritten + file.print(',') ;
+    iBytesWritten = file.print(myminsofar) ;
+    iBytesWritten = iBytesWritten + file.print('\n') ;
+  }
+  else
+  {
+    // fft
+    //    plotInColour (4 * 12, String F("#0000FF"));
+    //    plotInColour (4 * 12 * 2, String F("#8A2BE2"));
+    //    plotInColour (4 * 27, String F("#FF8C00"));
+    //    // 1024 rather than 1000
+    //    plotInColour (4 * 51, String F("#FF0000"));
 
-    iBytesWritten = file.print(nRepeats/maxContrasts) ;
-  iBytesWritten = iBytesWritten + file.print(',') ;
+    iBytesWritten = file.print(time_stamp[max_data - 1]) ;
+    iBytesWritten = iBytesWritten + file.print(',') ;
 
-  
+    iBytesWritten = file.print(erg_in[max_data - 1]) ;
+    iBytesWritten = iBytesWritten + file.print(',') ;
+    Serial.print("contrasts are");
+    Serial.println(nRepeats);
+    iBytesWritten = file.print(nRepeats) ;
+    iBytesWritten = iBytesWritten + file.print(',') ;
 
-  iBytesWritten = file.print(erg_in[4 * 12]) ;
-  iBytesWritten = iBytesWritten + file.print(',') ;
 
-  iBytesWritten = file.print(erg_in[4 * 12 * 2]) ;
-  iBytesWritten = iBytesWritten + file.print(',') ;
 
-  iBytesWritten = file.print(erg_in[4 * 27]) ;
-  iBytesWritten = iBytesWritten + file.print(',') ;
+    iBytesWritten = file.print(erg_in[4 * 12]) ;
+    iBytesWritten = iBytesWritten + file.print(',') ;
 
-  iBytesWritten = file.print(erg_in[4 * 51]) ;
-  iBytesWritten = iBytesWritten + file.print('\n') ;
+    iBytesWritten = file.print(erg_in[4 * 12 * 2]) ;
+    iBytesWritten = iBytesWritten + file.print(',') ;
+
+    iBytesWritten = file.print(erg_in[4 * 27]) ;
+    iBytesWritten = iBytesWritten + file.print(',') ;
+
+    iBytesWritten = file.print(erg_in[4 * 51]) ;
+    iBytesWritten = iBytesWritten + file.print('\n') ;
+  }
 
   if (iBytesWritten <= 0)
   {
@@ -1773,7 +1820,13 @@ bool collect_fERG_Data ()
   iThisContrast = maxContrasts ; //++;
 
 
-  return writeFile(cFile);
+  bool bResult = writeFile(cFile);
+  if (bResult)
+  {
+    bResult = writeSummaryFile(cFile);
+  }
+
+  return bResult ;
 
 
 }
