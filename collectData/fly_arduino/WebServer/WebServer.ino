@@ -2230,6 +2230,10 @@ void sendReply ()
         sPicture.replace ("ERG", "ERP" );
         client.print("<A HREF= \"" + sPicture + "\" > (averaged picture) </A>" );
       }
+                String sSummary = sFile;
+        sPicture.replace ("ERG", "CSV" );
+        client.print("<A HREF= \"" + sSummary + "\" > (Summary Data) </A>" );
+      
       client.println("<BR><BR>");
 
       client.println F("To setup for another test please ") ;
