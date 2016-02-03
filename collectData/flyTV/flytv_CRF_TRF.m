@@ -3,7 +3,7 @@
 % It replaces the original 'sweep' code and makes sure that everything is
 % specified in the same units (in particular sf).
 % ARW June 11 2014
-%
+% ARW Feb 2016: This version sweeps over contrast and TF (not SF)
 close all;
 clear all;
 jheapcl;
@@ -24,7 +24,7 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\Stavroula\Rab7_RNAi\7d\';
+datadir='C:\data\SSERG\data\Marc';
 flyTV_startTime=now;
 
 
@@ -37,12 +37,13 @@ dpy.frameRate=144;
 % For now if just has the gamma function (inverse) in it.
 
 tfList=[1,2,4,6,8,12,18,36;1,2,4,6,8,12,18,36]'; % This is in Hz.
-sfList=[.014,.028,.056,.11,.22,.44,.88,1.76;.014,.028,.056,.11,.22,.44,.88,1.76]'; % Cycles per degree
-
+sfList=[.056]'; % Cycles per degree - in this version of the code nothing changes here,.
+contList=[1 2 4 8 16 32 64 99;0 0 0 0 0 0 0 0]'/100;  % Contrasts to probe
 nTF=size(tfList,1);
 nSF=size(sfList,1);
+nCont=size(contList,1);
 
-ordered=1:(nTF*nSF); % This fully shuffles the order
+ordered=1:(nTF*nCont); % This fully shuffles the order
 shuffleSeq=Shuffle(ordered); % Shuffle all the possible presentation conditions
 
 
@@ -52,8 +53,8 @@ stim.rotateMode = []; % rotation of mask grating (1= horizontal, 2= vertical, et
 stim.spatial.angle = [0 0]  ; % angle of gratings on screen
 stim.temporal.duration=11; % how long to flicker for
 
-% Loop over a set of contrast pair. All possible combinations of probe
-% (0,14,28,56,70,80,99 % contrast) and mask(0,30%);
+% In principle we can have both mask and probe here. For now though we set
+% the mask to zero
 probeCont=[99]/100;
 maskCont =[0];
 
@@ -63,25 +64,24 @@ nRepeats=3;
 
 for thisRun=1:nRepeats  % 5 repeats
     for thisCond=1:nConds
-        stim.cont=[probeCont(1) maskCont(1)];
+        stim.spatial.frequency=[sfList(1), sfList(1)]; % Set the same spatial freq for both components
         % Phase is the phase shift in degrees (0-360 etc.)applied to the sine grating:
         stim.spatial.phase=[0 0 ]; %[rand(1)*360 rand(1)*360];
         stim.spatial.pOffset=rand(2,1)*360;
         
-        fprintf('\nRunning %d %d',stim.cont(1),stim.cont(2));
-        
+  
         thisaction= shuffleSeq(thisCond);
-        t=ceil(thisaction/ nSF)
-        s=1+rem(thisaction, nSF) %  Should be 1+rem(thisAction-1,nTF)
+        tIndex=ceil(thisaction/ nCont) % Index into the list of temporal frequencies
+        cIndex=1+rem(thisaction, nCont) %  Should be 1+rem(thisAction-1,nTF)  - index into the list of contrasts
         
-        tt(thisRun,thisCond)=t;
-        ss(thisRun,thisCond)=s;
+        thisTemp(thisRun,thisCond)=tIndex;
+        thisCont(thisRun,thisCond)=cIndex;
         
-        stim.spatial.frequency=sfList(s,:)
-        stim.temporal.frequency=tfList(t,:)
-        
+        stim.temporal.frequency=tfList(tIndex,:)
+        stim.cont=contList(cIndex,:);
         disp(thisRun)
         disp(thisCond)
+              fprintf('\nRunning %d %d',stim.cont(1),stim.cont(2));
         
         
         if (~DUMMYRUN)
@@ -95,11 +95,11 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.TimeStamps=d.TimeStamps;
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
-            finalData.flyName{1}='mecp2r106w_longGMR_1';
-            finalData.flyName{2}='mecp2r106w_longGMR_2';
+            finalData.flyName{1}='dummy1';
+            finalData.flyName{2}='dummy2';
             
             
-            finalData.comment='1:Rab7_RNAi_7DPE_1 2:Rab7_RNAi_7DPE_2 '; % Here : the first data channel ('ai0') is the bottom fly.
+            finalData.comment='a fly '; % Here : the first data channel ('ai0') is the bottom fly.
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;
@@ -110,7 +110,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.sfList=sfList;
             
             %singleRunDat=d.Data;
-            filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisRun),'_',datestr(flyTV_startTime,30),'.mat'])
+            filename=fullfile(datadir,[int2str(tIndex),'_',int2str(cIndex),'_',int2str(thisRun),'_',datestr(flyTV_startTime,30),'.mat'])
             %save(filename,'finalData','d','singleRunDat');
             metaData{thisRun,thisCond}=finalData; % Put the extracted data into an array tf x sf x nrepeats
             data(thisRun,thisCond,:,:)=d.Data;

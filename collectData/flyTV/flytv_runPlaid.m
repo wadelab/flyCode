@@ -96,7 +96,13 @@ win = Screen('OpenWindow', WhichScreen, 128);
 % Set the gamma tables.
 % Set the CLUTS to the calibrated values
 oldClut = LoadIdentityClut(win, 1);
-Screen('LoadNormalizedGammaTable',win,dpy.gamma.inverse);
+disp('Loaded identify clut ******');
+
+
+%Screen('LoadNormalizedGammaTable',win,dpy.gamma.inverse);
+
+%disp('Loaded calibrated gamma table ******* ');
+pause(2);
 
 
 
