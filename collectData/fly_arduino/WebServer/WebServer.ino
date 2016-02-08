@@ -1075,7 +1075,7 @@ bool writeSummaryFile(const char * cMain)
     }
     else
     {
-      strcpy (cTmp, "probe contrast, mask, repeat, 1F1, 2F1, 1F2, 50 Hz\n");
+      strcpy (cTmp, "probe contrast, mask, repeat, 1F1, 2F1, 1F1+1F2, 50 Hz\n");
     }
     iBytesWritten = file.write(cTmp, strlen(cTmp)) ;
     if (iBytesWritten <= 0)
@@ -1137,11 +1137,6 @@ bool writeSummaryFile(const char * cMain)
   else
   {
     // fft
-    //    plotInColour (4 * 12, String F("#0000FF"));
-    //    plotInColour (4 * 12 * 2, String F("#8A2BE2"));
-    //    plotInColour (4 * 27, String F("#FF8C00"));
-    //    // 1024 rather than 1000
-    //    plotInColour (4 * 51, String F("#FF0000"));
 
     iBytesWritten = file.print(time_stamp[max_data - 1]) ;
     iBytesWritten = iBytesWritten + file.print(',') ;
@@ -1154,18 +1149,23 @@ bool writeSummaryFile(const char * cMain)
     iBytesWritten = iBytesWritten + file.print(',') ;
 
 
-
+    // 1F1 12 Hz
     iBytesWritten = file.print(erg_in[4 * 12]) ;
     iBytesWritten = iBytesWritten + file.print(',') ;
-
+    // 2F1 12*2 = 24 Hz
     iBytesWritten = file.print(erg_in[4 * 12 * 2]) ;
     iBytesWritten = iBytesWritten + file.print(',') ;
-
+    // 1F1+1F2 = 12+15 = 27 Hz
     iBytesWritten = file.print(erg_in[4 * 27]) ;
     iBytesWritten = iBytesWritten + file.print(',') ;
-
+    // 50Hz hum
     iBytesWritten = file.print(erg_in[4 * 51]) ;
     iBytesWritten = iBytesWritten + file.print('\n') ;
+    Serial.println F("printing fft");
+    for (int kk=0; kk < max_data/2; kk++)
+    {
+      Serial.println(erg_in[kk]);
+    }
   }
 
   if (iBytesWritten <= 0)
@@ -2109,6 +2109,7 @@ void sendGraphic(bool plot_stimulus)
   else
   {
     plotInColour (4 * 12, String F("#0000FF"));
+    plotInColour (4 * 15, String F("#0088FF"));
     plotInColour (4 * 12 * 2, String F("#8A2BE2"));
     plotInColour (4 * 27, String F("#FF8C00"));
     // 1024 rather than 1000
