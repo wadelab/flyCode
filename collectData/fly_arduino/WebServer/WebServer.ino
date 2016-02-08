@@ -336,7 +336,7 @@ void setup() {
   myIP = Ethernet.localIP() ;
   dnsIP = Ethernet.dnsServerIP();
   Serial.println(myIP);
-  Serial.print(" using dns server ");
+  Serial.print F(" using dns server ");
   Serial.println(dnsIP);
 
 #endif
@@ -380,11 +380,11 @@ void setup() {
 //
 //    //
 //    //    Serial.print(address);
-//    //    Serial.print("\t");
+//    //    Serial.print ("\t");
 //    //    Serial.print (c);
-//    //    Serial.print("\t");
+//    //    Serial.print ("\t");
 //    //    Serial.print(value, DEC);
-//    //    Serial.print("\t");
+//    //    Serial.print ("\t");
 //    //    Serial.print(value, HEX);
 //    //    Serial.println();
 //
@@ -510,7 +510,7 @@ void send_GoBack_to_Stim_page ()
     client.println (MyReferString) ;
     client.println F("\"" );
   }
-  //    Serial.print("My reference is :");
+  //    Serial.print ("My reference is :");
   //    Serial.println (MyReferString) ;
   else
   {
@@ -524,7 +524,7 @@ void updateColour (const bool boolUpdatePage)
 {
   if (boolUpdatePage)
   {
-    sendHeader ("Lit up ?", "onload=\"goBack()\" ");
+    sendHeader (F("Lit up ?"), F("onload=\"goBack()\" "));
     client.println F("Click to reload");
     send_GoBack_to_Stim_page ();
 
@@ -584,14 +584,14 @@ void run_graph()
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   short sensorReading = analogRead(connectedPin);
-  //  Serial.print(" sweep is : ");
+  //  Serial.print (" sweep is : ");
   //  Serial.println(sensorReading);
 
   if (sensorReading < 2 || sensorReading > 4090)
   {
     //probably no contact
     digitalWrite (noContactLED, HIGH);
-    //    Serial.print("on");
+    //    Serial.print ("on");
   }
   else
   {
@@ -610,7 +610,7 @@ void run_graph()
   //    analogWrite(bluLED, 0);
   //  }
 
-  sendHeader ("Graph of last sweep") ;
+  sendHeader F("Graph of last sweep") ;
   client.println F("<script>");
 
   // script to reload ...
@@ -660,7 +660,7 @@ void run_graph()
   client.print F(",30);");
 
   client.println F("ctx.strokeStyle=\"blue\";");
-  //              client.println("ctx.lineWidth=5;");
+  //              client.println ("ctx.lineWidth=5;");
   client.println F("ctx.stroke();");
 
   client.println F("</script>");
@@ -880,7 +880,7 @@ void webTime ()
   second = myminute = hour = day = month = 1;
 
   // Just choose any reasonably busy web server, the load is really low
-  if (timeclient.connect ("www.york.ac.uk", 80))
+  if (timeclient.connect (("www.york.ac.uk"), 80)) // ?? F
   {
     // Make an HTTP 1.1 request which is missing a Host: header
     // compliant servers are required to answer with an error that includes
@@ -927,7 +927,7 @@ void webTime ()
       //month -- ; // zero based, I guess
 
     }
-    Serial.print("webtime:");
+    Serial.print F("webtime:");
     Serial.println (buf);
   }
   delay(10);
@@ -943,7 +943,7 @@ bool file__time ()
   second = myminute = hour = day = month = 1;
 
   //GET /?GAL4=JoB&UAS=w&Age=-1&Antn=Ok&sex=male&org=fly&col=blue&F1=12&F2=15&stim=fERG&filename=2016_31_01_15h02m25 HTTP/1.1
-  Serial.print ("INPUT is " );
+  Serial.print F("INPUT is " );
   Serial.flush();
   //Serial.println (String(cInput));
   const int calcTimemax = 17 ;
@@ -968,11 +968,11 @@ bool file__time ()
   *gPOS = 0;
 
 
-  Serial.print ("fpos is " );
+  Serial.print F("fpos is " );
   Serial.println (fPOS);
   Serial.flush();
   fPOS = fPOS + 9;
-  Serial.print ("fpos is now" );
+  Serial.print F("fpos is now" );
   Serial.println (fPOS);
   Serial.flush();
 
@@ -984,7 +984,7 @@ bool file__time ()
 
   strcpy (calcTime, fPOS);
 
-  Serial.print ("time is:");
+  Serial.print F("time is:");
   for (int i = 0; i < calcTimemax - 1; i++)
   {
     Serial.print( calcTime[i] );
@@ -998,7 +998,7 @@ bool file__time ()
   hour = atoi(calcTime + 11);
   myminute = atoi(calcTime + 15);
   second = atoi(calcTime + 18) ;
-  Serial.print ("year is (if zero, atoi error):");
+  Serial.print F("year is (if zero, atoi error):");
   Serial.println (year) ;
   return (year != 0) ;
 }
@@ -1011,22 +1011,22 @@ bool writeSummaryFile(const char * cMain)
   char cTmp [iCharMaxHere]; // to hold text to write
   char * pDot = strchr (cMain, '.');
 
-  Serial.print("Summarising filename ");
+  Serial.print F("Summarising filename ");
   Serial.println (cMain);
   Serial.flush();
   if (!pDot)
   {
-    Serial.print("Error in filename");
+    Serial.print F("Error in filename");
     Serial.println (c);
     Serial.flush();
     return false ;
   }
-  Serial.print("filenam extension:");
+  Serial.print F("filename extension:");
   Serial.println (pDot);
   Serial.flush();
   int iBytes = pDot - cMain ;
 
-  Serial.print("length of string:");
+  Serial.print F("length of string:");
   Serial.println (iBytes);
   Serial.flush();
 
@@ -1034,7 +1034,7 @@ bool writeSummaryFile(const char * cMain)
   c[iBytes] = 0;
   strcat (c, ".csv");
 
-  Serial.print("now summarising");
+  Serial.print F("now summarising");
   Serial.println (c);
   Serial.flush();
 
@@ -1049,14 +1049,14 @@ bool writeSummaryFile(const char * cMain)
 
     if ( !file.open(root, c /*myName*/,   O_CREAT | O_APPEND | O_WRITE))
     {
-      Serial.println F ("Error in opening file");
+      Serial.println F("Error in opening file");
       Serial.println (c);
       Serial.flush();
       return false;
     }
 
     if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
-      Serial.println F ("Error in timestamping file");
+      Serial.println F("Error in timestamping file");
       Serial.println (c);
       Serial.flush();
       file.close();
@@ -1065,7 +1065,7 @@ bool writeSummaryFile(const char * cMain)
     iBytesWritten = file.write(cInput, MaxInputStr + 2);
     if (iBytesWritten <= 0)
     {
-      Serial.println F ("Error in writing header to file");
+      Serial.println F("Error in writing header to file");
       file.close();
       return false ;
     }
@@ -1080,7 +1080,7 @@ bool writeSummaryFile(const char * cMain)
     iBytesWritten = file.write(cTmp, strlen(cTmp)) ;
     if (iBytesWritten <= 0)
     {
-      Serial.println F ("Error in writing header to file");
+      Serial.println F("Error in writing header to file");
       file.close();
       return false ;
     }
@@ -1090,7 +1090,7 @@ bool writeSummaryFile(const char * cMain)
   {
     if ( !file.open(root, c /*myName*/,  O_APPEND | O_WRITE))
     {
-      Serial.println F ("Error in reopening file");
+      Serial.println F("Error in reopening file");
       Serial.println (c);
       file.close();
       return false;
@@ -1148,7 +1148,7 @@ bool writeSummaryFile(const char * cMain)
 
     iBytesWritten = file.print(erg_in[max_data - 1]) ;
     iBytesWritten = iBytesWritten + file.print(',') ;
-    Serial.print("contrasts are");
+    Serial.print F("contrasts are");
     Serial.println(nRepeats);
     iBytesWritten = file.print(nRepeats) ;
     iBytesWritten = iBytesWritten + file.print(',') ;
@@ -1170,12 +1170,12 @@ bool writeSummaryFile(const char * cMain)
 
   if (iBytesWritten <= 0)
   {
-    Serial.println F ("Error in writing erg data to file");
+    Serial.println F("Error in writing erg data to file");
     file.close();
     return false;
   }
 
-  // Serial.println("File success: written bytes " + String(iBytesWritten));
+  // Serial.println F("File success: written bytes " + String(iBytesWritten));
 
   Serial.print F(" More bytes writen to file.........");
   Serial.print  (c);
@@ -1206,14 +1206,14 @@ bool writeFile(const char * c)
 
     if ( !file.open(root, c /*myName*/,   O_CREAT | O_APPEND | O_WRITE))
     {
-      Serial.println F ("Error in opening file");
+      Serial.println F("Error in opening file");
       Serial.println (c);
       Serial.flush();
       return false;
     }
 
     if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
-      Serial.println F ("Error in timestamping file");
+      Serial.println F("Error in timestamping file");
       Serial.println (c);
       Serial.flush();
       file.close();
@@ -1222,7 +1222,7 @@ bool writeFile(const char * c)
     iBytesWritten = file.write(cInput, MaxInputStr + 2);
     if (iBytesWritten <= 0)
     {
-      Serial.println F ("Error in writing header to file");
+      Serial.println F("Error in writing header to file");
       file.close();
       return false ;
     }
@@ -1232,7 +1232,7 @@ bool writeFile(const char * c)
   {
     if ( !file.open(root, c /*myName*/,  O_APPEND | O_WRITE))
     {
-      Serial.println F ("Error in reopening file");
+      Serial.println F("Error in reopening file");
       Serial.println (c);
       file.close();
       return false;
@@ -1245,16 +1245,16 @@ bool writeFile(const char * c)
   iBytesWritten = file.write(erg_in, max_data * sizeof(int));
   if (iBytesWritten <= 0)
   {
-    Serial.println F ("Error in writing erg data to file");
+    Serial.println F("Error in writing erg data to file");
     file.close();
     return false;
   }
 
-  // Serial.println("File success: written bytes " + String(iBytesWritten));
+  // Serial.println F("File success: written bytes " + String(iBytesWritten));
   iBytesWritten = file.write(time_stamp, max_data * sizeof(unsigned int));
   if (iBytesWritten <= 0)
   {
-    Serial.println F ("Error in writing timing data to file");
+    Serial.println F("Error in writing timing data to file");
     file.close();
     return false ;
   }
@@ -1356,14 +1356,14 @@ void doplotFile (const char * c)
 
   // write out the string ....
   client.println(cPtr);
-  client.println("<BR>");
+  client.println F("<BR>");
   // test if its an ERG
   //boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
-  client.print("Download file <a HREF=\"");
+  client.print F("Download file <a HREF=\"");
   client.print(c);
-  client.print("\">");
+  client.print F("\">");
   client.print(c);
-  client.println("</a><BR>");
+  client.println F("</a><BR>");
 
   // now on to the data
   int nBlocks = 0;
@@ -1460,7 +1460,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
 
   // write out the string ....
   client.print(cPtr);
-  client.println("<BR>");
+  client.println F("<BR>");
 
   // now on to the data
   iBytesRequested = max_data * sizeof(int);
@@ -1473,9 +1473,9 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
     iBytesRead = file.read (time_stamp, iBytesRequested );
     nBlocks ++;
     // stop when mask and probe are both 30%
-    Serial.print("time ");
+    Serial.print F("time ");
     Serial.print(time_stamp[max_data - 1]);
-    Serial.print(" erg ");
+    Serial.print F(" erg ");
     Serial.println(erg_in[max_data - 1]);
     if ( time_stamp[max_data - 1] == 30 && erg_in[max_data - 1] == 30 )
     {
@@ -1490,7 +1490,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
       Serial.print (erg_in[48]);
       Serial.print F(" done FFT in");
       Serial.print(millis() - m);
-      Serial.println(" milliseconds");
+      Serial.println F(" milliseconds");
     }
 
     //read next block
@@ -2169,15 +2169,15 @@ void sendReply ()
 
     // find filename
     String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
-    //Serial.println("  Position of filename= was:" + String(fPOS));
-    //Serial.println(" Proposed saving filename " + sFile );
+    //Serial.println ("  Position of filename= was:" + String(fPOS));
+    //Serial.println (" Proposed saving filename " + sFile );
     fPOS = sFile.indexOf F(" ");  // or  & id filename is not the last paramtere
-    //Serial.println("  Position of blankwas:" + String(fPOS));
+    //Serial.println ("  Position of blankwas:" + String(fPOS));
     sFile = sFile.substring(0, fPOS);
     while (sFile.length() > 8)
     {
       sFile = sFile.substring(1);
-      //Serial.println(" Proposed saving filename " + sFile );
+      //Serial.println (" Proposed saving filename " + sFile );
     }
     if (bDoFlash)
     {
@@ -2190,7 +2190,7 @@ void sendReply ()
       exp_size = exp_size + (maxRepeats * maxContrasts * data_block_size) ;
     }
 
-    //Serial.println(" Proposed filename now" + sFile + ";");
+    //Serial.println (" Proposed filename now" + sFile + ";");
     //if file exists... ????
     sFile.toCharArray(cFile, 29); // adds terminating null
     if (!fileExists(cFile))
@@ -2208,7 +2208,7 @@ void sendReply ()
           return ;
       }
     }
-    //Serial.print("repeats now ");
+    //Serial.print ("repeats now ");
     //Serial.println(nRepeats);
     if (fileExists(cFile) && file.fileSize() >= exp_size ) //nRepeats >= maxRepeats)
     {
@@ -2218,23 +2218,23 @@ void sendReply ()
       file.close();
 
       sendHeader F("Sampling Complete!");
-      client.print( "Sampling Now Complete <BR><BR>");
-      client.print( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " size: ");
+      client.print F( "Sampling Now Complete <BR><BR>");
+      client.print ( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " size: ");
       client.print(file.fileSize());
-      client.print(" bytes; expected size ");
+      client.print F(" bytes; expected size ");
       client.print(exp_size);
 
       if (bDoFlash)
       {
         String sPicture = sFile;
-        sPicture.replace ("ERG", "ERP" );
-        client.print("<A HREF= \"" + sPicture + "\" > (averaged picture) </A>" );
+        sPicture.replace (F("ERG"), F("ERP") );
+        client.print ("<A HREF= \"" + sPicture + "\" > (averaged picture) </A>" );
       }
-                String sSummary = sFile;
-        sSummary.replace ("ERG", "CSV" );
-        client.print("<A HREF= \"" + sSummary + "\" > (Summary Data) </A>" );
-      
-      client.println("<BR><BR>");
+      String sSummary = sFile;
+      sSummary.replace (F("ERG"), F("CSV") );
+      client.print ("<A HREF= \"" + sSummary + "\" > (Summary Data) </A>" );
+
+      client.println(F("<BR><BR>"));
 
       client.println F("To setup for another test please ") ;
       send_GoBack_to_Stim_page ();
@@ -2259,7 +2259,7 @@ void sendReply ()
 
   // show directory
   fPOS = MyInputString.indexOf F("dir=");
-  //Serial.println("  Position of dir was:" + String(fPOS));
+  //Serial.println ("  Position of dir was:" + String(fPOS));
   if (fPOS > 0)
   {
     serve_dir() ;
@@ -2346,16 +2346,16 @@ void sendReply ()
   {
     fPOS = MyInputString.indexOf F(".CSV");
   }
-  //Serial.println("  Position of .SVP was:" + String(fPOS));
+  //Serial.println ("  Position of .SVP was:" + String(fPOS));
   if (fPOS > 0)
   {
     // requested a file...
     fPOS = MyInputString.indexOf F("/");
     String sFile = MyInputString.substring(fPOS + 1); // ignore the leading /
-    //Serial.println(" Proposed filename " + sFile );
+    //Serial.println (" Proposed filename " + sFile );
     fPOS = sFile.indexOf(" HTTP/");
     sFile = sFile.substring(0, fPOS);
-    //Serial.println(" Proposed filename now" + sFile + ";");
+    //Serial.println (" Proposed filename now" + sFile + ";");
 
     if (MyInputString.indexOf F(".ERP") > 0)
     {
@@ -2424,7 +2424,7 @@ void loop()
 
         if (c == '\n')
         {
-          //Serial.print("Input string now " );
+          //Serial.print ("Input string now " );
           //Serial.println (sTmp);
 
           // you're starting a new line
@@ -2438,7 +2438,7 @@ void loop()
           {
             String sHost = sTmp.substring(16);
             //Serial.println (sHost) ;
-            int iSlash = sHost.indexOf ("/");
+            int iSlash = sHost.indexOf F("/");
             sHost = sHost.substring(0, iSlash);
             //Serial.println (sHost) ;
             DNSClient dc;
@@ -2482,7 +2482,7 @@ void loop()
     delay(1);
     // close the connection:
     client.stop();
-    //Serial.println("client disonnected: Input now:" + MyInputString + "::::");
+    //Serial.println ("client disonnected: Input now:" + MyInputString + "::::");
   }
 }
 
