@@ -11,7 +11,7 @@
 
 
 #define due5
-//#define USE_DHCP
+#define USE_DHCP
 
 //#define __USE_SDFAT
 
@@ -2231,7 +2231,7 @@ void sendReply ()
         client.print("<A HREF= \"" + sPicture + "\" > (averaged picture) </A>" );
       }
                 String sSummary = sFile;
-        sPicture.replace ("ERG", "CSV" );
+        sSummary.replace ("ERG", "CSV" );
         client.print("<A HREF= \"" + sSummary + "\" > (Summary Data) </A>" );
       
       client.println("<BR><BR>");
