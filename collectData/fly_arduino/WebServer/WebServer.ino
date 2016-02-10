@@ -1077,10 +1077,10 @@ void addSummary ()
   }
   else
   {
-    // fft   
-iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 ;    
-Serial.print("Offset");
-Serial.print( iOffset );
+    // fft
+    iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 ;
+    Serial.print("Offset ");
+    Serial.println( iOffset );
     pSummary[iOffset + kk] = time_stamp[max_data - 1] ;
     kk ++ ;
     pSummary[iOffset + kk] = erg_in[max_data - 1] ;
@@ -1094,7 +1094,7 @@ Serial.print( iOffset );
     pSummary[iOffset + kk] = erg_in[49] ;
     kk ++ ;
     pSummary[iOffset + kk] = erg_in[61] ;
-    kk ++ ;
+    kk ++ ; 
     pSummary[iOffset + kk] = erg_in[98] ;
     kk ++ ;
     pSummary[iOffset + kk] = erg_in[111] ;
@@ -1103,13 +1103,13 @@ Serial.print( iOffset );
     kk ++ ;
     pSummary[iOffset + kk] = erg_in[205] ; // 50Hz
   }
-  
-      for (int ii = 0; ii < 14; ii ++ )
-    {
-      Serial.print (pSummary[ii]);
-      Serial.print (",");
-    }
-    Serial.println();
+
+  for (int ii = 0; ii < 14; ii ++ )
+  {
+    Serial.print (pSummary[ii]);
+    Serial.print (",");
+  }
+  Serial.println();
 }
 
 bool writeSummaryFile(const char * cMain)
