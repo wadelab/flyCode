@@ -6,12 +6,16 @@
 
 // don't use pin 4 or 10-12 either...
 
-
+// known bug on Edison: PWM code does not work // FIX
 
 // if we test file, it will return true if the file is open...
 // file append is not honoured, need to seek end...
 
-//#define __wifisetup__
+#define __wifisetup__
+#define due3
+#define USE_DHCP
+
+
 
 #ifndef __wifisetup__
 #ifndef ARDUINO_LINUX
@@ -22,11 +26,7 @@
 #endif
 #endif
 
- 
-#define due5
-#define USE_DHCP
 
-//#define __USE_SDFAT
 
 //_____________________________________________________
 
@@ -91,8 +91,9 @@
 
 #include <SPI.h>
 
-#ifndef __wifisetup__
 
+#ifndef __wifisetup__
+// ethernet...
 #ifndef ARDUINO_LINUX
 #include <Ethernet.h>
 #else
@@ -100,16 +101,19 @@
 #endif
 
 #else
+//wifi of some sort...
 
-#include <WiFi.h>
-
-#endif
-
-#ifdef __USE_SDFAT
-#include <SdFat.h>
+#ifdef __ESP
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
 #else
-#include <SD.h>
+#include <WiFi.h>
 #endif
+#endif
+
+
+#include <SD.h>
+
 
 //#include "mydata.h"
 // include fft
@@ -123,9 +127,6 @@ const short max_graph_data = 32 ;
 int * myGraphData ;  // will share erg_in space, see below
 short iIndex = 0 ;
 
-#ifdef __USE_SDFAT
-SdFat sd;
-#endif
 //
 byte usedLED  = 0;
 const byte fiberLED = 8 ;
@@ -298,6 +299,11 @@ void setup() {
     // wait 10 seconds for connection:
     delay(2000); // 2 s seems enough
   }
+#ifdef __ESP  
+  setupWiFi();                            // start the web server on port 80
+#endif  
+  printWifiStatus();                        // you're connected now, so print out the status
+
   server.begin();                           // start the web server on port 80
   printWifiStatus();                        // you're connected now, so print out the status
 
@@ -341,59 +347,34 @@ void setup() {
 }
 
 
-#ifndef __wifisetup__
 
-//bool readMAC()
-//{
-//  // read a byte from the current address of the EEPROM
-//  // start at 0
-//  int address = 0;
-//  byte value;
-//  char cMac [4];
-//  cMac[3] = '\0' ;
-//  while (address < 20)
-//  {
-//    value = EEPROM.read(address);
-//    char * c = " ";
-//    *c = value ;
-//    if (address < 3)
-//    {
-//      cMac [address] = (char)value  ;
-//    }
-//    else
-//    {
-//      if (address < 9)
-//      {
-//        mac [address - 3] = value ;
-//      }
-//    }
-//
-//    //
-//    //    Serial.print(address);
-//    //    Serial.print("\t");
-//    //    Serial.print (c);
-//    //    Serial.print("\t");
-//    //    Serial.print(value, DEC);
-//    //    Serial.print("\t");
-//    //    Serial.print(value, HEX);
-//    //    Serial.println();
-//
-//    // advance to the next address of the EEPROM
-//    address = address + 1;
-//  }
-//  int iComp = strncmp (cMac, "MAC", 3);
-//
-//  //  Serial.print ("Comparing :") ;
-//  //  Serial.print (cMac);
-//  //  Serial.print (" with MAC gives ");
-//  //  Serial.println (iComp);
-//
-//  return ( 0 == iComp) ;
-//
-//}
+#ifdef __wifisetup__
 
-#else
-//ifdef __wifisetup__
+#ifdef __ESP
+const char WiFiAPPSK[] = "sparkfun";
+
+void setupWiFi()
+{
+  WiFi.mode(WIFI_AP);
+
+  // Do a little work to get a unique-ish name. Append the
+  // last two bytes of the MAC (HEX'd) to "ThingDev-":
+  uint8_t mac[WL_MAC_ADDR_LENGTH];
+  WiFi.softAPmacAddress(mac);
+  String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
+                 String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
+  macID.toUpperCase();
+  String AP_NameString = "ThingDev-" + macID;
+
+  char AP_NameChar[AP_NameString.length() + 1];
+  memset(AP_NameChar, 0, AP_NameString.length() + 1);
+
+  for (int i = 0; i < AP_NameString.length(); i++)
+    AP_NameChar[i] = AP_NameString.charAt(i);
+
+  WiFi.softAP(AP_NameChar, WiFiAPPSK);
+}
+#endif
 
 void printWifiStatus() {
   // print the SSID of the network you're attached to:
