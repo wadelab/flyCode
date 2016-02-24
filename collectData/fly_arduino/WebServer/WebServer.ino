@@ -139,6 +139,12 @@ const byte whiteled = 11;
 const byte cyaled = 9;
 const byte extrawhitepin = 53;
 
+#ifdef ARDUINO_LINUX
+const byte redled = 3;
+const byte grnled = 5;
+const byte bluLED = 6;
+#else
+
 #ifdef due4
 const byte redled = 7;
 const byte grnled = 3;
@@ -152,7 +158,8 @@ const byte bluLED = 7;
 #else
 const byte redled = 5;
 const byte grnled = 6;
-const byte bluLED = 8;
+const byte bluLED = 7;
+#endif
 #endif
 #endif
 
@@ -299,9 +306,9 @@ void setup() {
     // wait 10 seconds for connection:
     delay(2000); // 2 s seems enough
   }
-#ifdef __ESP  
+#ifdef __ESP
   setupWiFi();                            // start the web server on port 80
-#endif  
+#endif
   printWifiStatus();                        // you're connected now, so print out the status
 
   server.begin();                           // start the web server on port 80
@@ -340,6 +347,11 @@ void setup() {
 
   analogReadResolution(12);
   iGainFactor = 4 ;
+#ifdef ARDUINO_LINUX
+  pinMode( redled , OUTPUT);
+  pinMode( grnled, OUTPUT);
+  pinMode( bluLED, OUTPUT);
+#endif
 
   goColour(0, 0, 0, 0, false);
 
@@ -517,23 +529,19 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
 #ifdef due1
   analogWrite( fiberLED, a );
 #endif
-  updateColour( boolUpdatePage);
-
-  for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
-
-  {
-    digitalWrite (i, 0);
-  }
+  //  updateColour( boolUpdatePage);
+  //
+  //  for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
+  //
+  //  {
+  //    digitalWrite (i, r);
+  //  }
 }
 
 void goColour(const byte r, const bool boolUpdatePage)
 {
-  goColour (r, r, r, 0, r, 0, 0, boolUpdatePage);
-  for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
+  goColour (r, r, r, 0, r, 0, 0, boolUpdatePage); // should this be all of them ?
 
-  {
-    digitalWrite (i, r);
-  }
 }
 
 void goColour(const byte r, const byte g, const byte b, const byte f, const bool boolUpdatePage)
@@ -2351,7 +2359,8 @@ void sendReply ()
   fPOS = MyInputString.indexOf ("blue/");
   if (fPOS > 0)
   {
-    goColour(0, 0, 255, 0, true) ;
+    goColour(0, 0, 255, 0, false) ;
+    Serial.println ("on");
     return ;
   }
   fPOS = MyInputString.indexOf ("green/");
@@ -2363,7 +2372,8 @@ void sendReply ()
   fPOS = MyInputString.indexOf ("black/");
   if (fPOS > 0)
   {
-    goColour(0, true) ;
+    Serial.println ("off");
+    goColour(0, false) ;
     return ;
   }
   fPOS = MyInputString.indexOf ("fiber/");
