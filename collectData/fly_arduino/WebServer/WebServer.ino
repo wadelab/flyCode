@@ -12,12 +12,12 @@
 // file append is not honoured, need to seek end...
 
 #define __wifisetup__
+
+#ifndef __wifisetup__
+
 #define due3
 #define USE_DHCP
 
-
-
-#ifndef __wifisetup__
 #ifndef ARDUINO_LINUX
 #define EthernetShield Ethernet
 #define IPAddressShield IPAddress
@@ -103,7 +103,7 @@
 #else
 //wifi of some sort...
 
-#ifdef __ESP
+#ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #else
@@ -164,7 +164,7 @@ const byte bluLED = 7;
 #endif
 
 const byte analogPin = 0 ;
-const byte connectedPin = A1;
+const byte connectedPin = 1;
 byte iGainFactor = 1 ;
 bool bIsSine = true ;
 
@@ -243,9 +243,72 @@ EthernetClientShield client ;
 #else
 IPAddress myIP, theirIP, dnsIP ;
 WiFiServer server (80);
+#ifdef ESP8266
+WiFiClient client ; 
+#else
 WiFiClient client (80);
-
 #endif
+#endif
+
+#ifdef ESP8266
+void setupWiFi();
+void printWifiStatus();
+void doShuffle();
+void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML = true, char * pDate = NULL);
+void sendFooter();
+void sendError (const String & sError);
+void send_GoBack_to_Stim_page ();
+
+void updateColour (const bool boolUpdatePage);
+void goColour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
+void goColour(const byte r, const bool boolUpdatePage);
+void goColour(const byte r, const byte g, const byte b, const byte f, const bool boolUpdatePage);
+void serve_dir ();
+void run_graph();
+void printTwoDigits(char * p, uint8_t v);
+void setDateFromFile(const dir_t & pFile);
+void myPrintFatDateTime(const dir_t & pFile);
+void printDirectory(String s);
+void webTime ();
+
+void addSummary ();
+void gmdate ( const dir_t & pFile);
+void doplotFile (const char * c);
+void doFFTFile (const char * c, bool bNeedHeadFooter);
+void doreadFile (const char * c);
+void doreadSummaryFile (const char * c);
+void flickerPage();
+void AppendFlashReport();
+void AppendSSVEPReport();
+void getData ();
+void plotInColour (int iStart, const String & str_col);
+
+void sendGraphic(bool plot_stimulus);
+void sendGraphic();
+void sendReply ();
+//void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
+//void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
+//void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
+void loop();
+void do_fft();
+int br_Now(double t);
+int Get_br_Now(double t, const double F1contrast, const double F2contrast);
+int fERG_Now (unsigned int t);
+int DayOfWeek (int d, int m, int y);
+
+bool writeFile(char * c);
+bool fileExists( char * c);
+bool collectSSVEPData ();
+bool collect_fERG_Data ();
+
+double sgn (double x);
+
+void analogReadResolution(int i)
+{
+// do nothing 
+}
+#endif
+
 
 void setup() {
 
@@ -306,7 +369,7 @@ void setup() {
     // wait 10 seconds for connection:
     delay(2000); // 2 s seems enough
   }
-#ifdef __ESP
+#ifdef ESP8266
   setupWiFi();                            // start the web server on port 80
 #endif
   printWifiStatus();                        // you're connected now, so print out the status
@@ -348,7 +411,7 @@ void setup() {
   analogReadResolution(12);
   iGainFactor = 4 ;
 #ifdef ARDUINO_LINUX
-  pinMode( redled , OUTPUT);
+  pinMode( redled, OUTPUT);
   pinMode( grnled, OUTPUT);
   pinMode( bluLED, OUTPUT);
 #endif
@@ -362,7 +425,7 @@ void setup() {
 
 #ifdef __wifisetup__
 
-#ifdef __ESP
+#ifdef ESP8266
 const char WiFiAPPSK[] = "sparkfun";
 
 void setupWiFi()
@@ -435,8 +498,11 @@ void doShuffle()
 
 
 
-
+#ifdef ESP8266
+void sendHeader (const String & sTitle, const String & sINBody , bool isHTML , char * pDate)
+#else
 void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML = true, char * pDate = NULL)
+#endif
 {
   // send a standard http response header
   client.println ("HTTP/1.1 200 OK");
