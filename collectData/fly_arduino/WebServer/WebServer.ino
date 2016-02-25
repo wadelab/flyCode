@@ -11,7 +11,7 @@
 // if we test file, it will return true if the file is open...
 // file append is not honoured, need to seek end...
 
-//#define __wifisetup__
+#define __wifisetup__
 
 #ifndef __wifisetup__
 
@@ -339,6 +339,7 @@ void setup() {
 
 #ifdef ESP8266
   // initialise Flash disk
+  Serial.println ("Now trying flash drive card ...\n");
   if (SPIFFS.begin())
   {
     Serial.println ("Setting up flash drive card succeded OK...\n");
