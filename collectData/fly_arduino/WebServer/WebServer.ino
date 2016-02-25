@@ -11,12 +11,12 @@
 // if we test file, it will return true if the file is open...
 // file append is not honoured, need to seek end...
 
-#define __wifisetup__
+//#define __wifisetup__
 
 #ifndef __wifisetup__
 
 #define due3
-#define USE_DHCP
+//#define USE_DHCP
 
 #ifndef ARDUINO_LINUX
 #define EthernetShield Ethernet
@@ -110,10 +110,13 @@
 #include <WiFi.h>
 #endif
 #endif
+// end of if wifi or ethernet
 
-
+#ifdef ESP8266
+#include <FS.h>
+#else
 #include <SD.h>
-
+#endif
 
 //#include "mydata.h"
 // include fft
@@ -244,7 +247,7 @@ EthernetClientShield client ;
 IPAddress myIP, theirIP, dnsIP ;
 WiFiServer server (80);
 #ifdef ESP8266
-WiFiClient client ; 
+WiFiClient client ;
 #else
 WiFiClient client (80);
 #endif
@@ -266,13 +269,9 @@ void goColour(const byte r, const byte g, const byte b, const byte f, const bool
 void serve_dir ();
 void run_graph();
 void printTwoDigits(char * p, uint8_t v);
-void setDateFromFile(const dir_t & pFile);
-void myPrintFatDateTime(const dir_t & pFile);
 void printDirectory(String s);
 void webTime ();
-
 void addSummary ();
-void gmdate ( const dir_t & pFile);
 void doplotFile (const char * c);
 void doFFTFile (const char * c, bool bNeedHeadFooter);
 void doreadFile (const char * c);
@@ -305,7 +304,7 @@ double sgn (double x);
 
 void analogReadResolution(int i)
 {
-// do nothing 
+  // do nothing
 }
 #endif
 
@@ -338,6 +337,25 @@ void setup() {
     myGraphData[i] = 0;
   }
 
+#ifdef ESP8266
+  // initialise Flash disk
+  if (SPIFFS.begin())
+  {
+    Serial.println ("Setting up flash drive card succeded OK...\n");
+  }
+  else
+  {
+    Serial.println ("Setting up SD cardflash drive failed...\n");
+    has_filesystem = false ;
+  }
+  SPIFFS.format(); // we may only need to use this once ??
+
+#define SD SPIFFS
+#define MyDir Dir
+#define FILE_READ "r"
+#define FILE_WRITE "a"
+
+#else
   // initialize the SD card
   Serial.println ("Setting up SD card...\n");
 
@@ -350,7 +368,9 @@ void setup() {
     Serial.println ("SD card failed\n");
     has_filesystem = false ;
   }
-
+#define MyDir File  
+#define openDir open
+#endif
 
 
 #ifdef __wifisetup__
@@ -367,7 +387,7 @@ void setup() {
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
     status = WiFi.begin(ssid, pass);
     // wait 10 seconds for connection:
-    delay(2000); // 2 s seems enough
+    delay(10000); // 2 s seems enough
   }
 #ifdef ESP8266
   setupWiFi();                            // start the web server on port 80
@@ -760,12 +780,32 @@ void printDirectory(String s)
   char cTmp  [iLength + 2];
   s.toCharArray(cTmp, iLength);
   //Serial.println ("Now reading directry:" + s2 + String("!!"));
-  File dir = SD.open(cTmp) ;
-  if (!dir) return ;
+  MyDir dir = SD.openDir(cTmp) ;
+ // if (!dir) return ; FIX
 
   char sArray [512 * 15];
   long lArray [512] ;
+#ifdef ESP8266
+  bool bNext ;
 
+  //dir.rewindDirectory();
+  int iFiles = 0 ;
+  bNext =  dir.next();
+  while (bNext)
+  {
+//    if (!entry.isDirectory())
+//    {
+File entry = dir.openFile("r");
+      Serial.println(entry.name());
+      strncpy (sArray + (iFiles * 15) , entry.name(), sizeof (entry)) ;
+      lArray [iFiles] = entry.size();
+      //Serial.println((char*)sArray + (iFiles * 15));
+      iFiles ++ ;
+//    }
+    entry.close();
+    bNext =  dir.next();
+  }
+#else
   File entry ;
   dir.rewindDirectory();
   int iFiles = 0 ;
@@ -783,6 +823,7 @@ void printDirectory(String s)
     entry.close();
     entry =  dir.openNextFile();
   }
+  #endif
   iFiles -- ; // allow for last increment...
 
   client.print (iFiles);
@@ -1019,10 +1060,11 @@ bool file_time (char * cIn)
 {
   year = 2016;
   second = myminute = hour = day = month = 1;
-
+  Serial.print("Doing filetime with:");
+  Serial.println(cIn);
   //GET /?GAL4=JoB&UAS=w&Age=-1&Antn=Ok&sex=male&org=fly&col=blue&F1=12&F2=15&stim=fERG&filename=2016_31_01_15h02m25 HTTP/1.1
 
-  const int calcTimemax = 17 ;
+  const int calcTimemax = 21;
   char calcTime [calcTimemax] ; //= "0000000000000" ;
   for (int i = 0; i < calcTimemax ; i++)
   {
@@ -1032,7 +1074,7 @@ bool file_time (char * cIn)
   char * fPOS = strstr (cIn, "filename=");
   if (!fPOS)
   {
-    sendError (("No filename in request to serve page"));
+    sendError (("No filename= in request to serve page"));
     return false;
   }
   char * gPOS = strstr (fPOS, "HTTP/1.1");
@@ -1282,6 +1324,7 @@ bool writeSummaryFile(const char * cMain)
   Serial.print  (c);
   Serial.print F(" size now ");
   Serial.println (file.size());
+  file.close();
   return true ;
 }
 
@@ -1339,7 +1382,7 @@ bool writeFile(char * c)
       Serial.println (c);
       return false;
     }
-
+#ifndef ESP8266
     //FIXED - append - go to end of file
     unsigned long l = wfile.size() ;
     if (wfile.seek(l))
@@ -1353,6 +1396,7 @@ bool writeFile(char * c)
       Serial.println (c);
 
     }
+#endif
   }
 
 
@@ -1445,8 +1489,8 @@ void doplotFile (const char * c)
   //based on doReadFile...
 
   //String dataString ;
-  char * cPtr;
-  cPtr = (char *) erg_in ;
+  unsigned char * cPtr;
+  cPtr = (unsigned char *) erg_in ;
 
   Serial.print ("trying to open:");
   Serial.println (c);
@@ -1474,7 +1518,7 @@ void doplotFile (const char * c)
   }
 
   // write out the string ....
-  client.println(cPtr);
+  client.println((char *)cPtr);
   client.println("<BR>");
   // test if its an ERG
   //boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
@@ -1496,13 +1540,13 @@ void doplotFile (const char * c)
   }
 
   iBytesRequested = max_data * sizeof (int);
-  iBytesRead = file.read(erg_in2, iBytesRequested);
+  iBytesRead = file.read((unsigned char *)erg_in2, iBytesRequested);
 
 
   while (iBytesRead == iBytesRequested)
   {
     iBytesRequested = max_data * sizeof (unsigned int);
-    iBytesRead = file.read (time_stamp2, iBytesRequested );
+    iBytesRead = file.read ((unsigned char *)time_stamp2, iBytesRequested );
     nBlocks ++;
 
     for (int i = 0; i < max_data; i++)
@@ -1513,7 +1557,7 @@ void doplotFile (const char * c)
 
     //read next block
     iBytesRequested = max_data * sizeof (int);
-    iBytesRead = file.read(erg_in2, iBytesRequested);
+    iBytesRead = file.read((unsigned char *)erg_in2, iBytesRequested);
 
   } // end of while
 
@@ -1535,8 +1579,8 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   Sc = String (("FFT of ")) + Sc ;
 
   //String dataString ;
-  char * cPtr;
-  cPtr = (char *) erg_in ;
+  unsigned char * cPtr;
+  cPtr = (unsigned char *) erg_in ;
   int iOldContrast ;
   int erg_in2 [max_data] ;
   memset (erg_in2, 0, sizeof (int) * max_data);
@@ -1576,18 +1620,18 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   }
 
   // write out the string ....
-  client.print(cPtr);
+  client.print((char *)cPtr);
   client.println("<BR>");
 
   // now on to the data
   iBytesRequested = max_data * sizeof (int);
-  iBytesRead = file.read(erg_in, iBytesRequested);
+  iBytesRead = file.read((unsigned char *)erg_in, iBytesRequested);
 
   int nBlocks = 0;
   while (iBytesRead == iBytesRequested)
   {
     iBytesRequested = max_data * sizeof (unsigned int);
-    iBytesRead = file.read (time_stamp, iBytesRequested );
+    iBytesRead = file.read ((unsigned char *)time_stamp, iBytesRequested );
     nBlocks ++;
     // stop when mask and probe are both 30%
     Serial.print("time ");
@@ -1612,7 +1656,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
 
     //read next block
     iBytesRequested = max_data * sizeof (int);
-    iBytesRead = file.read(erg_in, iBytesRequested);
+    iBytesRead = file.read((unsigned char *)erg_in, iBytesRequested);
 
   } // end of while
 
@@ -1685,8 +1729,8 @@ void sendLastModified(char * cPtr, char * c, bool bIsHTML)
 void doreadFile ( char * c)
 {
   //String dataString ;
-  char * cPtr;
-  cPtr = (char *) erg_in ;
+  unsigned char * cPtr;
+  cPtr = (unsigned char *) erg_in ;
   int iOldContrast ;
 
   //Serial.print ("trying to open:");
@@ -1706,24 +1750,24 @@ void doreadFile ( char * c)
     return ;
   }
 
-  sendLastModified(cPtr, c, false);
+  sendLastModified((char *)cPtr, c, false);
 
   // write out the string ....
-  client.print(cPtr);
+  client.print((char *)cPtr);
   client.println();
   // test if its an ERG
-  boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
-  bIsSine = ( NULL == strstr ( cPtr, "stm=SQ") ) ;
+  boolean bERG = ( NULL != strstr ( (char *) cPtr, "stim=fERG&") ) ;
+  bIsSine = ( NULL == strstr ((char *) cPtr, "stm=SQ") ) ;
 
   // now on to the data
   iBytesRequested = max_data * sizeof (int);
-  iBytesRead = file.read(erg_in, iBytesRequested);
+  iBytesRead = file.read((unsigned char *)erg_in, iBytesRequested);
 
   int nBlocks = 0;
   while (iBytesRead == iBytesRequested)
   {
     iBytesRequested = max_data * sizeof (unsigned int);
-    iBytesRead = file.read (time_stamp, iBytesRequested );
+    iBytesRead = file.read ((unsigned char *)time_stamp, iBytesRequested );
     nBlocks ++;
 
     for (int i = 0; i < max_data - 1; i++)
@@ -1757,7 +1801,7 @@ void doreadFile ( char * c)
 
     //read next block
     iBytesRequested = max_data * sizeof (int);
-    iBytesRead = file.read(erg_in, iBytesRequested);
+    iBytesRead = file.read((unsigned char *)erg_in, iBytesRequested);
 
   } // end of while
 
@@ -1765,11 +1809,12 @@ void doreadFile ( char * c)
 
 }
 
+
 void doreadSummaryFile (const char * c)
 {
   //String dataString ;
-  char * cPtr = NULL;
-  cPtr = (char *) erg_in ;
+  unsigned char * cPtr = NULL;
+  cPtr = (unsigned char *) erg_in ;
 
   Serial.print F("trying to open summary file:");
   Serial.println (c);
@@ -1788,9 +1833,9 @@ void doreadSummaryFile (const char * c)
     file.close();
     return ;
   }
-  sendLastModified(cPtr, (char *) c, true); // make this HTML so we can display it...
+  sendLastModified((char *)cPtr, (char *) c, true); // make this HTML so we can display it...
   // write out the string ....
-  client.print(cPtr);
+  client.print((char *)cPtr);
   client.println("<BR>");
 
   // inefficiently read the file a byte at a time, and send it to the client
@@ -1805,7 +1850,7 @@ void doreadSummaryFile (const char * c)
     }
     else
     {
-      client.print (cPtr);
+      client.print ((char *)cPtr);
     }
     b = file.read(cPtr, 1);
   }
