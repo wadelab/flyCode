@@ -15,8 +15,8 @@
 
 #ifndef __wifisetup__
 
-#define due3
-//#define USE_DHCP
+#define due5
+#define USE_DHCP
 
 #ifndef ARDUINO_LINUX
 #define EthernetShield Ethernet
@@ -153,16 +153,9 @@ const byte redled = 7;
 const byte grnled = 3;
 const byte bluLED = 5;
 #else
-#ifdef __SAM3X8E__
-// fix the LED order in hardware....
-const byte redled = 6;
-const byte grnled = 5;
-const byte bluLED = 7;
-#else
 const byte redled = 5;
 const byte grnled = 6;
 const byte bluLED = 7;
-#endif
 #endif
 #endif
 
@@ -342,15 +335,22 @@ void setup() {
   Serial.println ("Now trying flash drive card ...\n");
   if (SPIFFS.begin())
   {
-    Serial.println ("Setting up flash drive card succeded OK...\n");
+    Serial.println ("Setting up flash drive  succeded OK...\n");
   }
   else
   {
-    Serial.println ("Setting up SD cardflash drive failed...\n");
+    Serial.println ("Setting up flash drive failed...\n");
     has_filesystem = false ;
   }
-  SPIFFS.format(); // we may only need to use this once ??
-
+  if (SPIFFS.format()) // we may only need to use this once ??
+  {
+    Serial.println ("Formatting flash drive ok...\n");
+  }
+  else
+  {
+    Serial.println ("Formatting flash drive failed...\n");
+    has_filesystem = false ;
+  }
 #define SD SPIFFS
 #define MyDir Dir
 #define FILE_READ "r"
@@ -369,12 +369,16 @@ void setup() {
     Serial.println ("SD card failed\n");
     has_filesystem = false ;
   }
-#define MyDir File  
+#define MyDir File
 #define openDir open
 #endif
 
 
 #ifdef __wifisetup__
+
+#ifdef ESP8266
+  setupWiFi();                            // start the web server on port 80
+#else
   //char ssid[] = "SSID";     //  your network SSID (name)
   //char pass[] = "PASSWD";  // your network password
 #include "./secret.h"
@@ -389,14 +393,13 @@ void setup() {
     status = WiFi.begin(ssid, pass);
     // wait 10 seconds for connection:
     delay(10000); // 2 s seems enough
+    myIP = WiFi.localIP();
   }
-#ifdef ESP8266
-  setupWiFi();                            // start the web server on port 80
 #endif
+
   printWifiStatus();                        // you're connected now, so print out the status
 
   server.begin();                           // start the web server on port 80
-  printWifiStatus();                        // you're connected now, so print out the status
 
 #else
   digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
@@ -467,8 +470,10 @@ void setupWiFi()
 
   for (int i = 0; i < AP_NameString.length(); i++)
     AP_NameChar[i] = AP_NameString.charAt(i);
-
+  Serial.print("Setting up access point 8266");
+  Serial.println (AP_NameString);
   WiFi.softAP(AP_NameChar, WiFiAPPSK);
+  myIP = WiFi.softAPIP() ;
 }
 #endif
 
@@ -478,7 +483,7 @@ void printWifiStatus() {
   Serial.println(WiFi.SSID());
 
   // print your WiFi shield's IP address:
-  myIP = WiFi.localIP();
+
   Serial.print ("IP Address: ");
   Serial.println(myIP);
 
@@ -616,7 +621,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
 #ifdef due1
   analogWrite( fiberLED, a );
 #endif
-  //  updateColour( boolUpdatePage);
+  updateColour( boolUpdatePage);
   //
   //  for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
   //
@@ -782,7 +787,7 @@ void printDirectory(String s)
   s.toCharArray(cTmp, iLength);
   //Serial.println ("Now reading directry:" + s2 + String("!!"));
   MyDir dir = SD.openDir(cTmp) ;
- // if (!dir) return ; FIX
+  // if (!dir) return ; FIX
 
   char sArray [512 * 15];
   long lArray [512] ;
@@ -794,15 +799,15 @@ void printDirectory(String s)
   bNext =  dir.next();
   while (bNext)
   {
-//    if (!entry.isDirectory())
-//    {
-File entry = dir.openFile("r");
-      Serial.println(entry.name());
-      strncpy (sArray + (iFiles * 15) , entry.name(), sizeof (entry)) ;
-      lArray [iFiles] = entry.size();
-      //Serial.println((char*)sArray + (iFiles * 15));
-      iFiles ++ ;
-//    }
+    //    if (!entry.isDirectory())
+    //    {
+    File entry = dir.openFile("r");
+    Serial.println(entry.name());
+    strncpy (sArray + (iFiles * 15) , entry.name(), sizeof (entry)) ;
+    lArray [iFiles] = entry.size();
+    //Serial.println((char*)sArray + (iFiles * 15));
+    iFiles ++ ;
+    //    }
     entry.close();
     bNext =  dir.next();
   }
@@ -813,7 +818,7 @@ File entry = dir.openFile("r");
   entry =  dir.openNextFile();
   while (entry)
   {
-    if (!entry.isDirectory())
+    if (!entry.isDirectory() && entry.name() [0] != '~')
     {
       //Serial.println(entry.name());
       strncpy (sArray + (iFiles * 15) , entry.name(), sizeof (entry)) ;
@@ -824,15 +829,15 @@ File entry = dir.openFile("r");
     entry.close();
     entry =  dir.openNextFile();
   }
-  #endif
-  iFiles -- ; // allow for last increment...
+#endif
 
   client.print (iFiles);
   client.print (" files found on disk  ");
+  iFiles -- ; // allow for last increment...
 
   client.println ();
   client.println ("<ul>");
-  while (iFiles > 0)
+  while (iFiles >= 0)
   {
     client.print ("<li><a href=\"");
     client.print ((char*)sArray + (iFiles * 15));
@@ -2471,8 +2476,7 @@ void sendReply ()
   fPOS = MyInputString.indexOf ("blue/");
   if (fPOS > 0)
   {
-    goColour(0, 0, 255, 0, false) ;
-    Serial.println ("on");
+    goColour(0, 0, 255, 0, true) ;
     return ;
   }
   fPOS = MyInputString.indexOf ("green/");
@@ -2485,7 +2489,7 @@ void sendReply ()
   if (fPOS > 0)
   {
     Serial.println ("off");
-    goColour(0, false) ;
+    goColour(0, true) ;
     return ;
   }
   fPOS = MyInputString.indexOf ("fiber/");
