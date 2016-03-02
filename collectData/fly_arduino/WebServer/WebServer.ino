@@ -11,11 +11,11 @@
 // if we test file, it will return true if the file is open...
 // file append is not honoured, need to seek end...
 
-#define __wifisetup__
+//#define __wifisetup__
 
 #ifndef __wifisetup__
 
-#define due5
+#define due3
 #define USE_DHCP
 
 #ifndef ARDUINO_LINUX
@@ -35,11 +35,6 @@
 //biolpc2793 [in use in lab with Emily and Richard]
 #endif
 
-#ifdef due5
-#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
-//biolpc2804
-
-#endif
 
 #ifdef due1
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA2
@@ -59,6 +54,11 @@
 #ifdef due4
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0E, 0x09, 0xA3
 //90-A2-DA-0E-09-A3 biolpc2939 144.32.86.171
+#endif
+
+#ifdef due5
+#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
+//biolpc2804
 #endif
 
 #ifdef __wifisetup__
@@ -681,7 +681,7 @@ void run_graph()
   //    analogWrite(bluLED, 0);
   //  }
 
-  sendHeader ("Graph of last sweep") ;
+  sendHeader ("Graph of last sweep", "onload=\"init()\"") ;
   client.println ("<script>");
 
   // script to reload ...
@@ -699,28 +699,42 @@ void run_graph()
   client.println ("Your browser does not support the HTML5 canvas tag.</canvas>");
 
   client.println ("<script>");
-  client.println ("var c = document.getElementById(\"myCanvas\");");
-  client.println ("var ctx = c.getContext(\"2d\");");
+  client.println ("var can;");
+  client.println ("var ctx;");
+  client.println ("var i = 20; ");
+
+  client.println ("function l(v){");
+  client.println ("ctx.lineTo(i,v);");
+  client.println ("i = i + 20;");
+  client.println ("};");
+  client.println ("function m(v){");
+  client.println ("ctx.moveTo(i,v);");
+  client.println ("i = i + 20;");
+  client.println ("};");
+
+  client.println ("function init() {");
+  client.println (" can = document.getElementById(\"myCanvas\");");
+  client.println (" ctx = can.getContext(\"2d\");");
 
   if (iIndex >= max_graph_data) iIndex = 0;
   for (int i = 0; i < max_graph_data - 2; i++)
   {
     if (i < iIndex - 1 || i > iIndex + 1)
     {
-      client.print ("ctx.moveTo(");
-      client.print (i * 20);
-      client.print (",");
-      client.print (myGraphData[i] / 2);
-      client.println (");");
-      client.print ("ctx.lineTo(");
-      client.print ((i + 1) * 20);
-      client.print (",");
+      client.print ("l(");
       client.print(myGraphData[i + 1] / 2);
-      client.println (");");
-      client.println ("ctx.strokeStyle=\"blue\";");
-      client.println ("ctx.stroke();");
+      client.print (");");
+    }
+    else
+    {
+      client.print ("m(");
+      client.print (myGraphData[i] / 2);
+      client.print (");");
     }
   }
+  client.print ("ctx.strokeStyle=\"blue\";");
+  client.println ("ctx.stroke();");
+
   //draw stimulus...
   client.print ("ctx.moveTo(");
   client.print ((max_graph_data / 10) * 20);
@@ -733,6 +747,7 @@ void run_graph()
   client.println ("ctx.strokeStyle=\"blue\";");
   //              client.println("ctx.lineWidth=5;");
   client.println ("ctx.stroke();");
+  client.println ("}");
 
   client.println ("</script>");
   client.println ("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
@@ -1491,7 +1506,7 @@ void doplotFile (const char * c)
 {
   String Sc = (c);
   Sc = String (("Plotting ")) + Sc ;
-  sendHeader (Sc);
+  sendHeader (Sc, "onload=\"init()\"") ;
   //based on doReadFile...
 
   //String dataString ;
@@ -1611,7 +1626,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   //  gmdate ( dE );
   //  Serial.print ("Last modified is:");
   //  Serial.println( cPtr ) ;
-  if (bNeedHeadFooter) sendHeader(Sc, "", true /*, cPtr*/ ); //FIX - get date out of file header
+  if (bNeedHeadFooter) sendHeader(Sc, "onload=\"init()\"", true /*, cPtr*/ ); //FIX - get date out of file header
 
   int iBytesRequested, iBytesRead;
   // note this overwrites any data already in memeory...
@@ -2004,7 +2019,7 @@ void flickerPage()
   //  Serial.print ("Sampling at :");
   //  Serial.println (String(sampleCount));
 
-  sendHeader ("Sampling");
+  sendHeader ("Sampling", "onload=\"init()\"") ;
 
   // script to reload ...
   client.println ("<script>");
@@ -2099,43 +2114,48 @@ void AppendSSVEPReport()
     if (iThisContrast > 0)
     {
       iThisContrast -- ;
-      client.println ("<canvas id=\"myCanvas\" width=\"640\" height=\"450\" style=\"border:1px solid #d3d3d3;\">");
+      client.println ("<canvas id=\"myCanvas\" width=\"620\" height=\"450\" style=\"border:1px solid #d3d3d3;\">");
       client.println ("Your browser does not support the HTML5 canvas tag.</canvas>");
 
       client.println ("<script>");
-      client.println ("var c = document.getElementById(\"myCanvas\");");
-      client.println ("var ctx = c.getContext(\"2d\");");
+      client.println ("var can;");
+      client.println ("var ctx;");
+      client.println ("var i = 8; ");
+
+      client.println ("function l(v){");
+      client.println ("ctx.lineTo(i,v);");
+      client.println ("i = i + 8;");  // iStep ??
+      client.println ("};");
+      client.println ("function m(v){");
+      client.println ("ctx.moveTo(0,v);");
+      client.println ("i = 8;");
+      client.println ("};");
+
+      client.println ("function init() {");
+      client.println (" can = document.getElementById(\"myCanvas\");");
+      client.println (" ctx = can.getContext(\"2d\");");
 
       int iStep = 2;
-      for (int i = 0; i < 5 * max_graph_data - 2; i = i + iStep)
+      client.print ("m(");
+      client.print(myGraphData[0] / 4 + 350);
+      client.print (");");
+      for (int i = 1; i < 5 * max_graph_data - 2; i = i + iStep)
       {
-        client.print ("ctx.moveTo(");
-        client.print(i * 4);
-        client.print (",");
-        client.print(myGraphData[i] / 4 + 350);
-        client.println (");");
-        client.print ("ctx.lineTo(");
-        client.print((i + iStep) * 4);
-        client.print (",");
+        client.print ("l(");
         client.print(myGraphData[i + iStep] / 4 + 350);
         client.println (");");
       }
       client.println ("ctx.stroke();");
-
-      for (int i = 0; i < 5 * max_graph_data - 2; i = i + iStep)
+      client.print ("m(");
+      client.print(br_Now(time_stamp[0]) );
+      client.println (");");
+      for (int i = 1; i < 5 * max_graph_data - 2; i = i + iStep)
       {
-        client.print ("ctx.moveTo(");
-        client.print(i * 4);
-        client.print (",");
-        client.print(br_Now(time_stamp[i]) );
-        client.println (");");
-        client.print ("ctx.lineTo(");
-        client.print((i + iStep) * 4);
-        client.print (",");
+        client.print ("l(");
         client.print(br_Now(time_stamp[i + iStep]));
         client.println (");");
       }
-      client.println ("ctx.stroke();");
+      client.println ("ctx.stroke(); }");
 
       client.println ("</script>");
       iThisContrast ++ ;
@@ -2214,12 +2234,6 @@ void sendGraphic()
 
 void sendGraphic(bool plot_stimulus)
 {
-  client.println ("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
-  client.println ("Your browser does not support the HTML5 canvas tag.</canvas>");
-
-  client.println ("<script>");
-  client.println ("var c = document.getElementById(\"myCanvas\");");
-  client.println ("var ctx = c.getContext(\"2d\");");
 
   istep = 15;
   plot_limit = max_data - max_data / 6 ;
@@ -2236,20 +2250,45 @@ void sendGraphic(bool plot_stimulus)
     iBaseline = 420 ;
     iXDiv = 5 ;
   }
+
+  client.println ("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+  client.println ("Your browser does not support the HTML5 canvas tag.</canvas>");
+
+  client.println ("<script>");
+  client.println ("var can;");
+  client.println ("var ctx;");
+  client.print   ("var i = ");
+  client.print   ((iXFactor * istep) / iXDiv );
+  client.println ("; ");
+
+  client.println ("function l(v){");
+  client.println ("ctx.lineTo(i,v);");
+  client.println ("i = i +  ");
+  client.print   ((iXFactor * istep) / iXDiv );
+  client.println ("; ");  // iStep ??
+  client.println ("};");
+  client.println ("function m(v){");
+  client.println ("ctx.moveTo(0,v);");
+  client.print   ("i = ");
+  client.print   ((iXFactor * istep) / iXDiv );
+  client.println ("; ");
+  client.println ("};");
+
+  client.println ("function init() {");
+  client.println (" can = document.getElementById(\"myCanvas\");");
+  client.println (" ctx = can.getContext(\"2d\");");
+
+
   // move to start of line
   client.println ("ctx.beginPath();");
-  client.print ("ctx.moveTo(");
-  client.print((iXFactor * istep) / iXDiv );
-  client.print (",");
+  client.print ("m(");
   client.print(iBaseline - (10 * myGraphData[istep]) / iYFactor);
   client.println (");");
 
   //now join up the line
   for (int i = 2 * istep; i < plot_limit; i = i + istep)
   {
-    client.print ("ctx.lineTo(");
-    client.print((iXFactor * i) / iXDiv );
-    client.print (",");
+    client.print ("l(");
     client.print(iBaseline - (10 * myGraphData[i]) / iYFactor);
     client.println (");");
   }
@@ -2258,17 +2297,13 @@ void sendGraphic(bool plot_stimulus)
   if (plot_stimulus)
   {
     client.println ("ctx.beginPath();");
-    client.print ("ctx.moveTo(");
-    client.print((iXFactor * 1) / iXDiv );
-    client.print (",");
+    client.print ("m(");
     client.print(10 + (4 * fERG_Now(time_stamp[1] - time_stamp[0])) / iYFactor);
     client.println (");");
 
     for (int i = 2 * istep; i < plot_limit; i = i + istep)
     {
-      client.print ("ctx.lineTo(");
-      client.print((iXFactor * (i)) / iXDiv );
-      client.print (",");
+      client.print ("l(");
       client.print(10 + (4 * fERG_Now(time_stamp[i] - time_stamp[0]) ) / iYFactor);
       client.println (");");
     }
@@ -2284,7 +2319,7 @@ void sendGraphic(bool plot_stimulus)
     plotInColour (4 * 51, String ("#FF0000"));
   }
 
-  client.println ("</script>");
+  client.println ("} </script>");
 }
 
 
@@ -2566,11 +2601,11 @@ void sendReply ()
       client.println("welcome to robots!");
       return ;
     }
-
-    // otherwise we'll assume its a directory...
-    sFile = sFile + ("/");
-    serve_dir(sFile);
-    return ;
+    //
+    //    // otherwise we'll assume its a directory...
+    //    sFile = sFile + ("/");
+    //    serve_dir(sFile);
+    //    return ;
   }
 
   // default - any other url
