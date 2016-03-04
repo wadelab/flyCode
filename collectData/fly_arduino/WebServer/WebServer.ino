@@ -622,12 +622,11 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
   analogWrite( fiberLED, a );
 #endif
   updateColour( boolUpdatePage);
-  //
-  //  for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
-  //
-  //  {
-  //    digitalWrite (i, r);
-  //  }
+
+  for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
+  {
+    digitalWrite (i, w);
+  }
 }
 
 void goColour(const byte r, const bool boolUpdatePage)
