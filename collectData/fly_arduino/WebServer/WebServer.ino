@@ -203,7 +203,7 @@ uint16_t year ;
 
 const short MaxInputStr = 130 ;
 String MyInputString = String(MaxInputStr + 1);
-String MyReferString = String(MaxInputStr + 1);
+//String MyReferString = String(MaxInputStr + 1);
 
 char cFile [30];
 char cInput [MaxInputStr + 2] = "";
@@ -574,24 +574,24 @@ void sendError (const String & sError)
 void send_GoBack_to_Stim_page ()
 {
   client.println ("<A HREF=\"") ;
-  if (MyReferString != String("131"))
-  {
-
-    //    client.println (" <script>");
-    //    client.println ("function goBack() ");
-    //    client.println ("{ window.history.back() }");
-    //    client.println ("</script>");
-
-    client.println (MyReferString) ;
-    client.println ("\"" );
-  }
-  //    Serial.print("My reference is :");
-  //    Serial.println (MyReferString) ;
-  else
-  {
+//  if (MyReferString != String("131"))
+//  {
+//
+//    //    client.println (" <script>");
+//    //    client.println ("function goBack() ");
+//    //    client.println ("{ window.history.back() }");
+//    //    client.println ("</script>");
+//
+//    client.println (MyReferString) ;
+//    client.println ("\"" );
+//  }
+//  //    Serial.print("My reference is :");
+//  //    Serial.println (MyReferString) ;
+//  else
+//  {
     // i think this migth work everywhere with firefox > 31 - seems to work in Safari too
     client.print ("javascript:void(0)\" onclick=\"history.back(); ") ;
-  }
+//  }
   client.println ("\">the stimulus selection form</A>  <BR>");
 }
 
@@ -2030,16 +2030,16 @@ void flickerPage()
   client.println ("function myStopFunction() {");
   client.println ("var b = confirm(\"Really Stop Data Acqusition ?\"); \n if ( b == true )  ");
   client.print ("{ \n clearInterval(myVar); ");
-  if (MyReferString != String("131") )
-  {
-    client.print ("\n location.assign(\"");
-    client.print (MyReferString);
-    client.print ("\") ") ;
-  }
-  else
-  {
+//  if (MyReferString != String("131") )
+//  {
+//    client.print ("\n location.assign(\"");
+//    client.print (MyReferString);
+//    client.print ("\") ") ;
+//  }
+//  else
+//  {
     client.print ("\n history.back();");
-  }
+//  }
   client.print (" } }");
   //client.println ("location.assign(\"stop/\");");
   client.println ("");
