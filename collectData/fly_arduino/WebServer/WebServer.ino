@@ -173,6 +173,8 @@ bool bIsSine = true ;
 
 byte nRepeats = 0;
 const byte maxRepeats = 5;
+byte nWaits = 15;
+byte nMaxWaits = 15 ;
 
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
@@ -2020,6 +2022,8 @@ bool collect_fERG_Data ()
 
 }
 
+
+
 void flickerPage()
 {
   //  Serial.print ("Sampling at :");
@@ -2037,30 +2041,41 @@ void flickerPage()
   client.println ("function myStopFunction() {");
   client.println ("var b = confirm(\"Really Stop Data Acqusition ?\"); \n if ( b == true )  ");
   client.print ("{ \n clearInterval(myVar); ");
-  //  if (MyReferString != String("131") )
-  //  {
-  //    client.print ("\n location.assign(\"");
-  //    client.print (MyReferString);
-  //    client.print ("\") ") ;
-  //  }
-  //  else
-  //  {
   client.print ("\n history.back();");
-  //  }
   client.print (" } }");
-  //client.println ("location.assign(\"stop/\");");
   client.println ("");
   client.println ("</script>");
 
+
   if (bDoFlash)
   {
-    AppendFlashReport ();
+    if (nWaits > 0)
+    {
+      AppendWaitReport ();
+    }
+    else
+    {
+      AppendFlashReport ();
+    }
   }
   else
   {
     AppendSSVEPReport();
   }
   sendFooter ();
+}
+
+void AppendWaitReport()
+{
+  client.print ("waiting ") ;
+  client.print ( nWaits );
+  client.print (" of ");
+  client.print (nMaxWaits);
+  client.println (" time so far " );
+  client.println ("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
+  client.println (cInput);
+  client.println ( "<BR> ");
+  nWaits -- ;
 }
 
 void AppendFlashReport()
@@ -2196,6 +2211,7 @@ void getData ()
   {
     if (bDoFlash)
     {
+      if (nWaits > 0) return ;
       bFileOK = collect_fERG_Data ();
     }
     else
@@ -2205,6 +2221,7 @@ void getData ()
   }
 
 }
+
 void plotInColour (int iStart, const String & str_col)
 {
   // 12 Hz in blue ?
@@ -2432,6 +2449,7 @@ void sendReply ()
       // done so tidy up
       Serial.println("done and tidy up time");
       nRepeats = iThisContrast = 0 ; // ready to start again
+      nWaits = nMaxWaits ;
       //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
       sendHeader ("Sampling Complete!");
       client.print( "Sampling Now Complete <BR><BR>");
