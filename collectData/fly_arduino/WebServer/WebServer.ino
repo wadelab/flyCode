@@ -22,7 +22,7 @@
 
 #ifndef __wifisetup__
 
-#define due3
+#define due4
 #define USE_DHCP
 
 #ifndef ARDUINO_LINUX
@@ -663,8 +663,8 @@ void run_graph()
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   short sensorReading = analogRead(connectedPin);
-  //  Serial.print(" sweep is : ");
-  //  Serial.println(sensorReading);
+//    Serial.print(" sweep is : ");
+//    Serial.println(sensorReading);
 
   if (sensorReading < 2 || sensorReading > 4090)
   {
@@ -677,7 +677,7 @@ void run_graph()
     digitalWrite (noContactLED, LOW);
   }
 
-  sensorReading = analogRead(analogPin);
+//  sensorReading = analogRead(analogPin);
   myGraphData[iIndex] = sensorReading / iGainFactor ;
   iIndex ++ ;
   //  if (iIndex > max_graph_data / 10 && iIndex < max_graph_data / 2)
@@ -730,13 +730,13 @@ void run_graph()
     if (i < iIndex - 1 || i > iIndex + 1)
     {
       client.print ("l(");
-      client.print(myGraphData[i + 1] / 2);
+      client.print(myGraphData[i + 1] * 20);
       client.print (");");
     }
     else
     {
       client.print ("m(");
-      client.print (myGraphData[i] / 2);
+      client.print (myGraphData[i] * 20);
       client.print (");");
     }
   }
