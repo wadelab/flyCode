@@ -25,7 +25,7 @@
 
 #ifndef __wifisetup__
 
-#define due4
+#define due3
 #define USE_DHCP
 
 #ifndef ARDUINO_LINUX
@@ -156,6 +156,12 @@ const byte extrawhitepin = 53;
 const byte redled = 3;
 const byte grnled = 5;
 const byte bluLED = 6;
+#endif
+
+#ifdef due3
+const byte redled = 7;
+const byte grnled = 3;
+const byte bluLED = 5;
 #endif
 
 #ifdef due4
@@ -1117,7 +1123,8 @@ bool file_time (char * cIn)
     sendError (("No filename= in request to serve page"));
     return false;
   }
-  char * gPOS = strstr (fPOS, "HTTP/1.1");
+  //char * gPOS = strstr (fPOS, "HTTP/1.1"); - if we have too long a URL, we lose the end...
+  char * gPOS = strstr (fPOS, "HTT");
   if (!gPOS)
   {
     sendError (("No HHTP in request to serve page"));
