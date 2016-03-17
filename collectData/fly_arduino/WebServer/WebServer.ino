@@ -18,6 +18,9 @@
 
 #ifdef ESP8266
 #define __wifisetup__
+// run as standalone access point ??
+
+//#define ESP8266AP
 #endif
 
 #ifndef __wifisetup__
@@ -153,17 +156,18 @@ const byte extrawhitepin = 53;
 const byte redled = 3;
 const byte grnled = 5;
 const byte bluLED = 6;
-#else
+#endif
 
 #ifdef due4
 const byte redled = 7;
 const byte grnled = 3;
 const byte bluLED = 5;
-#else
-const byte redled = 5;
-const byte grnled = 6;
-const byte bluLED = 7;
 #endif
+
+#ifdef ESP8266
+const byte redled = 1;
+const byte grnled = 2;
+const byte bluLED = 3;
 #endif
 
 const byte analogPin = 0 ;
@@ -248,6 +252,7 @@ EthernetClientShield client ;
 #else
 IPAddress myIP, theirIP, dnsIP ;
 WiFiServer server (80);
+
 #ifdef ESP8266
 WiFiClient client ;
 #else
@@ -301,7 +306,7 @@ bool writeFile(char * c);
 bool fileExists( char * c);
 bool collectSSVEPData ();
 bool collect_fERG_Data ();
-
+void AppendWaitReport ();
 double sgn (double x);
 
 void analogReadResolution(int i)
@@ -318,6 +323,9 @@ void setup() {
   pinMode(SS_ETHERNET, OUTPUT);
 
   pinMode(noContactLED, OUTPUT);
+  pinMode( redled, OUTPUT);
+  pinMode( grnled, OUTPUT);
+  pinMode( bluLED, OUTPUT);
 
   for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
   {
@@ -385,7 +393,7 @@ void setup() {
 
 #ifdef __wifisetup__
 
-#ifdef ESP8266
+#ifdef ESP8266AP
   setupWiFi();                            // start the web server on port 80
 #else
   //char ssid[] = "SSID";     //  your network SSID (name)
@@ -439,7 +447,6 @@ void setup() {
   Serial.println(dnsIP);
 
 #endif
-
 
   analogReadResolution(12);
   iGainFactor = 4 ;
@@ -618,6 +625,7 @@ void updateColour (const bool boolUpdatePage)
 
 void goColour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
 {
+  Serial.println("colouring 1");
   analogWrite( redled, r );
   analogWrite( grnled, g );
   analogWrite( bluLED, b );
@@ -630,12 +638,15 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
 #ifdef due1
   analogWrite( fiberLED, a );
 #endif
+
   updateColour( boolUpdatePage);
 
   for (int i = extrawhitepin; i > extrawhitepin - 7; i = i - 2)
   {
     digitalWrite (i, w);
   }
+
+  Serial.println("colouring 3");
 }
 
 void goColour(const byte r, const bool boolUpdatePage)
@@ -663,8 +674,8 @@ void run_graph()
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   short sensorReading = analogRead(connectedPin);
-//    Serial.print(" sweep is : ");
-//    Serial.println(sensorReading);
+  //    Serial.print(" sweep is : ");
+  //    Serial.println(sensorReading);
 
   if (sensorReading < 2 || sensorReading > 4090)
   {
@@ -677,7 +688,7 @@ void run_graph()
     digitalWrite (noContactLED, LOW);
   }
 
-//  sensorReading = analogRead(analogPin);
+  //  sensorReading = analogRead(analogPin);
   myGraphData[iIndex] = sensorReading / iGainFactor ;
   iIndex ++ ;
   //  if (iIndex > max_graph_data / 10 && iIndex < max_graph_data / 2)
@@ -2535,7 +2546,9 @@ void sendReply ()
   fPOS = MyInputString.indexOf ("blue/");
   if (fPOS > 0)
   {
-    goColour(0, 0, 255, 0, true) ;
+    Serial.println("Going blue");
+    goColour(0, 0, 255, 0, false) ;
+    Serial.println("Gone blue");
     return ;
   }
   fPOS = MyInputString.indexOf ("green/");
@@ -2643,6 +2656,9 @@ void loop()
   String sTmp = "";
   MyInputString = "";
   getData ();
+#ifdef ESP8266
+  delay(1);
+#endif
   boolean currentLineIsBlank = true;
   // listen for incoming clients
 
@@ -2676,36 +2692,6 @@ void loop()
             MyInputString = sTmp;
           }
           int iTmp = sTmp.indexOf ("Referer:") ;
-          //          if (iTmp >= 0)
-          //          {
-          //            String sHost = sTmp.substring(16);
-          //            //Serial.println (sHost) ;
-          //            int iSlash = sHost.indexOf ("/");
-          //            sHost = sHost.substring(0, iSlash);
-          //            //Serial.println (sHost) ;
-          //            DNSClient dc;
-          //            dc.begin(dnsIP);
-          //            char cTmp [30];
-          //            sHost.toCharArray(cTmp, 29);
-          //            dc.getHostByName(cTmp, theirIP);
-          //            //S//erial.print ("Their IP is ");
-          //            //Serial.println (theirIP) ;
-          ////            if (myIP != theirIP) FIX
-          ////            {
-          ////              //Serial.println ("this does not appear to be my ip");
-          ////              MyReferString = sTmp.substring(iTmp + 9);
-          ////              //Serial.print ("Ref string now :" );
-          ////              //Serial.println (MyReferString);
-          ////            }
-          //            //            else
-          //            //            {
-          //            //              Serial.println ("this appears to be my ip");
-          //            //              Serial.print ("Ref string unchanged at :" );
-          //            //              Serial.println (MyReferString);
-          //            //            }
-          //
-          //
-          //          }
           sTmp = "";
 
           currentLineIsBlank = true;
