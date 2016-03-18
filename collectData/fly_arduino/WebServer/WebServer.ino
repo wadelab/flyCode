@@ -677,6 +677,8 @@ void run_graph()
 {
   // turn off any LEDs, always do flash with blue
   goColour(255, false);
+  // reset the wait count
+  nWaits = 15;
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   short sensorReading = analogRead(connectedPin);
@@ -1158,8 +1160,8 @@ bool file_time (char * cIn)
   Serial.println();
   // 2016_31_01_15h02m25
   year = atoi(calcTime);
-  month = atoi(calcTime + 5);
-  day = atoi(calcTime + 8);
+  day = atoi(calcTime + 5);
+  month = atoi(calcTime + 8);
   hour = atoi(calcTime + 11);
   myminute = atoi(calcTime + 14);
   second = atoi(calcTime + 17) ;
@@ -2377,10 +2379,10 @@ void sendReply ()
   }
   if (!bFileOK)
   {
-    sendHeader ("Card not working");
+    sendHeader ("File not written");
     client.print ("File write failed on SD Card : ");
     client.print (cFile);
-    client.println ("<BR><BR>To setup for another test please ");
+    client.println ("<BR>Disk full (512 files?) <BR>File already exists?<BR>To setup for another test please ");
 
     send_GoBack_to_Stim_page ();
     sendFooter();
@@ -2469,7 +2471,7 @@ void sendReply ()
       nRepeats = iThisContrast = 0 ; // ready to start again
       nWaits = nMaxWaits ;
       //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
-      sendHeader ("Sampling Complete!");
+      sendHeader ("Sampling Complete!", "onload=\"init()\"") ;
       client.print( "Sampling Now Complete <BR><BR>");
       client.print( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " size: ");
       client.print(wfile.size());
@@ -2553,9 +2555,8 @@ void sendReply ()
   fPOS = MyInputString.indexOf ("blue/");
   if (fPOS > 0)
   {
-    Serial.println("Going blue");
-    goColour(0, 0, 255, 0, false) ;
-    Serial.println("Gone blue");
+    goColour(0, 0, 255, 0, true) ;
+
     return ;
   }
   fPOS = MyInputString.indexOf ("green/");
@@ -2567,7 +2568,7 @@ void sendReply ()
   fPOS = MyInputString.indexOf ("black/");
   if (fPOS > 0)
   {
-    Serial.println ("off");
+//    Serial.println ("off");
     goColour(0, true) ;
     return ;
   }
