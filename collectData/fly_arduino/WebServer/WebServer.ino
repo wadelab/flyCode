@@ -20,7 +20,7 @@
 #define __wifisetup__
 // run as standalone access point ??
 
-//#define ESP8266AP
+#define ESP8266AP
 #endif
 
 #ifndef __wifisetup__
@@ -1221,16 +1221,20 @@ void addSummary ()
     iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 - 10;
     Serial.print("Offset ");
     Serial.println( iOffset );
-    do_fft() ;
 
     pSummary[iOffset + kk] = time_stamp[max_data - 1] ;
     kk ++ ;
     pSummary[iOffset + kk] = erg_in[max_data - 1] ;
     kk ++ ;
     pSummary[iOffset + kk] = nRepeats ;
+    kk ++ ;
+
+    // save erg as we do an in place FFT
+    int erg_tmp [ max_data];
+    for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
+    do_fft() ;
 
     // F2-F1
-    kk ++ ;
     pSummary[iOffset + kk] = erg_in[12] ;
     kk ++ ;
     pSummary[iOffset + kk] = erg_in[49] ;
@@ -1244,6 +1248,9 @@ void addSummary ()
     pSummary[iOffset + kk] = erg_in[221] ;
     kk ++ ;
     pSummary[iOffset + kk] = erg_in[205] ; // 50Hz
+
+    // restore erg
+    for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
   }
 
   for (int ii = 0; ii < 14; ii ++ )
@@ -2568,7 +2575,7 @@ void sendReply ()
   fPOS = MyInputString.indexOf ("black/");
   if (fPOS > 0)
   {
-//    Serial.println ("off");
+    //    Serial.println ("off");
     goColour(0, true) ;
     return ;
   }
