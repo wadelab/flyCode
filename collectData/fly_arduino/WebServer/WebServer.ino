@@ -25,7 +25,7 @@
 
 #ifndef __wifisetup__
 
-#define due3
+#define due4
 #define USE_DHCP
 
 #ifndef ARDUINO_LINUX
@@ -1160,8 +1160,8 @@ bool file_time (char * cIn)
   Serial.println();
   // 2016_31_01_15h02m25
   year = atoi(calcTime);
-  day = atoi(calcTime + 5);
-  month = atoi(calcTime + 8);
+  month = atoi(calcTime + 5);
+  day = atoi(calcTime + 8);
   hour = atoi(calcTime + 11);
   myminute = atoi(calcTime + 14);
   second = atoi(calcTime + 17) ;
