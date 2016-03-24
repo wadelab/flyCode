@@ -32,11 +32,18 @@ alldata = csvread(fName, 1,0);
 
 [nContrasts,c] = size(alldata);
 nContrasts= nContrasts/1025 ;
+if (nContrasts ~= 5)
+    thisFlyData.Error = ['Not exactly 5 contrasts in file : ', fName]
+    success = false ;
+    return
+end
+
 if (mod(nContrasts,1) ~= 0)
     thisFlyData.Error = ['Not exactly 1024 data lines in file : ', fName]
     success = false ;
     return
 end
+
 timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
 
@@ -100,6 +107,7 @@ lineSaved = [lineSaved, {['nRepeats =',num2str(nContrasts  )]}];
 lineSaved = [lineSaved, {['max =',     num2str(max(meandata))]}];
 lineSaved = [lineSaved, {['min =',     num2str(min(meandata))]}];
 lineSaved = [lineSaved, {['off-transient =', num2str(min(meandata(680:720))-mean(meandata(650:680)))]}];
+lineSaved = [lineSaved, {['peak-peak =', num2str(max(meandata)-min(meandata))]}];
 
 for i = 1:length(lineSaved)
    disp(lineSaved{i});

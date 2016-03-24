@@ -6,7 +6,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <inttypes.h>
+#ifdef ESP8266
+#include <pgmspace.h>
+#else
 #include <avr/pgmspace.h>
+#endif
 
 #define    FFT_SIZE          1024 //256
 #define    MIRROR        FFT_SIZE / 2

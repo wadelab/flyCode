@@ -7,17 +7,22 @@
 
 function getTimeString() {
     var today=new Date();
+
+    var yy = today.getFullYear();
     var mo=today.getMonth() + 1;
     var d=today.getDate();
     var h=today.getHours();
     var m=today.getMinutes();
-    var s = today.getSeconds()
+    var s = today.getSeconds();
+
     m = checkTime(m);
-	mo = checkTime(mo);
-	h = checkTime(h);
-	s = checkTime(s);
-    return d + "_" + mo + "_" + h + "h" + m + "m" + s ;
-    }
+    mo = checkTime(mo);
+    h = checkTime(h);
+    s = checkTime(s);
+    d = checkTime(d);
+    
+   return yy + "_" + d + "_" + mo + "_" + h + "h" + m + "m" + s ;
+}
     
 function startTime()
 {

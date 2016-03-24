@@ -82,7 +82,8 @@ javaaddpath(fullfile(POIPATH,'poi_library/stax-api-1.0.1.jar'));
 
 
 %%  [status, message]=xlwrite(filename,A,sheet, range)
-filename = [ dirName, '/summary_of_ERGs.xls']
+analysistime = datestr(now,'mmmm_dd_yyyy_HH_MM');
+filename = [ dirName, '/summary_of_ERGs_', analysistime, '.xls'];
 status=xlwrite(filename, ERG_4_disp, 'ERGs', 'A1');
 
 
