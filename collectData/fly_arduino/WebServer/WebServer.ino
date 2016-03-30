@@ -696,7 +696,7 @@ void run_graph()
     digitalWrite (noContactLED, LOW);
   }
 
-  //  sensorReading = analogRead(analogPin);
+  sensorReading = analogRead(analogPin);
   myGraphData[iIndex] = sensorReading / iGainFactor ;
   iIndex ++ ;
   //  if (iIndex > max_graph_data / 10 && iIndex < max_graph_data / 2)
