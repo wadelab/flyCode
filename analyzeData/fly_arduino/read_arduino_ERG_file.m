@@ -1,5 +1,5 @@
 %%read_arduino_ERG
-function [success,lineSaved] = read_arduino_ERG_file (fName);
+function [success,lineSaved] = read_arduino_ERG_file (fName, do_fft);
 
 
 [pathstr, fileName, ext] = fileparts(fName) ;
@@ -61,10 +61,14 @@ rawdata=zeros(nContrasts,1024);
 for i = 1:nContrasts
     
     rawdata(i,:)=alldata(iStart:iEnd,3) ;
-   % contrasts(i,:) = alldata(iEnd+1,:) ;
+    % contrasts(i,:) = alldata(iEnd+1,:) ;
     
     %now we've read the data, lets plot it
-    subplot(nContrasts +1, 3, (i*3)-2);
+    if (do_fft)
+        subplot(nContrasts +1, 3, (i*3)-2);
+    else
+        subplot(3, 2, i);
+    end
     plot (timedata, rawdata(i,:));
     axis([0 timedata(1024) ymin ymax]);
     
@@ -77,21 +81,26 @@ for i = 1:nContrasts
         text(-500,ymax*1.2,line1e);
     end
     
-    fft1=abs(fft(rawdata(i,1:200)));
-    subplot(nContrasts +1, 3, (i*3)-1);
-    plot (xdata, fft1(1:100));
-    
-    fft2=abs(fft(rawdata(i,350:670)));
-    subplot(nContrasts +1, 3, (i*3));
-    plot (xdata, fft2(1:100));
+    if (do_fft)
+        fft1=abs(fft(rawdata(i,1:200)));
+        subplot(nContrasts +1, 3, (i*3)-1);
+        plot (xdata, fft1(1:100));
+        
+        fft2=abs(fft(rawdata(i,350:670)));
+        subplot(nContrasts +1, 3, (i*3));
+        plot (xdata, fft2(1:100));
+    end
     
     iStart = iStart + 1025;
     iEnd = iEnd + 1025;
 end;
 xTxt = 'scales are in ms, Hz';
 xlabel(xTxt);
-
-subplot(nContrasts +1 ,1, nContrasts +1);
+if (do_fft)
+    subplot(nContrasts +1 ,1, nContrasts +1);
+else
+    subplot(3, 2, 6);
+end ;
 meandata = mean(rawdata);
 plot (timedata, meandata);
 axis([0 timedata(1024) ymin ymax]);
@@ -107,11 +116,14 @@ lineSaved = [lineSaved, {['nRepeats =',num2str(nContrasts  )]}];
 lineSaved = [lineSaved, {['max =',     num2str(max(meandata))]}];
 lineSaved = [lineSaved, {['min =',     num2str(min(meandata))]}];
 lineSaved = [lineSaved, {['off-transient =', num2str(min(meandata(680:720))-mean(meandata(650:680)))]}];
+lineSaved = [lineSaved, {['recovery =', num2str(max(meandata(720:820))-mean(meandata(650:680)))]}];
+lineSaved = [lineSaved, {['on-transient =', num2str(max(meandata(300:380))-mean(meandata(300:340)))]}];
 lineSaved = [lineSaved, {['peak-peak =', num2str(max(meandata)-min(meandata))]}];
+lineSaved = [lineSaved, {['noise =', num2str(std(meandata(1:300)))]}];
 
 for i = 1:length(lineSaved)
-   disp(lineSaved{i});
-end 
+    disp(lineSaved{i});
+end
 
 success = true ;
 return

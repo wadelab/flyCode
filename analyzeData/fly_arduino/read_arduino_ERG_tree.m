@@ -33,7 +33,7 @@ iSuccesseses = 1;
 maxFilesToRead = length(ERGfiles) + 3 ;
 for i=1:min(length(ERGfiles),maxFilesToRead)
     disp(['Reading:', ERGfiles{i}]);
-    [success, ERGData] = read_arduino_ERG_file ( ERGfiles{i}  );
+    [success, ERGData] = read_arduino_ERG_file ( ERGfiles{i}, false  );
     if (success)
         Collected_ERG_Data=[Collected_ERG_Data;ERGData];
         iSuccesseses = iSuccesseses + 1 ;
