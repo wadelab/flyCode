@@ -2292,7 +2292,7 @@ void sendGraphic(bool plot_stimulus)
   istep = 15;
   plot_limit = max_data - max_data / 6 ;
   iXFactor = 4;
-  iYFactor = 25 ;
+  iYFactor = 50 ;
   iBaseline = 260 ;
   iXDiv = 6 ;
   if (!plot_stimulus)
@@ -2442,17 +2442,6 @@ void sendReply ()
 
     // find filename
     String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
-    // first check for overlong URLs
-    if (sFile.indexOf("HTT") < 1) 
-    {
-          sendHeader ("Request too long");
-    client.print ("URL is too long : ");
-    client.print (MyInputString);
-    
-    send_GoBack_to_Stim_page ();
-    sendFooter();
-    return ;
-    }
     //Serial.println("  Position of filename= was:" + String(fPOS));
     //Serial.println(" Proposed saving filename " + sFile );
     fPOS = sFile.indexOf (" ");  // or  & id filename is not the last paramtere
