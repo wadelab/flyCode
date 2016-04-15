@@ -25,7 +25,7 @@
 
 #ifndef __wifisetup__
 
-#define due4
+#define due5
 #define USE_DHCP
 
 #ifndef ARDUINO_LINUX
@@ -165,6 +165,12 @@ const byte bluLED = 5;
 #endif
 
 #ifdef due4
+const byte redled = 7;
+const byte grnled = 3;
+const byte bluLED = 5;
+#endif
+
+#ifdef due5
 const byte redled = 7;
 const byte grnled = 3;
 const byte bluLED = 5;
