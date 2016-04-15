@@ -637,7 +637,7 @@ void updateColour (const bool boolUpdatePage)
 
 void goColour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
 {
-  Serial.println("colouring 1");
+  //Serial.println("colouring 1");
   analogWrite( redled, r );
   analogWrite( grnled, g );
   analogWrite( bluLED, b );
@@ -658,7 +658,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
     digitalWrite (i, w);
   }
 
-  Serial.println("colouring 3");
+  //Serial.println("colouring 3");
 }
 
 void goColour(const byte r, const bool boolUpdatePage)
