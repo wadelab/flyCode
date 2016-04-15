@@ -52,10 +52,16 @@ iStart = 1;
 iEnd = 1024;
 xdata = linspace(1,250);
 
+%% test if figure exists, if so close it
+if ~isempty(findall(0,'Type','Figure'))
+    close;
+end
+%%
+
 figure ('Name', strcat('Data from: ',fileName));
 
-ymax = max(alldata(:,3)) ;
-ymin = min(alldata(:,3)) ;
+ymax = 1500 ; %max(alldata(:,3)) ;
+ymin = -2000 ; %min(alldata(:,3)) ;
 
 rawdata=zeros(nContrasts,1024);
 for i = 1:nContrasts
@@ -106,9 +112,22 @@ plot (timedata, meandata);
 axis([0 timedata(1024) ymin ymax]);
 ylabel('mean');
 
+%% is it too noisy ?
+myNoise = std(meandata(1:300));
+% if (myNoise > 100)
+%     success = false ;
+%     set(gcf,'Color','red');
+% end
+%%
 sExt = getPictExt ();
 printFilename = [pathstr, filesep, fileName, '_MyData', sExt];
 print( '-dpsc', printFilename );
+
+% %% not sure this is the best discriminat
+% if (myNoise > 100)
+%     return 
+% end
+    
 
 %% get some data out
 disp('mean ERG:');
@@ -119,11 +138,13 @@ lineSaved = [lineSaved, {['off-transient =', num2str(min(meandata(680:720))-mean
 lineSaved = [lineSaved, {['recovery =', num2str(max(meandata(720:820))-mean(meandata(650:680)))]}];
 lineSaved = [lineSaved, {['on-transient =', num2str(max(meandata(300:380))-mean(meandata(300:340)))]}];
 lineSaved = [lineSaved, {['peak-peak =', num2str(max(meandata)-min(meandata))]}];
-lineSaved = [lineSaved, {['noise =', num2str(std(meandata(1:300)))]}];
+lineSaved = [lineSaved, {['noise =', num2str(myNoise)]}];
 
 for i = 1:length(lineSaved)
     disp(lineSaved{i});
 end
+
+
 
 success = true ;
 return
