@@ -26,7 +26,7 @@
 #ifndef __wifisetup__
 
 #define due4
-#define USE_DHCP
+//#define USE_DHCP
 
 #ifndef ARDUINO_LINUX
 #define EthernetShield Ethernet
@@ -1992,6 +1992,7 @@ bool collectSSVEPData ()
 
 bool collect_fERG_Data ()
 {
+  long mStart = millis();
   const long presamples = 102;
   long mean = 0;
   unsigned int iTime ;
@@ -2048,6 +2049,10 @@ bool collect_fERG_Data ()
   {
     addSummary() ;
   }
+
+  long mEnd = millis();
+  Serial.print("took AD ");
+  Serial.println (mEnd - mStart); // about 2381 ms ( should be ~2248 )
   return bResult ;
 
 
