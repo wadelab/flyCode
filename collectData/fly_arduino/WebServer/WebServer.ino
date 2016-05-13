@@ -26,7 +26,7 @@
 #ifndef __wifisetup__
 
 #define due4
-#define USE_DHCP
+//#define USE_DHCP
 
 #ifndef ARDUINO_LINUX
 #define EthernetShield Ethernet
@@ -631,7 +631,7 @@ void updateColour (const bool boolUpdatePage)
 
 void goColour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
 {
-  Serial.println("colouring 1");
+  //Serial.println("colouring 1");
   analogWrite( redled, r );
   analogWrite( grnled, g );
   analogWrite( bluLED, b );
@@ -652,7 +652,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
     digitalWrite (i, w);
   }
 
-  Serial.println("colouring 3");
+  //Serial.println("colouring 3");
 }
 
 void goColour(const byte r, const bool boolUpdatePage)
@@ -682,8 +682,9 @@ void run_graph()
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   short sensorReading = analogRead(connectedPin);
-  //    Serial.print(" sweep is : ");
-  //    Serial.println(sensorReading);
+  //  Serial.print(" dc is : ");
+  //  Serial.print(sensorReading);
+  //// seems to be about 50
 
   if (sensorReading < 2 || sensorReading > 4090)
   {
@@ -696,8 +697,11 @@ void run_graph()
     digitalWrite (noContactLED, LOW);
   }
 
-  //  sensorReading = analogRead(analogPin);
-  myGraphData[iIndex] = sensorReading / iGainFactor ;
+  //  int sensorReadinga = analogRead(analogPin);
+  //  Serial.print(" ac is : ");
+  //  Serial.println(sensorReadinga);
+
+  myGraphData[iIndex] = sensorReading * 5 ;
   iIndex ++ ;
   //  if (iIndex > max_graph_data / 10 && iIndex < max_graph_data / 2)
   //  {
@@ -749,31 +753,31 @@ void run_graph()
     if (i < iIndex - 1 || i > iIndex + 1)
     {
       client.print ("l(");
-      client.print(myGraphData[i + 1] * 20);
+      client.print(myGraphData[i + 1] );
       client.print (");");
     }
     else
     {
       client.print ("m(");
-      client.print (myGraphData[i] * 20);
+      client.print (myGraphData[i] );
       client.print (");");
     }
   }
   client.print ("ctx.strokeStyle=\"blue\";");
   client.println ("ctx.stroke();");
 
-  //draw stimulus...
-  client.print ("ctx.moveTo(");
-  client.print ((max_graph_data / 10) * 20);
-  client.print (",30);");
-
-  client.print ("ctx.lineTo(");
-  client.print (max_graph_data / 2 * 20);
-  client.print (",30);");
-
-  client.println ("ctx.strokeStyle=\"blue\";");
-  //              client.println("ctx.lineWidth=5;");
-  client.println ("ctx.stroke();");
+  //  //draw stimulus...
+  //  client.print ("ctx.moveTo(");
+  //  client.print ((max_graph_data / 10) * 20);
+  //  client.print (",30);");
+  //
+  //  client.print ("ctx.lineTo(");
+  //  client.print (max_graph_data / 2 * 20);
+  //  client.print (",30);");
+  //
+  //  client.println ("ctx.strokeStyle=\"blue\";");
+  //  //              client.println("ctx.lineWidth=5;");
+  //  client.println ("ctx.stroke();");
   client.println ("}");
 
   client.println ("</script>");
@@ -1172,10 +1176,10 @@ bool file_time (char * cIn)
 
 void addSummary ()
 {
-  Serial.print ("summarising  C:R ");
-  Serial.print (iThisContrast);
-  Serial.print (":");
-  Serial.println (nRepeats);
+  //  Serial.print ("summarising  C:R ");
+  //  Serial.print (iThisContrast);
+  //  Serial.print (":");
+  //  Serial.println (nRepeats);
   int iOffset = 0;
   int kk = 0 ;
   if (bDoFlash)
@@ -1184,7 +1188,7 @@ void addSummary ()
     // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2");
 
     pSummary[iOffset + kk] = erg_in[1] ;
-    Serial.println(pSummary[iOffset + kk]);
+    //    Serial.println(pSummary[iOffset + kk]);
 
 
     for (int ii = max_data / 10; ii < max_data - 1; ii = ii + max_data / 10)
@@ -1219,8 +1223,8 @@ void addSummary ()
   {
     // fft
     iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 - 10;
-    Serial.print("Offset ");
-    Serial.println( iOffset );
+    //    Serial.print("Offset ");
+    //    Serial.println( iOffset );
 
     pSummary[iOffset + kk] = time_stamp[max_data - 1] ;
     kk ++ ;
@@ -1253,12 +1257,12 @@ void addSummary ()
     for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
   }
 
-  for (int ii = 0; ii < 14; ii ++ )
-  {
-    Serial.print (pSummary[ii]);
-    Serial.print (",");
-  }
-  Serial.println();
+  //  for (int ii = 0; ii < 14; ii ++ )
+  //  {
+  //    Serial.print (pSummary[ii]);
+  //    Serial.print (",");
+  //  }
+  //  Serial.println();
 }
 
 bool writeSummaryFile(const char * cMain)
@@ -1988,6 +1992,7 @@ bool collectSSVEPData ()
 
 bool collect_fERG_Data ()
 {
+  long mStart = millis();
   const long presamples = 102;
   long mean = 0;
   unsigned int iTime ;
@@ -2044,6 +2049,10 @@ bool collect_fERG_Data ()
   {
     addSummary() ;
   }
+
+  long mEnd = millis();
+  Serial.print("took AD ");
+  Serial.println (mEnd - mStart); // about 2381 ms ( should be ~2248 )
   return bResult ;
 
 
@@ -2288,7 +2297,7 @@ void sendGraphic(bool plot_stimulus)
   istep = 15;
   plot_limit = max_data - max_data / 6 ;
   iXFactor = 4;
-  iYFactor = 25 ;
+  iYFactor = 50 ;
   iBaseline = 260 ;
   iXDiv = 6 ;
   if (!plot_stimulus)
@@ -2438,6 +2447,17 @@ void sendReply ()
 
     // find filename
     String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
+    // first check for overlong URLs
+    if (sFile.indexOf("HTT") < 1)
+    {
+      sendHeader ("Request too long");
+      client.print ("URL is too long : ");
+      client.print (MyInputString);
+
+      send_GoBack_to_Stim_page ();
+      sendFooter();
+      return ;
+    }
     //Serial.println("  Position of filename= was:" + String(fPOS));
     //Serial.println(" Proposed saving filename " + sFile );
     fPOS = sFile.indexOf (" ");  // or  & id filename is not the last paramtere
