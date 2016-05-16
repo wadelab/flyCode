@@ -143,7 +143,7 @@ int * myGraphData ;  // will share erg_in space, see below
 short iIndex = 0 ;
 
 //
-byte usedLED  = 0;
+volatile byte usedLED  = 0;
 const byte fiberLED = 8 ;
 const byte noContactLED = 2;
 
@@ -693,7 +693,7 @@ void run_graph()
   // turn off any LEDs, always do flash with blue
   goColour(255, false);
   // reset the wait count
-  nWaits = 15;
+  nWaits = nMaxWaits;
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   short sensorReading = analogRead(connectedPin);
@@ -2095,7 +2095,7 @@ void tidyUp_fERG()
   }
   long mEnd = millis();
   Serial.print("took AD ");
-  Serial.println (mEnd - mStart); // about 2381 ms ( should be ~2248 )
+  Serial.println (mEnd - mStart); // with timer driven this was exactly 2253 ms ( should be ~2248 )
 
 }
 
@@ -2731,6 +2731,8 @@ void loop()
   String sTmp = "";
   MyInputString = "";
   getData ();
+ // delay till we are sure data acq is done ??
+ // flash ERG is 500 Hz so 2 ms per sample...
   delay(max_data * 2);
 #ifdef ESP8266
   delay(1);
