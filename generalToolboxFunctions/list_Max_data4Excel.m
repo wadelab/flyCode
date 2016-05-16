@@ -24,7 +24,7 @@ load(fullfile(newpathToLoad,newfileToLoad)); % This is the file you got from the
 
 %% now calculate a csv file name
 [pathstr, name, ext] = fileparts([newpathToLoad,newfileToLoad]);
-outfile = [pathstr, '/', name,'_MAX_4Excel.xlsx'];
+outfile = [pathstr, '/', name,'_MAX_4_Excel.xlsx'];
 
 
 
@@ -97,7 +97,7 @@ for freqFF = 1: freqmax;
             else
                 offset = genotypemax + 3;
             end
-            outcells{ fly + 7 , genotype + offset} = { num2str(max_response) };
+            numcells{ fly , genotype + offset} = (max_response) ;
         end
         end
         
@@ -107,5 +107,6 @@ for freqFF = 1: freqmax;
     %%     % Generate XLSX file
     disp([' processing : ', FreqLabels{freqFF} ]);
     [status]=xlwrite(outfile, outcells,FreqLabels{freqFF},'A2');
+    [status]=xlwrite(outfile, numcells,FreqLabels{freqFF},'A8');
 end
 disp (['file written ', outfile]);
