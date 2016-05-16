@@ -25,8 +25,10 @@
 
 #ifndef __wifisetup__
 
+
 #define due5
 #define USE_DHCP
+
 
 #ifndef ARDUINO_LINUX
 #define EthernetShield Ethernet
@@ -688,9 +690,9 @@ void run_graph()
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   short sensorReading = analogRead(connectedPin);
-//  Serial.print(" dc is : ");
-//  Serial.print(sensorReading); 
-//// seems to be about 50
+  //  Serial.print(" dc is : ");
+  //  Serial.print(sensorReading);
+  //// seems to be about 50
 
   if (sensorReading < 2 || sensorReading > 4090)
   {
@@ -703,10 +705,10 @@ void run_graph()
     digitalWrite (noContactLED, LOW);
   }
 
-//  int sensorReadinga = analogRead(analogPin);
-//  Serial.print(" ac is : ");
-//  Serial.println(sensorReadinga);
-  
+  //  int sensorReadinga = analogRead(analogPin);
+  //  Serial.print(" ac is : ");
+  //  Serial.println(sensorReadinga);
+
   myGraphData[iIndex] = sensorReading * 5 ;
   iIndex ++ ;
   //  if (iIndex > max_graph_data / 10 && iIndex < max_graph_data / 2)
@@ -772,18 +774,18 @@ void run_graph()
   client.print ("ctx.strokeStyle=\"blue\";");
   client.println ("ctx.stroke();");
 
-//  //draw stimulus...
-//  client.print ("ctx.moveTo(");
-//  client.print ((max_graph_data / 10) * 20);
-//  client.print (",30);");
-//
-//  client.print ("ctx.lineTo(");
-//  client.print (max_graph_data / 2 * 20);
-//  client.print (",30);");
-//
-//  client.println ("ctx.strokeStyle=\"blue\";");
-//  //              client.println("ctx.lineWidth=5;");
-//  client.println ("ctx.stroke();");
+  //  //draw stimulus...
+  //  client.print ("ctx.moveTo(");
+  //  client.print ((max_graph_data / 10) * 20);
+  //  client.print (",30);");
+  //
+  //  client.print ("ctx.lineTo(");
+  //  client.print (max_graph_data / 2 * 20);
+  //  client.print (",30);");
+  //
+  //  client.println ("ctx.strokeStyle=\"blue\";");
+  //  //              client.println("ctx.lineWidth=5;");
+  //  client.println ("ctx.stroke();");
   client.println ("}");
 
   client.println ("</script>");
@@ -1998,6 +2000,7 @@ bool collectSSVEPData ()
 
 bool collect_fERG_Data ()
 {
+  long mStart = millis();
   const long presamples = 102;
   long mean = 0;
   unsigned int iTime ;
@@ -2054,6 +2057,10 @@ bool collect_fERG_Data ()
   {
     addSummary() ;
   }
+
+  long mEnd = millis();
+  Serial.print("took AD ");
+  Serial.println (mEnd - mStart); // about 2381 ms ( should be ~2248 )
   return bResult ;
 
 
@@ -2449,15 +2456,15 @@ void sendReply ()
     // find filename
     String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
     // first check for overlong URLs
-    if (sFile.indexOf("HTT") < 1) 
+    if (sFile.indexOf("HTT") < 1)
     {
-          sendHeader ("Request too long");
-    client.print ("URL is too long : ");
-    client.print (MyInputString);
-    
-    send_GoBack_to_Stim_page ();
-    sendFooter();
-    return ;
+      sendHeader ("Request too long");
+      client.print ("URL is too long : ");
+      client.print (MyInputString);
+
+      send_GoBack_to_Stim_page ();
+      sendFooter();
+      return ;
     }
     //Serial.println("  Position of filename= was:" + String(fPOS));
     //Serial.println(" Proposed saving filename " + sFile );
