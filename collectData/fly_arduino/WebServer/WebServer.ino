@@ -191,8 +191,10 @@ bool bIsSine = true ;
 
 byte nRepeats = 0;
 const byte maxRepeats = 5;
-byte nWaits = 15;
-byte nMaxWaits = 15 ;
+byte nWaits = 1;
+byte nMaxWaits = 1 ;
+//byte nWaits = 15;
+//byte nMaxWaits = 15 ;
 
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
@@ -214,11 +216,16 @@ boolean bDoFlash = false ;
 byte freq1 = 12 ; // flicker of LED Hz
 byte freq2 = 15 ; // flicker of LED Hz
 // as of 18 June, maxdata of 2048 is too big for the mega....
-const short max_data = 1025  ;
+#define max_data 1025
 const int data_block_size = 8 * max_data ;
-unsigned int time_stamp [max_data] ;
-int erg_in [max_data];
-long sampleCount = 0;        // will store number of A/D samples taken
+volatile unsigned int time_stamp [max_data] ;
+volatile int erg_in [max_data];
+
+#define presamples 102
+volatile long mean = 0;
+
+volatile long sampleCount = 0;        // will store number of A/D samples taken
+volatile long mStart ;
 int * pSummary = NULL;
 unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0;
@@ -355,7 +362,7 @@ void setup() {
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
-  myGraphData = erg_in ;
+  myGraphData = (int *)erg_in ;
   for (short i = 0; i < max_graph_data; i++)
   {
     myGraphData[i] = 0;
@@ -1928,11 +1935,41 @@ void doreadSummaryFile (const char * c)
   sendFooter();
 }
 
+//////////// based on http://forum.arduino.cc/index.php?topic=130423.0
+
+void startTimer ()
+{
+  startTimer(TC1, 0, TC3_IRQn, 500); // fixed 0.5 kHz
+}
+
+void startTimer(Tc *tc, uint32_t channel, IRQn_Type irq, uint32_t frequency) {
+  pmc_set_writeprotect(false);
+  pmc_enable_periph_clk((uint32_t)irq);
+  TC_Configure(tc, channel, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK4);
+  uint32_t rc = VARIANT_MCK / 128 / frequency; //128 because we selected TIMER_CLOCK4 above
+  TC_SetRA(tc, channel, rc / 2); //50% high, 50% low
+  TC_SetRC(tc, channel, rc);
+  TC_Start(tc, channel);
+  tc->TC_CHANNEL[channel].TC_IER = TC_IER_CPCS;
+  tc->TC_CHANNEL[channel].TC_IDR = ~TC_IER_CPCS;
+  NVIC_EnableIRQ(irq);
+}
+
+void stopTimer()
+{
+  stopTimer(TC1, 0, TC3_IRQn);
+}
+
+void stopTimer(Tc *tc, uint32_t channel, IRQn_Type irq)
+{
+  TC_Stop(tc, channel);
+  NVIC_DisableIRQ(irq);
+}
+
 
 bool collectSSVEPData ()
 {
-  const long presamples = 102;
-  long mean = 0;
+  mean = 0;
   unsigned int iTime ;
 
   sampleCount = -presamples ;
@@ -1998,56 +2035,50 @@ bool collectSSVEPData ()
 }
 
 
-bool collect_fERG_Data ()
+void TC3_Handler()
 {
-  long mStart = millis();
-  const long presamples = 102;
-  long mean = 0;
-  unsigned int iTime ;
-  //if (iThisContrast == 0 && file.isOpen()) file.close(); FIX
+  // acknowledge interrupt
+  TC_GetStatus(TC1, 0);
+
+  if (sampleCount == 0)
+  {
+    mean = mean / presamples ;
+  }
+  if (sampleCount >= 0)
+  {
+    // read  sensor
+    erg_in[sampleCount] = analogRead(analogPin) - mean ;
+    time_stamp[sampleCount] = sampleCount * 2 ; // fixed 2 ms per sample
+  }
+  else
+  {
+    mean = mean + long(analogRead(analogPin));
+  }
+  int intensity = fERG_Now(sampleCount) ;
+  analogWrite(usedLED, intensity);
+  sampleCount ++ ;
+  if (sampleCount >= max_data)
+  {
+    stopTimer();
+    tidyUp_fERG();
+  }
+}
+
+void StartTo_collect_fERG_Data ()
+{
 
   iThisContrast = maxContrasts;
   nRepeats ++;
-  //  Serial.print ("collecting fERG data with ");
-  //  Serial.print (nRepeats);
-  //  Serial.print ("r : c");
-  //  Serial.println (iThisContrast);
-
+  mStart = millis();
   sampleCount = -presamples ;
-  last_time = millis();
-  start_time = last_time;
-  while (sampleCount < max_data)
-  {
-    unsigned long now_time = millis();
-    if (now_time < last_time + interval / 2)
-    {
-      timing_too_fast ++ ;
-    }
-    else
-    {
-      // Initial test showed it could write this to the card at 12 ms intervals
-      last_time = last_time + interval / 2 ;
-      iTime = now_time - start_time ;
-      if (sampleCount == 0)
-      {
-        mean = mean / presamples ;
-      }
-      if (sampleCount >= 0)
-      {
-        // read  sensor
-        erg_in[sampleCount] = analogRead(analogPin) - mean ; // subtract 512 so we get it in the range...
-        time_stamp[sampleCount] = iTime ;
-      }
-      else
-      {
-        mean = mean + long(analogRead(analogPin));
-      }
-      int intensity = fERG_Now(iTime - time_stamp[0]) ;
-      analogWrite(usedLED, intensity);
-      sampleCount ++ ;
-    }
-  }
 
+  startTimer();
+
+}
+
+
+void tidyUp_fERG()
+{
   sampleCount ++ ;
   analogWrite(usedLED, 0);
   iThisContrast = maxContrasts ; //++;
@@ -2057,15 +2088,16 @@ bool collect_fERG_Data ()
   {
     addSummary() ;
   }
-
+  else
+  {
+    Serial.print("File not written :");
+    Serial.println(cFile);
+  }
   long mEnd = millis();
   Serial.print("took AD ");
   Serial.println (mEnd - mStart); // about 2381 ms ( should be ~2248 )
-  return bResult ;
-
 
 }
-
 
 
 void flickerPage()
@@ -2256,7 +2288,7 @@ void getData ()
     if (bDoFlash)
     {
       if (nWaits > 0) return ;
-      bFileOK = collect_fERG_Data ();
+      StartTo_collect_fERG_Data ();
     }
     else
     {
@@ -2699,6 +2731,7 @@ void loop()
   String sTmp = "";
   MyInputString = "";
   getData ();
+  delay(max_data * 2);
 #ifdef ESP8266
   delay(1);
 #endif
@@ -2781,7 +2814,7 @@ void do_fft()
   radix.fft_radix4_I( f_r, f_i, LOG2_FFT);
   radix.gain_Reset( f_r, LOG2_FFT - 1);
   radix.gain_Reset( f_i, LOG2_FFT - 1);
-  radix.get_Magnit( f_r, f_i, erg_in);
+  radix.get_Magnit( f_r, f_i, (int *) erg_in);
 
 }
 
