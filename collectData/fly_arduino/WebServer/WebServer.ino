@@ -217,11 +217,14 @@ byte freq1 = 12 ; // flicker of LED Hz
 byte freq2 = 15 ; // flicker of LED Hz
 // as of 18 June, maxdata of 2048 is too big for the mega....
 #define max_data 1025
+#define presamples 102
+
 const int data_block_size = 8 * max_data ;
 volatile unsigned int time_stamp [max_data] ;
 volatile int erg_in [max_data];
+volatile int stimvalue [max_data + presamples] ;
 
-#define presamples 102
+
 volatile long mean = 0;
 
 volatile long sampleCount = 0;        // will store number of A/D samples taken
@@ -1942,6 +1945,11 @@ void startTimer ()
   startTimer(TC1, 0, TC3_IRQn, 500); // fixed 0.5 kHz
 }
 
+void startTimer (uint32_t frequency)
+{
+  startTimer(TC1, 0, TC3_IRQn, frequency); // fixed 0.5 kHz
+}
+
 void startTimer(Tc *tc, uint32_t channel, IRQn_Type irq, uint32_t frequency) {
   pmc_set_writeprotect(false);
   pmc_enable_periph_clk((uint32_t)irq);
@@ -1967,74 +1975,6 @@ void stopTimer(Tc *tc, uint32_t channel, IRQn_Type irq)
 }
 
 
-bool collectSSVEPData ()
-{
-  mean = 0;
-  unsigned int iTime ;
-
-  sampleCount = -presamples ;
-  last_time = millis();
-  start_time = last_time;
-  while (sampleCount < max_data)
-  {
-    unsigned long now_time = millis();
-    if (now_time < last_time + interval)
-    {
-      timing_too_fast ++ ;
-    }
-    else
-    {
-      // Initial test showed it could write this to the card at 12 ms intervals
-      last_time = last_time + interval ;
-      iTime = now_time - start_time ;
-      if (sampleCount == 0)
-      {
-        mean = mean / presamples ;
-      }
-      if (sampleCount >= 0)
-      {
-        // read  sensor
-        erg_in[sampleCount] = analogRead(analogPin) - mean ; // subtract 512 so we get it in the range...
-        time_stamp[sampleCount] = iTime ;
-      }
-      else
-      {
-        mean = mean + long(analogRead(analogPin));
-      }
-      int intensity = br_Now(iTime) ;
-      analogWrite(usedLED, intensity);
-      sampleCount ++ ;
-    }
-  }
-
-  // now done with sampling....
-  //save contrasts we've used...
-  int randomnumber = contrastOrder[iThisContrast];
-  int F2index = 0 ;
-  if (randomnumber > F2contrastchange) F2index = 1;
-  time_stamp [max_data - 1] = F1contrast[randomnumber];
-  erg_in [max_data - 1] = F2contrast[F2index] ;
-
-  sampleCount ++ ;
-  analogWrite(usedLED, 127);
-  iThisContrast ++;
-  if (iThisContrast >= maxContrasts)
-  {
-    iThisContrast = 0;
-    nRepeats ++;
-    doShuffle ();
-  }
-
-  bool bResult = writeFile(cFile);
-  if (bResult)
-  {
-    addSummary() ;
-  }
-  return bResult ;
-
-}
-
-
 void TC3_Handler()
 {
   // acknowledge interrupt
@@ -2048,13 +1988,20 @@ void TC3_Handler()
   {
     // read  sensor
     erg_in[sampleCount] = analogRead(analogPin) - mean ;
-    time_stamp[sampleCount] = sampleCount * 2 ; // fixed 2 ms per sample
+    if (bDoFlash)
+    {
+      time_stamp[sampleCount] = sampleCount * 2 ; // fixed 2 ms per sample
+    }
+    else
+    {
+      time_stamp[sampleCount] = sampleCount * 2 ;
+    }
   }
   else
   {
     mean = mean + long(analogRead(analogPin));
   }
-  int intensity = fERG_Now(sampleCount) ;
+  int intensity = stimvalue [sampleCount+presamples] ;
   analogWrite(usedLED, intensity);
   sampleCount ++ ;
   if (sampleCount >= max_data)
@@ -2071,17 +2018,53 @@ void StartTo_collect_fERG_Data ()
   nRepeats ++;
   mStart = millis();
   sampleCount = -presamples ;
-
-  startTimer();
-
+  if (bDoFlash)
+  {
+    for (int i = 0; i < max_data+presamples; i++)
+    {
+      stimvalue[i] = fERG_Now (i);
+    }
+    startTimer(500);
+    return ;
+  }
+  // SSVEP
+  for (int i = 0; i < max_data+presamples; i++)
+  {
+    stimvalue[i] = br_Now (i);
+  }
+  startTimer(250);
 }
 
 
 void tidyUp_fERG()
 {
   sampleCount ++ ;
-  analogWrite(usedLED, 0);
-  iThisContrast = maxContrasts ; //++;
+  if (bDoFlash)
+  {
+    analogWrite(usedLED, 0);
+    iThisContrast = maxContrasts ; //++;
+  }
+  else
+  {
+    // SSVEP
+    // now done with sampling....
+    //save contrasts we've used...
+    int randomnumber = contrastOrder[iThisContrast];
+    int F2index = 0 ;
+    if (randomnumber > F2contrastchange) F2index = 1;
+    time_stamp [max_data - 1] = F1contrast[randomnumber];
+    erg_in [max_data - 1] = F2contrast[F2index] ;
+
+    sampleCount ++ ;
+    analogWrite(usedLED, 127);
+    iThisContrast ++;
+    if (iThisContrast >= maxContrasts)
+    {
+      iThisContrast = 0;
+      nRepeats ++;
+      doShuffle ();
+    }
+  }
 
   bool bResult = writeFile(cFile);
   if (bResult)
@@ -2095,7 +2078,7 @@ void tidyUp_fERG()
   }
   long mEnd = millis();
   Serial.print("took AD ");
-  Serial.println (mEnd - mStart); // with timer driven this was exactly 2253 ms ( should be ~2248 )
+  Serial.println (mEnd - mStart); // fERG: with timer driven this was exactly 2253 ms ( should be ~2248 )
 
 }
 
@@ -2288,12 +2271,9 @@ void getData ()
     if (bDoFlash)
     {
       if (nWaits > 0) return ;
-      StartTo_collect_fERG_Data ();
     }
-    else
-    {
-      bFileOK = collectSSVEPData ();
-    }
+    StartTo_collect_fERG_Data ();
+
   }
 
 }
@@ -2731,8 +2711,8 @@ void loop()
   String sTmp = "";
   MyInputString = "";
   getData ();
- // delay till we are sure data acq is done ??
- // flash ERG is 500 Hz so 2 ms per sample...
+  // delay till we are sure data acq is done ??
+  // flash ERG is 500 Hz so 2 ms per sample...
   delay(max_data * 2);
 #ifdef ESP8266
   delay(1);
