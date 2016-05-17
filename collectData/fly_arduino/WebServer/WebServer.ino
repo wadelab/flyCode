@@ -191,10 +191,10 @@ bool bIsSine = true ;
 
 byte nRepeats = 0;
 const byte maxRepeats = 5;
-byte nWaits = 1;
-byte nMaxWaits = 1 ;
-//byte nWaits = 15;
-//byte nMaxWaits = 15 ;
+//byte nWaits = 1;
+//byte nMaxWaits = 1 ;
+byte nWaits = 15;
+byte nMaxWaits = 15 ;
 
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
@@ -328,8 +328,8 @@ int DayOfWeek (int d, int m, int y);
 
 bool writeFile(char * c);
 bool fileExists( char * c);
-bool collectSSVEPData ();
-bool collect_fERG_Data ();
+
+bool collect_Data ();
 void AppendWaitReport ();
 double sgn (double x);
 
@@ -2001,26 +2001,25 @@ void TC3_Handler()
   {
     mean = mean + long(analogRead(analogPin));
   }
-  int intensity = stimvalue [sampleCount+presamples] ;
+  int intensity = stimvalue [sampleCount + presamples] ;
   analogWrite(usedLED, intensity);
   sampleCount ++ ;
   if (sampleCount >= max_data)
   {
     stopTimer();
-    tidyUp_fERG();
+    tidyUp_Collection();
   }
 }
 
-void StartTo_collect_fERG_Data ()
+void StartTo_collect_Data ()
 {
-
-  iThisContrast = maxContrasts;
-  nRepeats ++;
   mStart = millis();
   sampleCount = -presamples ;
   if (bDoFlash)
   {
-    for (int i = 0; i < max_data+presamples; i++)
+    iThisContrast = maxContrasts;
+    nRepeats ++;
+    for (int i = 0; i < max_data + presamples; i++)
     {
       stimvalue[i] = fERG_Now (i);
     }
@@ -2028,7 +2027,7 @@ void StartTo_collect_fERG_Data ()
     return ;
   }
   // SSVEP
-  for (int i = 0; i < max_data+presamples; i++)
+  for (int i = 0; i < max_data + presamples; i++)
   {
     stimvalue[i] = br_Now (i);
   }
@@ -2036,7 +2035,7 @@ void StartTo_collect_fERG_Data ()
 }
 
 
-void tidyUp_fERG()
+void tidyUp_Collection()
 {
   sampleCount ++ ;
   if (bDoFlash)
@@ -2272,7 +2271,7 @@ void getData ()
     {
       if (nWaits > 0) return ;
     }
-    StartTo_collect_fERG_Data ();
+    StartTo_collect_Data ();
 
   }
 
@@ -2713,7 +2712,7 @@ void loop()
   getData ();
   // delay till we are sure data acq is done ??
   // flash ERG is 500 Hz so 2 ms per sample...
-  delay(max_data * 2);
+  delay(max_data+presamples * 3);
 #ifdef ESP8266
   delay(1);
 #endif
