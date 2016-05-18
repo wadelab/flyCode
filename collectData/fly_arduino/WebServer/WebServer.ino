@@ -26,7 +26,7 @@
 #ifndef __wifisetup__
 
 
-#define due5
+#define due4
 #define USE_DHCP
 
 
@@ -1051,8 +1051,8 @@ int Get_br_Now(double t, const double F1contrast, const double F2contrast)
 int fERG_Now (unsigned int t)
 {
   // 2ms per sample
-  if (t < (2 * max_data) / 3) return 0;
-  if (t > (4 * max_data) / 3) return 0;
+  if (t < (max_data) / 3) return 0;
+  if (t > (2 * max_data) / 3) return 0;
   return 255;
 }
 
@@ -1994,7 +1994,7 @@ void TC3_Handler()
     }
     else
     {
-      time_stamp[sampleCount] = sampleCount * 2 ;
+      time_stamp[sampleCount] = sampleCount * 4 ;
     }
   }
   else
@@ -2029,7 +2029,7 @@ void StartTo_collect_Data ()
   // SSVEP
   for (int i = 0; i < max_data + presamples; i++)
   {
-    stimvalue[i] = br_Now (i);
+    stimvalue[i] = br_Now (i * 4);
   }
   startTimer(250);
 }
