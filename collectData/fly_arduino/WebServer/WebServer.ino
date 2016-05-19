@@ -179,9 +179,9 @@ const byte bluLED = 5;
 #endif
 
 #ifdef ESP8266
-const byte redled = 1;
-const byte grnled = 2;
-const byte bluLED = 3;
+const byte redled = 4;
+const byte grnled = 0;
+const byte bluLED = 5;
 #endif
 
 const byte analogPin = 0 ;
