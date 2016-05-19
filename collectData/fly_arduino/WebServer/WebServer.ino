@@ -1988,14 +1988,6 @@ void TC3_Handler()
   {
     // read  sensor
     erg_in[sampleCount] = analogRead(analogPin) - mean ;
-    if (bDoFlash)
-    {
-      time_stamp[sampleCount] = sampleCount * 2 ; // fixed 2 ms per sample
-    }
-    else
-    {
-      time_stamp[sampleCount] = sampleCount * 4 ;
-    }
   }
   else
   {
@@ -2022,6 +2014,7 @@ void StartTo_collect_Data ()
     for (int i = 0; i < max_data + presamples; i++)
     {
       stimvalue[i] = fERG_Now (i);
+      time_stamp[i] = 0 ;
     }
     startTimer(500);
     return ;
@@ -2035,6 +2028,7 @@ void StartTo_collect_Data ()
 }
 
 
+
 void tidyUp_Collection()
 {
   sampleCount ++ ;
@@ -2042,11 +2036,19 @@ void tidyUp_Collection()
   {
     analogWrite(usedLED, 0);
     iThisContrast = maxContrasts ; //++;
+    for (int i = 0; i < sampleCount; i++)
+    {
+      time_stamp[sampleCount] = sampleCount * 2 ; // fixed 2 ms per sample
+    }
   }
   else
   {
     // SSVEP
     // now done with sampling....
+    for (int i = 0; i < sampleCount; i++)
+    {
+      time_stamp[sampleCount] = sampleCount * 4 ; // fixed 4 ms per sample
+    }
     //save contrasts we've used...
     int randomnumber = contrastOrder[iThisContrast];
     int F2index = 0 ;
@@ -2712,7 +2714,7 @@ void loop()
   getData ();
   // delay till we are sure data acq is done ??
   // flash ERG is 500 Hz so 2 ms per sample...
-  delay(max_data+presamples * 3);
+  delay(max_data + presamples * 3);
 #ifdef ESP8266
   delay(1);
 #endif
