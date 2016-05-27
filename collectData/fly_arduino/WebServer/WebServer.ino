@@ -26,7 +26,7 @@
 #ifndef __wifisetup__
 
 
-#define due4
+#define due5
 #define USE_DHCP
 
 
@@ -194,10 +194,11 @@ bool bIsSine = true ;
 
 byte nRepeats = 0;
 const byte maxRepeats = 5;
-//byte nWaits = 1;
-//byte nMaxWaits = 1 ;
-byte nWaits = 15;
-byte nMaxWaits = 15 ;
+const byte nMaxWaits = 5 ; //15
+byte nWaits = nMaxWaits;
+
+//byte nWaits = 15;
+//byte nMaxWaits = 15 ;
 
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
@@ -2037,6 +2038,7 @@ void TC3_Handler(void *pArg)
 void StartTo_collect_Data ()
 {
   mStart = millis();
+  Serial.println("ready to collect data");
   sampleCount = -presamples ;
   if (bDoFlash)
   {
