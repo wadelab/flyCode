@@ -36,7 +36,7 @@
 #define EthernetServerShield EthernetServer
 #define EthernetClientShield EthernetClient
 #endif
-#endif
+#endif 
 
 
 
@@ -194,11 +194,10 @@ bool bIsSine = true ;
 
 byte nRepeats = 0;
 const byte maxRepeats = 5;
-const byte nMaxWaits = 5 ; //15
-byte nWaits = nMaxWaits;
-
-//byte nWaits = 15;
-//byte nMaxWaits = 15 ;
+//byte nWaits = 1;
+//byte nMaxWaits = 1 ;
+byte nWaits = 15;
+byte nMaxWaits = 15 ;
 
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
@@ -260,6 +259,7 @@ int iXDiv = 6 ;
 #ifndef MAC_OK
 #error please define which arduino you are setting up
 #endif
+
 
 
 #ifndef __wifisetup__
@@ -488,11 +488,10 @@ void setup() {
   goColour(0, 0, 0, 0, false);
 
   doShuffle();
-
 #ifdef ESP8266
-  // only call this once or we get Exception 9 second time around
+  // only call this once
   os_timer_setfn((ETSTimer *) &myTimer, TC3_Handler, NULL);
-#endif  
+#endif
 }
 
 
@@ -1968,7 +1967,7 @@ void stopTimer()
 // due
 
 //////////// based on http://forum.arduino.cc/index.php?topic=130423.0
-//
+
 //void startTimer ()
 //{
 //  startTimer(TC1, 0, TC3_IRQn, 500); // fixed 0.5 kHz
@@ -2002,15 +2001,25 @@ void stopTimer(Tc *tc, uint32_t channel, IRQn_Type irq)
   TC_Stop(tc, channel);
   NVIC_DisableIRQ(irq);
 }
-
 #endif
 
-void TC3_Handler(void *pArg)
+
+#ifdef ESP8266
+void TC3_Handler(void * pArg)
 {
-#ifndef ESP8266
+#else
+void TC3_Handler()
+{
   // acknowledge interrupt
   TC_GetStatus(TC1, 0);
 #endif
+
+  if (sampleCount >= max_data - 1)
+  {
+    stopTimer();
+    tidyUp_Collection();
+    return ;
+  }
 
   if (sampleCount == 0)
   {
@@ -2028,17 +2037,12 @@ void TC3_Handler(void *pArg)
   int intensity = stimvalue [sampleCount + presamples] ;
   analogWrite(usedLED, intensity);
   sampleCount ++ ;
-  if (sampleCount >= max_data)
-  {
-    stopTimer();
-    tidyUp_Collection();
-  }
+
 }
 
 void StartTo_collect_Data ()
 {
   mStart = millis();
-  Serial.println("ready to collect data");
   sampleCount = -presamples ;
   if (bDoFlash)
   {
@@ -2047,7 +2051,6 @@ void StartTo_collect_Data ()
     for (int i = 0; i < max_data + presamples; i++)
     {
       stimvalue[i] = fERG_Now (i);
-      time_stamp[i] = 0 ;
     }
     startTimer(500);
     return ;
@@ -2069,18 +2072,18 @@ void tidyUp_Collection()
   {
     analogWrite(usedLED, 0);
     iThisContrast = maxContrasts ; //++;
-    for (int i = 0; i < sampleCount; i++)
+    for (int i = 0; i < max_data; i++)
     {
-      time_stamp[sampleCount] = sampleCount * 2 ; // fixed 2 ms per sample
+      time_stamp[i] = i * 2 ; // fixed 2 ms per sample
     }
   }
   else
   {
     // SSVEP
     // now done with sampling....
-    for (int i = 0; i < sampleCount; i++)
+    for (int i = 0; i < max_data; i++)
     {
-      time_stamp[sampleCount] = sampleCount * 4 ; // fixed 4 ms per sample
+      time_stamp[i] = i * 4 ; // fixed 4 ms per sample
     }
     //save contrasts we've used...
     int randomnumber = contrastOrder[iThisContrast];
@@ -2745,15 +2748,11 @@ void loop()
   String sTmp = "";
   MyInputString = "";
   getData ();
-
-  // delay till we are sure data acq is done ??
-  // flash ERG is 500 Hz so 2 ms per sample...
-#ifdef ESP8266
-  delay(1);
-#else
   // delay till we are sure data acq is done ??
   // flash ERG is 500 Hz so 2 ms per sample...
   delay(max_data + presamples * 3);
+#ifdef ESP8266
+  delay(1);
 #endif
   boolean currentLineIsBlank = true;
   // listen for incoming clients
