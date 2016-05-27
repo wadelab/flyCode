@@ -26,7 +26,7 @@
 #ifndef __wifisetup__
 
 
-#define due4
+#define due5
 #define USE_DHCP
 
 
@@ -1980,6 +1980,13 @@ void TC3_Handler()
   // acknowledge interrupt
   TC_GetStatus(TC1, 0);
 
+  if (sampleCount >= max_data - 1)
+  {
+    stopTimer();
+    tidyUp_Collection();
+    return ;
+  }
+
   if (sampleCount == 0)
   {
     mean = mean / presamples ;
@@ -1996,11 +2003,7 @@ void TC3_Handler()
   int intensity = stimvalue [sampleCount + presamples] ;
   analogWrite(usedLED, intensity);
   sampleCount ++ ;
-  if (sampleCount >= max_data)
-  {
-    stopTimer();
-    tidyUp_Collection();
-  }
+
 }
 
 void StartTo_collect_Data ()
@@ -2014,9 +2017,8 @@ void StartTo_collect_Data ()
     for (int i = 0; i < max_data + presamples; i++)
     {
       stimvalue[i] = fERG_Now (i);
-      time_stamp[i] = 0 ;
     }
-    startTimer(500);
+    startTimer(500); 
     return ;
   }
   // SSVEP
@@ -2036,18 +2038,18 @@ void tidyUp_Collection()
   {
     analogWrite(usedLED, 0);
     iThisContrast = maxContrasts ; //++;
-    for (int i = 0; i < sampleCount; i++)
+    for (int i = 0; i < max_data; i++)
     {
-      time_stamp[sampleCount] = sampleCount * 2 ; // fixed 2 ms per sample
+      time_stamp[i] = i * 2 ; // fixed 2 ms per sample
     }
   }
   else
   {
     // SSVEP
     // now done with sampling....
-    for (int i = 0; i < sampleCount; i++)
+    for (int i = 0; i < max_data; i++)
     {
-      time_stamp[sampleCount] = sampleCount * 4 ; // fixed 4 ms per sample
+      time_stamp[i] = i * 4 ; // fixed 4 ms per sample
     }
     //save contrasts we've used...
     int randomnumber = contrastOrder[iThisContrast];
