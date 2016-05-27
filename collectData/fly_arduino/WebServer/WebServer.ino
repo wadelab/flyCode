@@ -116,6 +116,9 @@
 //wifi of some sort...
 
 #ifdef ESP8266
+extern "C" {
+#include "user_interface.h"
+}
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #else
@@ -258,7 +261,6 @@ int iXDiv = 6 ;
 #endif
 
 
-
 #ifndef __wifisetup__
 //
 
@@ -278,6 +280,7 @@ IPAddress myIP, theirIP, dnsIP ;
 WiFiServer server (80);
 
 #ifdef ESP8266
+volatile os_timer_t myTimer;
 WiFiClient client ;
 #else
 WiFiClient client (80);
@@ -285,7 +288,7 @@ WiFiClient client (80);
 #endif
 
 #ifdef ESP8266
-void setupWiFi();
+void setupESPWiFi();
 void printWifiStatus();
 void doShuffle();
 void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML = true, char * pDate = NULL);
@@ -312,7 +315,8 @@ void AppendFlashReport();
 void AppendSSVEPReport();
 void getData ();
 void plotInColour (int iStart, const String & str_col);
-
+void TC3_Handler(void *pArg);
+void tidyUp_Collection() ;
 void sendGraphic(bool plot_stimulus);
 void sendGraphic();
 void sendReply ();
@@ -418,7 +422,7 @@ void setup() {
 #ifdef __wifisetup__
 
 #ifdef ESP8266AP
-  setupWiFi();                            // start the web server on port 80
+  setupESPWiFi();                            // start the web server on port 80
 #else
   //char ssid[] = "SSID";     //  your network SSID (name)
   //char pass[] = "PASSWD";  // your network password
@@ -483,6 +487,11 @@ void setup() {
   goColour(0, 0, 0, 0, false);
 
   doShuffle();
+
+#ifdef ESP8266
+  // only call this once or we get Exception 9 second time around
+  os_timer_setfn((ETSTimer *) &myTimer, TC3_Handler, NULL);
+#endif  
 }
 
 
@@ -492,7 +501,7 @@ void setup() {
 #ifdef ESP8266
 const char WiFiAPPSK[] = "sparkfun";
 
-void setupWiFi()
+void setupESPWiFi()
 {
   WiFi.mode(WIFI_AP);
 
@@ -514,6 +523,8 @@ void setupWiFi()
   Serial.println (AP_NameString);
   WiFi.softAP(AP_NameChar, WiFiAPPSK);
   myIP = WiFi.softAPIP() ;
+  Serial.print("ESP accesspoint :");
+  Serial.print (myIP) ;
 }
 #endif
 
@@ -1938,12 +1949,29 @@ void doreadSummaryFile (const char * c)
   sendFooter();
 }
 
-//////////// based on http://forum.arduino.cc/index.php?topic=130423.0
-
-void startTimer ()
+#ifdef ESP8266
+void startTimer (uint32_t frequency)
 {
-  startTimer(TC1, 0, TC3_IRQn, 500); // fixed 0.5 kHz
+  //os_timer_setfn((ETSTimer *) &myTimer, TC3_Handler, NULL);
+  os_timer_arm((ETSTimer *) &myTimer, 10 /* elts try 10 ms*/, true); // 1000/frequency
 }
+
+
+void stopTimer()
+{
+  os_timer_disarm((ETSTimer *) &myTimer);
+}
+#else
+
+
+// due
+
+//////////// based on http://forum.arduino.cc/index.php?topic=130423.0
+//
+//void startTimer ()
+//{
+//  startTimer(TC1, 0, TC3_IRQn, 500); // fixed 0.5 kHz
+//}
 
 void startTimer (uint32_t frequency)
 {
@@ -1974,11 +2002,14 @@ void stopTimer(Tc *tc, uint32_t channel, IRQn_Type irq)
   NVIC_DisableIRQ(irq);
 }
 
+#endif
 
-void TC3_Handler()
+void TC3_Handler(void *pArg)
 {
+#ifndef ESP8266
   // acknowledge interrupt
   TC_GetStatus(TC1, 0);
+#endif
 
   if (sampleCount == 0)
   {
@@ -2712,11 +2743,15 @@ void loop()
   String sTmp = "";
   MyInputString = "";
   getData ();
+
+  // delay till we are sure data acq is done ??
+  // flash ERG is 500 Hz so 2 ms per sample...
+#ifdef ESP8266
+  delay(1);
+#else
   // delay till we are sure data acq is done ??
   // flash ERG is 500 Hz so 2 ms per sample...
   delay(max_data + presamples * 3);
-#ifdef ESP8266
-  delay(1);
 #endif
   boolean currentLineIsBlank = true;
   // listen for incoming clients
