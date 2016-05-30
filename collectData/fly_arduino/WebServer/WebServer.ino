@@ -36,7 +36,7 @@
 #define EthernetServerShield EthernetServer
 #define EthernetClientShield EthernetClient
 #endif
-#endif 
+#endif
 
 
 
@@ -661,9 +661,17 @@ void updateColour (const bool boolUpdatePage)
 void goColour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
 {
   //Serial.println("colouring 1");
+#ifdef ESP8266
+//0/1023 with high values giving least light
+  analogWrite( redled, 1023 - 4 * r );
+  analogWrite( grnled, 1023 - 4 * g );
+  analogWrite( bluLED, 1023 - 4 * b );
+#else
   analogWrite( redled, r );
   analogWrite( grnled, g );
   analogWrite( bluLED, b );
+#endif
+
 #ifdef due4
   analogWrite( amberled, a );
   analogWrite( whiteled, w );
