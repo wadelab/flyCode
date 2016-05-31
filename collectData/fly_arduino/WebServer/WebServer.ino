@@ -26,7 +26,7 @@
 #ifndef __wifisetup__
 
 
-#define due4
+#define due5
 #define USE_DHCP
 
 
@@ -2111,7 +2111,7 @@ void tidyUp_Collection()
     {
       time_stamp[i] = i * 4 ; // fixed 4 ms per sample
     }
-     //save contrasts we've used...
+    //save contrasts we've used...
     int randomnumber = contrastOrder[iThisContrast];
     int F2index = 0 ;
     if (randomnumber > F2contrastchange) F2index = 1;
@@ -2572,14 +2572,14 @@ void sendReply ()
     //Serial.println(" Proposed filename now" + sFile + ";");
     //if file exists... ????
     sFile.toCharArray(cFile, 29); // adds terminating null
-    // not needed any more ??
-    //    if (!fileExists(cFile))
-    //    {
-    //      // new file
-    //      nRepeats = iThisContrast = 0 ;
-    //      //turn off any lights we have on...
-    //      goColour(0, false);
-    //    }
+
+    if (!fileExists(cFile))
+    {
+      // new file
+      nRepeats = iThisContrast = 0 ;
+      //turn off any lights we have on...
+      goColour(0, false);
+    }
     //Serial.print("repeats now ");
     //Serial.println(nRepeats);
 #ifdef ESP8266
@@ -2591,7 +2591,6 @@ void sendReply ()
       // done so tidy up
       Serial.println("done and tidy up time");
       //turn off any lights we have on...
-      goColour(0, false);
       nRepeats = iThisContrast = 0 ; // ready to start again
       nWaits = nMaxWaits ;
       //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
