@@ -26,7 +26,7 @@
 #ifndef __wifisetup__
 
 
-#define due5
+#define due4
 #define USE_DHCP
 
 
@@ -199,6 +199,7 @@ const byte maxRepeats = 5;
 byte nWaits = 15;
 byte nMaxWaits = 15 ;
 
+byte brightness = 255 ;
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
 const byte F1contrast[] = {
@@ -1071,7 +1072,7 @@ int fERG_Now (unsigned int t)
   // 2ms per sample
   if (t < (max_data) / 3) return 0;
   if (t > (2 * max_data) / 3) return 0;
-  return 255;
+  return brightness;
 }
 
 void webTime ()
@@ -2046,6 +2047,14 @@ void TC3_Handler()
   analogWrite(usedLED, intensity);
   sampleCount ++ ;
 
+  if (sampleCount >= max_data - 1)
+  {
+    stopTimer();
+    Serial.println("Timer done");
+    tidyUp_Collection();
+    return ;
+  }
+
 }
 
 void StartTo_collect_Data ()
@@ -2071,13 +2080,13 @@ void StartTo_collect_Data ()
     }
     startTimer(250);
   }
-  while (sampleCount < max_data)
-  {
-    Serial.print (sampleCount);
-    Serial.print (" ");
-    Serial.println (stimvalue[sampleCount + presamples]);
-    delay(500) ;
-  }
+  //  while (sampleCount < max_data)
+  //  {
+  //    Serial.print (sampleCount);
+  //    Serial.print (" ");
+  //    Serial.println (stimvalue[sampleCount + presamples]);
+  //    delay(500) ;
+  //  }
 }
 
 
@@ -2085,7 +2094,6 @@ void StartTo_collect_Data ()
 void tidyUp_Collection()
 {
   sampleCount ++ ;
-  Serial.println("Tidying up");
   if (bDoFlash)
   {
     analogWrite(usedLED, 0);
@@ -2094,7 +2102,6 @@ void tidyUp_Collection()
     {
       time_stamp[i] = i * 2 ; // fixed 2 ms per sample
     }
-    Serial.println("Tidying upflash");
   }
   else
   {
@@ -2104,8 +2111,7 @@ void tidyUp_Collection()
     {
       time_stamp[i] = i * 4 ; // fixed 4 ms per sample
     }
-    Serial.println("Tidying up SSVEP");
-    //save contrasts we've used...
+     //save contrasts we've used...
     int randomnumber = contrastOrder[iThisContrast];
     int F2index = 0 ;
     if (randomnumber > F2contrastchange) F2index = 1;
@@ -2121,8 +2127,6 @@ void tidyUp_Collection()
       nRepeats ++;
       doShuffle ();
     }
-    Serial.print("Tidying up ");
-    Serial.println(iThisContrast);
   }
   bool bResult = false ;
 #ifndef ESP8266
@@ -2509,18 +2513,23 @@ void sendReply ()
 
     //flash ERG or SSVEP?
     bDoFlash = MyInputString.indexOf ("stim=fERG&") > 0  ;
-    bIsSine = MyInputString.indexOf ("stm=SQ&") < 0  ; // -1 if not found
+    bIsSine = MyInputString.indexOf ("_SQ&") < 0  ; // -1 if not found
     if (!pSummary)
     {
       if (bDoFlash)
       {
-        Serial.println("Zeroing FF");
+        //Serial.println("Zeroing FF Summary");
         pSummary = new int [maxRepeats * 14];
         memset (pSummary, 0, maxRepeats * 14 * sizeof (int));
+
+        int ibrPos  = MyInputString.indexOf ("bri=") + 4;
+        brightness = atoi(cInput + ibrPos);
+        //Serial.print("Brightness is :");
+        Serial.println (brightness);
       }
       else
       {
-        Serial.println("Zeroing SS");
+        //Serial.println("Zeroing SS Summary");
         pSummary = new int [maxRepeats * maxContrasts * 10];
         memset (pSummary, 0, maxRepeats * maxContrasts * 10 * sizeof (int));
       }
@@ -2581,6 +2590,8 @@ void sendReply ()
     {
       // done so tidy up
       Serial.println("done and tidy up time");
+      //turn off any lights we have on...
+      goColour(0, false);
       nRepeats = iThisContrast = 0 ; // ready to start again
       nWaits = nMaxWaits ;
       //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
