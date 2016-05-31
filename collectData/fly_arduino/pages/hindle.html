@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <Head>
-<base href="http://biolpc2899.york.ac.uk/">
+<base href="http://biolpc2939.york.ac.uk/">
 <script>
 
 
@@ -45,7 +45,7 @@ function changeText()
 <body>
 
 <div id="txt">Arduino SSVEP starter page</div>
-<BR><BR>
+<BR>
 
 <form action="/">
 
@@ -60,31 +60,27 @@ cellspacing="2">
 <tr>
 <td style="vertical-align: top;">
 <select name="GAL4" size = 6>
-<option value="w">w-</option>
-<option value="w_apr">w^apr</option>
-<option value="CS">CS</option>
-<option value="ort" selected>ort-</option>
+<option value="GMR_c27" selected>GMR, c27</option>
+<option value="GMR" >GMR</option>
 </select><br>
 </td>
 <td style="vertical-align: top;">
 <select name="UAS" size = 6>
-<option value="homoz" selected>homozygote</option>
-<option value="w">w-</option>
-<option value="w_apr">w^apr</option>
-<option value="G2019S">G2019S</option>
-<option value="hLRRK2">hLRRK2</option>
+<option value="plus_pBac" >+, pBac</option>
+<option value="plus_plus" >+, +</option>
+<option value="slab1_pBac" >slab1, pBac</option>
+<option value="SKB" >SKB</option>
+<option value="SK1_pBac" >SKI, pBac</option>
+<option value="SK1_plus" >SKI, +</option>
+<option value="SK2_pBac" >SKII, pBac</option>
+
 </select><br>
 </td>
 <td style="vertical-align: top;">
 <select name="Age" size = 6>
-<option value="0.4">4-8 hours</option>
-<option selected value="1">1 day</option>
-<option value="2">2</option>
 <option value="3">3</option>
-<option value="5">5</option>
-<option value="7">7</option>
-<option value="14">14</option>
-<option value="21">21</option>
+<option value="21" >21</option>
+<option value="28" selected>28</option>
 <option value="-1">unknown</option>
 </select><br>
 </td>
@@ -104,8 +100,8 @@ cellspacing="2">
 </tr>
 <tr>
 <td style="vertical-align: top;"><BR>
-<input type="radio" name="sex" value="male">Male<br>
-<input type="radio" checked name="sex" value="female">Female
+<input type="radio" name="sex" value="m">Male<br>
+<input type="radio" checked name="sex" value="f">Female
 <BR><br>
 </td>
 <td style="vertical-align: top;"><BR> 
@@ -123,13 +119,13 @@ cellspacing="2">
 </td>
 
 
-<input type="hidden" name="F1" value="12" checked> F1: 12 Hz<br>
+<input type="hidden" name="F1" value="12" checked> F1: 12 Hz -----
 <input type="hidden" name="F2" value="15" checked> F2: 15 Hz<br>
 
 
 <td style="vertical-align: top;"><BR>
 <input type="radio" name="stim" value="fERG" checked>flash ERG<br>
-<input type="radio" name="stim" value="SSVEP" checked>SSVEP<br>
+<input type="radio" name="stim" value="SSVEP" >SSVEP<br>
 </td>
 
 <td style="vertical-align: top;"><BR>
