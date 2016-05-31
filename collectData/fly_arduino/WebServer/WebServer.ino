@@ -230,7 +230,7 @@ volatile int stimvalue [max_data + presamples] ;
 
 volatile long mean = 0;
 
-volatile long sampleCount = 0;        // will store number of A/D samples taken
+volatile long sampleCount = max_data + 2;        // will store number of A/D samples taken
 volatile long mStart ;
 int * pSummary = NULL;
 unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
@@ -386,16 +386,15 @@ void setup() {
   else
   {
     Serial.println ("Setting up flash drive failed...\n");
-    has_filesystem = false ;
-  }
-  if (SPIFFS.format()) // we may only need to use this once ??
-  {
-    Serial.println ("Formatting flash drive ok...\n");
-  }
-  else
-  {
-    Serial.println ("Formatting flash drive failed...\n");
-    has_filesystem = false ;
+    if (SPIFFS.format()) // we may only need to use this once ??
+    {
+      Serial.println ("Formatting flash drive ok...\n");
+    }
+    else
+    {
+      Serial.println ("Formatting flash drive failed...\n");
+      has_filesystem = false ;
+    }
   }
 #define SD SPIFFS
 #define MyDir Dir
@@ -662,7 +661,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
 {
   //Serial.println("colouring 1");
 #ifdef ESP8266
-//0/1023 with high values giving least light
+  //0/1023 with high values giving least light
   analogWrite( redled, 1023 - 4 * r );
   analogWrite( grnled, 1023 - 4 * g );
   analogWrite( bluLED, 1023 - 4 * b );
@@ -2025,6 +2024,7 @@ void TC3_Handler()
   if (sampleCount >= max_data - 1)
   {
     stopTimer();
+    Serial.println("Timer done");
     tidyUp_Collection();
     return ;
   }
@@ -2061,14 +2061,23 @@ void StartTo_collect_Data ()
       stimvalue[i] = fERG_Now (i);
     }
     startTimer(500);
-    return ;
   }
-  // SSVEP
-  for (int i = 0; i < max_data + presamples; i++)
+  else
   {
-    stimvalue[i] = br_Now (i * 4);
+    // SSVEP
+    for (int i = 0; i < max_data + presamples; i++)
+    {
+      stimvalue[i] = br_Now (i * 4);
+    }
+    startTimer(250);
   }
-  startTimer(250);
+  while (sampleCount < max_data)
+  {
+    Serial.print (sampleCount);
+    Serial.print (" ");
+    Serial.println (stimvalue[sampleCount + presamples]);
+    delay(500) ;
+  }
 }
 
 
@@ -2076,6 +2085,7 @@ void StartTo_collect_Data ()
 void tidyUp_Collection()
 {
   sampleCount ++ ;
+  Serial.println("Tidying up");
   if (bDoFlash)
   {
     analogWrite(usedLED, 0);
@@ -2084,6 +2094,7 @@ void tidyUp_Collection()
     {
       time_stamp[i] = i * 2 ; // fixed 2 ms per sample
     }
+    Serial.println("Tidying upflash");
   }
   else
   {
@@ -2093,6 +2104,7 @@ void tidyUp_Collection()
     {
       time_stamp[i] = i * 4 ; // fixed 4 ms per sample
     }
+    Serial.println("Tidying up SSVEP");
     //save contrasts we've used...
     int randomnumber = contrastOrder[iThisContrast];
     int F2index = 0 ;
@@ -2109,9 +2121,13 @@ void tidyUp_Collection()
       nRepeats ++;
       doShuffle ();
     }
+    Serial.print("Tidying up ");
+    Serial.println(iThisContrast);
   }
-
-  bool bResult = writeFile(cFile);
+  bool bResult = false ;
+#ifndef ESP8266
+  bResult = writeFile(cFile);
+#endif
   if (bResult)
   {
     addSummary() ;
@@ -2547,16 +2563,21 @@ void sendReply ()
     //Serial.println(" Proposed filename now" + sFile + ";");
     //if file exists... ????
     sFile.toCharArray(cFile, 29); // adds terminating null
-    if (!fileExists(cFile))
-    {
-      // new file
-      nRepeats = iThisContrast = 0 ;
-      //turn off any lights we have on...
-      goColour(0, false);
-    }
+    // not needed any more ??
+    //    if (!fileExists(cFile))
+    //    {
+    //      // new file
+    //      nRepeats = iThisContrast = 0 ;
+    //      //turn off any lights we have on...
+    //      goColour(0, false);
+    //    }
     //Serial.print("repeats now ");
     //Serial.println(nRepeats);
+#ifdef ESP8266
+    if (nRepeats >= maxRepeats)
+#else
     if (wfile && wfile.size() >= exp_size ) //nRepeats >= maxRepeats)
+#endif
     {
       // done so tidy up
       Serial.println("done and tidy up time");
@@ -2757,8 +2778,8 @@ void loop()
   MyInputString = "";
   getData ();
   // delay till we are sure data acq is done ??
-  // flash ERG is 500 Hz so 2 ms per sample...
-  delay(max_data + presamples * 3);
+  // SSVEP ERG is 250 Hz so 4 ms per sample...
+  delay(max_data + presamples * 10);
 #ifdef ESP8266
   delay(1);
 #endif
