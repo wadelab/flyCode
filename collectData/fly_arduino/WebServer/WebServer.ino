@@ -248,6 +248,7 @@ String MyInputString = String(MaxInputStr + 1);
 
 char cFile [30];
 char cInput [MaxInputStr + 2] = "";
+char cLastInput [MaxInputStr + 2] = "oldInput";
 
 // for graphic plotting
 int istep = 15;
@@ -2496,8 +2497,16 @@ void sendReply ()
   // asking for new sample
   if (fPOS > 0)
   {
+    bool bNewCommand = false ;
+
     // save the commandline....
     MyInputString.toCharArray(cInput, MaxInputStr + 2);
+    if (0 != strcmp(cLastInput, cInput))
+    {
+      bNewCommand = true ;
+      strcpy (cLastInput, cInput);
+    }
+    strncpy(cLastInput, cInput, MaxInputStr);
     char * cP = strstr(cInput, "HTTP/");
     if (cP) cP = '\0';
     // now choose the colour
@@ -2514,8 +2523,13 @@ void sendReply ()
     //flash ERG or SSVEP?
     bDoFlash = MyInputString.indexOf ("stim=fERG&") > 0  ;
     bIsSine = MyInputString.indexOf ("_SQ&") < 0  ; // -1 if not found
-    if (!pSummary)
+    if (bNewCommand)
     {
+
+      if (pSummary)
+      {
+        delete [] pSummary ;
+      }
       if (bDoFlash)
       {
         //Serial.println("Zeroing FF Summary");
@@ -2525,7 +2539,7 @@ void sendReply ()
         int ibrPos  = MyInputString.indexOf ("bri=") + 4;
         brightness = atoi(cInput + ibrPos);
         //Serial.print("Brightness is :");
-        Serial.println (brightness);
+        //Serial.println (brightness);
       }
       else
       {
@@ -2573,7 +2587,7 @@ void sendReply ()
     //if file exists... ????
     sFile.toCharArray(cFile, 29); // adds terminating null
 
-    if (!fileExists(cFile))
+    if (bNewCommand)
     {
       // new file
       nRepeats = iThisContrast = 0 ;
