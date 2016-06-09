@@ -198,6 +198,7 @@ const byte maxRepeats = 5;
 //byte nMaxWaits = 1 ;
 byte nWaits = 15;
 byte nMaxWaits = 15 ;
+bool bNoWait = true ;
 
 byte brightness = 255 ;
 const byte maxContrasts = 9 ;
@@ -1214,19 +1215,19 @@ bool file_time (char * cIn)
 
 void addSummary ()
 {
-  //  Serial.print ("summarising  C:R ");
-  //  Serial.print (iThisContrast);
-  //  Serial.print (":");
-  //  Serial.println (nRepeats);
+  Serial.print ("summarising  C:R ");
+  Serial.print (iThisContrast);
+  Serial.print (":");
+  Serial.println (nRepeats);
   int iOffset = 0;
   int kk = 0 ;
   if (bDoFlash)
   {
     iOffset = (nRepeats - 1) * 14 ;
-    // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2");
+    Serial.println("start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2");
 
     pSummary[iOffset + kk] = erg_in[1] ;
-    //    Serial.println(pSummary[iOffset + kk]);
+    Serial.println(pSummary[iOffset + kk]);
 
 
     for (int ii = max_data / 10; ii < max_data - 1; ii = ii + max_data / 10)
@@ -1245,6 +1246,7 @@ void addSummary ()
     kk ++ ;
     pSummary [iOffset + kk] = myminsofar ;
     kk ++;
+    Serial.println(kk);
     myminsofar = erg_in[(max_data - 1) / 2];
     mymaxsofar = erg_in[(max_data - 1) / 2];
     for (int ii = (max_data - 1) / 2; ii < max_data - 1; ii++)
@@ -1256,6 +1258,7 @@ void addSummary ()
     kk ++ ;
     pSummary [iOffset + kk] = myminsofar ;
     kk ++;
+    Serial.println ("summary done");
   }
   else
   {
@@ -1424,6 +1427,7 @@ bool writeSummaryFile(const char * cMain)
   Serial.println (file.size());
   file.close();
   return true ;
+  Serial.print F(" file closed ");
 }
 
 
@@ -1962,7 +1966,7 @@ void doreadSummaryFile (const char * c)
 void startTimer (uint32_t frequency)
 {
   //os_timer_setfn((ETSTimer *) &myTimer, TC3_Handler, NULL);
-  os_timer_arm((ETSTimer *) &myTimer, 10 /* elts try 10 ms*/, true); // 1000/frequency
+  os_timer_arm((ETSTimer *) &myTimer, 1000 / frequency, true); // 1000/frequency
 }
 
 
@@ -2129,15 +2133,16 @@ void tidyUp_Collection()
       doShuffle ();
     }
   }
-  bool bResult = false ;
+  Serial.println("About to calculate summary :");
+
 #ifndef ESP8266
-  bResult = writeFile(cFile);
+  addSummary() ;
 #endif
-  if (bResult)
-  {
-    addSummary() ;
-  }
-  else
+
+
+  bool bResult = false ;
+  bResult = writeFile(cFile);
+  if (!bResult)
   {
     Serial.print("File not written :");
     Serial.println(cFile);
@@ -2174,7 +2179,7 @@ void flickerPage()
 
   if (bDoFlash)
   {
-    if (nWaits > 0)
+    if (nWaits > 0 && (!bNoWait) )
     {
       AppendWaitReport ();
     }
@@ -2372,6 +2377,7 @@ void plotInColour (int iStart, const String & str_col)
   client.println ("ctx.fill();");
   client.println ("ctx.stroke();");
 }
+
 void sendGraphic()
 {
   sendGraphic(true);
@@ -2443,13 +2449,13 @@ void sendGraphic(bool plot_stimulus)
   {
     client.println ("ctx.beginPath();");
     client.print ("m(");
-    client.print(10 + (4 * fERG_Now(time_stamp[1] - time_stamp[0])) / iYFactor);
+    client.print(10 + (10 * fERG_Now(time_stamp[1] - time_stamp[0])) / iYFactor);
     client.println (");");
 
     for (int i = 2 * istep; i < plot_limit; i = i + istep)
     {
       client.print ("l(");
-      client.print(10 + (4 * fERG_Now(time_stamp[i] - time_stamp[0]) ) / iYFactor);
+      client.print(10 + (10 * fERG_Now(time_stamp[i] - time_stamp[0]) ) / iYFactor);
       client.println (");");
     }
     client.println ("ctx.stroke();");
@@ -2521,7 +2527,8 @@ void sendReply ()
     if (MyInputString.indexOf ("col=blueviolet&") > 0 ) usedLED  = bluvioletLED ; //
 
     //flash ERG or SSVEP?
-    bDoFlash = MyInputString.indexOf ("stim=fERG&") > 0  ;
+    bDoFlash = MyInputString.indexOf ("stim=fERG") > 0  ;
+    bNoWait = MyInputString.indexOf ("stim=fERG_T") > 0  ;
     bIsSine = MyInputString.indexOf ("_SQ&") < 0  ; // -1 if not found
     if (bNewCommand)
     {
