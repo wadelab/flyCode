@@ -198,7 +198,6 @@ const byte maxRepeats = 5;
 //byte nMaxWaits = 1 ;
 byte nWaits = 15;
 byte nMaxWaits = 15 ;
-bool bNoWait = true ;
 
 byte brightness = 255 ;
 const byte maxContrasts = 9 ;
@@ -418,6 +417,7 @@ void setup() {
     if (fBytes < 10000)
     {
       SPIFFS.format();
+      Serial.println( "disk reformatted" );
     }
   }
 
@@ -2196,7 +2196,7 @@ void flickerPage()
 
   if (bDoFlash)
   {
-    if (nWaits > 0 && (!bNoWait) )
+    if (nWaits > 0 )
     {
       AppendWaitReport ();
     }
@@ -2545,7 +2545,6 @@ void sendReply ()
 
     //flash ERG or SSVEP?
     bDoFlash = MyInputString.indexOf ("stim=fERG") > 0  ;
-    bNoWait = MyInputString.indexOf ("stim=fERG_T") > 0  ;
     bIsSine = MyInputString.indexOf ("_SQ&") < 0  ; // -1 if not found
     if (bNewCommand)
     {
