@@ -404,6 +404,23 @@ void setup() {
 #define FILE_READ "r"
 #define FILE_WRITE "a"
 
+  if (has_filesystem)
+  {
+    FSInfo fs_info;
+    SPIFFS.info(fs_info);
+    Serial.print ("Disk size ");
+    Serial.println (fs_info.totalBytes);
+    Serial.print ("used Bytes " );
+    Serial.println( fs_info.usedBytes);
+    size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
+    Serial.print ("Free Bytes " );
+    Serial.println( fBytes);
+    if (fBytes < 10000)
+    {
+      SPIFFS.format();
+    }
+  }
+
 #else
   // initialize the SD card
   Serial.println ("Setting up SD card...\n");
