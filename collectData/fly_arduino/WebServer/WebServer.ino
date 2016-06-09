@@ -1649,8 +1649,8 @@ void doplotFile (const char * c)
 
   // now on to the data
   int nBlocks = 0;
-  unsigned int time_stamp2 [max_data];
-  int erg_in2 [max_data] ;
+  //unsigned int time_stamp2 [max_data];
+  int * erg_in2 = new int [max_data] ;
 
   for (int i = 0; i < max_data; i++)
   {
@@ -1665,13 +1665,12 @@ void doplotFile (const char * c)
   while (iBytesRead == iBytesRequested)
   {
     iBytesRequested = max_data * sizeof (unsigned int);
-    iBytesRead = file.read ((unsigned char *)time_stamp2, iBytesRequested );
+    iBytesRead = file.read ((unsigned char *)time_stamp, iBytesRequested );
     nBlocks ++;
 
     for (int i = 0; i < max_data; i++)
     {
       erg_in[i] = erg_in[i] + erg_in2[i];
-      time_stamp[i] = time_stamp[i] + time_stamp2[i];
     }
 
     //read next block
@@ -1685,8 +1684,10 @@ void doplotFile (const char * c)
   for (int i = 0; i < max_data; i++)
   {
     erg_in[i] = erg_in [i] / nBlocks;
-    time_stamp[i] = time_stamp [i] / nBlocks;
   }
+  
+  delete [] erg_in2;
+  
   sendGraphic ();
   sendFooter();
 
