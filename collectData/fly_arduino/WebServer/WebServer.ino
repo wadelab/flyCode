@@ -4,6 +4,9 @@
 //Digital pin 7 is used as a handshake pin between the WiFi shield and the Arduino, and should not be used
 // http://www.arduino.cc/playground/Code/AvailableMemory
 
+// Serial.print("Free heap:");
+// Serial.println(ESP.getFreeHeap(),DEC);
+
 // don't use pin 4 or 10-12 either...
 
 // known bug on Edison: PWM code does not work // FIX
@@ -2542,7 +2545,7 @@ void sendReply ()
     //due4 is special
     if (MyInputString.indexOf ("col=amber&") > 0 ) usedLED  = amberled ; //
     if (MyInputString.indexOf ("col=cyan&") > 0 ) usedLED  = cyaled ; //
-    if (MyInputString.indexOf ("col=blueviolet&") > 0 ) usedLED  = bluvioletLED ; //
+    if (MyInputString.indexOf ("col=bvio&") > 0 ) usedLED  = bluvioletLED ; //
 
     //flash ERG or SSVEP?
     bDoFlash = MyInputString.indexOf ("stim=fERG") > 0  ;
@@ -2699,7 +2702,7 @@ void sendReply ()
     goColour(0, 0, 0, 0, 0, 0, 255, true) ;
     return ;
   }
-  fPOS = MyInputString.indexOf ("blueviolet/");
+  fPOS = MyInputString.indexOf ("bvio/");
   if (fPOS > 0)
   {
     //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
