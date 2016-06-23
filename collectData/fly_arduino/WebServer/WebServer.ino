@@ -351,6 +351,8 @@ void analogReadResolution(int i)
 
 uint myReadADC (int i)
 {
+  // see http://www.esp8266.com/viewtopic.php?f=28&t=3223&start=36 comemnt by bernd331
+  // see also http://41j.com/blog/2015/01/esp8266-analogue-input/
   return system_adc_read();
 }
 #else
