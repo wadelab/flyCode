@@ -214,6 +214,8 @@ const byte F2contrast[] = {
 byte contrastOrder[ maxContrasts ];
 byte iThisContrast = 0 ;
 
+int pSummary [maxRepeats * maxContrasts * 10];
+
 bool bNoInternet = false ;
 bool bFileOK = true ;
 bool has_filesystem = true ;
@@ -236,7 +238,6 @@ volatile long mean = 0;
 
 volatile long sampleCount = max_data + 2;        // will store number of A/D samples taken
 volatile long mStart ;
-int * pSummary = NULL;
 unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0;
 unsigned int start_time = 0;
@@ -347,6 +348,17 @@ void analogReadResolution(int i)
 {
   // do nothing
 }
+
+uint myReadADC (int i)
+{
+  return system_adc_read();
+}
+#else
+// not an ESP
+int myReadADC (int i)
+{
+  return analogRead (i);
+}
 #endif
 
 
@@ -417,8 +429,10 @@ void setup() {
     size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
     Serial.print ("Free Bytes " );
     Serial.println( fBytes);
-    if (fBytes < 10000)
+    if (fBytes < 41500)
     {
+      // for now reformat the disk if there is no space !
+      // fix this - ask before formatting
       SPIFFS.format();
       Serial.println( "disk reformatted" );
     }
@@ -580,7 +594,7 @@ void doShuffle()
     contrastOrder[i] = i ;
   }
   ///Knuth-Fisher-Yates shuffle algorithm.
-  randomSeed(analogRead(analogPin));
+  randomSeed(myReadADC(analogPin));
   int randomnumber = random(maxContrasts);
   int tmp ;
 
@@ -740,7 +754,7 @@ void run_graph()
   nWaits = nMaxWaits;
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
-  short sensorReading = analogRead(connectedPin);
+  short sensorReading = myReadADC(connectedPin);
   //  Serial.print(" dc is : ");
   //  Serial.print(sensorReading);
   //// seems to be about 50
@@ -756,7 +770,7 @@ void run_graph()
     digitalWrite (noContactLED, LOW);
   }
 
-  //  int sensorReadinga = analogRead(analogPin);
+  //  int sensorReadinga = myReadADC(analogPin);
   //  Serial.print(" ac is : ");
   //  Serial.println(sensorReadinga);
 
@@ -1429,8 +1443,6 @@ bool writeSummaryFile(const char * cMain)
     iBytesWritten = iBytesWritten + file.print ("\n");
   }
 
-  delete [] pSummary;
-  pSummary = NULL ;
 
   if (iBytesWritten <= 0)
   {
@@ -2063,11 +2075,11 @@ void TC3_Handler()
   if (sampleCount >= 0)
   {
     // read  sensor
-    erg_in[sampleCount] = analogRead(analogPin) - mean ;
+    erg_in[sampleCount] = myReadADC(analogPin) - mean ;
   }
   else
   {
-    mean = mean + long(analogRead(analogPin));
+    mean = mean + long(myReadADC(analogPin));
   }
   int intensity = stimvalue [sampleCount + presamples] ;
   analogWrite(usedLED, intensity);
@@ -2156,10 +2168,7 @@ void tidyUp_Collection()
   }
   Serial.println("About to calculate summary :");
 
-#ifndef ESP8266
   addSummary() ;
-#endif
-
 
   bool bResult = false ;
   bResult = writeFile(cFile);
@@ -2552,15 +2561,9 @@ void sendReply ()
     bIsSine = MyInputString.indexOf ("_SQ&") < 0  ; // -1 if not found
     if (bNewCommand)
     {
-
-      if (pSummary)
-      {
-        delete [] pSummary ;
-      }
       if (bDoFlash)
       {
         //Serial.println("Zeroing FF Summary");
-        pSummary = new int [maxRepeats * 14];
         memset (pSummary, 0, maxRepeats * 14 * sizeof (int));
 
         int ibrPos  = MyInputString.indexOf ("bri=") + 4;
@@ -2571,7 +2574,6 @@ void sendReply ()
       else
       {
         //Serial.println("Zeroing SS Summary");
-        pSummary = new int [maxRepeats * maxContrasts * 10];
         memset (pSummary, 0, maxRepeats * maxContrasts * 10 * sizeof (int));
       }
     }
