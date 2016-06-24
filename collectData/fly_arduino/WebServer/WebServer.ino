@@ -45,7 +45,7 @@
 
 //_____________________________________________________
 
-#ifdef mega1
+#ifdef due6
 #define MAC_OK 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 //biolpc2793 [in use in lab with Emily and Richard]
 #endif
@@ -1702,9 +1702,9 @@ void doplotFile (const char * c)
   {
     erg_in[i] = erg_in [i] / nBlocks;
   }
-  
+
   delete [] erg_in2;
-  
+
   sendGraphic ();
   sendFooter();
 
@@ -2543,6 +2543,11 @@ void sendReply ()
     {
       bNewCommand = true ;
       strcpy (cLastInput, cInput);
+      Serial.println("new command");
+      nRepeats = iThisContrast = 0 ; // ready to start again
+      nWaits = nMaxWaits ;
+      //turn off any lights we have on...
+      goColour(0, false);
     }
     strncpy(cLastInput, cInput, MaxInputStr);
     char * cP = strstr(cInput, "HTTP/");
@@ -2618,13 +2623,13 @@ void sendReply ()
     //if file exists... ????
     sFile.toCharArray(cFile, 29); // adds terminating null
 
-    if (bNewCommand)
-    {
-      // new file
-      nRepeats = iThisContrast = 0 ;
-      //turn off any lights we have on...
-      goColour(0, false);
-    }
+//    if (bNewCommand)
+//    {
+//      // new file
+//      nRepeats = iThisContrast = 0 ;
+//      //turn off any lights we have on...
+//      goColour(0, false);
+//    }
     //Serial.print("repeats now ");
     //Serial.println(nRepeats);
 #ifdef ESP8266
