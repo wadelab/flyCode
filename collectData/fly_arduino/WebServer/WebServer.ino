@@ -7,6 +7,7 @@
 // Serial.print("Free heap:");
 // Serial.println(ESP.getFreeHeap(),DEC);
 
+
 // don't use pin 4 or 10-12 either...
 
 // known bug on Edison: PWM code does not work // FIX
@@ -184,6 +185,12 @@ const byte grnled = 3;
 const byte bluLED = 5;
 #endif
 
+#ifdef due6
+const byte redled = 6;
+const byte grnled = 5;
+const byte bluLED = 7;
+#endif
+
 #ifdef ESP8266
 const byte redled = 4;
 const byte grnled = 0;
@@ -214,8 +221,6 @@ const byte F2contrast[] = {
 byte contrastOrder[ maxContrasts ];
 byte iThisContrast = 0 ;
 
-int pSummary [maxRepeats * maxContrasts * 10];
-
 bool bNoInternet = false ;
 bool bFileOK = true ;
 bool has_filesystem = true ;
@@ -238,6 +243,7 @@ volatile long mean = 0;
 
 volatile long sampleCount = max_data + 2;        // will store number of A/D samples taken
 volatile long mStart ;
+int * pSummary = NULL;
 unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0;
 unsigned int start_time = 0;
@@ -1251,19 +1257,19 @@ bool file_time (char * cIn)
 
 void addSummary ()
 {
-  Serial.print ("summarising  C:R ");
-  Serial.print (iThisContrast);
-  Serial.print (":");
-  Serial.println (nRepeats);
+  //  Serial.print ("summarising  C:R ");
+  //  Serial.print (iThisContrast);
+  //  Serial.print (":");
+  //  Serial.println (nRepeats);
   int iOffset = 0;
   int kk = 0 ;
   if (bDoFlash)
   {
     iOffset = (nRepeats - 1) * 14 ;
-    Serial.println("start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2");
+    // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2");
 
     pSummary[iOffset + kk] = erg_in[1] ;
-    Serial.println(pSummary[iOffset + kk]);
+    //    Serial.println(pSummary[iOffset + kk]);
 
 
     for (int ii = max_data / 10; ii < max_data - 1; ii = ii + max_data / 10)
@@ -1282,7 +1288,6 @@ void addSummary ()
     kk ++ ;
     pSummary [iOffset + kk] = myminsofar ;
     kk ++;
-    Serial.println(kk);
     myminsofar = erg_in[(max_data - 1) / 2];
     mymaxsofar = erg_in[(max_data - 1) / 2];
     for (int ii = (max_data - 1) / 2; ii < max_data - 1; ii++)
@@ -1294,7 +1299,6 @@ void addSummary ()
     kk ++ ;
     pSummary [iOffset + kk] = myminsofar ;
     kk ++;
-    Serial.println ("summary done");
   }
   else
   {
@@ -1445,6 +1449,8 @@ bool writeSummaryFile(const char * cMain)
     iBytesWritten = iBytesWritten + file.print ("\n");
   }
 
+  delete [] pSummary;
+  pSummary = NULL ;
 
   if (iBytesWritten <= 0)
   {
@@ -1461,7 +1467,6 @@ bool writeSummaryFile(const char * cMain)
   Serial.println (file.size());
   file.close();
   return true ;
-  Serial.print F(" file closed ");
 }
 
 
@@ -1667,7 +1672,7 @@ void doplotFile (const char * c)
   // now on to the data
   int nBlocks = 0;
   //unsigned int time_stamp2 [max_data];
-  int * erg_in2 = new int [max_data] ;
+  int erg_in2 [max_data] ;
 
   for (int i = 0; i < max_data; i++)
   {
@@ -1702,9 +1707,6 @@ void doplotFile (const char * c)
   {
     erg_in[i] = erg_in [i] / nBlocks;
   }
-
-  delete [] erg_in2;
-
   sendGraphic ();
   sendFooter();
 
@@ -2168,13 +2170,15 @@ void tidyUp_Collection()
       doShuffle ();
     }
   }
-  Serial.println("About to calculate summary :");
-
-  addSummary() ;
-
   bool bResult = false ;
+#ifndef ESP8266
   bResult = writeFile(cFile);
-  if (!bResult)
+#endif
+  if (bResult)
+  {
+    addSummary() ;
+  }
+  else
   {
     Serial.print("File not written :");
     Serial.println(cFile);
@@ -2211,7 +2215,7 @@ void flickerPage()
 
   if (bDoFlash)
   {
-    if (nWaits > 0 )
+    if (nWaits > 0)
     {
       AppendWaitReport ();
     }
@@ -2409,7 +2413,6 @@ void plotInColour (int iStart, const String & str_col)
   client.println ("ctx.fill();");
   client.println ("ctx.stroke();");
 }
-
 void sendGraphic()
 {
   sendGraphic(true);
@@ -2543,11 +2546,6 @@ void sendReply ()
     {
       bNewCommand = true ;
       strcpy (cLastInput, cInput);
-      Serial.println("new command");
-      nRepeats = iThisContrast = 0 ; // ready to start again
-      nWaits = nMaxWaits ;
-      //turn off any lights we have on...
-      goColour(0, false);
     }
     strncpy(cLastInput, cInput, MaxInputStr);
     char * cP = strstr(cInput, "HTTP/");
@@ -2568,19 +2566,26 @@ void sendReply ()
     bIsSine = MyInputString.indexOf ("_SQ&") < 0  ; // -1 if not found
     if (bNewCommand)
     {
+
+      if (pSummary)
+      {
+        delete [] pSummary ;
+      }
       if (bDoFlash)
       {
         //Serial.println("Zeroing FF Summary");
+        pSummary = new int [maxRepeats * 14];
         memset (pSummary, 0, maxRepeats * 14 * sizeof (int));
 
         int ibrPos  = MyInputString.indexOf ("bri=") + 4;
         brightness = atoi(cInput + ibrPos);
-        //Serial.print("Brightness is :");
-        //Serial.println (brightness);
+        Serial.print("Brightness is :");
+        Serial.println (brightness);
       }
       else
       {
         //Serial.println("Zeroing SS Summary");
+        pSummary = new int [maxRepeats * maxContrasts * 10];
         memset (pSummary, 0, maxRepeats * maxContrasts * 10 * sizeof (int));
       }
     }
@@ -2623,13 +2628,13 @@ void sendReply ()
     //if file exists... ????
     sFile.toCharArray(cFile, 29); // adds terminating null
 
-//    if (bNewCommand)
-//    {
-//      // new file
-//      nRepeats = iThisContrast = 0 ;
-//      //turn off any lights we have on...
-//      goColour(0, false);
-//    }
+    if (bNewCommand)
+    {
+      // new file
+      nRepeats = iThisContrast = 0 ;
+      //turn off any lights we have on...
+      goColour(0, false);
+    }
     //Serial.print("repeats now ");
     //Serial.println(nRepeats);
 #ifdef ESP8266
@@ -2711,7 +2716,7 @@ void sendReply ()
     goColour(0, 0, 0, 0, 0, 0, 255, true) ;
     return ;
   }
-  fPOS = MyInputString.indexOf ("bvio/");
+  fPOS = MyInputString.indexOf ("blueviolet/");
   if (fPOS > 0)
   {
     //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
