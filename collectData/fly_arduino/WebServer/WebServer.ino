@@ -26,7 +26,7 @@
 #ifndef __wifisetup__
 
 
-#define due5
+#define due4
 #define USE_DHCP
 
 
@@ -2443,13 +2443,13 @@ void sendGraphic(bool plot_stimulus)
   {
     client.println ("ctx.beginPath();");
     client.print ("m(");
-    client.print(10 + (4 * fERG_Now(time_stamp[1] - time_stamp[0])) / iYFactor);
+    client.print(10 + (10 * fERG_Now(time_stamp[1] - time_stamp[0])) / iYFactor);
     client.println (");");
 
     for (int i = 2 * istep; i < plot_limit; i = i + istep)
     {
       client.print ("l(");
-      client.print(10 + (4 * fERG_Now(time_stamp[i] - time_stamp[0]) ) / iYFactor);
+      client.print(10 + (10 * fERG_Now(time_stamp[i] - time_stamp[0]) ) / iYFactor);
       client.println (");");
     }
     client.println ("ctx.stroke();");
@@ -2518,7 +2518,7 @@ void sendReply ()
     //due4 is special
     if (MyInputString.indexOf ("col=amber&") > 0 ) usedLED  = amberled ; //
     if (MyInputString.indexOf ("col=cyan&") > 0 ) usedLED  = cyaled ; //
-    if (MyInputString.indexOf ("col=blueviolet&") > 0 ) usedLED  = bluvioletLED ; //
+    if (MyInputString.indexOf ("col=bvio&") > 0 ) usedLED  = bluvioletLED ; //
 
     //flash ERG or SSVEP?
     bDoFlash = MyInputString.indexOf ("stim=fERG&") > 0  ;
@@ -2538,8 +2538,8 @@ void sendReply ()
 
         int ibrPos  = MyInputString.indexOf ("bri=") + 4;
         brightness = atoi(cInput + ibrPos);
-        //Serial.print("Brightness is :");
-        //Serial.println (brightness);
+        Serial.print("Brightness is :");
+        Serial.println (brightness);
       }
       else
       {
