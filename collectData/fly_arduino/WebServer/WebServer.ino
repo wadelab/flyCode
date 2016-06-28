@@ -1912,7 +1912,7 @@ void doreadFile ( char * c)
       client.print(time_stamp[i]);
       client.print ( ", ");
       if (bERG)
-      {
+      { 
         client.print( fERG_Now (time_stamp[i] - time_stamp[0] ) );
       }
       else
@@ -2106,7 +2106,7 @@ void StartTo_collect_Data ()
     nRepeats ++;
     for (int i = 0; i < max_data + presamples; i++)
     {
-      stimvalue[i] = fERG_Now (i);
+      stimvalue[i] = fERG_Now (i+presamples);
     }
     startTimer(500);
   }
