@@ -243,7 +243,7 @@ volatile long mean = 0;
 
 volatile long sampleCount = max_data + 2;        // will store number of A/D samples taken
 volatile long mStart ;
-int * pSummary = NULL;
+int pSummary [maxRepeats * maxContrasts * 10];
 unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0;
 unsigned int start_time = 0;
@@ -1449,9 +1449,6 @@ bool writeSummaryFile(const char * cMain)
     iBytesWritten = iBytesWritten + file.print ("\n");
   }
 
-  delete [] pSummary;
-  pSummary = NULL ;
-
   if (iBytesWritten <= 0)
   {
     Serial.println ("Error in writing erg data to file");
@@ -2170,10 +2167,7 @@ void tidyUp_Collection()
       doShuffle ();
     }
   }
-  bool bResult = false ;
-#ifndef ESP8266
-  bResult = writeFile(cFile);
-#endif
+  bool bResult = writeFile(cFile);
   if (bResult)
   {
     addSummary() ;
@@ -2546,6 +2540,7 @@ void sendReply ()
     {
       bNewCommand = true ;
       strcpy (cLastInput, cInput);
+      memset (pSummary, 0, maxRepeats * maxContrasts * 10 * sizeof (int));
     }
     strncpy(cLastInput, cInput, MaxInputStr);
     char * cP = strstr(cInput, "HTTP/");
@@ -2564,31 +2559,9 @@ void sendReply ()
     //flash ERG or SSVEP?
     bDoFlash = MyInputString.indexOf ("stim=fERG") > 0  ;
     bIsSine = MyInputString.indexOf ("_SQ&") < 0  ; // -1 if not found
-    if (bNewCommand)
-    {
 
-      if (pSummary)
-      {
-        delete [] pSummary ;
-      }
-      if (bDoFlash)
-      {
-        //Serial.println("Zeroing FF Summary");
-        pSummary = new int [maxRepeats * 14];
-        memset (pSummary, 0, maxRepeats * 14 * sizeof (int));
-
-        int ibrPos  = MyInputString.indexOf ("bri=") + 4;
-        brightness = atoi(cInput + ibrPos);
-        Serial.print("Brightness is :");
-        Serial.println (brightness);
-      }
-      else
-      {
-        //Serial.println("Zeroing SS Summary");
-        pSummary = new int [maxRepeats * maxContrasts * 10];
-        memset (pSummary, 0, maxRepeats * maxContrasts * 10 * sizeof (int));
-      }
-    }
+    int ibrPos  = MyInputString.indexOf ("bri=") + 4;
+    brightness = atoi(cInput + ibrPos);
 
     // find filename
     String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
@@ -2625,11 +2598,23 @@ void sendReply ()
     }
 
     //Serial.println(" Proposed filename now" + sFile + ";");
-    //if file exists... ????
+
     sFile.toCharArray(cFile, 29); // adds terminating null
 
     if (bNewCommand)
     {
+      //if file exists... ????
+      if (fileExists(cFile))
+      {
+        sendHeader ("File exists");
+        client.print ("File already exists on disk ( ");
+        client.print (cFile);
+        client.print (" ) <BR> Click here to go back to the ");
+
+        send_GoBack_to_Stim_page ();
+        sendFooter();
+        return ;
+      }
       // new file
       nRepeats = iThisContrast = 0 ;
       //turn off any lights we have on...
