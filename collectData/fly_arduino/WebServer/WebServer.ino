@@ -2106,7 +2106,7 @@ void StartTo_collect_Data ()
     nRepeats ++;
     for (int i = 0; i < max_data + presamples; i++)
     {
-      stimvalue[i] = fERG_Now (i+presamples);
+      stimvalue[i] = fERG_Now (i-presamples);
     }
     startTimer(500);
   }
@@ -2484,7 +2484,7 @@ void sendGraphic(bool plot_stimulus)
     for (int i = 2 * istep; i < plot_limit; i = i + istep)
     {
       client.print ("l(");
-      client.print(10 + (10 * fERG_Now(time_stamp[i] - time_stamp[0]) ) / iYFactor);
+      client.print(10 + (10 * fERG_Now(time_stamp[i/2] - time_stamp[0]) ) / iYFactor);
       client.println (");");
     }
     client.println ("ctx.stroke();");
