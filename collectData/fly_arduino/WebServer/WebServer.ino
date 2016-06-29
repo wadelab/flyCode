@@ -403,21 +403,21 @@ void setup() {
 
 #ifdef ESP8266
   // initialise Flash disk
-  Serial.println ("Now trying flash drive card ...\n");
+  Serial.println F("Now trying flash drive card ...\n");
   if (SPIFFS.begin())
   {
-    Serial.println ("Setting up flash drive  succeded OK...\n");
+    Serial.println F("Setting up flash drive  succeded OK...\n");
   }
   else
   {
-    Serial.println ("Setting up flash drive failed...\n");
+    Serial.println F("Setting up flash drive failed...\n");
     if (SPIFFS.format()) // we may only need to use this once ??
     {
-      Serial.println ("Formatting flash drive ok...\n");
+      Serial.println F("Formatting flash drive ok...\n");
     }
     else
     {
-      Serial.println ("Formatting flash drive failed...\n");
+      Serial.println F("Formatting flash drive failed...\n");
       has_filesystem = false ;
     }
   }
@@ -430,12 +430,12 @@ void setup() {
   {
     FSInfo fs_info;
     SPIFFS.info(fs_info);
-    Serial.print ("Disk size ");
+    Serial.print F("Disk size ");
     Serial.println (fs_info.totalBytes);
-    Serial.print ("used Bytes " );
+    Serial.print F("used Bytes " );
     Serial.println( fs_info.usedBytes);
     size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
-    Serial.print ("Free Bytes " );
+    Serial.print F("Free Bytes " );
     Serial.println( fBytes);
     if (fBytes < 41500)
     {
@@ -448,15 +448,15 @@ void setup() {
 
 #else
   // initialize the SD card
-  Serial.println ("Setting up SD card...\n");
+  Serial.println F("Setting up SD card...\n");
 
   if (SD.begin(4))
   {
-    Serial.println ("SD card ok\n");
+    Serial.println F("SD card ok\n");
   }
   else
   {
-    Serial.println ("SD card failed\n");
+    Serial.println F("SD card failed\n");
     has_filesystem = false ;
   }
 #define MyDir File
@@ -476,7 +476,7 @@ void setup() {
   int status = WL_IDLE_STATUS;
   while ( status != WL_CONNECTED)
   {
-    Serial.print ("Attempting to connect to Network named: ");
+    Serial.print F("Attempting to connect to Network named: ");
     Serial.println(ssid);                   // print the network name (SSID);
 
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
@@ -486,25 +486,25 @@ void setup() {
     myIP = WiFi.localIP();
   }
 #endif
-  Serial.print ("Connected ...");
+  Serial.print F("Connected ...");
   printWifiStatus();                        // you're connected now, so print out the status
 
   server.begin();                           // start the web server on port 80
 
 #else
   digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
-  Serial.println ("Setting up the Ethernet card...\n");
+  Serial.println F("Setting up the Ethernet card...\n");
   // start the Ethernet connection and the server:
 #ifdef USE_DHCP
   if (! EthernetShield.begin(mac))
   {
-    Serial.println ("DHCP failed, trying 172, 16, 1, 10");
+    Serial.println F("DHCP failed, trying 172, 16, 1, 10");
 #endif
 
     // Setup for eg an ethernet cable from Macbook to Arduino Ethernet shield
     // other macbooks or mac airs may assign differnt local networks
     //
-    Serial.println ("Please set your mac ethernet to Manually and '172.16.1.1'");
+    Serial.println F("Please set your mac ethernet to Manually and '172.16.1.1'");
     byte ip[] = { 172, 16, 1, 10 };
     EthernetShield.begin(mac, ip);
     bNoInternet = true ;
@@ -512,11 +512,11 @@ void setup() {
   };
 #endif
   server.begin();
-  Serial.print ("server is at ");
+  Serial.print F("server is at ");
   myIP = EthernetShield.localIP() ;
   dnsIP = EthernetShield.dnsServerIP();
   Serial.println(myIP);
-  Serial.print(" using dns server ");
+  Serial.printF(" using dns server ");
   Serial.println(dnsIP);
 
 #endif
@@ -563,32 +563,32 @@ void setupESPWiFi()
 
   for (int i = 0; i < AP_NameString.length(); i++)
     AP_NameChar[i] = AP_NameString.charAt(i);
-  Serial.print("Setting up access point 8266");
+  Serial.print F("Setting up access point 8266");
   Serial.println (AP_NameString);
   WiFi.softAP(AP_NameChar, WiFiAPPSK);
   myIP = WiFi.softAPIP() ;
-  Serial.print("ESP accesspoint :");
+  Serial.print F("ESP accesspoint :");
   Serial.print (myIP) ;
 }
 #endif
 
 void printWifiStatus() {
   // print the SSID of the network you're attached to:
-  Serial.print ("SSID: ");
+  Serial.print F("SSID: ");
   Serial.println(WiFi.SSID());
 
   // print your WiFi shield's IP address:
 
-  Serial.print ("IP Address: ");
+  Serial.print F("IP Address: ");
   Serial.println(myIP);
 
   // print the received signal strength:
   long rssi = WiFi.RSSI();
-  Serial.print ("signal strength (RSSI):");
+  Serial.print F("signal strength (RSSI):");
   Serial.print (rssi);
-  Serial.println (" dBm");
+  Serial.println F(" dBm");
   // print where to go in a browser:
-  Serial.print ("To see this page in action, open a browser to http://");
+  Serial.print F("To see this page in action, open a browser to http://");
   Serial.println (myIP);
 }
 
@@ -626,76 +626,76 @@ void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML
 #endif
 {
   // send a standard http response header
-  client.println ("HTTP/1.1 200 OK");
+  client.println F("HTTP/1.1 200 OK");
   if (isHTML)
   {
-    client.println ("Content-Type: text/html");
+    client.println F("Content-Type: text/html");
   }
   else
   {
-    client.println ("Content-Type: text/plain");
+    client.println F("Content-Type: text/plain");
   }
   //  if (pDate) Serial.print (pDate);
   //  else Serial.print("boo");
   if (pDate)
   {
-    client.print ("Last-Modified: ");
+    client.print F("Last-Modified: ");
     client.println (pDate);
   }
-  client.println ("Connection: close");  // the connection will be closed after completion of the response
+  client.println F("Connection: close");  // the connection will be closed after completion of the response
   client.println();
   if (isHTML)
   {
-    client.println ("<!DOCTYPE HTML><html><title>");
+    client.println F("<!DOCTYPE HTML><html><title>");
     client.println (sTitle);
-    client.println ("</title><body ");
+    client.println F("</title><body ");
     client.println (sINBody);
-    client.println (">");
+    client.println F(">");
   }
 }
 
 void sendFooter()
 {
-  client.println ("</body></html>");
+  client.println F("</body></html>");
 }
 
 void sendError (const String & sError)
 {
-  sendHeader (String("Arduino System Error"));
-  client.print ("Error in system, Please check for update <BR>");
+  sendHeader (String F("Arduino System Error"));
+  client.print F("Error in system, Please check for update <BR>");
   client.println (sError) ;
   sendFooter();
 }
 void send_GoBack_to_Stim_page ()
 {
-  client.println ("<A HREF=\"") ;
-  //  if (MyReferString != String("131"))
+  client.println F("<A HREF=\"") ;
+  //  if (MyReferString != StringF("131"))
   //  {
   //
-  //    //    client.println (" <script>");
-  //    //    client.println ("function goBack() ");
-  //    //    client.println ("{ window.history.back() }");
-  //    //    client.println ("</script>");
+  //    //    client.println F(" <script>");
+  //    //    client.println F("function goBack() ");
+  //    //    client.println F("{ window.history.back() }");
+  //    //    client.println F("</script>");
   //
   //    client.println (MyReferString) ;
-  //    client.println ("\"" );
+  //    client.println F("\"" );
   //  }
-  //  //    Serial.print("My reference is :");
+  //  //    Serial.printF("My reference is :");
   //  //    Serial.println (MyReferString) ;
   //  else
   //  {
   // i think this migth work everywhere with firefox > 31 - seems to work in Safari too
-  client.print ("javascript:void(0)\" onclick=\"history.back(); ") ;
+  client.print F("javascript:void(0)\" onclick=\"history.back(); ") ;
   //  }
-  client.println ("\">the stimulus selection form</A>  <BR>");
+  client.println F("\">the stimulus selection form</A>  <BR>");
 }
 
 void updateColour (const bool boolUpdatePage)
 {
   if (boolUpdatePage)
   {
-    sendHeader ("Lit up ?", "onload=\"goBack()\" ");
-    client.println ("Click to reload");
+    sendHeader (F("Lit up ?"), F("onload=\"goBack()\" "));
+    client.println F("Click to reload");
     send_GoBack_to_Stim_page ();
 
     sendFooter();
@@ -704,7 +704,7 @@ void updateColour (const bool boolUpdatePage)
 
 void goColour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
 {
-  //Serial.println("colouring 1");
+  //Serial.printlnF("colouring 1");
 #ifdef ESP8266
   //0/1023 with high values giving least light
   analogWrite( redled, 1023 - 4 * r );
@@ -733,7 +733,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
     digitalWrite (i, w);
   }
 
-  //Serial.println("colouring 3");
+  //Serial.printlnF("colouring 3");
 }
 
 void goColour(const byte r, const bool boolUpdatePage)
@@ -749,7 +749,7 @@ void goColour(const byte r, const byte g, const byte b, const byte f, const bool
 
 void serve_dir (String s)
 {
-  sendHeader("Directory listing");
+  sendHeader F("Directory listing");
   printDirectory (s);
   sendFooter();
 }
@@ -793,78 +793,78 @@ void run_graph()
   //    analogWrite(bluLED, 0);
   //  }
 
-  sendHeader ("Graph of last sweep", "onload=\"init()\"") ;
-  client.println ("<script>");
+  sendHeader (F("Graph of last sweep"), F("onload=\"init()\"") );
+  client.println F("<script>");
 
   // script to reload ...
-  client.println ("var myVar = setInterval(function(){myTimer()}, 1000);"); //mu sec
-  client.println ("function myTimer() {");
-  client.println ("location.reload(true);");
-  client.println ("};");
+  client.println F("var myVar = setInterval(function(){myTimer()}, 1000);"); //mu sec
+  client.println F("function myTimer() {");
+  client.println F("location.reload(true);");
+  client.println F("};");
 
-  client.println ("function myStopFunction() {");
-  client.println ("clearInterval(myVar); }");
-  client.println ("");
-  client.println ("</script>");
+  client.println F("function myStopFunction() {");
+  client.println F("clearInterval(myVar); }");
+  client.println F("");
+  client.println F("</script>");
   // now do the graph...
-  client.println ("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
-  client.println ("Your browser does not support the HTML5 canvas tag.</canvas>");
+  client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+  client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
 
-  client.println ("<script>");
-  client.println ("var can;");
-  client.println ("var ctx;");
-  client.println ("var i = 20; ");
+  client.println F("<script>");
+  client.println F("var can;");
+  client.println F("var ctx;");
+  client.println F("var i = 20; ");
 
-  client.println ("function l(v){");
-  client.println ("ctx.lineTo(i,v);");
-  client.println ("i = i + 20;");
-  client.println ("};");
-  client.println ("function m(v){");
-  client.println ("ctx.moveTo(i,v);");
-  client.println ("i = i + 20;");
-  client.println ("};");
+  client.println F("function l(v){");
+  client.println F("ctx.lineTo(i,v);");
+  client.println F("i = i + 20;");
+  client.println F("};");
+  client.println F("function m(v){");
+  client.println F("ctx.moveTo(i,v);");
+  client.println F("i = i + 20;");
+  client.println F("};");
 
-  client.println ("function init() {");
-  client.println (" can = document.getElementById(\"myCanvas\");");
-  client.println (" ctx = can.getContext(\"2d\");");
+  client.println F("function init() {");
+  client.println F(" can = document.getElementById(\"myCanvas\");");
+  client.println F(" ctx = can.getContext(\"2d\");");
 
   if (iIndex >= max_graph_data) iIndex = 0;
   for (int i = 0; i < max_graph_data - 2; i++)
   {
     if (i < iIndex - 1 || i > iIndex + 1)
     {
-      client.print ("l(");
+      client.print F("l(");
       client.print(myGraphData[i + 1] );
-      client.print (");");
+      client.print F(");");
     }
     else
     {
-      client.print ("m(");
+      client.print F("m(");
       client.print (myGraphData[i] );
-      client.print (");");
+      client.print F(");");
     }
   }
-  client.print ("ctx.strokeStyle=\"blue\";");
-  client.println ("ctx.stroke();");
+  client.print F("ctx.strokeStyle=\"blue\";");
+  client.println F("ctx.stroke();");
 
   //  //draw stimulus...
-  //  client.print ("ctx.moveTo(");
+  //  client.print F("ctx.moveTo(");
   //  client.print ((max_graph_data / 10) * 20);
-  //  client.print (",30);");
+  //  client.print F(",30);");
   //
-  //  client.print ("ctx.lineTo(");
+  //  client.print F("ctx.lineTo(");
   //  client.print (max_graph_data / 2 * 20);
-  //  client.print (",30);");
+  //  client.print F(",30);");
   //
-  //  client.println ("ctx.strokeStyle=\"blue\";");
+  //  client.println F("ctx.strokeStyle=\"blue\";");
   //  //              client.println("ctx.lineWidth=5;");
-  //  client.println ("ctx.stroke();");
-  client.println ("}");
+  //  client.println F("ctx.stroke();");
+  client.println F("}");
 
-  client.println ("</script>");
-  client.println ("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
+  client.println F("</script>");
+  client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
 
-  client.println ("To run a test please stop and then load ") ;
+  client.println F("To run a test please stop and then load ") ;
 
   send_GoBack_to_Stim_page ();
 
@@ -912,7 +912,7 @@ void printDirectory(String s)
   int iLength = s.length();
   char cTmp  [iLength + 2];
   s.toCharArray(cTmp, iLength);
-  //Serial.println ("Now reading directry:" + s2 + String("!!"));
+  //Serial.println F("Now reading directry:" + s2 + String("!!"));
   MyDir dir = SD.openDir(cTmp) ;
   // if (!dir) return ; FIX
 
@@ -959,59 +959,59 @@ void printDirectory(String s)
 #endif
 
   client.print (iFiles);
-  client.print (" files found on disk  ");
+  client.print F(" files found on disk  ");
   iFiles -- ; // allow for last increment...
 
   client.println ();
-  client.println ("<ul>");
+  client.println F("<ul>");
   while (iFiles >= 0)
   {
-    client.print ("<li><a href=\"");
+    client.print F("<li><a href=\"");
     client.print ((char*)sArray + (iFiles * 15));
-    client.print ("\">");
+    client.print F("\">");
     client.print ((char*)sArray + (iFiles * 15));
-    client.print ("</a> ");
-    client.print ("   ");
+    client.print F("</a> ");
+    client.print F("   ");
     client.print (lArray [iFiles]);
 
     // if its an SVP allow us to have alink to the picture...
     if ('P' == * (sArray + (iFiles * 15) + 11 ))
     {
       * (sArray + (iFiles * 15) + 11) = 'V';
-      client.print ("      <a href=\"");
+      client.print F("      <a href=\"");
       client.print ((char*)sArray + (iFiles * 15));
-      client.print ("\">");
-      client.print ("(fft (30,30))");
-      client.print ("</a> ");
+      client.print F("\">");
+      client.print F("(fft (30,30))");
+      client.print F("</a> ");
     }
 
     // if its an ERG allow us to have alink to the picture...
     if ('G' == * (sArray + (iFiles * 15) + 11 ))
     {
       * (sArray + (iFiles * 15) + 11) = 'P';
-      client.print ("      <a href=\"");
+      client.print F("      <a href=\"");
       client.print ((char*)sArray + (iFiles * 15));
-      client.print ("\">");
+      client.print F("\">");
       client.print ((char*)sArray + (iFiles * 15));
-      client.print ("</a> ");
+      client.print F("</a> ");
     }
 
 
-    client.println ("</li>");
+    client.println F("</li>");
     iFiles -- ;
   }
 
 
 
   //  client.println ();
-  //  client.println ("<ul>");
+  //  client.println F("<ul>");
   //
   //  Serial.println("dir done, s is :" + s);
   //
   //
   //  s = String("/") + s + String("/") ;
-  //  s.replace ("//", "/");
-  //  s.replace ("//", "/");
+  //  s.replace F("//", "/");
+  //  s.replace F("//", "/");
   //  Serial.println("string replace done, s is :" + s);
   //
   //  for (int iff = iFiles; iff--; iff >= 0)
@@ -1022,13 +1022,13 @@ void printDirectory(String s)
   //    Serial.println(p_name);
   //
   //    // print any indent spaces
-  //    client.print ("<li><a href=\"");
+  //    client.print F("<li><a href=\"");
   //    if (s.length() > 1) client.print (s);
-  //    client.print ("/");
+  //    client.print F("/");
   //    client.print(p_name);
-  //    client.print ("\">");
+  //    client.print F("\">");
   //    client.print(p_name);
-  //    client.print ("</a> ");
+  //    client.print F("</a> ");
   //
   //
   //    /////////////////////////////// now put in a link for a picture
@@ -1037,26 +1037,26 @@ void printDirectory(String s)
   //      if (char(p_name[11]) == 'G')
   //      {
   //        // print any indent spaces
-  //        client.print (" <a href=\"");
+  //        client.print F(" <a href=\"");
   //        if (s.length() > 1) client.print (s);
   //        for (uint8_t i = 0; i < 11; i++)
   //        {
   //          client.print(char(p_name[i]));
   //        }
-  //        client.print ("P\"> (picture)</a>");
+  //        client.print F("P\"> (picture)</a>");
   //        ///////////////////////////////
   //      }
   //      if (char(p_name[11]) == 'P')
   //      {
   //        // print any indent spaces
-  //        client.print (" <a href=\"");
+  //        client.print F(" <a href=\"");
   //        if (s.length() > 1) client.print (s);
-  //        client.print ("/");
+  //        client.print F("/");
   //        for (uint8_t i = 0; i < 11; i++)
   //        {
   //          client.print(char(p_name[i]));
   //        }
-  //        client.print ("V\"> (fft (30,30))</a>");
+  //        client.print F("V\"> (fft (30,30))</a>");
   //        ///////////////////////////////
   //      }
   //    }
@@ -1071,13 +1071,13 @@ void printDirectory(String s)
   //      // print size
   //    {
   //      //myPrintFatDateTime(p); FIX
-  //      client.print (" size: ");
+  //      client.print F(" size: ");
   //      client.print(pAll[iff].i);
   //
   //    }
-  //    client.println ("</li>");
+  //    client.println F("</li>");
   //  }
-  client.println ("</ul>");
+  client.println F("</ul>");
 
 
 
@@ -1131,7 +1131,7 @@ void webTime ()
   second = myminute = hour = day = month = 1;
 
   // Just choose any reasonably busy web server, the load is really low
-  if (timeclient.connect ("www.york.ac.uk", 80))
+  if (timeclient.connect ("www.york.ac.uk", 80)) // does not work with F
   {
     // Make an HTTP 1.1 request which is missing a Host: header
     // compliant servers are required to answer with an error that includes
@@ -1220,23 +1220,23 @@ bool file_time (char * cIn)
   *gPOS = 0;
 
 
-  Serial.print ("fpos is " );
+  Serial.print F("fpos is " );
   Serial.println (fPOS);
   Serial.flush();
   fPOS = fPOS + 9;
-  Serial.print ("fpos is now" );
+  Serial.print F("fpos is now" );
   Serial.println (fPOS);
   Serial.flush();
 
   if (strlen(fPOS) < 20)
   {
-    sendError ("Wrong length of date in request to serve page");
+    sendError F("Wrong length of date in request to serve page");
     return false;
   }
 
   strcpy (calcTime, fPOS);
 
-  Serial.print ("time is:");
+  Serial.print F("time is:");
   for (int i = 0; i < calcTimemax - 1; i++)
   {
     Serial.print( calcTime[i] );
@@ -1250,7 +1250,7 @@ bool file_time (char * cIn)
   hour = atoi(calcTime + 11);
   myminute = atoi(calcTime + 14);
   second = atoi(calcTime + 17) ;
-  Serial.print ("year is (if zero, atoi error):");
+  Serial.print F("year is (if zero, atoi error):");
   Serial.println (year) ;
   return (year != 0) ;
 }
@@ -1353,22 +1353,22 @@ bool writeSummaryFile(const char * cMain)
   char cTmp [iCharMaxHere]; // to hold text to write
   char * pDot = strchr ((char *)cMain, '.');
 
-  Serial.print ("Summarising filename ");
+  Serial.print F("Summarising filename ");
   Serial.println (cMain);
   Serial.flush();
   if (!pDot)
   {
-    Serial.print ("Error in filename");
+    Serial.print F("Error in filename");
     Serial.println (c);
     Serial.flush();
     return false ;
   }
-  Serial.print ("filename extension:");
+  Serial.print F("filename extension:");
   Serial.println (pDot);
   Serial.flush();
   int iBytes = pDot - cMain ;
 
-  Serial.print ("length of string:");
+  Serial.print F("length of string:");
   Serial.println (iBytes);
   Serial.flush();
 
@@ -1376,7 +1376,7 @@ bool writeSummaryFile(const char * cMain)
   c[iBytes] = 0;
   strcat (c, ".CSV");
 
-  Serial.print ("now writing summary: ");
+  Serial.print F("now writing summary: ");
   Serial.println (c);
   Serial.flush();
 
@@ -1384,7 +1384,7 @@ bool writeSummaryFile(const char * cMain)
 
   if (fileExists(c))
   {
-    Serial.println ("Error in opening file");
+    Serial.println F("Error in opening file");
     Serial.println (c);
     Serial.flush();
     return false; // FIX - send error to usrrs
@@ -1392,7 +1392,7 @@ bool writeSummaryFile(const char * cMain)
   file = SD.open(c, FILE_WRITE);
   if ( !file )
   {
-    Serial.println ("Error in opening file");
+    Serial.println F("Error in opening file");
     Serial.println (c);
     Serial.flush();
     return false;
@@ -1410,7 +1410,7 @@ bool writeSummaryFile(const char * cMain)
   iBytesWritten = file.write((uint8_t *)cInput, MaxInputStr + 2);
   if (iBytesWritten <= 0)
   {
-    Serial.println ("Error in writing header to file");
+    Serial.println F("Error in writing header to file");
     file.close();
     return false ;
   }
@@ -1425,7 +1425,7 @@ bool writeSummaryFile(const char * cMain)
   iBytesWritten = file.write((uint8_t *)cTmp, strlen(cTmp)) ;
   if (iBytesWritten <= 0)
   {
-    Serial.println ("Error in writing header to file");
+    Serial.println F("Error in writing header to file");
     file.close();
     return false ;
   }
@@ -1444,21 +1444,21 @@ bool writeSummaryFile(const char * cMain)
     for (int jj = 0; jj < iOfssfet; jj++)
     {
       iBytesWritten = iBytesWritten + file.print (pSummary[ii * iOfssfet + jj]);
-      iBytesWritten = iBytesWritten + file.print (", ");
+      iBytesWritten = iBytesWritten + file.print F(", ");
     }
-    iBytesWritten = iBytesWritten + file.print ("\n");
+    iBytesWritten = iBytesWritten + file.print F("\n");
   }
 
   if (iBytesWritten <= 0)
   {
-    Serial.println ("Error in writing erg data to file");
+    Serial.println F("Error in writing erg data to file");
     file.close();
     return false;
   }
 
   // Serial.println F("File success: written bytes " + String(iBytesWritten));
 
-  Serial.print (" More bytes writen to file.........");
+  Serial.print F(" More bytes writen to file.........");
   Serial.print  (c);
   Serial.print F(" size now ");
   Serial.println (file.size());
@@ -1490,7 +1490,7 @@ bool writeFile(char * c)
     wfile = SD.open( c /*myName*/,  FILE_WRITE) ;
     if ( !wfile)
     {
-      Serial.println F ("Error in opening file");
+      Serial.print F("Error in opening file");
       Serial.println (c);
       Serial.flush();
       return false;
@@ -1505,7 +1505,7 @@ bool writeFile(char * c)
     iBytesWritten = wfile.write((uint8_t *)cInput, MaxInputStr + 2);
     if (iBytesWritten <= 0)
     {
-      Serial.println F ("Error in writing header to file");
+      Serial.println F("Error in writing header to file");
       wfile.close();
       return false ;
     }
@@ -1516,7 +1516,7 @@ bool writeFile(char * c)
     //  file = SD.open( c /*myName*/,  FILE_WRITE /*O_APPEND | O_WRITE*/) ; // on the Due we have to keep the file open...
     if ( !wfile )
     {
-      Serial.println F ("Error in reopening file");
+      Serial.print F("Error in reopening file");
       Serial.println (c);
       return false;
     }
@@ -1556,9 +1556,9 @@ bool writeFile(char * c)
     Serial.println F ("Error in writing timing data to file");
     return false ;
   }
-  Serial.print (" More bytes writen to file.........");
+  Serial.print F(" More bytes writen to file.........");
   Serial.print  (c);
-  Serial.print (" size now ");
+  Serial.print F(" size now ");
   Serial.println (wfile.size());
   wfile.flush();
   return true ;
@@ -1624,20 +1624,20 @@ void doplotFile ()
 
   String Sc ; //= (c);
   Sc = String (("Plotting ")) + Sc ;
-  sendHeader ("plotting", "onload=\"init()\"") ;
+  sendHeader (F("plotting"), F("onload=\"init()\"") );
   //based on doReadFile...
 
   //String dataString ;
   unsigned char * cPtr;
   cPtr = (unsigned char *) erg_in ;
 
-  Serial.print ("trying to open:");
+  Serial.print F("trying to open:");
   Serial.println (cFile);
   if (file) file.close();
   file = SD.open( cFile, FILE_READ);
   if (!file)
   {
-    client.println ("Error opening file ");
+    client.println F("Error opening file ");
     client.println(cFile);
     sendFooter();
     return ;
@@ -1650,7 +1650,7 @@ void doplotFile ()
   iBytesRead = file.read(cPtr, iBytesRequested);
   if (iBytesRead < iBytesRequested)
   {
-    client.println ("Error reading header data in file ");
+    client.println F("Error reading header data in file ");
     client.println(cFile);
     sendFooter();
     return ;
@@ -1723,7 +1723,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   static int erg_in2 [max_data] ;
   memset (erg_in2, 0, sizeof (int) * max_data);
 
-  Serial.print ("trying to open:");
+  Serial.print F("trying to open:");
   Serial.println (c);
   if (file) file.close();
   file = SD.open( c, FILE_READ);
@@ -1737,7 +1737,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   iBytesRead = file.read(cPtr, iBytesRequested);
   if (iBytesRead < iBytesRequested)
   {
-    client.println ("Error reading header data in file ");
+    client.println F("Error reading header data in file ");
     client.println(c);
     return ;
   }
@@ -1763,7 +1763,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
     Serial.println(erg_in[max_data - 1]);
     if ( time_stamp[max_data - 1] == 30 && erg_in[max_data - 1] == 30 )
     {
-      Serial.print ("about to do FFT ");
+      Serial.print F("about to do FFT ");
       int m = millis();
       do_fft();
       // add to the average
@@ -1772,9 +1772,9 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
         erg_in2[ii] = erg_in2[ii] + erg_in[ii];
       }
       Serial.print (erg_in[48]);
-      Serial.print (" done FFT in");
+      Serial.print F(" done FFT in");
       Serial.print(millis() - m);
-      Serial.println (" milliseconds");
+      Serial.println F(" milliseconds");
     }
 
     //read next block
@@ -1791,7 +1791,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   Serial.print (erg_in[48]);
   // now plot data in erg_in
   sendGraphic(false);
-  Serial.println (" plotted FFT");
+  Serial.println F(" plotted FFT");
   if (bNeedHeadFooter) sendFooter ();
 
 }
@@ -1856,7 +1856,7 @@ void doreadFile ( char * c)
   cPtr = (unsigned char *) erg_in ;
   int iOldContrast ;
 
-  //Serial.print ("trying to open:");
+  //Serial.print F("trying to open:");
   //Serial.println (c);
   //if (file.isOpen()) file.close(); FIX
   file = SD.open( c, FILE_READ);
@@ -1868,7 +1868,7 @@ void doreadFile ( char * c)
   iBytesRead = file.read(cPtr, iBytesRequested);
   if (iBytesRead < iBytesRequested)
   {
-    client.println ("Error reading header data in file ");
+    client.println F("Error reading header data in file ");
     client.println(c);
     return ;
   }
@@ -1906,7 +1906,7 @@ void doreadFile ( char * c)
       {
         client.print(Get_br_Now(time_stamp[i],  time_stamp [max_data - 1], erg_in [max_data - 1]));
       }
-      client.print (", ");
+      client.print F(", ");
 
       client.print(erg_in[i]);
       client.println();
@@ -2109,7 +2109,7 @@ void StartTo_collect_Data ()
   //  while (sampleCount < max_data)
   //  {
   //    Serial.print (sampleCount);
-  //    Serial.print (" ");
+  //    Serial.print F(" ");
   //    Serial.println (stimvalue[sampleCount + presamples]);
   //    delay(500) ;
   //  }
@@ -2173,25 +2173,25 @@ void tidyUp_Collection()
 
 void flickerPage()
 {
-  //  Serial.print ("Sampling at :");
+  //  Serial.print F("Sampling at :");
   //  Serial.println (String(sampleCount));
 
-  sendHeader ("Sampling", "onload=\"init()\"") ;
+  sendHeader (F("Sampling"), F("onload=\"init()\"")) ;
 
   // script to reload ...
-  client.println ("<script>");
-  client.println ("var myVar = setInterval(function(){myTimer()}, 8500);"); //mu sec
-  client.println ("function myTimer() {");
-  client.println ("location.reload(true);");
-  client.println ("};");
+  client.println F("<script>");
+  client.println F("var myVar = setInterval(function(){myTimer()}, 8500);"); //mu sec
+  client.println F("function myTimer() {");
+  client.println F("location.reload(true);");
+  client.println F("};");
 
-  client.println ("function myStopFunction() {");
-  client.println ("var b = confirm(\"Really Stop Data Acqusition ?\"); \n if ( b == true )  ");
-  client.print ("{ \n clearInterval(myVar); ");
-  client.print ("\n history.back();");
-  client.print (" } }");
-  client.println ("");
-  client.println ("</script>");
+  client.println F("function myStopFunction() {");
+  client.println F("var b = confirm(\"Really Stop Data Acqusition ?\"); \n if ( b == true )  ");
+  client.print F("{ \n clearInterval(myVar); ");
+  client.print F("\n history.back();");
+  client.print F(" } }");
+  client.println F("");
+  client.println F("</script>");
 
 
   if (bDoFlash)
@@ -2214,12 +2214,12 @@ void flickerPage()
 
 void AppendWaitReport()
 {
-  client.print ("waiting ") ;
+  client.print F("waiting ") ;
   client.print ( nWaits );
-  client.print (" of ");
+  client.print F(" of ");
   client.print (nMaxWaits);
-  client.println (" time so far " );
-  client.println ("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
+  client.println F(" time so far " );
+  client.println F("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
   client.println ( "<BR> ");
   nWaits -- ;
@@ -2227,12 +2227,12 @@ void AppendWaitReport()
 
 void AppendFlashReport()
 {
-  client.print ("Acquired ") ;
+  client.print F("Acquired ") ;
   client.print ( nRepeats );
-  client.print (" of ");
+  client.print F(" of ");
   client.print (maxRepeats);
-  client.println (" data blocks so far " );
-  client.println ("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
+  client.println F(" data blocks so far " );
+  client.println F("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
   client.println ( "<BR> ");
 
@@ -2245,19 +2245,19 @@ void AppendFlashReport()
 
 void AppendSSVEPReport()
 {
-  client.print ("Acquired ") ;
+  client.print F("Acquired ") ;
   int iTmp = nRepeats * maxContrasts ; //- maxContrasts ;
-  Serial.print ("Acquired ");
+  Serial.print F("Acquired ");
   Serial.print (iTmp);
   iTmp = iTmp + iThisContrast ;
-  Serial.print (" really ");
+  Serial.print F(" really ");
   Serial.println (iTmp);
 
   client.print (iTmp);
-  client.print (" of ");
+  client.print F(" of ");
   client.print (maxRepeats * maxContrasts);
-  client.println (" data blocks so far " );
-  client.println ("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
+  client.println F(" data blocks so far " );
+  client.println F("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
   client.println ( "<BR> ");
 
@@ -2267,65 +2267,65 @@ void AppendSSVEPReport()
     int randomnumber = contrastOrder[iThisContrast];
     int F2index = 0 ;
     if (randomnumber > F2contrastchange) F2index = 1;
-    client.print ("Data will flicker at "); +
+    client.print F("Data will flicker at "); +
     client.print (freq1) ;
     client.print ( " Hz with contrast ");
     client.print (F1contrast[randomnumber] );
-    client.print (" and "); +
+    client.print F(" and "); +
     client.print (freq2) ;
-    client.print (" Hz with contrast ") ;
+    client.print F(" Hz with contrast ") ;
     client.print ( F2contrast[F2index] );
-    client.print (" % <BR> " );
+    client.print F(" % <BR> " );
     client.println ();
 
-    client.println ("please wait....<BR>");
+    client.println F("please wait....<BR>");
     if (iThisContrast > 0)
     {
       iThisContrast -- ;
-      client.println ("<canvas id=\"myCanvas\" width=\"620\" height=\"450\" style=\"border:1px solid #d3d3d3;\">");
-      client.println ("Your browser does not support the HTML5 canvas tag.</canvas>");
+      client.println F("<canvas id=\"myCanvas\" width=\"620\" height=\"450\" style=\"border:1px solid #d3d3d3;\">");
+      client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
 
-      client.println ("<script>");
-      client.println ("var can;");
-      client.println ("var ctx;");
-      client.println ("var i = 8; ");
+      client.println F("<script>");
+      client.println F("var can;");
+      client.println F("var ctx;");
+      client.println F("var i = 8; ");
 
-      client.println ("function l(v){");
-      client.println ("ctx.lineTo(i,v);");
-      client.println ("i = i + 8;");  // iStep ??
-      client.println ("};");
-      client.println ("function m(v){");
-      client.println ("ctx.moveTo(0,v);");
-      client.println ("i = 8;");
-      client.println ("};");
+      client.println F("function l(v){");
+      client.println F("ctx.lineTo(i,v);");
+      client.println F("i = i + 8;");  // iStep ??
+      client.println F("};");
+      client.println F("function m(v){");
+      client.println F("ctx.moveTo(0,v);");
+      client.println F("i = 8;");
+      client.println F("};");
 
-      client.println ("function init() {");
-      client.println (" can = document.getElementById(\"myCanvas\");");
-      client.println (" ctx = can.getContext(\"2d\");");
+      client.println F("function init() {");
+      client.println F(" can = document.getElementById(\"myCanvas\");");
+      client.println F(" ctx = can.getContext(\"2d\");");
 
       int iStep = 2;
-      client.print ("m(");
+      client.print F("m(");
       client.print(myGraphData[0] / 4 + 350);
-      client.print (");");
+      client.print F(");");
       for (int i = 1; i < 5 * max_graph_data - 2; i = i + iStep)
       {
-        client.print ("l(");
+        client.print F("l(");
         client.print(myGraphData[i + iStep] / 4 + 350);
-        client.println (");");
+        client.println F(");");
       }
-      client.println ("ctx.stroke();");
-      client.print ("m(");
+      client.println F("ctx.stroke();");
+      client.print F("m(");
       client.print(br_Now(time_stamp[0]) );
-      client.println (");");
+      client.println F(");");
       for (int i = 1; i < 5 * max_graph_data - 2; i = i + iStep)
       {
-        client.print ("l(");
+        client.print F("l(");
         client.print(br_Now(time_stamp[i + iStep]));
-        client.println (");");
+        client.println F(");");
       }
-      client.println ("ctx.stroke(); }");
+      client.println F("ctx.stroke(); }");
 
-      client.println ("</script>");
+      client.println F("</script>");
       iThisContrast ++ ;
     }
 
@@ -2336,15 +2336,15 @@ void AppendSSVEPReport()
       int F2index = 0 ;
       if (randomnumber > F2contrastchange) F2index = 1;
 
-      client.print ("<BR>Data has been flickered at "); +
+      client.print F("<BR>Data has been flickered at "); +
       client.print (freq1) ;
       client.print ( " Hz with contrast ");
       client.print (F1contrast[randomnumber] );
-      client.print (" and "); +
+      client.print F(" and "); +
       client.print (freq2) ;
-      client.print (" Hz with contrast ") ;
+      client.print F(" Hz with contrast ") ;
       client.print (F2contrast[F2index] );
-      client.print (" % " );
+      client.print F(" % " );
       client.println ();
     }
   }
@@ -2370,29 +2370,29 @@ void plotInColour (int iStart, const String & str_col)
 {
   // 12 Hz in blue ?
   // 4 ms per point 0.25 Hz per point, so 12 Hz expected at 48
-  client.println ("ctx.beginPath();");
-  client.print ("ctx.moveTo(");
+  client.println F("ctx.beginPath();");
+  client.print F("ctx.moveTo(");
   client.print((iXFactor * iStart) / iXDiv );
-  client.print (",");
+  client.print F(",");
   client.print(iBaseline - (10 * myGraphData[iStart]) / iYFactor);
-  client.println (");");
+  client.println F(");");
   for (int i = iStart + istep; i < iStart + 5; i = i + istep)
   {
-    client.print ("ctx.lineTo(");
+    client.print F("ctx.lineTo(");
     client.print((iXFactor * i) / iXDiv );
-    client.print (",");
+    client.print F(",");
     client.print(iBaseline - (10 * myGraphData[i]) / iYFactor);
-    client.println (");");
+    client.println F(");");
   }
-  client.print ("ctx.strokeStyle = '");
+  client.print F("ctx.strokeStyle = '");
   client.print (str_col);
-  client.println ("';");
-  client.println ("ctx.closePath();");
-  client.print ("ctx.fillStyle='");
+  client.println F("';");
+  client.println F("ctx.closePath();");
+  client.print F("ctx.fillStyle='");
   client.print (str_col);
-  client.println ("';");
-  client.println ("ctx.fill();");
-  client.println ("ctx.stroke();");
+  client.println F("';");
+  client.println F("ctx.fill();");
+  client.println F("ctx.stroke();");
 }
 void sendGraphic()
 {
@@ -2418,75 +2418,75 @@ void sendGraphic(bool plot_stimulus)
     iXDiv = 5 ;
   }
 
-  client.println ("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
-  client.println ("Your browser does not support the HTML5 canvas tag.</canvas>");
+  client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+  client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
 
-  client.println ("<script>");
-  client.println ("var can;");
-  client.println ("var ctx;");
-  client.print   ("var i = ");
+  client.println F("<script>");
+  client.println F("var can;");
+  client.println F("var ctx;");
+  client.print   F("var i = ");
   client.print   ((iXFactor * istep) / iXDiv );
-  client.println ("; ");
+  client.println F("; ");
 
-  client.println ("function l(v){");
-  client.println ("ctx.lineTo(i,v);");
-  client.println ("i = i +  ");
+  client.println F("function l(v){");
+  client.println F("ctx.lineTo(i,v);");
+  client.println F("i = i +  ");
   client.print   ((iXFactor * istep) / iXDiv );
-  client.println ("; ");  // iStep ??
-  client.println ("};");
-  client.println ("function m(v){");
-  client.println ("ctx.moveTo(0,v);");
-  client.print   ("i = ");
+  client.println F("; ");  // iStep ??
+  client.println F("};");
+  client.println F("function m(v){");
+  client.println F("ctx.moveTo(0,v);");
+  client.print   F("i = ");
   client.print   ((iXFactor * istep) / iXDiv );
-  client.println ("; ");
-  client.println ("};");
+  client.println F("; ");
+  client.println F("};");
 
-  client.println ("function init() {");
-  client.println (" can = document.getElementById(\"myCanvas\");");
-  client.println (" ctx = can.getContext(\"2d\");");
+  client.println F("function init() {");
+  client.println F(" can = document.getElementById(\"myCanvas\");");
+  client.println F(" ctx = can.getContext(\"2d\");");
 
 
   // move to start of line
-  client.println ("ctx.beginPath();");
-  client.print ("m(");
+  client.println F("ctx.beginPath();");
+  client.print F("m(");
   client.print(iBaseline - (10 * myGraphData[istep]) / iYFactor);
-  client.println (");");
+  client.println F(");");
 
   //now join up the line
   for (int i = 2 * istep; i < plot_limit; i = i + istep)
   {
-    client.print ("l(");
+    client.print F("l(");
     client.print(iBaseline - (10 * myGraphData[i]) / iYFactor);
-    client.println (");");
+    client.println F(");");
   }
-  client.println ("ctx.stroke();");
+  client.println F("ctx.stroke();");
 
   if (plot_stimulus)
   {
-    client.println ("ctx.beginPath();");
-    client.print ("m(");
+    client.println F("ctx.beginPath();");
+    client.print F("m(");
     client.print(10 + (10 * fERG_Now(time_stamp[1] - time_stamp[0])) / iYFactor);
-    client.println (");");
+    client.println F(");");
 
     for (int i = 2 * istep; i < plot_limit; i = i + istep)
     {
-      client.print ("l(");
+      client.print F("l(");
       client.print(10 + (10 * fERG_Now(time_stamp[i / 2] - time_stamp[0]) ) / iYFactor);
-      client.println (");");
+      client.println F(");");
     }
-    client.println ("ctx.stroke();");
+    client.println F("ctx.stroke();");
   }
   else
   {
-    plotInColour (4 * 12, String ("#0000FF"));
-    plotInColour (4 * 15, String ("#0088FF"));
-    plotInColour (4 * 12 * 2, String ("#8A2BE2"));
-    plotInColour (4 * 27, String ("#FF8C00"));
+    plotInColour (4 * 12, String F("#0000FF"));
+    plotInColour (4 * 15, String F("#0088FF"));
+    plotInColour (4 * 12 * 2, String F("#8A2BE2"));
+    plotInColour (4 * 27, String F("#FF8C00"));
     // 1024 rather than 1000
-    plotInColour (4 * 51, String ("#FF0000"));
+    plotInColour (4 * 51, String F("#FF0000"));
   }
 
-  client.println ("} </script>");
+  client.println F("} </script>");
 }
 
 
@@ -2496,17 +2496,17 @@ void sendReply ()
   Serial.println(MyInputString);
   if (!has_filesystem)
   {
-    sendHeader ("Card not working");
-    client.println ("SD Card failed");
+    sendHeader F("Card not working");
+    client.println F("SD Card failed");
     sendFooter();
     return ;
   }
   if (!bFileOK)
   {
-    sendHeader ("File not written");
-    client.print ("File write failed on SD Card : ");
+    sendHeader F("File not written");
+    client.print F("File write failed on SD Card : ");
     client.print (cFile);
-    client.println ("<BR>Disk full (512 files?) <BR>File already exists?<BR>To setup for another test please ");
+    client.println F("<BR>Disk full (512 files?) <BR>File already exists?<BR>To setup for another test please ");
 
     send_GoBack_to_Stim_page ();
     sendFooter();
@@ -2515,7 +2515,7 @@ void sendReply ()
     return ;
   }
 
-  int fPOS = MyInputString.indexOf ("filename=");
+  int fPOS = MyInputString.indexOf F("filename=");
   // asking for new sample
   if (fPOS > 0)
   {
@@ -2534,20 +2534,20 @@ void sendReply ()
     if (cP) cP = '\0';
     // now choose the colour
     int oldLED = usedLED ;
-    if (MyInputString.indexOf ("col=blue&") > 0 ) usedLED  = bluLED ; //
-    if (MyInputString.indexOf ("col=green&") > 0 ) usedLED  = grnled ; //
-    if (MyInputString.indexOf ("col=red&") > 0 ) usedLED  = redled ; //
-    if (MyInputString.indexOf ("col=fiber") > 0 ) usedLED  = fiberLED ; //
+    if (MyInputString.indexOf F("col=blue&") > 0 ) usedLED  = bluLED ; //
+    if (MyInputString.indexOf F("col=green&") > 0 ) usedLED  = grnled ; //
+    if (MyInputString.indexOf F("col=red&") > 0 ) usedLED  = redled ; //
+    if (MyInputString.indexOf F("col=fiber") > 0 ) usedLED  = fiberLED ; //
     //due4 is special
-    if (MyInputString.indexOf ("col=amber&") > 0 ) usedLED  = amberled ; //
-    if (MyInputString.indexOf ("col=cyan&") > 0 ) usedLED  = cyaled ; //
-    if (MyInputString.indexOf ("col=bvio&") > 0 ) usedLED  = bluvioletLED ; //
+    if (MyInputString.indexOf F("col=amber&") > 0 ) usedLED  = amberled ; //
+    if (MyInputString.indexOf F("col=cyan&") > 0 ) usedLED  = cyaled ; //
+    if (MyInputString.indexOf F("col=bvio&") > 0 ) usedLED  = bluvioletLED ; //
 
     //flash ERG or SSVEP?
-    bDoFlash = MyInputString.indexOf ("stim=fERG") > 0  ;
-    bIsSine = MyInputString.indexOf ("_SQ&") < 0  ; // -1 if not found
+    bDoFlash = MyInputString.indexOf F("stim=fERG") > 0  ;
+    bIsSine = MyInputString.indexOf F("_SQ&") < 0  ; // -1 if not found
 
-    int ibrPos  = MyInputString.indexOf ("bri=") + 4;
+    int ibrPos  = MyInputString.indexOf F("bri=") + 4;
     brightness = atoi(cInput + ibrPos);
 
     // find filename
@@ -2555,8 +2555,8 @@ void sendReply ()
     // first check for overlong URLs
     if (sFile.indexOf("HTT") < 1)
     {
-      sendHeader ("Request too long");
-      client.print ("URL is too long : ");
+      sendHeader F("Request too long");
+      client.print F("URL is too long : ");
       client.print (MyInputString);
 
       send_GoBack_to_Stim_page ();
@@ -2565,7 +2565,7 @@ void sendReply ()
     }
     //Serial.println("  Position of filename= was:" + String(fPOS));
     //Serial.println(" Proposed saving filename " + sFile );
-    fPOS = sFile.indexOf (" ");  // or  & id filename is not the last paramtere
+    fPOS = sFile.indexOf F(" ");  // or  & id filename is not the last paramtere
     //Serial.println("  Position of blankwas:" + String(fPOS));
     sFile = sFile.substring(0, fPOS);
     while (sFile.length() > 8)
@@ -2575,12 +2575,12 @@ void sendReply ()
     }
     if (bDoFlash)
     {
-      sFile = sFile + (".ERG");
+      sFile = sFile + F(".ERG");
       exp_size = exp_size + (maxRepeats * data_block_size) ;
     }
     else
     {
-      sFile = sFile + (".SVP");
+      sFile = sFile + F(".SVP");
       exp_size = exp_size + (maxRepeats * maxContrasts * data_block_size) ;
     }
 
@@ -2593,10 +2593,10 @@ void sendReply ()
       //if file exists... ????
       if (fileExists(cFile))
       {
-        sendHeader ("File exists");
-        client.print ("File already exists on disk ( ");
+        sendHeader F("File exists");
+        client.print F("File already exists on disk ( ");
         client.print (cFile);
-        client.print (" ) <BR> Click here to go back to the ");
+        client.print F(" ) <BR> Click here to go back to the ");
 
         send_GoBack_to_Stim_page ();
         sendFooter();
@@ -2621,7 +2621,7 @@ void sendReply ()
       nRepeats = iThisContrast = 0 ; // ready to start again
       nWaits = nMaxWaits ;
       //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
-      sendHeader ("Sampling Complete!", "onload=\"init()\"") ;
+      sendHeader (F("Sampling Complete!"), F( "onload=\"init()\"")) ;
       client.print( "Sampling Now Complete <BR><BR>");
       client.print( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " size: ");
       client.print(wfile.size());
@@ -2632,13 +2632,13 @@ void sendReply ()
       if (bDoFlash)
       {
         String sPicture = sFile;
-        sPicture.replace ("ERG", "ERP" );
+        sPicture.replace (F("ERG"), F("ERP" ));
         client.print("<A HREF= \"" + sPicture + "\" > (averaged picture) </A>" );
       }
       client.println("<BR><BR>");
-      client.println ("To setup for another test please ") ;
+      client.println F("To setup for another test please ") ;
       send_GoBack_to_Stim_page ();
-      client.println ("<BR><A HREF= \"dir=\"  > Full directory</A> <BR><BR>");
+      client.println F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR><BR>");
       if (bDoFlash)
       {
         sendGraphic();
@@ -2658,7 +2658,7 @@ void sendReply ()
   }
 
   // show directory
-  fPOS = MyInputString.indexOf ("dir=");
+  fPOS = MyInputString.indexOf F("dir=");
   Serial.println("  Position of dir was:" + String(fPOS));
   if (fPOS > 0)
   {
@@ -2667,28 +2667,28 @@ void sendReply ()
   }
 
   //light up
-  fPOS = MyInputString.indexOf ("white/");
+  fPOS = MyInputString.indexOf F("white/");
   if (fPOS > 0)
   {
     goColour(255, true) ;
     return ;
   }
 
-  fPOS = MyInputString.indexOf ("amber/");
+  fPOS = MyInputString.indexOf F("amber/");
   if (fPOS > 0)
   {
     //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
     goColour(0, 0, 0, 255, 0, 0, 0, true) ;
     return ;
   }
-  fPOS = MyInputString.indexOf ("cyan/");
+  fPOS = MyInputString.indexOf F("cyan/");
   if (fPOS > 0)
   {
     //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
     goColour(0, 0, 0, 0, 0, 0, 255, true) ;
     return ;
   }
-  fPOS = MyInputString.indexOf ("blueviolet/");
+  fPOS = MyInputString.indexOf F("blueviolet/");
   if (fPOS > 0)
   {
     //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
@@ -2696,33 +2696,33 @@ void sendReply ()
     return ;
   }
 
-  fPOS = MyInputString.indexOf ("red/");
+  fPOS = MyInputString.indexOf F("red/");
   if (fPOS > 0)
   {
     goColour(255, 0, 0, 0, true) ;
     return ;
   }
-  fPOS = MyInputString.indexOf ("blue/");
+  fPOS = MyInputString.indexOf F("blue/");
   if (fPOS > 0)
   {
     goColour(0, 0, 255, 0, true) ;
 
     return ;
   }
-  fPOS = MyInputString.indexOf ("green/");
+  fPOS = MyInputString.indexOf F("green/");
   if (fPOS > 0)
   {
     goColour(0, 255, 0, 0, true) ;
     return ;
   }
-  fPOS = MyInputString.indexOf ("black/");
+  fPOS = MyInputString.indexOf F("black/");
   if (fPOS > 0)
   {
-    //    Serial.println ("off");
+    //    Serial.println F("off");
     goColour(0, true) ;
     return ;
   }
-  fPOS = MyInputString.indexOf ("fiber/");
+  fPOS = MyInputString.indexOf F("fiber/");
   if (fPOS > 0)
   {
     goColour(0, 0, 0, 255, true) ;
@@ -2730,26 +2730,26 @@ void sendReply ()
   }
 
   // a file is requested...
-  fPOS = MyInputString.indexOf (".SVP");
+  fPOS = MyInputString.indexOf F(".SVP");
   if (fPOS == -1)
   {
-    fPOS = MyInputString.indexOf (".SVV");
+    fPOS = MyInputString.indexOf F(".SVV");
   }
   if (fPOS == -1)
   {
-    fPOS = MyInputString.indexOf (".ERG");
+    fPOS = MyInputString.indexOf F(".ERG");
   }
   if (fPOS == -1)
   {
-    fPOS = MyInputString.indexOf (".ERP");
+    fPOS = MyInputString.indexOf F(".ERP");
   }
   if (fPOS == -1)
   {
-    fPOS = MyInputString.indexOf (".CSV");
+    fPOS = MyInputString.indexOf F(".CSV");
   }
   if (fPOS == -1)
   {
-    fPOS = MyInputString.indexOf ("/");
+    fPOS = MyInputString.indexOf F("/");
   }
   //Serial.println("  Position of .SVP was:" + String(fPOS));
   if (fPOS > 0)
@@ -2760,36 +2760,37 @@ void sendReply ()
 #endif
 
     // requested a file...
-    fPOS = MyInputString.indexOf ("/");
+    fPOS = MyInputString.indexOf F("/");
     String sFile = MyInputString.substring(fPOS + 1); // ignore the leading /
-    Serial.println(" Proposed filename " + sFile );
-    fPOS = sFile.indexOf (" HTTP/");
+    Serial.print F(" Proposed filename " );
+    Serial.println ( sFile );
+    fPOS = sFile.indexOf F(" HTTP/");
     sFile = sFile.substring(0, fPOS);
     Serial.println(" Proposed filename now" + sFile + ";");
 
-    if (MyInputString.indexOf (".ERP") > 0)
+    if (MyInputString.indexOf F(".ERP") > 0)
     {
-      sFile.replace((".ERP"), (".ERG"));
+      sFile.replace((".ERP"), F(".ERG"));
       sFile.toCharArray(cFile, 29); // adds terminating null
       Serial.print (sFile);
       doplotFile() ;
       return ;
     }
-    if (MyInputString.indexOf (".SVV") > 0)
+    if (MyInputString.indexOf F(".SVV") > 0)
     {
-      sFile.replace((".SVV"), (".SVP"));
+      sFile.replace( F(".SVV"), F(".SVP"));
       sFile.toCharArray(cFile, 29); // adds terminating null
       doFFTFile(cFile, true) ;
       return;
     }
-    if ((MyInputString.indexOf (".csv") > 0) || (MyInputString.indexOf (".CSV") > 0))
+    if ((MyInputString.indexOf F(".csv") > 0) || (MyInputString.indexOf F(".CSV") > 0))
     {
       Serial.println("csv found");
       sFile.toCharArray(cFile, 29); // adds terminating null
       doreadSummaryFile(cFile) ;
       return ;
     }
-    if ((MyInputString.indexOf (".ERG") > 0) || (MyInputString.indexOf (".SVP") > 0))
+    if ((MyInputString.indexOf F(".ERG") > 0) || (MyInputString.indexOf F(".SVP") > 0))
     {
       sFile.toCharArray(cFile, 29); // adds terminating null
       doreadFile(cFile) ;
@@ -2797,14 +2798,14 @@ void sendReply ()
 
     }
     // robots.txt
-    if (MyInputString.indexOf ("robots.txt") > 0)
+    if (MyInputString.indexOf F("robots.txt") > 0)
     {
       client.println("welcome to robots!");
       return ;
     }
     //
     //    // otherwise we'll assume its a directory...
-    //    sFile = sFile + ("/");
+    //    sFile = sFile + F("/");
     //    serve_dir(sFile);
     //    return ;
   }
@@ -2831,7 +2832,7 @@ void loop()
 
   client = server.available();
   if (client) {
-    Serial.println ("new client");
+    Serial.println F("new client");
     MyInputString = "";
     // an http request ends with a blank line
     while (client.connected()) {
@@ -2854,11 +2855,11 @@ void loop()
 
           // you're starting a new line
           // see if we need to save the old one
-          if (sTmp.indexOf ("GET") >= 0)
+          if (sTmp.indexOf F("GET") >= 0)
           {
             MyInputString = sTmp;
           }
-          int iTmp = sTmp.indexOf ("Referer:") ;
+          int iTmp = sTmp.indexOf F("Referer:") ;
           sTmp = "";
 
           currentLineIsBlank = true;
