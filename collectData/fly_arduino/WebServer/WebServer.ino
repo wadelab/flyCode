@@ -319,7 +319,7 @@ void printTwoDigits(char * p, uint8_t v);
 void printDirectory(String s);
 void webTime ();
 void addSummary ();
-void doplotFile (const char * c);
+void doplotFile ();
 void doFFTFile (const char * c, bool bNeedHeadFooter);
 void doreadFile (const char * c);
 void doreadSummaryFile (const char * c);
@@ -1619,11 +1619,12 @@ int DayOfWeek (int d, int m, int y)
 //}
 
 
-void doplotFile (const char * c)
+void doplotFile ()
 {
-  String Sc = (c);
+
+  String Sc ; //= (c);
   Sc = String (("Plotting ")) + Sc ;
-  sendHeader (Sc, "onload=\"init()\"") ;
+  sendHeader ("plotting", "onload=\"init()\"") ;
   //based on doReadFile...
 
   //String dataString ;
@@ -1631,13 +1632,13 @@ void doplotFile (const char * c)
   cPtr = (unsigned char *) erg_in ;
 
   Serial.print ("trying to open:");
-  Serial.println (c);
+  Serial.println (cFile);
   if (file) file.close();
-  file = SD.open( c, FILE_READ);
+  file = SD.open( cFile, FILE_READ);
   if (!file)
   {
     client.println ("Error opening file ");
-    client.println(c);
+    client.println(cFile);
     sendFooter();
     return ;
   }
@@ -1650,7 +1651,7 @@ void doplotFile (const char * c)
   if (iBytesRead < iBytesRequested)
   {
     client.println ("Error reading header data in file ");
-    client.println(c);
+    client.println(cFile);
     sendFooter();
     return ;
   }
@@ -1661,15 +1662,16 @@ void doplotFile (const char * c)
   // test if its an ERG
   //boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
   client.print("Download file <a HREF=\"");
-  client.print(c);
+  client.print(cFile);
   client.print("\">");
-  client.print(c);
+  client.print(cFile);
   client.println("</a><BR>");
 
   // now on to the data
   int nBlocks = 0;
-  //unsigned int time_stamp2 [max_data];
-  int erg_in2 [max_data] ;
+
+  // make this static otherwise the ESP overflows the tiny little stack
+  static int erg_in2 [max_data] ;
 
   for (int i = 0; i < max_data; i++)
   {
@@ -1718,7 +1720,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   unsigned char * cPtr;
   cPtr = (unsigned char *) erg_in ;
   int iOldContrast ;
-  int erg_in2 [max_data] ;
+  static int erg_in2 [max_data] ;
   memset (erg_in2, 0, sizeof (int) * max_data);
 
   Serial.print ("trying to open:");
@@ -1726,21 +1728,6 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   if (file) file.close();
   file = SD.open( c, FILE_READ);
 
-  //  // Content-Length: 1000000 [size in bytes FIX
-  //  // Last-Modified: Sat, 28 Nov 2009 03:50:37 GMT
-  //  // make erg_in buffer do the dirty work of getting the date...
-  //  dir_t  dE;
-  //  if (file.dirEntry (&dE))
-  //  {
-  //    Serial.println ("file date recovered") ;
-  //  }
-  //  else
-  //  {
-  //    Serial.println ("file date not recovered") ;
-  //  }
-  //  gmdate ( dE );
-  //  Serial.print ("Last modified is:");
-  //  Serial.println( cPtr ) ;
   if (bNeedHeadFooter) sendHeader(Sc, "onload=\"init()\"", true /*, cPtr*/ ); //FIX - get date out of file header
 
   int iBytesRequested, iBytesRead;
@@ -1912,7 +1899,7 @@ void doreadFile ( char * c)
       client.print(time_stamp[i]);
       client.print ( ", ");
       if (bERG)
-      { 
+      {
         client.print( fERG_Now (time_stamp[i] - time_stamp[0] ) );
       }
       else
@@ -2106,7 +2093,7 @@ void StartTo_collect_Data ()
     nRepeats ++;
     for (int i = 0; i < max_data + presamples; i++)
     {
-      stimvalue[i] = fERG_Now (i-presamples);
+      stimvalue[i] = fERG_Now (i - presamples);
     }
     startTimer(500);
   }
@@ -2484,7 +2471,7 @@ void sendGraphic(bool plot_stimulus)
     for (int i = 2 * istep; i < plot_limit; i = i + istep)
     {
       client.print ("l(");
-      client.print(10 + (10 * fERG_Now(time_stamp[i/2] - time_stamp[0]) ) / iYFactor);
+      client.print(10 + (10 * fERG_Now(time_stamp[i / 2] - time_stamp[0]) ) / iYFactor);
       client.println (");");
     }
     client.println ("ctx.stroke();");
@@ -2767,6 +2754,11 @@ void sendReply ()
   //Serial.println("  Position of .SVP was:" + String(fPOS));
   if (fPOS > 0)
   {
+
+#ifdef ESP8266
+    delay(1);
+#endif
+
     // requested a file...
     fPOS = MyInputString.indexOf ("/");
     String sFile = MyInputString.substring(fPOS + 1); // ignore the leading /
@@ -2779,7 +2771,8 @@ void sendReply ()
     {
       sFile.replace((".ERP"), (".ERG"));
       sFile.toCharArray(cFile, 29); // adds terminating null
-      doplotFile(cFile) ;
+      Serial.print (sFile);
+      doplotFile() ;
       return ;
     }
     if (MyInputString.indexOf (".SVV") > 0)
@@ -2898,9 +2891,9 @@ void do_fft()
   // FFT_SIZE IS DEFINED in Header file Radix4.h
   // #define   FFT_SIZE           1024
 
-  int         f_r[FFT_SIZE]   = { 0};
-  int         f_i[FFT_SIZE]   = { 0};
-  int         out[FFT_SIZE / 2]     = { 0};     // Magnitudes
+static int         f_r[FFT_SIZE]   = { 0};
+static   int         f_i[FFT_SIZE]   = { 0};
+static   int         out[FFT_SIZE / 2]     = { 0};     // Magnitudes
 
   Radix4     radix;
   for ( uint16_t i = 0, k = (NWAVE / FFT_SIZE); i < FFT_SIZE; i++ )
