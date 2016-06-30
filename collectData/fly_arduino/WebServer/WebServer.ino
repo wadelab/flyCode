@@ -698,24 +698,8 @@ void sendError (const String & sError)
 void send_GoBack_to_Stim_page ()
 {
   client.println ("<A HREF=\"") ;
-  //  if (MyReferString != String("131"))
-  //  {
-  //
-  //    //    client.println (" <script>");
-  //    //    client.println ("function goBack() ");
-  //    //    client.println ("{ window.history.back() }");
-  //    //    client.println ("</script>");
-  //
-  //    client.println (MyReferString) ;
-  //    client.println ("\"" );
-  //  }
-  //  //    Serial.print("My reference is :");
-  //  //    Serial.println (MyReferString) ;
-  //  else
-  //  {
   // i think this migth work everywhere with firefox > 31 - seems to work in Safari too
   client.print ("javascript:void(0)\" onclick=\"history.back(); ") ;
-  //  }
   client.println ("\">the stimulus selection form</A>  <BR>");
 }
 
@@ -813,15 +797,7 @@ void run_graph()
 
   myGraphData[iIndex] = sensorReading * 5 ;
   iIndex ++ ;
-  //  if (iIndex > max_graph_data / 10 && iIndex < max_graph_data / 2)
-  //  {
-  //    analogWrite(bluLED, 255);
-  //  }
-  //  else
-  //  {
-  //    analogWrite(bluLED, 0);
-  //  }
-
+ 
   sendHeader ("Graph of last sweep", "onload=\"init()\"") ;
   client.println ("<script>");
 
@@ -875,19 +851,6 @@ void run_graph()
   }
   client.print ("ctx.strokeStyle=\"blue\";");
   client.println ("ctx.stroke();");
-
-  //  //draw stimulus...
-  //  client.print ("ctx.moveTo(");
-  //  client.print ((max_graph_data / 10) * 20);
-  //  client.print (",30);");
-  //
-  //  client.print ("ctx.lineTo(");
-  //  client.print (max_graph_data / 2 * 20);
-  //  client.print (",30);");
-  //
-  //  client.println ("ctx.strokeStyle=\"blue\";");
-  //  //              client.println("ctx.lineWidth=5;");
-  //  client.println ("ctx.stroke();");
   client.println ("}");
 
   client.println ("</script>");
@@ -911,28 +874,6 @@ void printTwoDigits(char * p, uint8_t v)
 
 }
 
-//code to print date...
-//void myPrintFatDateTime(const dir_t & pFile)
-//{
-//  // write this as a string to erg_in
-//  char * pErg_in = (char * ) erg_in ;
-//  erg_in [0] = 0;
-//
-//  strcat_P(pErg_in, PSTR("  "));
-//  itoa( FAT_YEAR(pFile.lastWriteDate), pErg_in + 1, 10);
-//  strcat_P(pErg_in, PSTR("-"));
-//  printTwoDigits(pErg_in + strlen(pErg_in) , FAT_MONTH(pFile.lastWriteDate));
-//  strcat_P(pErg_in, PSTR("-"));
-//  printTwoDigits(pErg_in + strlen(pErg_in) , FAT_DAY(pFile.lastWriteDate));
-//  strcat_P(pErg_in, PSTR(" "));
-//  printTwoDigits(pErg_in + strlen(pErg_in) , FAT_HOUR(pFile.lastWriteTime));
-//  strcat_P(pErg_in, PSTR(":"));
-//  printTwoDigits(pErg_in + strlen(pErg_in) , FAT_MINUTE(pFile.lastWriteTime));
-//  strcat_P(pErg_in, PSTR(":"));
-//  printTwoDigits(pErg_in + strlen(pErg_in) , FAT_SECOND(pFile.lastWriteTime));
-//  strcat_P(pErg_in, PSTR(" "));
-//  client.print(pErg_in);
-//}
 
 
 void printDirectory(String s)
@@ -950,13 +891,10 @@ void printDirectory(String s)
 #ifdef ESP8266
   bool bNext ;
 
-  //dir.rewindDirectory();
   int iFiles = 0 ;
   bNext =  dir.next();
   while (bNext)
   {
-    //    if (!entry.isDirectory())
-    //    {
     File entry = dir.openFile("r");
     Serial.println(entry.name());
     strncpy (sArray + (iFiles * 15) , entry.name(), sizeof (entry)) ;
@@ -1025,90 +963,11 @@ void printDirectory(String s)
       client.print ("</a> ");
     }
 
-
     client.println ("</li>");
     iFiles -- ;
   }
 
-
-
-  //  client.println ();
-  //  client.println ("<ul>");
-  //
-  //  Serial.println("dir done, s is :" + s);
-  //
-  //
-  //  s = String("/") + s + String("/") ;
-  //  s.replace ("//", "/");
-  //  s.replace ("//", "/");
-  //  Serial.println("string replace done, s is :" + s);
-  //
-  //  for (int iff = iFiles; iff--; iff >= 0)
-  //  {
-  //    // now print them out in reverse order
-  //
-  //    char * p_name = pAll[iff].c;
-  //    Serial.println(p_name);
-  //
-  //    // print any indent spaces
-  //    client.print ("<li><a href=\"");
-  //    if (s.length() > 1) client.print (s);
-  //    client.print ("/");
-  //    client.print(p_name);
-  //    client.print ("\">");
-  //    client.print(p_name);
-  //    client.print ("</a> ");
-  //
-  //
-  //    /////////////////////////////// now put in a link for a picture
-  //    if (strlen (p_name) == 12)
-  //    {
-  //      if (char(p_name[11]) == 'G')
-  //      {
-  //        // print any indent spaces
-  //        client.print (" <a href=\"");
-  //        if (s.length() > 1) client.print (s);
-  //        for (uint8_t i = 0; i < 11; i++)
-  //        {
-  //          client.print(char(p_name[i]));
-  //        }
-  //        client.print ("P\"> (picture)</a>");
-  //        ///////////////////////////////
-  //      }
-  //      if (char(p_name[11]) == 'P')
-  //      {
-  //        // print any indent spaces
-  //        client.print (" <a href=\"");
-  //        if (s.length() > 1) client.print (s);
-  //        client.print ("/");
-  //        for (uint8_t i = 0; i < 11; i++)
-  //        {
-  //          client.print(char(p_name[i]));
-  //        }
-  //        client.print ("V\"> (fft (30,30))</a>");
-  //        ///////////////////////////////
-  //      }
-  //    }
-  //
-  //    ////////////////////////////////////////
-  //
-  //    if (pAll[iff].i == 0)
-  //    {
-  //      client.print('/');
-  //    }
-  //    else
-  //      // print size
-  //    {
-  //      //myPrintFatDateTime(p); FIX
-  //      client.print (" size: ");
-  //      client.print(pAll[iff].i);
-  //
-  //    }
-  //    client.println ("</li>");
-  //  }
   client.println ("</ul>");
-
-
 
 }
 
@@ -1286,10 +1145,7 @@ bool file_time (char * cIn)
 
 void addSummary ()
 {
-  //  Serial.print ("summarising  C:R ");
-  //  Serial.print (iThisContrast);
-  //  Serial.print (":");
-  //  Serial.println (nRepeats);
+
   int iOffset = 0;
   int kk = 0 ;
   if (bDoFlash)
@@ -1366,13 +1222,6 @@ void addSummary ()
     // restore erg
     for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
   }
-
-  //  for (int ii = 0; ii < 14; ii ++ )
-  //  {
-  //    Serial.print (pSummary[ii]);
-  //    Serial.print (",");
-  //  }
-  //  Serial.println();
 }
 
 bool writeSummaryFile(const char * cMain)
@@ -1426,16 +1275,7 @@ bool writeSummaryFile(const char * cMain)
     Serial.flush();
     return false;
   }
-  //
-  //    getRealTime();
-  //
-  //    if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) {
-  //      Serial.println F("Error in timestamping file");
-  //      Serial.println (c);
-  //      Serial.flush();
-  //      file.close();
-  //      return false ;
-  //    }
+
   iBytesWritten = file.write((uint8_t *)cInput, MaxInputStr + 2);
   if (iBytesWritten <= 0)
   {
@@ -1485,8 +1325,6 @@ bool writeSummaryFile(const char * cMain)
     return false;
   }
 
-  // Serial.println F("File success: written bytes " + String(iBytesWritten));
-
   Serial.print (" More bytes writen to file.........");
   Serial.print  (c);
   Serial.print F(" size now ");
@@ -1525,12 +1363,6 @@ bool writeFile(char * c)
       return false;
     }
 
-    //    if (!file.timestamp(T_CREATE | T_ACCESS | T_WRITE, year, month, day, hour, myminute, second)) { FIX
-    //      Serial.println F ("Error in timestamping file");
-    //      Serial.println (c);
-    //      Serial.flush();
-    //      return false ;
-    //    }
     iBytesWritten = wfile.write((uint8_t *)cInput, MaxInputStr + 2);
     if (iBytesWritten <= 0)
     {
@@ -1542,7 +1374,6 @@ bool writeFile(char * c)
   }
   else // file exists, so just append...
   {
-    //  file = SD.open( c /*myName*/,  FILE_WRITE /*O_APPEND | O_WRITE*/) ; // on the Due we have to keep the file open...
     if ( !wfile )
     {
       Serial.println F ("Error in reopening file");
@@ -1604,48 +1435,6 @@ int DayOfWeek (int d, int m, int y)
   return (d += m < 3 ? y-- : y - 2, 23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) % 7   ;
 }
 
-////
-//void gmdate ( const dir_t & pFile)
-//{
-//  // Last-Modified: Tue, 15 Nov 1994 12:45:26 GMT
-//  const char * cDays PROGMEM = "Sun,Mon,Tue,Wed,Thu,Fri,Sat,Sun";
-//  const char * cMonths PROGMEM = "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec,";
-//  char * c  = (char *) erg_in ;
-//  erg_in [0] = 0;
-//  int iTmp ;
-//  int d = FAT_DAY(pFile.lastWriteDate) ;
-//  int m = FAT_MONTH(pFile.lastWriteDate) ;
-//  int y = FAT_YEAR(pFile.lastWriteDate) ;
-//
-//  iTmp = DayOfWeek (d, m, y) ;
-//  if (iTmp > 6) iTmp = 0;
-//  strncpy(c, cDays + iTmp * 4, 3); // tue
-//  c[3] = 0;
-//  strcat_P(c, PSTR(", "));
-//  //Serial.println (c);
-//
-//  printTwoDigits(c + strlen(c) , FAT_DAY(pFile.lastWriteDate));
-//  strcat_P (c, PSTR(" "));
-//
-//  int iLen = strlen(c);
-//  iTmp = m - 1;
-//  if (iTmp > 11) iTmp = 0;
-//  strncpy(c + iLen, cMonths + iTmp * 4, 3); //nov
-//  c[iLen + 3] = 0;
-//  //Serial.println (c);
-//
-//  strcat_P (c, PSTR(" "));
-//  itoa( y, c + strlen(c), 10);
-//  strcat_P (c, PSTR(" "));
-//  printTwoDigits(c + strlen(c) , FAT_HOUR(pFile.lastWriteTime));
-//  strcat_P (c, PSTR(":"));
-//  printTwoDigits(c + strlen(c) , FAT_MINUTE(pFile.lastWriteTime));
-//  strcat_P (c, PSTR(":"));
-//  printTwoDigits(c + strlen(c) , FAT_SECOND(pFile.lastWriteTime));
-//  strcat_P (c, PSTR(" GMT"));
-//
-//  //Serial.println( c );
-//}
 
 
 void doplotFile ()
@@ -2135,13 +1924,7 @@ void StartTo_collect_Data ()
     }
     startTimer(250);
   }
-  //  while (sampleCount < max_data)
-  //  {
-  //    Serial.print (sampleCount);
-  //    Serial.print (" ");
-  //    Serial.println (stimvalue[sampleCount + presamples]);
-  //    delay(500) ;
-  //  }
+
 }
 
 
@@ -2202,8 +1985,6 @@ void tidyUp_Collection()
 
 void flickerPage()
 {
-  //  Serial.print ("Sampling at :");
-  //  Serial.println (String(sampleCount));
 
   sendHeader ("Sampling", "onload=\"init()\"") ;
 
@@ -2904,7 +2685,7 @@ void loop()
           }
         }
       }
-    }
+    } 
     // give the web browser time to receive the data
     delay(1);
     // close the connection:
