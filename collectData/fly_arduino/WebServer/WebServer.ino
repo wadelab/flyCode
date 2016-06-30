@@ -1776,6 +1776,12 @@ void doreadSummaryFile (const char * c)
   }
   sendLastModified((char *)cPtr, (char *) c, true); // make this HTML so we can display it...
   // write out the string ....
+  char * pNext = strchr ((char *)cPtr, '&');
+  while (pNext)
+  {
+    * pNext = ',';
+    pNext = strchr ((char *)cPtr, '&');
+  }
   client.print((char *)cPtr);
   client.println("<BR>");
 
