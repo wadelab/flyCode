@@ -353,6 +353,7 @@ bool fileExists( char * c);
 bool collect_Data ();
 void AppendWaitReport ();
 double sgn (double x);
+void writehomepage () ;
 
 void analogReadResolution(int i)
 {
@@ -2838,7 +2839,8 @@ void sendReply ()
   }
 
   // default - any other url
-  run_graph() ;
+  writehomepage();
+  //run_graph() ;
   MyInputString = "";
 }
 
@@ -2886,7 +2888,7 @@ void loop()
           {
             MyInputString = sTmp;
           }
-          int iTmp = sTmp.indexOf ("Referer:") ;
+          int iTmp = sTmp.indexOf F("Referer:") ;
           sTmp = "";
 
           currentLineIsBlank = true;
@@ -2911,7 +2913,189 @@ void loop()
   }
 }
 
+void writehomepage ()
+{
+  client.print F("<!DOCTYPE html> <html> <head> <base href=\"http://");
+  client.print  (myIP);
+  client.println F("\">");
+client.println F("<script>");
+////////////////////////////////////
+ 
+ client.println F("function getTimeString() {");
+ client.println F("    var today=new Date();");
+ client.println F("    var yr=today.getFullYear();");
+ client.println F("    var mo=today.getMonth()+1;");
+ client.println F("    var d=today.getDate();");
+ client.println F("    var h=today.getHours();");
+ client.println F("    var m=today.getMinutes();");
+ client.println F("    var s = today.getSeconds();");
+ 
+ client.println F("    d = checkTime(d);");
+ client.println F("    m = checkTime(m);");
+ client.println F("    mo = checkTime(mo);");
+ client.println F("    h = checkTime(h);");
+ client.println F("    s = checkTime(s);");
+ client.println F("    return yr + \"_\" + mo + \"_\" + d + \"_\" + h + \"h\" + m + \"m\" + s ;");
+ client.println F("    }");
+ client.println F("    ");
+ client.println F("function startTime()");
+ client.println F("{");
+ client.println F("    document.getElementById('txt').innerHTML = getTimeString();");
+ client.println F("    var t = setTimeout(function(){startTime()},500);");
+ client.println F("}");
+ 
+ client.println F("function checkTime(i) {");
+ client.println F("    if (i<10) {i = \"0\" + i};  // add zero in front of numbers < 10");
+ client.println F("    return i;");
+ client.println F("}");
+ 
+ client.println F("function changeText() ");
+ client.println F("{");
+ client.println F("    x = document.getElementById(\"FileID\");");
+ client.println F("    x.value = getTimeString() ");
+ client.println F("}");
+ client.println F("</script>");
+ client.println F("</head>");
+ 
+ client.println F("<!-- body onload=\"startTime()\" -->");
+ client.println F("<body>");
+ 
+ client.println F("<div id=\"txt\">Arduino SSVEP starter page</div>");
+ client.println F("<BR>");
+ 
+ client.println F("<form action=\"/\">");
+ 
+ client.println F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"");
+ client.println F("cellspacing=\"2\">");
+ client.println F("<tbody>");
+ client.println F("<tr>");
+ client.println F("<td style=\"vertical-align: top; width = 33%\">GAL4:</td>");
+ client.println F("<td style=\"vertical-align: top; width = 33%\">UAS:</td>");
+ client.println F("<td style=\"vertical-align: top; width = 33%\">Age:</td>");
+ client.println F("</tr>");
+ client.println F("<tr>");
+ client.println F("<td style=\"vertical-align: top;\">");
+ client.println F("<select name=\"GAL4\" size = 6>");
+ client.println F("<option value=\"kcc_DHS\" selected>kcc DHS</option>");
+ client.println F("<option value=\"w_minus\" >w-</option>");
+ client.println F("</select><br>");
+ client.println F("</td>");
+ client.println F("<td style=\"vertical-align: top;\">");
+ client.println F("<select name=\"UAS\" size = 6>");
+ client.println F("<option value=\"homz\" selected >homozygote</option>");
+ client.println F("<option value=\"w_minus\" >w-</option>");
+ 
+ client.println F("</select><br>");
+ client.println F("</td>");
+ client.println F("<td style=\"vertical-align: top;\">");
+ client.println F("<select name=\"Age\" size = 6>");
+ client.println F("<option value=\"0_4\">4 hours</option>");
+ client.println F("<option value=\"1\" selected>1 day</option>");
+ client.println F("<option value=\"3\">3</option>");
+ client.println F("<option value=\"7\" >7</option>");
+ client.println F("<option value=\"-1\">unknown</option>");
+ client.println F("</select><br>");
+ client.println F("</td>");
+ client.println F("</tr>");
+ client.println F("</tbody>");
+ client.println F("</table>");
+ client.println F("<BR>");
+ client.println F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"");
+ client.println F("cellspacing=\"2\">");
+ client.println F("<tbody >");
+ client.println F("<tr>");
+ client.println F("<td style=\"vertical-align: top; width = 20%\"><BR>Sex: <BR></td>");
+ client.println F("<td style=\"vertical-align: top; width = 20%\"><BR>Organism: <BR></td>");
+ client.println F("<td style=\"vertical-align: top; width = 20%\"><BR>Colour</td>");
+ client.println F("<td style=\"vertical-align: top; width = 20%\"><BR>Protocol</td>");
+ client.println F("<td style=\"vertical-align: top; width = 20%\"><BR>Intensity</td>");
+ client.println F("</tr>");
+ client.println F("<tr>");
+ client.println F("<td style=\"vertical-align: top;\"><BR>");
+ client.println F("<input type=\"radio\" name=\"sex\" value=\"m\">Male<br>");
+ client.println F("<input type=\"radio\" checked name=\"sex\" value=\"f\">Female");
+ client.println F("<BR><br>");
+ client.println F("</td>");
+ client.println F("<td style=\"vertical-align: top;\"><BR> ");
+ client.println F("<input type=\"radio\" name=\"org\" value=\"fly\" checked>fly<br>");
+ client.println F("<input type=\"radio\" name=\"org\" value=\"zfish\">zebrafish<br>");
+ client.println F("<input type=\"radio\" name=\"org\" value=\"mouse\">mouse<br>");
+ client.println F("<input type=\"radio\" name=\"org\" value=\"locust\">locust<br>");
+ client.println F("<BR><br>");
+ client.println F("</td>");
+ 
+ client.println F("<td style=\"vertical-align: top;\"><BR>");
+ client.println F("<input type=\"radio\" name=\"col\" value=\"blue\" checked>blue<br>");
+ client.println F("<input type=\"radio\" name=\"col\" value=\"green\">green<br>");
+ client.println F("<input type=\"radio\" name=\"col\" value=\"red\">red<br>");
+ client.println F("</td>");
+ 
+ 
+ client.println F("<input type=\"hidden\" name=\"F1\" value=\"12\" checked> F1: 12 Hz -----");
+ client.println F("<input type=\"hidden\" name=\"F2\" value=\"15\" checked> F2: 15 Hz<br>");
+ 
+ 
+ client.println F("<td style=\"vertical-align: top;\"><BR>");
+ client.println F("<input type=\"radio\" name=\"stim\" value=\"fERG\" checked>flash ERG<br>");
+ client.println F("<input type=\"radio\" name=\"stim\" value=\"SSVEP\" >SSVEP (sine)<br>");
+ client.println F("<input type=\"radio\" name=\"stim\" value=\"SSVEP_SQ\" >SSVEP (square)<br>");
+ client.println F("</td>");
+ 
+ client.println F("<td style=\"vertical-align: top;\"><BR>");
+ client.println F("<input type=\"radio\" name=\"bri\" value=\"255\" checked >100%<br>");
+ client.println F("<input type=\"radio\" name=\"bri\" value=\"127\"  >50%<br>");
+ client.println F("<input type=\"radio\" name=\"bri\" value=\"64\"  >25%<br>");
+ client.println F("<input type=\"radio\" name=\"bri\" value=\"25\"  >10%<br>");
+ client.println F("<input type=\"radio\" name=\"bri\" value=\"13\"  >5%<br>");
+ client.println F("</td>");
+ 
+ client.println F("</tr>");
+ client.println F("</tbody>");
+ client.println F("</table>");
+ client.println F("<br>");
+ 
+ 
+ 
+ client.println F("<BR>");
+ client.println F("File name: <input id=\"FileID\" type=\"text\" name=\"filename\"> ");
+ client.println F("<button onclick=\"changeText()\" type=\"button\">Auto</button><br>");
+ 
+ client.println F("<BR><BR>");
+ client.println F("<input type=\"submit\" value=\"Submit\">");
+ 
+ client.println F("</form>");
+ 
+ client.println F("<BR><BR>");
+ 
+ client.println F("<table>");
+ client.println F("<tr><td>");
+ client.println F("<A href=\"/white/\">White</a>");
+ client.println F("</td>");
+ 
+ client.println F("<td bgcolor=\"Red\">");
+ client.println F("<A href=\"/red/\"><font color=\"White\">Red </font></a>");
+ client.println F("</td>");
+ 
+ client.println F("<td bgcolor=\"Green\">");
+ client.println F("<A href=\"/green/\"><font color=\"White\">Green </font></a>");
+ client.println F("</td>");
+ client.println F("<td bgcolor=\"Blue\">");
+ client.println F("<A href=\"/blue/\"><font color=\"White\">Blue </font></a>");
+ client.println F("</td>");
+ client.println F("<td bgcolor=\"Black\">");
+ client.println F("<A href=\"/black/\"><font color=\"White\">Black</font></a>");
+ client.println F("</td>");
+ 
+ client.println F("<td>");
+ client.println F("<a href=\"/\">Test setup</a>");
+ client.println F("</td><td>");
+ client.println F("<a href=\"/dir=\">Directory</a>");
+ client.println F("</table>");
+ client.println F("</body>");
+ client.println F("</html>");
+ 
 
+}
 void do_fft()
 {
 
