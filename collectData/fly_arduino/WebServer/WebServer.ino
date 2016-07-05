@@ -30,7 +30,7 @@
 #ifndef __wifisetup__
 
 
-#define due5
+#define due6
 #define USE_DHCP
 
 
@@ -106,9 +106,11 @@
 // is 10 on normal uno
 
 #include <SPI.h>
+#ifdef ESP8266
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#endif
 
 
 #ifndef __wifisetup__
@@ -200,7 +202,7 @@ const byte grnled = 0;
 const byte bluLED = 5;
 #endif
 
-const byte analogPin = 0 ;
+volatile byte analogPin = 0 ;
 const byte connectedPin = 1;
 byte iGainFactor = 1 ;
 bool bIsSine = true ;
@@ -2393,11 +2395,13 @@ void sendReply ()
     {
       sFile = sFile + (".ERG");
       exp_size = exp_size + (maxRepeats * data_block_size) ;
+      analogPin = 0 ;
     }
     else
     {
       sFile = sFile + (".SVP");
       exp_size = exp_size + (maxRepeats * maxContrasts * data_block_size) ;
+      analogPin = 3 ;
     }
 
     //Serial.println(" Proposed filename now" + sFile + ";");
