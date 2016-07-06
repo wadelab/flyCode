@@ -4,8 +4,8 @@
 //Digital pin 7 is used as a handshake pin between the WiFi shield and the Arduino, and should not be used
 // http://www.arduino.cc/playground/Code/AvailableMemory
 
-// Serial.print("Free heap:");
-// Serial.println(ESP.getFreeHeap(),DEC);
+// Serial.println F("Free heap:");
+// Serial.println (ESP.getFreeHeap(),DEC);
 
 
 // don't use pin 4 or 10-12 either...
@@ -397,7 +397,7 @@ void setup() {
   display.clearDisplay();
   display.display();
 
-#else  
+#else
 
   // ...
   pinMode(SS_SD_CARD, OUTPUT);
@@ -426,27 +426,15 @@ void setup() {
 
 #ifdef ESP8266
   // initialise Flash disk
-  Serial.println ("Now trying flash drive card ...\n");
+  Serial.println F("Now trying flash drive card ...\n");
 
 
 
   if (SPIFFS.begin())
   {
-    Serial.println ("Setting up flash drive  succeded OK...\n");
+    Serial.println F("Setting up flash drive  succeded OK...\n");
   }
-  else
-  {
-    Serial.println ("Setting up flash drive failed...\n");
-    if (SPIFFS.format()) // we may only need to use this once ??
-    {
-      Serial.println ("Formatting flash drive ok...\n");
-    }
-    else
-    {
-      Serial.println ("Formatting flash drive failed...\n");
-      has_filesystem = false ;
-    }
-  }
+
 #define SD SPIFFS
 #define MyDir Dir
 #define FILE_READ "r"
@@ -456,33 +444,27 @@ void setup() {
   {
     FSInfo fs_info;
     SPIFFS.info(fs_info);
-    Serial.print ("Disk size ");
+    Serial.print F("Disk size ");
     Serial.println (fs_info.totalBytes);
-    Serial.print ("used Bytes " );
-    Serial.println( fs_info.usedBytes);
+    Serial.print F("used Bytes " );
+    Serial.println ( fs_info.usedBytes);
     size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
-    Serial.print ("Free Bytes " );
-    Serial.println( fBytes);
-    if (fBytes < 41500)
-    {
-      // for now reformat the disk if there is no space !
-      // fix this - ask before formatting
-      SPIFFS.format();
-      Serial.println( "disk reformatted" );
-    }
+    Serial.print F("Free Bytes " );
+    Serial.println ( fBytes);
+
   }
 
 #else
   // initialize the SD card
-  Serial.println ("Setting up SD card...\n");
+  Serial.println F("Setting up SD card...\n");
 
   if (SD.begin(4))
   {
-    Serial.println ("SD card ok\n");
+    Serial.println F("SD card ok\n");
   }
   else
   {
-    Serial.println ("SD card failed\n");
+    Serial.println F("SD card failed\n");
     has_filesystem = false ;
   }
 #define MyDir File
@@ -502,8 +484,8 @@ void setup() {
   int status = WL_IDLE_STATUS;
   while ( status != WL_CONNECTED)
   {
-    Serial.print ("Attempting to connect to Network named: ");
-    Serial.println(ssid);                   // print the network name (SSID);
+    Serial.println F("Attempting to connect to Network named: ");
+    Serial.println (ssid);                   // print the network name (SSID);
 
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
     status = WiFi.begin(ssid, pass);
@@ -512,25 +494,25 @@ void setup() {
     myIP = WiFi.localIP();
   }
 #endif
-  Serial.print ("Connected ...");
+  Serial.println F("Connected ...");
   printWifiStatus();                        // you're connected now, so print out the status
 
   server.begin();                           // start the web server on port 80
 
 #else
   digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
-  Serial.println ("Setting up the Ethernet card...\n");
+  Serial.println F("Setting up the Ethernet card...\n");
   // start the Ethernet connection and the server:
 #ifdef USE_DHCP
   if (! EthernetShield.begin(mac))
   {
-    Serial.println ("DHCP failed, trying 172, 16, 1, 10");
+    Serial.println F("DHCP failed, trying 172, 16, 1, 10");
 #endif
 
     // Setup for eg an ethernet cable from Macbook to Arduino Ethernet shield
     // other macbooks or mac airs may assign differnt local networks
     //
-    Serial.println ("Please set your mac ethernet to Manually and '172.16.1.1'");
+    Serial.println F("Please set your mac ethernet to Manually and '172.16.1.1'");
     byte ip[] = { 172, 16, 1, 10 };
     EthernetShield.begin(mac, ip);
     bNoInternet = true ;
@@ -538,12 +520,12 @@ void setup() {
   };
 #endif
   server.begin();
-  Serial.print ("server is at ");
+  Serial.println F("server is at ");
   myIP = EthernetShield.localIP() ;
   dnsIP = EthernetShield.dnsServerIP();
-  Serial.println(myIP);
-  Serial.print(" using dns server ");
-  Serial.println(dnsIP);
+  Serial.println (myIP);
+  Serial.println F(" using dns server ");
+  Serial.println (dnsIP);
 
 #endif
 
@@ -594,32 +576,32 @@ void setupESPWiFi()
 
   for (int i = 0; i < AP_NameString.length(); i++)
     AP_NameChar[i] = AP_NameString.charAt(i);
-  Serial.print("Setting up access point 8266");
+  Serial.println F("Setting up access point 8266");
   Serial.println (AP_NameString);
   WiFi.softAP(AP_NameChar, WiFiAPPSK);
   myIP = WiFi.softAPIP() ;
-  Serial.print("ESP accesspoint :");
+  Serial.println F("ESP accesspoint :");
   Serial.print (myIP) ;
 }
 #endif
 
 void printWifiStatus() {
   // print the SSID of the network you're attached to:
-  Serial.print ("SSID: ");
-  Serial.println(WiFi.SSID());
+  Serial.println F("SSID: ");
+  Serial.println (WiFi.SSID());
 
   // print your WiFi shield's IP address:
 
-  Serial.print ("IP Address: ");
-  Serial.println(myIP);
+  Serial.println F("IP Address: ");
+  Serial.println (myIP);
 
   // print the received signal strength:
   long rssi = WiFi.RSSI();
-  Serial.print ("signal strength (RSSI):");
+  Serial.println F("signal strength (RSSI):");
   Serial.print (rssi);
-  Serial.println (" dBm");
+  Serial.println F(" dBm");
   // print where to go in a browser:
-  Serial.print ("To see this page in action, open a browser to http://");
+  Serial.println F("To see this page in action, open a browser to http://");
   Serial.println (myIP);
 }
 
@@ -667,14 +649,14 @@ void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML
     client.println ("Content-Type: text/plain");
   }
   //  if (pDate) Serial.print (pDate);
-  //  else Serial.print("boo");
+  //  else Serial.println F("boo");
   if (pDate)
   {
     client.print ("Last-Modified: ");
     client.println (pDate);
   }
   client.println ("Connection: close");  // the connection will be closed after completion of the response
-  client.println();
+  client.println ();
   if (isHTML)
   {
     client.println ("<!DOCTYPE HTML><html><title>");
@@ -719,7 +701,7 @@ void updateColour (const bool boolUpdatePage)
 
 void goColour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
 {
-  //Serial.println("colouring 1");
+  //Serial.println F("colouring 1");
 #ifdef ESP8266
   //0/1023 with high values giving least light
   analogWrite( redled, 1023 - 4 * r );
@@ -748,7 +730,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
     digitalWrite (i, w);
   }
 
-  //Serial.println("colouring 3");
+  //Serial.println F("colouring 3");
 }
 
 void goColour(const byte r, const bool boolUpdatePage)
@@ -778,15 +760,15 @@ void run_graph()
 
   // read the value of  analog input pin and turn light on if in mid-stimulus...
   short sensorReading = myReadADC(connectedPin);
-  //  Serial.print(" dc is : ");
-  //  Serial.print(sensorReading);
+  //  Serial.println F(" dc is : ");
+  //  Serial.print (sensorReading);
   //// seems to be about 50
 
   if (sensorReading < 2 || sensorReading > 4090)
   {
     //probably no contact
     digitalWrite (noContactLED, HIGH);
-    //    Serial.print("on");
+    //    Serial.println F("on");
   }
   else
   {
@@ -794,12 +776,12 @@ void run_graph()
   }
 
   //  int sensorReadinga = myReadADC(analogPin);
-  //  Serial.print(" ac is : ");
-  //  Serial.println(sensorReadinga);
+  //  Serial.println F(" ac is : ");
+  //  Serial.println (sensorReadinga);
 
   myGraphData[iIndex] = sensorReading * 5 ;
   iIndex ++ ;
- 
+
   sendHeader ("Graph of last sweep", "onload=\"init()\"") ;
   client.println ("<script>");
 
@@ -841,7 +823,7 @@ void run_graph()
     if (i < iIndex - 1 || i > iIndex + 1)
     {
       client.print ("l(");
-      client.print(myGraphData[i + 1] );
+      client.print (myGraphData[i + 1] );
       client.print (");");
     }
     else
@@ -884,7 +866,7 @@ void printDirectory(String s)
   int iLength = s.length();
   char cTmp  [iLength + 2];
   s.toCharArray(cTmp, iLength);
-  //Serial.println ("Now reading directry:" + s2 + String("!!"));
+  //Serial.println F("Now reading directry:" + s2 + String("!!"));
   MyDir dir = SD.openDir(cTmp) ;
   // if (!dir) return ; FIX
 
@@ -898,10 +880,10 @@ void printDirectory(String s)
   while (bNext)
   {
     File entry = dir.openFile("r");
-    Serial.println(entry.name());
+    Serial.println (entry.name());
     strncpy (sArray + (iFiles * 15) , entry.name(), sizeof (entry)) ;
     lArray [iFiles] = entry.size();
-    //Serial.println((char*)sArray + (iFiles * 15));
+    //Serial.println ((char*)sArray + (iFiles * 15));
     iFiles ++ ;
     //    }
     entry.close();
@@ -916,16 +898,27 @@ void printDirectory(String s)
   {
     if (!entry.isDirectory() && entry.name() [0] != '~')
     {
-      //Serial.println(entry.name());
+      //Serial.println (entry.name());
       strncpy (sArray + (iFiles * 15) , entry.name(), sizeof (entry)) ;
       lArray [iFiles] = entry.size();
-      //Serial.println((char*)sArray + (iFiles * 15));
+      //Serial.println ((char*)sArray + (iFiles * 15));
       iFiles ++ ;
     }
     entry.close();
     entry =  dir.openNextFile();
   }
 #endif
+
+    FSInfo fs_info;
+    SPIFFS.info(fs_info);
+    client.print F("Disk size ");
+    client.println (fs_info.totalBytes);
+    client.print F("<BR>used Bytes " );
+    client.println ( fs_info.usedBytes);
+    size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
+    client.print F("<BR>Free Bytes " );
+    client.println ( fBytes);
+    client.print F("<BR>");
 
   client.print (iFiles);
   client.print (" files found on disk  ");
@@ -947,7 +940,7 @@ void printDirectory(String s)
     if ('P' == * (sArray + (iFiles * 15) + 11 ))
     {
       * (sArray + (iFiles * 15) + 11) = 'V';
-      client.print ("      <a href=\"");
+      client.print ("  <a href=\"");
       client.print ((char*)sArray + (iFiles * 15));
       client.print ("\">");
       client.print ("(fft (30,30))");
@@ -958,7 +951,7 @@ void printDirectory(String s)
     if ('G' == * (sArray + (iFiles * 15) + 11 ))
     {
       * (sArray + (iFiles * 15) + 11) = 'P';
-      client.print ("      <a href=\"");
+      client.print ("  <a href=\"");
       client.print ((char*)sArray + (iFiles * 15));
       client.print ("\">");
       client.print ((char*)sArray + (iFiles * 15));
@@ -1026,7 +1019,7 @@ void webTime ()
     // Make an HTTP 1.1 request which is missing a Host: header
     // compliant servers are required to answer with an error that includes
     // a Date: header.
-    timeclient.print(("GET / HTTP/1.1 \r\n\r\n"));
+    timeclient.print (("GET / HTTP/1.1 \r\n\r\n"));
     delay (10);
 
     char buf[5];			// temporary buffer for characters
@@ -1068,7 +1061,7 @@ void webTime ()
       //month -- ; // zero based, I guess
 
     }
-    Serial.print("webtime:");
+    Serial.println F("webtime:");
     Serial.println (buf);
   }
   delay(10);
@@ -1083,8 +1076,8 @@ bool file_time (char * cIn)
 {
   year = 2016;
   second = myminute = hour = day = month = 1;
-  Serial.print("Doing filetime with:");
-  Serial.println(cIn);
+  Serial.println F("Doing filetime with:");
+  Serial.println (cIn);
   //GET /?GAL4=JoB&UAS=w&Age=-1&Antn=Ok&sex=male&org=fly&col=blue&F1=12&F2=15&stim=fERG&filename=2016_31_01_15h02m25 HTTP/1.1
 
   const int calcTimemax = 21;
@@ -1110,11 +1103,11 @@ bool file_time (char * cIn)
   *gPOS = 0;
 
 
-  Serial.print ("fpos is " );
+  Serial.println F("fpos is " );
   Serial.println (fPOS);
   Serial.flush();
   fPOS = fPOS + 9;
-  Serial.print ("fpos is now" );
+  Serial.println F("fpos is now" );
   Serial.println (fPOS);
   Serial.flush();
 
@@ -1126,13 +1119,13 @@ bool file_time (char * cIn)
 
   strcpy (calcTime, fPOS);
 
-  Serial.print ("time is:");
+  Serial.println F("time is:");
   for (int i = 0; i < calcTimemax - 1; i++)
   {
-    Serial.print( calcTime[i] );
+    Serial.print ( calcTime[i] );
     Serial.flush();
   }
-  Serial.println();
+  Serial.println ();
   // 2016_31_01_15h02m25
   year = atoi(calcTime);
   month = atoi(calcTime + 5);
@@ -1140,7 +1133,7 @@ bool file_time (char * cIn)
   hour = atoi(calcTime + 11);
   myminute = atoi(calcTime + 14);
   second = atoi(calcTime + 17) ;
-  Serial.print ("year is (if zero, atoi error):");
+  Serial.println F("year is (if zero, atoi error):");
   Serial.println (year) ;
   return (year != 0) ;
 }
@@ -1156,7 +1149,7 @@ void addSummary ()
     // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2");
 
     pSummary[iOffset + kk] = erg_in[1] ;
-    //    Serial.println(pSummary[iOffset + kk]);
+    //    Serial.println (pSummary[iOffset + kk]);
 
 
     for (int ii = max_data / 10; ii < max_data - 1; ii = ii + max_data / 10)
@@ -1191,8 +1184,8 @@ void addSummary ()
   {
     // fft
     iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 - 10;
-    //    Serial.print("Offset ");
-    //    Serial.println( iOffset );
+    //    Serial.println F("Offset ");
+    //    Serial.println ( iOffset );
 
     pSummary[iOffset + kk] = time_stamp[max_data - 1] ;
     kk ++ ;
@@ -1233,22 +1226,22 @@ bool writeSummaryFile(const char * cMain)
   char cTmp [iCharMaxHere]; // to hold text to write
   char * pDot = strchr ((char *)cMain, '.');
 
-  Serial.print ("Summarising filename ");
+  Serial.println F("Summarising filename ");
   Serial.println (cMain);
   Serial.flush();
   if (!pDot)
   {
-    Serial.print ("Error in filename");
+    Serial.println F("Error in filename");
     Serial.println (c);
     Serial.flush();
     return false ;
   }
-  Serial.print ("filename extension:");
+  Serial.println F("filename extension:");
   Serial.println (pDot);
   Serial.flush();
   int iBytes = pDot - cMain ;
 
-  Serial.print ("length of string:");
+  Serial.println F("length of string:");
   Serial.println (iBytes);
   Serial.flush();
 
@@ -1256,7 +1249,7 @@ bool writeSummaryFile(const char * cMain)
   c[iBytes] = 0;
   strcat (c, ".CSV");
 
-  Serial.print ("now writing summary: ");
+  Serial.println F("now writing summary: ");
   Serial.println (c);
   Serial.flush();
 
@@ -1264,7 +1257,7 @@ bool writeSummaryFile(const char * cMain)
 
   if (fileExists(c))
   {
-    Serial.println ("Error in opening file");
+    Serial.println F("Error in opening file");
     Serial.println (c);
     Serial.flush();
     return false; // FIX - send error to usrrs
@@ -1272,7 +1265,7 @@ bool writeSummaryFile(const char * cMain)
   file = SD.open(c, FILE_WRITE);
   if ( !file )
   {
-    Serial.println ("Error in opening file");
+    Serial.println F("Error in opening file");
     Serial.println (c);
     Serial.flush();
     return false;
@@ -1281,7 +1274,7 @@ bool writeSummaryFile(const char * cMain)
   iBytesWritten = file.write((uint8_t *)cInput, MaxInputStr + 2);
   if (iBytesWritten <= 0)
   {
-    Serial.println ("Error in writing header to file");
+    Serial.println F("Error in writing header to file");
     file.close();
     return false ;
   }
@@ -1296,7 +1289,7 @@ bool writeSummaryFile(const char * cMain)
   iBytesWritten = file.write((uint8_t *)cTmp, strlen(cTmp)) ;
   if (iBytesWritten <= 0)
   {
-    Serial.println ("Error in writing header to file");
+    Serial.println F("Error in writing header to file");
     file.close();
     return false ;
   }
@@ -1322,14 +1315,14 @@ bool writeSummaryFile(const char * cMain)
 
   if (iBytesWritten <= 0)
   {
-    Serial.println ("Error in writing erg data to file");
+    Serial.println F("Error in writing erg data to file");
     file.close();
     return false;
   }
 
-  Serial.print (" More bytes writen to file.........");
+  Serial.println F(" More bytes writen to file.........");
   Serial.print  (c);
-  Serial.print F(" size now ");
+  Serial.println F(" size now ");
   Serial.println (file.size());
   file.close();
   return true ;
@@ -1410,7 +1403,7 @@ bool writeFile(char * c)
     return false;
   }
 
-  // Serial.println("File success: written bytes " + String(iBytesWritten));
+  // Serial.println F("File success: written bytes " + String(iBytesWritten));
   cData = (char *) time_stamp;
   iBytesWritten = wfile.write((uint8_t *)cData, max_data * sizeof (unsigned int));
   if (iBytesWritten <= 0)
@@ -1418,9 +1411,9 @@ bool writeFile(char * c)
     Serial.println F ("Error in writing timing data to file");
     return false ;
   }
-  Serial.print (" More bytes writen to file.........");
+  Serial.println F(" More bytes writen to file.........");
   Serial.print  (c);
-  Serial.print (" size now ");
+  Serial.println F(" size now ");
   Serial.println (wfile.size());
   wfile.flush();
   return true ;
@@ -1451,14 +1444,14 @@ void doplotFile ()
   unsigned char * cPtr;
   cPtr = (unsigned char *) erg_in ;
 
-  Serial.print ("trying to open:");
+  Serial.println F("trying to open:");
   Serial.println (cFile);
   if (file) file.close();
   file = SD.open( cFile, FILE_READ);
   if (!file)
   {
     client.println ("Error opening file ");
-    client.println(cFile);
+    client.println (cFile);
     sendFooter();
     return ;
   }
@@ -1471,21 +1464,21 @@ void doplotFile ()
   if (iBytesRead < iBytesRequested)
   {
     client.println ("Error reading header data in file ");
-    client.println(cFile);
+    client.println (cFile);
     sendFooter();
     return ;
   }
 
   // write out the string ....
-  client.println((char *)cPtr);
-  client.println("<BR>");
+  client.println ((char *)cPtr);
+  client.println ("<BR>");
   // test if its an ERG
   //boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
-  client.print("Download file <a HREF=\"");
-  client.print(cFile);
-  client.print("\">");
-  client.print(cFile);
-  client.println("</a><BR>");
+  client.print ("Download file <a HREF=\"");
+  client.print (cFile);
+  client.print ("\">");
+  client.print (cFile);
+  client.println ("</a><BR>");
 
   // now on to the data
   int nBlocks = 0;
@@ -1543,7 +1536,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   static int erg_in2 [max_data] ;
   memset (erg_in2, 0, sizeof (int) * max_data);
 
-  Serial.print ("trying to open:");
+  Serial.println F("trying to open:");
   Serial.println (c);
   if (file) file.close();
   file = SD.open( c, FILE_READ);
@@ -1558,13 +1551,13 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   if (iBytesRead < iBytesRequested)
   {
     client.println ("Error reading header data in file ");
-    client.println(c);
+    client.println (c);
     return ;
   }
 
   // write out the string ....
-  client.print((char *)cPtr);
-  client.println("<BR>");
+  client.print ((char *)cPtr);
+  client.println ("<BR>");
 
   // now on to the data
   iBytesRequested = max_data * sizeof (int);
@@ -1577,13 +1570,13 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
     iBytesRead = file.read ((unsigned char *)time_stamp, iBytesRequested );
     nBlocks ++;
     // stop when mask and probe are both 30%
-    Serial.print("time ");
-    Serial.print(time_stamp[max_data - 1]);
-    Serial.print(" erg ");
-    Serial.println(erg_in[max_data - 1]);
+    Serial.println F("time ");
+    Serial.print (time_stamp[max_data - 1]);
+    Serial.println F(" erg ");
+    Serial.println (erg_in[max_data - 1]);
     if ( time_stamp[max_data - 1] == 30 && erg_in[max_data - 1] == 30 )
     {
-      Serial.print ("about to do FFT ");
+      Serial.println F("about to do FFT ");
       int m = millis();
       do_fft();
       // add to the average
@@ -1592,9 +1585,9 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
         erg_in2[ii] = erg_in2[ii] + erg_in[ii];
       }
       Serial.print (erg_in[48]);
-      Serial.print (" done FFT in");
-      Serial.print(millis() - m);
-      Serial.println (" milliseconds");
+      Serial.println F(" done FFT in");
+      Serial.print (millis() - m);
+      Serial.println F(" milliseconds");
     }
 
     //read next block
@@ -1611,7 +1604,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   Serial.print (erg_in[48]);
   // now plot data in erg_in
   sendGraphic(false);
-  Serial.println (" plotted FFT");
+  Serial.println F(" plotted FFT");
   if (bNeedHeadFooter) sendFooter ();
 
 }
@@ -1657,14 +1650,14 @@ void sendLastModified(char * cPtr, char * c, bool bIsHTML)
     printTwoDigits (dateString + iTmp, second);
     strcat (dateString, " GMT");
 
-    Serial.print("Last modified Date is");
+    Serial.println F("Last modified Date is");
     Serial.println (dateString);
 
     sendHeader(String(c), "", bIsHTML , dateString );
   }
   else
   {
-    Serial.println("Last modified date is unknown");
+    Serial.println F("Last modified date is unknown");
     sendHeader(String(c), "", bIsHTML );
   }
 }
@@ -1676,7 +1669,7 @@ void doreadFile ( char * c)
   cPtr = (unsigned char *) erg_in ;
   int iOldContrast ;
 
-  //Serial.print ("trying to open:");
+  //Serial.println F("trying to open:");
   //Serial.println (c);
   //if (file.isOpen()) file.close(); FIX
   file = SD.open( c, FILE_READ);
@@ -1689,15 +1682,15 @@ void doreadFile ( char * c)
   if (iBytesRead < iBytesRequested)
   {
     client.println ("Error reading header data in file ");
-    client.println(c);
+    client.println (c);
     return ;
   }
 
   sendLastModified((char *)cPtr, c, false);
 
   // write out the string ....
-  client.print((char *)cPtr);
-  client.println();
+  client.print ((char *)cPtr);
+  client.println ();
   // test if its an ERG
   boolean bERG = ( NULL != strstr ( (char *) cPtr, "stim=fERG&") ) ;
   bIsSine = ( NULL == strstr ((char *) cPtr, "stm=SQ") ) ;
@@ -1716,31 +1709,31 @@ void doreadFile ( char * c)
     for (int i = 0; i < max_data - 1; i++)
     {
       // make a string for assembling the data to log:
-      client.print(time_stamp[i]);
+      client.print (time_stamp[i]);
       client.print ( ", ");
       if (bERG)
       {
-        client.print( fERG_Now (time_stamp[i] - time_stamp[0] ) );
+        client.print ( fERG_Now (time_stamp[i] - time_stamp[0] ) );
       }
       else
       {
-        client.print(Get_br_Now(time_stamp[i],  time_stamp [max_data - 1], erg_in [max_data - 1]));
+        client.print (Get_br_Now(time_stamp[i],  time_stamp [max_data - 1], erg_in [max_data - 1]));
       }
       client.print (", ");
 
-      client.print(erg_in[i]);
-      client.println();
+      client.print (erg_in[i]);
+      client.println ();
     } //for
 
     // write out contrast
 
     client.print ( "-99, " );
 
-    client.print(time_stamp[max_data - 1]);
+    client.print (time_stamp[max_data - 1]);
     client.print ( ", " );
 
-    client.print(erg_in[max_data - 1]);
-    client.println();
+    client.print (erg_in[max_data - 1]);
+    client.println ();
 
     //read next block
     iBytesRequested = max_data * sizeof (int);
@@ -1759,7 +1752,7 @@ void doreadSummaryFile (const char * c)
   unsigned char * cPtr = NULL;
   cPtr = (unsigned char *) erg_in ;
 
-  Serial.print F("trying to open summary file:");
+  Serial.println F("trying to open summary file:");
   Serial.println (c);
   if (file) file.close();
   file = SD.open( c, FILE_READ);
@@ -1772,7 +1765,7 @@ void doreadSummaryFile (const char * c)
   if (iBytesRead < iBytesRequested)
   {
     client.println F("Error reading header data in file ");
-    client.println(c);
+    client.println (c);
     file.close();
     return ;
   }
@@ -1784,8 +1777,8 @@ void doreadSummaryFile (const char * c)
     * pNext = ',';
     pNext = strchr ((char *)cPtr, '&');
   }
-  client.print((char *)cPtr);
-  client.println("<BR>");
+  client.print ((char *)cPtr);
+  client.println ("<BR>");
 
   // inefficiently read the file a byte at a time, and send it to the client
   // replace \n with <BR>
@@ -1795,7 +1788,7 @@ void doreadSummaryFile (const char * c)
   {
     if (*cPtr == '\n')
     {
-      client.println("<BR>");
+      client.println ("<BR>");
     }
     else
     {
@@ -1877,7 +1870,7 @@ void TC3_Handler()
   if (sampleCount >= max_data - 1)
   {
     stopTimer();
-    Serial.println("Timer done");
+    Serial.println F("Timer done");
     tidyUp_Collection();
     return ;
   }
@@ -1902,7 +1895,7 @@ void TC3_Handler()
   if (sampleCount >= max_data - 1)
   {
     stopTimer();
-    Serial.println("Timer done");
+    Serial.println F("Timer done");
     tidyUp_Collection();
     return ;
   }
@@ -1981,11 +1974,11 @@ void tidyUp_Collection()
   }
   else
   {
-    Serial.print("File not written :");
-    Serial.println(cFile);
+    Serial.println F("File not written :");
+    Serial.println (cFile);
   }
   long mEnd = millis();
-  Serial.print("took AD ");
+  Serial.println F("took AD ");
   Serial.println (mEnd - mStart); // fERG: with timer driven this was exactly 2253 ms ( should be ~2248 )
 
 }
@@ -2065,10 +2058,10 @@ void AppendSSVEPReport()
 {
   client.print ("Acquired ") ;
   int iTmp = nRepeats * maxContrasts ; //- maxContrasts ;
-  Serial.print ("Acquired ");
+  Serial.println F("Acquired ");
   Serial.print (iTmp);
   iTmp = iTmp + iThisContrast ;
-  Serial.print (" really ");
+  Serial.println F(" really ");
   Serial.println (iTmp);
 
   client.print (iTmp);
@@ -2123,22 +2116,22 @@ void AppendSSVEPReport()
 
       int iStep = 2;
       client.print ("m(");
-      client.print(myGraphData[0] / 4 + 350);
+      client.print (myGraphData[0] / 4 + 350);
       client.print (");");
       for (int i = 1; i < 5 * max_graph_data - 2; i = i + iStep)
       {
         client.print ("l(");
-        client.print(myGraphData[i + iStep] / 4 + 350);
+        client.print (myGraphData[i + iStep] / 4 + 350);
         client.println (");");
       }
       client.println ("ctx.stroke();");
       client.print ("m(");
-      client.print(br_Now(time_stamp[0]) );
+      client.print (br_Now(time_stamp[0]) );
       client.println (");");
       for (int i = 1; i < 5 * max_graph_data - 2; i = i + iStep)
       {
         client.print ("l(");
-        client.print(br_Now(time_stamp[i + iStep]));
+        client.print (br_Now(time_stamp[i + iStep]));
         client.println (");");
       }
       client.println ("ctx.stroke(); }");
@@ -2190,16 +2183,16 @@ void plotInColour (int iStart, const String & str_col)
   // 4 ms per point 0.25 Hz per point, so 12 Hz expected at 48
   client.println ("ctx.beginPath();");
   client.print ("ctx.moveTo(");
-  client.print((iXFactor * iStart) / iXDiv );
+  client.print ((iXFactor * iStart) / iXDiv );
   client.print (",");
-  client.print(iBaseline - (10 * myGraphData[iStart]) / iYFactor);
+  client.print (iBaseline - (10 * myGraphData[iStart]) / iYFactor);
   client.println (");");
   for (int i = iStart + istep; i < iStart + 5; i = i + istep)
   {
     client.print ("ctx.lineTo(");
-    client.print((iXFactor * i) / iXDiv );
+    client.print ((iXFactor * i) / iXDiv );
     client.print (",");
-    client.print(iBaseline - (10 * myGraphData[i]) / iYFactor);
+    client.print (iBaseline - (10 * myGraphData[i]) / iYFactor);
     client.println (");");
   }
   client.print ("ctx.strokeStyle = '");
@@ -2267,14 +2260,14 @@ void sendGraphic(bool plot_stimulus)
   // move to start of line
   client.println ("ctx.beginPath();");
   client.print ("m(");
-  client.print(iBaseline - (10 * myGraphData[istep]) / iYFactor);
+  client.print (iBaseline - (10 * myGraphData[istep]) / iYFactor);
   client.println (");");
 
   //now join up the line
   for (int i = 2 * istep; i < plot_limit; i = i + istep)
   {
     client.print ("l(");
-    client.print(iBaseline - (10 * myGraphData[i]) / iYFactor);
+    client.print (iBaseline - (10 * myGraphData[i]) / iYFactor);
     client.println (");");
   }
   client.println ("ctx.stroke();");
@@ -2283,13 +2276,13 @@ void sendGraphic(bool plot_stimulus)
   {
     client.println ("ctx.beginPath();");
     client.print ("m(");
-    client.print(10 + (10 * fERG_Now(time_stamp[1] - time_stamp[0])) / iYFactor);
+    client.print (10 + (10 * fERG_Now(time_stamp[1] - time_stamp[0])) / iYFactor);
     client.println (");");
 
     for (int i = 2 * istep; i < plot_limit; i = i + istep)
     {
       client.print ("l(");
-      client.print(10 + (10 * fERG_Now(time_stamp[i / 2] - time_stamp[0]) ) / iYFactor);
+      client.print (10 + (10 * fERG_Now(time_stamp[i / 2] - time_stamp[0]) ) / iYFactor);
       client.println (");");
     }
     client.println ("ctx.stroke();");
@@ -2311,11 +2304,11 @@ void sendGraphic(bool plot_stimulus)
 void sendReply ()
 {
   int exp_size = MaxInputStr + 2 ;
-  Serial.println(MyInputString);
+  Serial.println (MyInputString);
   if (!has_filesystem)
   {
     sendHeader ("Card not working");
-    client.println ("SD Card failed");
+    client.println F("SD Card failed");
     sendFooter();
     return ;
   }
@@ -2381,15 +2374,15 @@ void sendReply ()
       sendFooter();
       return ;
     }
-    //Serial.println("  Position of filename= was:" + String(fPOS));
-    //Serial.println(" Proposed saving filename " + sFile );
+    //Serial.println F("  Position of filename= was:" + String(fPOS));
+    //Serial.println F(" Proposed saving filename " + sFile );
     fPOS = sFile.indexOf (" ");  // or  & id filename is not the last paramtere
-    //Serial.println("  Position of blankwas:" + String(fPOS));
+    //Serial.println F("  Position of blankwas:" + String(fPOS));
     sFile = sFile.substring(0, fPOS);
     while (sFile.length() > 8)
     {
       sFile = sFile.substring(1);
-      //Serial.println(" Proposed saving filename " + sFile );
+      //Serial.println F(" Proposed saving filename " + sFile );
     }
     if (bDoFlash)
     {
@@ -2404,7 +2397,7 @@ void sendReply ()
       analogPin = 3 ;
     }
 
-    //Serial.println(" Proposed filename now" + sFile + ";");
+    //Serial.println F(" Proposed filename now" + sFile + ";");
 
     sFile.toCharArray(cFile, 29); // adds terminating null
 
@@ -2427,8 +2420,8 @@ void sendReply ()
       //turn off any lights we have on...
       goColour(0, false);
     }
-    //Serial.print("repeats now ");
-    //Serial.println(nRepeats);
+    //Serial.println F("repeats now ");
+    //Serial.println (nRepeats);
 #ifdef ESP8266
     if (nRepeats >= maxRepeats)
 #else
@@ -2436,26 +2429,26 @@ void sendReply ()
 #endif
     {
       // done so tidy up
-      Serial.println("done and tidy up time");
+      Serial.println F("done and tidy up time");
       //turn off any lights we have on...
       nRepeats = iThisContrast = 0 ; // ready to start again
       nWaits = nMaxWaits ;
       //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
       sendHeader ("Sampling Complete!", "onload=\"init()\"") ;
-      client.print( "Sampling Now Complete <BR><BR>");
-      client.print( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " size: ");
-      client.print(wfile.size());
-      client.print(" bytes; expected size ");
-      client.print(exp_size);
+      client.print ( "Sampling Now Complete <BR><BR>");
+      client.print ( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " size: ");
+      client.print (wfile.size());
+      client.print (" bytes; expected size ");
+      client.print (exp_size);
       wfile.close() ;
       writeSummaryFile(cFile);
       if (bDoFlash)
       {
         String sPicture = sFile;
         sPicture.replace ("ERG", "ERP" );
-        client.print("<A HREF= \"" + sPicture + "\" > (averaged picture) </A>" );
+        client.print ("<A HREF= \"" + sPicture + "\" > (averaged picture) </A>" );
       }
-      client.println("<BR><BR>");
+      client.println ("<BR><BR>");
       client.println ("To setup for another test please ") ;
       send_GoBack_to_Stim_page ();
       client.println ("<BR><A HREF= \"dir=\"  > Full directory</A> <BR><BR>");
@@ -2479,10 +2472,22 @@ void sendReply ()
 
   // show directory
   fPOS = MyInputString.indexOf ("dir=");
-  Serial.println("  Position of dir was:" + String(fPOS));
+  //  Serial.println F("  Position of dir was:" + String(fPOS));
   if (fPOS > 0)
   {
     serve_dir("/") ;
+    return ;
+  }
+  fPOS = MyInputString.indexOf ("format");
+  if (fPOS > 0)
+  {
+    SPIFFS.format();
+    sendHeader ("disk reformatted");
+    client.print ("disk reformatted: <BR> Click here to go back to the ");
+
+    send_GoBack_to_Stim_page ();
+    Serial.println ( "disk reformatted" );
+    sendFooter ();
     return ;
   }
 
@@ -2538,7 +2543,7 @@ void sendReply ()
   fPOS = MyInputString.indexOf ("black/");
   if (fPOS > 0)
   {
-    //    Serial.println ("off");
+    //    Serial.println F("off");
     goColour(0, true) ;
     return ;
   }
@@ -2571,7 +2576,7 @@ void sendReply ()
   {
     fPOS = MyInputString.indexOf ("/");
   }
-  //Serial.println("  Position of .SVP was:" + String(fPOS));
+  //Serial.println F("  Position of .SVP was:" + String(fPOS));
   if (fPOS > 0)
   {
 
@@ -2582,10 +2587,10 @@ void sendReply ()
     // requested a file...
     fPOS = MyInputString.indexOf ("/");
     String sFile = MyInputString.substring(fPOS + 1); // ignore the leading /
-    Serial.println(" Proposed filename " + sFile );
+    //    Serial.println F(" Proposed filename " + sFile );
     fPOS = sFile.indexOf (" HTTP/");
     sFile = sFile.substring(0, fPOS);
-    Serial.println(" Proposed filename now" + sFile + ";");
+    //    Serial.println F(" Proposed filename now" + sFile + ";");
 
     if (MyInputString.indexOf (".ERP") > 0)
     {
@@ -2604,7 +2609,7 @@ void sendReply ()
     }
     if ((MyInputString.indexOf (".csv") > 0) || (MyInputString.indexOf (".CSV") > 0))
     {
-      Serial.println("csv found");
+      Serial.println F("csv found");
       sFile.toCharArray(cFile, 29); // adds terminating null
       doreadSummaryFile(cFile) ;
       return ;
@@ -2619,7 +2624,7 @@ void sendReply ()
     // robots.txt
     if (MyInputString.indexOf ("robots.txt") > 0)
     {
-      client.println("welcome to robots!");
+      client.println ("welcome to robots!");
       return ;
     }
     //
@@ -2652,7 +2657,7 @@ void loop()
 
   client = server.available();
   if (client) {
-    Serial.println ("new client");
+    Serial.println F("new client");
     MyInputString = "";
     // an http request ends with a blank line
     while (client.connected()) {
@@ -2670,7 +2675,7 @@ void loop()
 
         if (c == '\n')
         {
-          //Serial.print("Input string now " );
+          //Serial.println F("Input string now " );
           //Serial.println (sTmp);
 
           // you're starting a new line
@@ -2691,16 +2696,16 @@ void loop()
           if (sTmp.length() < MaxInputStr)
           {
             sTmp.concat(c);
-            //Serial.println(sTmp);
+            //Serial.println (sTmp);
           }
         }
       }
-    } 
+    }
     // give the web browser time to receive the data
     delay(1);
     // close the connection:
     client.stop();
-    //Serial.println("client disonnected: Input now:" + MyInputString + "::::");
+    //Serial.println F("client disonnected: Input now:" + MyInputString + "::::");
   }
 }
 
@@ -2708,183 +2713,125 @@ void writehomepage ()
 {
   client.print F("<!DOCTYPE html> <html> <head> <base href=\"http://");
   client.print  (myIP);
-  client.println F("\">");
-client.println F("<script>");
-////////////////////////////////////
- 
- client.println F("function getTimeString() {");
- client.println F("    var today=new Date();");
- client.println F("    var yr=today.getFullYear();");
- client.println F("    var mo=today.getMonth()+1;");
- client.println F("    var d=today.getDate();");
- client.println F("    var h=today.getHours();");
- client.println F("    var m=today.getMinutes();");
- client.println F("    var s = today.getSeconds();");
- 
- client.println F("    d = checkTime(d);");
- client.println F("    m = checkTime(m);");
- client.println F("    mo = checkTime(mo);");
- client.println F("    h = checkTime(h);");
- client.println F("    s = checkTime(s);");
- client.println F("    return yr + \"_\" + mo + \"_\" + d + \"_\" + h + \"h\" + m + \"m\" + s ;");
- client.println F("    }");
- client.println F("    ");
- client.println F("function startTime()");
- client.println F("{");
- client.println F("    document.getElementById('txt').innerHTML = getTimeString();");
- client.println F("    var t = setTimeout(function(){startTime()},500);");
- client.println F("}");
- 
- client.println F("function checkTime(i) {");
- client.println F("    if (i<10) {i = \"0\" + i};  // add zero in front of numbers < 10");
- client.println F("    return i;");
- client.println F("}");
- 
- client.println F("function changeText() ");
- client.println F("{");
- client.println F("    x = document.getElementById(\"FileID\");");
- client.println F("    x.value = getTimeString() ");
- client.println F("}");
- client.println F("</script>");
- client.println F("</head>");
- 
- client.println F("<!-- body onload=\"startTime()\" -->");
- client.println F("<body>");
- 
- client.println F("<div id=\"txt\">Arduino SSVEP starter page</div>");
- client.println F("<BR>");
- 
- client.println F("<form action=\"/\">");
- 
- client.println F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"");
- client.println F("cellspacing=\"2\">");
- client.println F("<tbody>");
- client.println F("<tr>");
- client.println F("<td style=\"vertical-align: top; width = 33%\">GAL4:</td>");
- client.println F("<td style=\"vertical-align: top; width = 33%\">UAS:</td>");
- client.println F("<td style=\"vertical-align: top; width = 33%\">Age:</td>");
- client.println F("</tr>");
- client.println F("<tr>");
- client.println F("<td style=\"vertical-align: top;\">");
- client.println F("<select name=\"GAL4\" size = 6>");
- client.println F("<option value=\"kcc_DHS\" selected>kcc DHS</option>");
- client.println F("<option value=\"w_minus\" >w-</option>");
- client.println F("</select><br>");
- client.println F("</td>");
- client.println F("<td style=\"vertical-align: top;\">");
- client.println F("<select name=\"UAS\" size = 6>");
- client.println F("<option value=\"homz\" selected >homozygote</option>");
- client.println F("<option value=\"w_minus\" >w-</option>");
- 
- client.println F("</select><br>");
- client.println F("</td>");
- client.println F("<td style=\"vertical-align: top;\">");
- client.println F("<select name=\"Age\" size = 6>");
- client.println F("<option value=\"0_4\">4 hours</option>");
- client.println F("<option value=\"1\" selected>1 day</option>");
- client.println F("<option value=\"3\">3</option>");
- client.println F("<option value=\"7\" >7</option>");
- client.println F("<option value=\"-1\">unknown</option>");
- client.println F("</select><br>");
- client.println F("</td>");
- client.println F("</tr>");
- client.println F("</tbody>");
- client.println F("</table>");
- client.println F("<BR>");
- client.println F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"");
- client.println F("cellspacing=\"2\">");
- client.println F("<tbody >");
- client.println F("<tr>");
- client.println F("<td style=\"vertical-align: top; width = 20%\"><BR>Sex: <BR></td>");
- client.println F("<td style=\"vertical-align: top; width = 20%\"><BR>Organism: <BR></td>");
- client.println F("<td style=\"vertical-align: top; width = 20%\"><BR>Colour</td>");
- client.println F("<td style=\"vertical-align: top; width = 20%\"><BR>Protocol</td>");
- client.println F("<td style=\"vertical-align: top; width = 20%\"><BR>Intensity</td>");
- client.println F("</tr>");
- client.println F("<tr>");
- client.println F("<td style=\"vertical-align: top;\"><BR>");
- client.println F("<input type=\"radio\" name=\"sex\" value=\"m\">Male<br>");
- client.println F("<input type=\"radio\" checked name=\"sex\" value=\"f\">Female");
- client.println F("<BR><br>");
- client.println F("</td>");
- client.println F("<td style=\"vertical-align: top;\"><BR> ");
- client.println F("<input type=\"radio\" name=\"org\" value=\"fly\" checked>fly<br>");
- client.println F("<input type=\"radio\" name=\"org\" value=\"zfish\">zebrafish<br>");
- client.println F("<input type=\"radio\" name=\"org\" value=\"mouse\">mouse<br>");
- client.println F("<input type=\"radio\" name=\"org\" value=\"locust\">locust<br>");
- client.println F("<BR><br>");
- client.println F("</td>");
- 
- client.println F("<td style=\"vertical-align: top;\"><BR>");
- client.println F("<input type=\"radio\" name=\"col\" value=\"blue\" checked>blue<br>");
- client.println F("<input type=\"radio\" name=\"col\" value=\"green\">green<br>");
- client.println F("<input type=\"radio\" name=\"col\" value=\"red\">red<br>");
- client.println F("</td>");
- 
- 
- client.println F("<input type=\"hidden\" name=\"F1\" value=\"12\" checked> F1: 12 Hz -----");
- client.println F("<input type=\"hidden\" name=\"F2\" value=\"15\" checked> F2: 15 Hz<br>");
- 
- 
- client.println F("<td style=\"vertical-align: top;\"><BR>");
- client.println F("<input type=\"radio\" name=\"stim\" value=\"fERG\" checked>flash ERG<br>");
- client.println F("<input type=\"radio\" name=\"stim\" value=\"SSVEP\" >SSVEP (sine)<br>");
- client.println F("<input type=\"radio\" name=\"stim\" value=\"SSVEP_SQ\" >SSVEP (square)<br>");
- client.println F("</td>");
- 
- client.println F("<td style=\"vertical-align: top;\"><BR>");
- client.println F("<input type=\"radio\" name=\"bri\" value=\"255\" checked >100%<br>");
- client.println F("<input type=\"radio\" name=\"bri\" value=\"127\"  >50%<br>");
- client.println F("<input type=\"radio\" name=\"bri\" value=\"64\"  >25%<br>");
- client.println F("<input type=\"radio\" name=\"bri\" value=\"25\"  >10%<br>");
- client.println F("<input type=\"radio\" name=\"bri\" value=\"13\"  >5%<br>");
- client.println F("</td>");
- 
- client.println F("</tr>");
- client.println F("</tbody>");
- client.println F("</table>");
- client.println F("<br>");
- 
- 
- 
- client.println F("<BR>");
- client.println F("File name: <input id=\"FileID\" type=\"text\" name=\"filename\"> ");
- client.println F("<button onclick=\"changeText()\" type=\"button\">Auto</button><br>");
- 
- client.println F("<BR><BR>");
- client.println F("<input type=\"submit\" value=\"Submit\">");
- 
- client.println F("</form>");
- 
- client.println F("<BR><BR>");
- 
- client.println F("<table>");
- client.println F("<tr><td>");
- client.println F("<A href=\"/white/\">White</a>");
- client.println F("</td>");
- 
- client.println F("<td bgcolor=\"Red\">");
- client.println F("<A href=\"/red/\"><font color=\"White\">Red </font></a>");
- client.println F("</td>");
- 
- client.println F("<td bgcolor=\"Green\">");
- client.println F("<A href=\"/green/\"><font color=\"White\">Green </font></a>");
- client.println F("</td>");
- client.println F("<td bgcolor=\"Blue\">");
- client.println F("<A href=\"/blue/\"><font color=\"White\">Blue </font></a>");
- client.println F("</td>");
- client.println F("<td bgcolor=\"Black\">");
- client.println F("<A href=\"/black/\"><font color=\"White\">Black</font></a>");
- client.println F("</td>");
- 
- client.println F("<td>");
- client.println F("<a href=\"/\">Test setup</a>");
- client.println F("</td><td>");
- client.println F("<a href=\"/dir=\">Directory</a>");
- client.println F("</table>");
- client.println F("</body>");
- client.println F("</html>");
- 
+  client.println F("\"><script>\n");
+  ////////////////////////////////////
+
+  client.print F(" function getTimeString() {\n");
+  client.print F("var today=new Date();\n");
+  client.print F("var yr=today.getFullYear();\n");
+  client.print F("var mo=today.getMonth()+1;\n");
+  client.print F("var d=today.getDate();\n");
+  client.print F("var h=today.getHours();\n");
+  client.print F("var m=today.getMinutes();\n");
+  client.print F("var s = today.getSeconds();\n");
+
+  client.print F("d = checkTime(d);\n");
+  client.print F("m = checkTime(m);\n");
+  client.print F("mo = checkTime(mo);\n");
+  client.print F("h = checkTime(h);\n");
+  client.print F("s = checkTime(s);\n");
+  client.print F("return yr + \"_\" + mo + \"_\" + d + \"_\" + h + \"h\" + m + \"m\" + s ;\n");
+  client.print F("} \n");
+
+  client.print F("function startTime()\n");
+  client.print F("{\n");
+  client.print F("document.getElementById('txt').innerHTML = getTimeString();\n");
+  client.print F("var t = setTimeout(function(){startTime()},500);}\n");
+
+  client.print F("function checkTime(i) {\n");
+  client.print F("if (i<10) {i = \"0\" + i};  // add zero in front of numbers < 10\n");
+  client.print F("return i;} \n");
+
+  client.print F("function changeText() \n");
+  client.print F("{\n");
+  client.print F("x = document.getElementById(\"FileID\");\n");
+  client.print F("x.value = getTimeString() }\n");
+  client.print F("</script>\n");
+  client.print F("</head>\n");
+
+  client.print F("<!-- body onload=\"startTime()\" -->\n");
+  client.print F("<body><div id=\"txt\">Arduino SSVEP starter page</div><BR>\n");
+
+  client.print F("<form action=\"/\">\n");
+
+  client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"\n");
+  client.print F("cellspacing=\"2\"><tbody><tr>\n");
+  client.print F("<td style=\"vertical-align: top; width = 33%\">genotype</td>\n");
+  client.print F("<td style=\"vertical-align: top; width = 33%\">Age:</td>\n");
+
+  client.print F("</tr><tr>\n");
+  client.print F("<td style=\"vertical-align: top;\">\n");
+  client.print F("<select name=\"GAL4\" size = 6>\n");
+  client.print F("<option value=\"kcc_DHS\" selected>kcc DHS</option>\n");
+  client.print F("<option value=\"w_minus\" >w-</option>\n");
+  client.print F("</select><br></td>\n");
+
+  client.print F("<td style=\"vertical-align: top;\">\n");
+  client.print F("<select name=\"Age\" size = 6>\n");
+  client.print F("<option value=\"0_4\">4 hours</option>\n");
+  client.print F("<option value=\"1\" selected>1 day</option>\n");
+  client.print F("<option value=\"3\">3</option>\n");
+  client.print F("<option value=\"7\" >7</option>\n");
+  client.print F("<option value=\"-1\">unknown</option>\n");
+  client.print F("</select><br></td></tr></tbody></table><BR>\n");
+
+  client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody ><tr>\n");
+
+  client.print F("<td style=\"vertical-align: top; width = 20%\"><BR>Colour</td>\n");
+  client.print F("<td style=\"vertical-align: top; width = 20%\"><BR>Protocol</td>\n");
+  client.print F("<td style=\"vertical-align: top; width = 20%\"><BR>Intensity</td></tr><tr>\n");
+
+
+  client.print F("<td style=\"vertical-align: top;\"><BR>\n");
+  client.print F("<input type=\"radio\" name=\"col\" value=\"blue\" checked>blue<br>\n");
+  client.print F("<input type=\"radio\" name=\"col\" value=\"green\">green<br>\n");
+  client.print F("<input type=\"radio\" name=\"col\" value=\"red\">red<br></td>\n");
+
+
+
+  client.print F("<td style=\"vertical-align: top;\"><BR>\n");
+  client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG_T\" checked>Test ERG<br>\n");
+  client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG\" >flash ERG<br>\n");
+  client.print F("<input type=\"radio\" name=\"stim\" value=\"SSVEP\" >SSVEP (sine)<br></td>\n");
+
+  client.print F("<td style=\"vertical-align: top;\"><BR>\n");
+  client.print F("<select name=\"bri\" size = 7>\n");
+  client.print F("<option value=\"255\"  >100%</option>\n");
+  client.print F("<option value=\"127\"  >50%</option>\n");
+  client.print F("<option value=\"64\"  >25%</option>\n");
+  client.print F("<option value=\"25\"  >10%</option>\n");
+  client.print F("<option value=\"13\" selected >5%</option>\n");
+  client.print F("<option value=\"6\"  >2%</option>\n");
+  client.print F("<option value=\"3\"  >1%</option>\n");
+  client.print F("<option value=\"2\"  >0.5%</option>\n");
+  client.print F("<option value=\"1\"  >0.25%</option>\n");
+  client.print F("</select></td></tr></tbody></table><br>\n");
+
+
+
+  client.print F("<BR>\n");
+  client.print F("File name: <input id=\"FileID\" type=\"text\" name=\"filename\"> \n");
+  client.print F("<button onclick=\"changeText()\" type=\"button\">Auto</button><br><BR><BR>\n");
+  client.print F("<input type=\"submit\" value=\"Submit\">\n");
+
+  client.print F("</form>\n");
+
+  client.print F("<BR><BR><table><tr><td>\n");
+  client.print F("<A href=\"/white/\">White</a></td>\n");
+
+  client.print F("<td bgcolor=\"Red\">\n");
+  client.print F("<A href=\"/red/\"><font color=\"White\">Red </font></a></td>\n");
+
+  client.print F("<td bgcolor=\"Green\">\n");
+  client.print F("<A href=\"/green/\"><font color=\"White\">Green </font></a></td>\n");
+  client.print F("<td bgcolor=\"Blue\">\n");
+  client.print F("<A href=\"/blue/\"><font color=\"White\">Blue </font></a></td>\n");
+  client.print F("<td bgcolor=\"Black\">\n");
+  client.print F("<A href=\"/black/\"><font color=\"White\">Black</font></a></td>\n");
+
+  client.print F("<td><a href=\"/\">Test setup</a></td><td>\n");
+  client.print F("<a href=\"/dir=\">Directory</a></table></body></html>\n");
+
 
 }
 void do_fft()
