@@ -441,19 +441,6 @@ void setup() {
 #define FILE_READ "r"
 #define FILE_WRITE "a"
 
-  if (has_filesystem)
-  {
-    FSInfo fs_info;
-    SPIFFS.info(fs_info);
-    Serial.print F("Disk size ");
-    Serial.println (fs_info.totalBytes);
-    Serial.print F("used Bytes " );
-    Serial.println ( fs_info.usedBytes);
-    size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
-    Serial.print F("Free Bytes " );
-    Serial.println ( fBytes);
-
-  }
 
 #else
   // initialize the SD card
@@ -588,21 +575,21 @@ void setupESPWiFi()
 
 void printWifiStatus() {
   // print the SSID of the network you're attached to:
-  Serial.println F("SSID: ");
-  Serial.println (WiFi.SSID());
-
-  // print your WiFi shield's IP address:
-
-  Serial.println F("IP Address: ");
-  Serial.println (myIP);
-
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
-  Serial.println F("signal strength (RSSI):");
-  Serial.print (rssi);
-  Serial.println F(" dBm");
-  // print where to go in a browser:
-  Serial.println F("To see this page in action, open a browser to http://");
+  //  Serial.println F("SSID: ");
+  //  Serial.println (WiFi.SSID());
+  //
+  //  // print your WiFi shield's IP address:
+  //
+  //  Serial.println F("IP Address: ");
+  //  Serial.println (myIP);
+  //
+  //  // print the received signal strength:
+  //  long rssi = WiFi.RSSI();
+  //  Serial.println F("signal strength (RSSI):");
+  //  Serial.print (rssi);
+  //  Serial.println F(" dBm");
+  //  // print where to go in a browser:
+  Serial.print F("Open a browser to http://");
   Serial.println (myIP);
 }
 
@@ -863,7 +850,7 @@ void printTwoDigits(char * p, uint8_t v)
 
 void printDirectory(String s)
 {
-  String s2 = s + String("/");
+  //String s2 = s + String("/");
   int iLength = s.length();
   char cTmp  [iLength + 2];
   s.toCharArray(cTmp, iLength);
@@ -881,7 +868,7 @@ void printDirectory(String s)
   while (bNext)
   {
     File entry = dir.openFile("r");
-    Serial.println (entry.name());
+    //Serial.println (entry.name());
     strncpy (sArray + (iFiles * 15) , entry.name(), sizeof (entry)) ;
     lArray [iFiles] = entry.size();
     //Serial.println ((char*)sArray + (iFiles * 15));
@@ -910,16 +897,16 @@ void printDirectory(String s)
   }
 #endif
 
-    FSInfo fs_info;
-    SPIFFS.info(fs_info);
-    client.print F("Disk size ");
-    client.println (fs_info.totalBytes);
-    client.print F("<BR>used Bytes " );
-    client.println ( fs_info.usedBytes);
-    size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
-    client.print F("<BR>Free Bytes " );
-    client.println ( fBytes);
-    client.print F("<BR>");
+  FSInfo fs_info;
+  SPIFFS.info(fs_info);
+  client.print F("Disk size ");
+  client.println (fs_info.totalBytes);
+  client.print F("<BR>used Bytes " );
+  client.println ( fs_info.usedBytes);
+  size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
+  client.print F("<BR>Free Bytes " );
+  client.println ( fBytes);
+  client.print F("<BR>");
 
   client.print (iFiles);
   client.print F(" files found on disk  ");
@@ -943,9 +930,7 @@ void printDirectory(String s)
       * (sArray + (iFiles * 15) + 11) = 'V';
       client.print F("  <a href=\"");
       client.print ((char*)sArray + (iFiles * 15));
-      client.print F("\">");
-      client.print F("(fft (30,30))");
-      client.print F("</a> ");
+      client.print F("\">(fft (30,30))</a> ");
     }
 
     // if its an ERG allow us to have alink to the picture...
@@ -959,11 +944,11 @@ void printDirectory(String s)
       client.print F("</a> ");
     }
 
-    client.println F("</li>");
+    client.print F("</li>\n");
     iFiles -- ;
   }
 
-  client.println F("</ul>");
+  client.print F("</ul>\n");
 
 }
 
@@ -1134,7 +1119,7 @@ bool file_time (char * cIn)
   hour = atoi(calcTime + 11);
   myminute = atoi(calcTime + 14);
   second = atoi(calcTime + 17) ;
-  Serial.println F("year is (if zero, atoi error):");
+  Serial.print F("year is (if zero, atoi error):");
   Serial.println (year) ;
   return (year != 0) ;
 }
@@ -1970,20 +1955,20 @@ void tidyUp_Collection()
   }
   if (! bTestFlash)
   {
-  bool bResult = writeFile(cFile);
-  if (bResult)
-  {
-    addSummary() ;
+    bool bResult = writeFile(cFile);
+    if (bResult)
+    {
+      addSummary() ;
+    }
+    else
+    {
+      Serial.println F("File not written :");
+      Serial.println (cFile);
+    }
   }
-  else
-  {
-    Serial.println F("File not written :");
-    Serial.println (cFile);
-  }
-  }
-//  long mEnd = millis();
-//  Serial.println F("took AD ");
-//  Serial.println (mEnd - mStart); // fERG: with timer driven this was exactly 2253 ms ( should be ~2248 )
+  //  long mEnd = millis();
+  //  Serial.println F("took AD ");
+  //  Serial.println (mEnd - mStart); // fERG: with timer driven this was exactly 2253 ms ( should be ~2248 )
 
 }
 
@@ -2442,21 +2427,22 @@ void sendReply ()
       nWaits = nMaxWaits ;
       //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
       sendHeader ("Sampling Complete!", "onload=\"init()\"") ;
-      client.print ( "Sampling Now Complete <BR><BR>");
-      client.print ( "<A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " size: ");
+      client.print ( "Sampling Now Complete <BR><BR><A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " size: ");
       client.print (wfile.size());
       client.print F(" bytes; expected size ");
       client.print (exp_size);
       wfile.close() ;
-      writeSummaryFile(cFile);
+      if (!bTestFlash)
+      {
+        writeSummaryFile(cFile);
+      }
       if (bDoFlash)
       {
         String sPicture = sFile;
         sPicture.replace ("ERG", "ERP" );
         client.print ("<A HREF= \"" + sPicture + "\" > (averaged picture) </A>" );
       }
-      client.println F("<BR><BR>");
-      client.println F("To setup for another test please ") ;
+      client.println F("<BR><BR>To setup for another test please ") ;
       send_GoBack_to_Stim_page ();
       client.println F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR><BR>");
       if (bDoFlash)
@@ -2723,7 +2709,7 @@ void writehomepage ()
   client.println F("\"><script>\n");
   ////////////////////////////////////
 
-  client.print F(" function getTimeString() {\n");
+  client.print F("function getTimeString() {\n");
   client.print F("var today=new Date();\n");
   client.print F("var yr=today.getFullYear();\n");
   client.print F("var mo=today.getMonth()+1;\n");
