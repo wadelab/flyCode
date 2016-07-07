@@ -897,6 +897,7 @@ void printDirectory(String s)
   }
 #endif
 
+#ifdef ESP8266
   FSInfo fs_info;
   SPIFFS.info(fs_info);
   client.print F("Disk size ");
@@ -907,6 +908,7 @@ void printDirectory(String s)
   client.print F("<BR>Free Bytes " );
   client.println ( fBytes);
   client.print F("<BR>");
+#endif
 
   client.print (iFiles);
   client.print F(" files found on disk  ");
@@ -1469,33 +1471,30 @@ void doplotFile ()
   // now on to the data
   int nBlocks = 0;
 
-  // make this static otherwise the ESP overflows the tiny little stack
-  static int erg_in2 [max_data] ;
-
   for (int i = 0; i < max_data; i++)
   {
     erg_in[i] = 0;
-    time_stamp[i] = 0;
   }
 
+  // read ERG into time stamp
   iBytesRequested = max_data * sizeof (int);
-  iBytesRead = file.read((unsigned char *)erg_in2, iBytesRequested);
+  iBytesRead = file.read((unsigned char *)time_stamp, iBytesRequested);
 
 
   while (iBytesRead == iBytesRequested)
   {
+    for (int i = 0; i < max_data; i++)
+    {
+      erg_in[i] = erg_in[i] + time_stamp[i];
+    }
+    // read and ignore the time stamp data
     iBytesRequested = max_data * sizeof (unsigned int);
     iBytesRead = file.read ((unsigned char *)time_stamp, iBytesRequested );
     nBlocks ++;
 
-    for (int i = 0; i < max_data; i++)
-    {
-      erg_in[i] = erg_in[i] + erg_in2[i];
-    }
-
-    //read next block
+    //read next ERG block
     iBytesRequested = max_data * sizeof (int);
-    iBytesRead = file.read((unsigned char *)erg_in2, iBytesRequested);
+    iBytesRead = file.read((unsigned char *)time_stamp, iBytesRequested);
 
   } // end of while
 
@@ -2427,20 +2426,27 @@ void sendReply ()
       nWaits = nMaxWaits ;
       //file.timestamp(T_ACCESS, 2009, 11, 12, 7, 8, 9) ;
       sendHeader ("Sampling Complete!", "onload=\"init()\"") ;
-      client.print ( "Sampling Now Complete <BR><BR><A HREF= \"" + sFile + "\" >" + sFile + "</A>" + " size: ");
-      client.print (wfile.size());
-      client.print F(" bytes; expected size ");
-      client.print (exp_size);
-      wfile.close() ;
       if (!bTestFlash)
       {
+        client.print F( "Sampling Now Complete <BR><BR><A HREF= \"");
+        client.print (sFile + "\" >" + sFile + "</A>" + " size: ");
+        client.print (wfile.size());
+        client.print F(" bytes; expected size ");
+        client.print (exp_size);
+        wfile.close() ;
+
         writeSummaryFile(cFile);
+
+        if (bDoFlash)
+        {
+          String sPicture = sFile;
+          sPicture.replace ("ERG", "ERP" );
+          client.print ("<A HREF= \"" + sPicture + "\" > (averaged picture) </A>" );
+        }
       }
-      if (bDoFlash)
+      else
       {
-        String sPicture = sFile;
-        sPicture.replace ("ERG", "ERP" );
-        client.print ("<A HREF= \"" + sPicture + "\" > (averaged picture) </A>" );
+        wfile.close() ;
       }
       client.println F("<BR><BR>To setup for another test please ") ;
       send_GoBack_to_Stim_page ();
@@ -2471,6 +2477,7 @@ void sendReply ()
     serve_dir("/") ;
     return ;
   }
+#ifdef ESP8266
   fPOS = MyInputString.indexOf ("format");
   if (fPOS > 0)
   {
@@ -2483,6 +2490,7 @@ void sendReply ()
     sendFooter ();
     return ;
   }
+  #endif
 
   //light up
   fPOS = MyInputString.indexOf ("white/");
@@ -2835,8 +2843,8 @@ void do_fft()
   // #define   FFT_SIZE           1024
 
   static int         f_r[FFT_SIZE]   = { 0};
-  static   int         f_i[FFT_SIZE]   = { 0};
-  static   int         out[FFT_SIZE / 2]     = { 0};     // Magnitudes
+  static int         f_i[FFT_SIZE]   = { 0};
+  static int         out[FFT_SIZE / 2]     = { 0};     // Magnitudes
 
   Radix4     radix;
   for ( uint16_t i = 0, k = (NWAVE / FFT_SIZE); i < FFT_SIZE; i++ )
