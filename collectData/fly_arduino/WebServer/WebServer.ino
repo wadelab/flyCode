@@ -1517,7 +1517,6 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   //String dataString ;
   unsigned char * cPtr;
   cPtr = (unsigned char *) erg_in ;
-  int iOldContrast ;
   static int erg_in2 [max_data] ;
   memset (erg_in2, 0, sizeof (int) * max_data);
 
@@ -1652,7 +1651,7 @@ void doreadFile ( char * c)
   //String dataString ;
   unsigned char * cPtr;
   cPtr = (unsigned char *) erg_in ;
-  int iOldContrast ;
+  
 
   //Serial.println F("trying to open:");
   //Serial.println (c);
@@ -2751,7 +2750,7 @@ void writehomepage ()
   client.print F("</head>\n");
 
   client.print F("<!-- body onload=\"startTime()\" -->\n");
-  client.print F("<body><div id=\"txt\">Arduino SSVEP starter page</div><BR>\n");
+  client.print F("<body><div id=\"txt\">Arduino Starter page</div><BR>\n");
 
   client.print F("<form action=\"/\">\n");
 
@@ -2833,8 +2832,8 @@ void writehomepage ()
   client.print F("<td><a href=\"/\">Test setup</a></td><td>\n");
   client.print F("<a href=\"/dir=\">Directory</a></table></body></html>\n");
 
-
 }
+
 void do_fft()
 {
 
@@ -2842,15 +2841,16 @@ void do_fft()
   // FFT_SIZE IS DEFINED in Header file Radix4.h
   // #define   FFT_SIZE           1024
 
-  static int         f_r[FFT_SIZE]   = { 0};
+//  static int         f_r[FFT_SIZE]   = { 0};
+#define f_r (int *) erg_in
   static int         f_i[FFT_SIZE]   = { 0};
-  static int         out[FFT_SIZE / 2]     = { 0};     // Magnitudes
+//  static int         out[FFT_SIZE / 2]     = { 0};     // Magnitudes
 
   Radix4     radix;
-  for ( uint16_t i = 0, k = (NWAVE / FFT_SIZE); i < FFT_SIZE; i++ )
-  {
-    f_r[i] = erg_in[i];
-  }
+//  for ( uint16_t i = 0, k = (NWAVE / FFT_SIZE); i < FFT_SIZE; i++ )
+//  {
+//    f_r[i] = erg_in[i];
+//  }
   memset( f_i, 0, sizeof (f_i));                   // Image -zero.
   radix.rev_bin( f_r, FFT_SIZE);
   radix.fft_radix4_I( f_r, f_i, LOG2_FFT);
