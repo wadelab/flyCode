@@ -30,7 +30,7 @@
 #ifndef __wifisetup__
 
 
-#define due6
+#define due5
 #define USE_DHCP
 
 
@@ -508,11 +508,11 @@ void setup() {
   };
 #endif
   server.begin();
-  Serial.println F("server is at ");
+  Serial.print F("server is at ");
   myIP = EthernetShield.localIP() ;
   dnsIP = EthernetShield.dnsServerIP();
-  Serial.println (myIP);
-  Serial.println F(" using dns server ");
+  Serial.print (myIP);
+  Serial.print F(" using dns server ");
   Serial.println (dnsIP);
 
 #endif
@@ -1182,9 +1182,9 @@ void addSummary ()
     pSummary[iOffset + kk] = nRepeats ;
     kk ++ ;
 
-    // save erg as we do an in place FFT
-    int erg_tmp [ max_data];
-    for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
+//    // save erg as we do an in place FFT
+//    int erg_tmp [ max_data];
+//    for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
     do_fft() ;
 
     // F2-F1
@@ -1203,7 +1203,7 @@ void addSummary ()
     pSummary[iOffset + kk] = erg_in[205] ; // 50Hz
 
     // restore erg
-    for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
+//    for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
   }
 }
 
@@ -2490,7 +2490,7 @@ void sendReply ()
     sendFooter ();
     return ;
   }
-  #endif
+#endif
 
   //light up
   fPOS = MyInputString.indexOf ("white/");
