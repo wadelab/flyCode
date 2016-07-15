@@ -248,7 +248,7 @@ volatile int stimvalue [max_data + presamples] ;
 volatile long mean = 0;
 
 volatile long sampleCount = max_data + 2;        // will store number of A/D samples taken
-//volatile long mStart ;
+volatile long mStart ;
 int pSummary [maxRepeats * maxContrasts * 10];
 unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0;
@@ -1888,7 +1888,7 @@ void TC3_Handler()
 
 void StartTo_collect_Data ()
 {
-  //mStart = millis();
+  mStart = millis();
   sampleCount = -presamples ;
   if (bDoFlash)
   {
@@ -1964,9 +1964,9 @@ void tidyUp_Collection()
       Serial.println (cFile);
     }
   }
-  //  long mEnd = millis();
-  //  Serial.println F("took AD ");
-  //  Serial.println (mEnd - mStart); // fERG: with timer driven this was exactly 2253 ms ( should be ~2248 )
+    long mEnd = millis();
+    Serial.println F("took AD ");
+    Serial.println (mEnd - mStart); // fERG: with timer driven this was exactly 2253 ms ( should be ~2248 )
 
 }
 
