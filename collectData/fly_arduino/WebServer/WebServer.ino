@@ -1182,9 +1182,9 @@ void addSummary ()
     pSummary[iOffset + kk] = nRepeats ;
     kk ++ ;
 
-//    // save erg as we do an in place FFT
-//    int erg_tmp [ max_data];
-//    for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
+    //    // save erg as we do an in place FFT
+    //    int erg_tmp [ max_data];
+    //    for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
     do_fft() ;
 
     // F2-F1
@@ -1203,7 +1203,7 @@ void addSummary ()
     pSummary[iOffset + kk] = erg_in[205] ; // 50Hz
 
     // restore erg
-//    for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
+    //    for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
   }
 }
 
@@ -1651,7 +1651,7 @@ void doreadFile ( char * c)
   //String dataString ;
   unsigned char * cPtr;
   cPtr = (unsigned char *) erg_in ;
-  
+
 
   //Serial.println F("trying to open:");
   //Serial.println (c);
@@ -1678,7 +1678,12 @@ void doreadFile ( char * c)
   // test if its an ERG
   boolean bERG = ( NULL != strstr ( (char *) cPtr, "stim=fERG&") ) ;
   bIsSine = ( NULL == strstr ((char *) cPtr, "stm=SQ") ) ;
-
+  if (bERG)
+  {
+    brightness = atoi(4 + strstr((char *) cPtr, "bri="));
+    Serial.print F("brightness decoded as ");
+    Serial.println (brightness);
+  }
   // now on to the data
   iBytesRequested = max_data * sizeof (int);
   iBytesRead = file.read((unsigned char *)erg_in, iBytesRequested);
@@ -1964,9 +1969,9 @@ void tidyUp_Collection()
       Serial.println (cFile);
     }
   }
-    long mEnd = millis();
-    Serial.print F("took AD ");
-    Serial.println (mEnd - mStart); // fERG: with timer driven this was exactly 2253 ms ( should be ~2248 ) and 4644 for SSVEP
+  long mEnd = millis();
+  Serial.print F("took AD ");
+  Serial.println (mEnd - mStart); // fERG: with timer driven this was exactly 2253 ms ( should be ~2248 ) and 4644 for SSVEP
 
 }
 
@@ -2045,11 +2050,11 @@ void AppendSSVEPReport()
 {
   client.print F("Acquired ") ;
   int iTmp = nRepeats * maxContrasts ; //- maxContrasts ;
-//  Serial.print F("Acquired ");
-//  Serial.print (iTmp);
+  //  Serial.print F("Acquired ");
+  //  Serial.print (iTmp);
   iTmp = iTmp + iThisContrast ;
-//  Serial.print F(" really ");
-//  Serial.println (iTmp);
+  //  Serial.print F(" really ");
+  //  Serial.println (iTmp);
 
   client.print (iTmp);
   client.print F(" of ");
@@ -2841,16 +2846,16 @@ void do_fft()
   // FFT_SIZE IS DEFINED in Header file Radix4.h
   // #define   FFT_SIZE           1024
 
-//  static int         f_r[FFT_SIZE]   = { 0};
+  //  static int         f_r[FFT_SIZE]   = { 0};
 #define f_r (int *) erg_in
   static int         f_i[FFT_SIZE]   = { 0};
-//  static int         out[FFT_SIZE / 2]     = { 0};     // Magnitudes
+  //  static int         out[FFT_SIZE / 2]     = { 0};     // Magnitudes
 
   Radix4     radix;
-//  for ( uint16_t i = 0, k = (NWAVE / FFT_SIZE); i < FFT_SIZE; i++ )
-//  {
-//    f_r[i] = erg_in[i];
-//  }
+  //  for ( uint16_t i = 0, k = (NWAVE / FFT_SIZE); i < FFT_SIZE; i++ )
+  //  {
+  //    f_r[i] = erg_in[i];
+  //  }
   memset( f_i, 0, sizeof (f_i));                   // Image -zero.
   radix.rev_bin( f_r, FFT_SIZE);
   radix.fft_radix4_I( f_r, f_i, LOG2_FFT);
