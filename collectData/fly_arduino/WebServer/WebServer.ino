@@ -1308,9 +1308,9 @@ bool writeSummaryFile(const char * cMain)
     return false;
   }
 
-  Serial.println F(" More bytes writen to file.........");
+  Serial.print F(" More bytes writen to file.........");
   Serial.print  (c);
-  Serial.println F(" size now ");
+  Serial.print F(" size now ");
   Serial.println (file.size());
   file.close();
   return true ;
@@ -1368,7 +1368,7 @@ bool writeFile(char * c)
     unsigned long l = wfile.size() ;
     if (wfile.seek(l))
     {
-      Serial.println F ("File length :");
+      Serial.print F ("File length :");
       Serial.println (l);
     }
     else
@@ -1399,9 +1399,9 @@ bool writeFile(char * c)
     Serial.println F ("Error in writing timing data to file");
     return false ;
   }
-  Serial.println F(" More bytes writen to file.........");
+  Serial.print F(" More bytes writen to file.........");
   Serial.print  (c);
-  Serial.println F(" size now ");
+  Serial.print F(" size now ");
   Serial.println (wfile.size());
   wfile.flush();
   return true ;
@@ -1965,8 +1965,8 @@ void tidyUp_Collection()
     }
   }
     long mEnd = millis();
-    Serial.println F("took AD ");
-    Serial.println (mEnd - mStart); // fERG: with timer driven this was exactly 2253 ms ( should be ~2248 )
+    Serial.print F("took AD ");
+    Serial.println (mEnd - mStart); // fERG: with timer driven this was exactly 2253 ms ( should be ~2248 ) and 4644 for SSVEP
 
 }
 
@@ -2045,11 +2045,11 @@ void AppendSSVEPReport()
 {
   client.print F("Acquired ") ;
   int iTmp = nRepeats * maxContrasts ; //- maxContrasts ;
-  Serial.println F("Acquired ");
-  Serial.print (iTmp);
+//  Serial.print F("Acquired ");
+//  Serial.print (iTmp);
   iTmp = iTmp + iThisContrast ;
-  Serial.println F(" really ");
-  Serial.println (iTmp);
+//  Serial.print F(" really ");
+//  Serial.println (iTmp);
 
   client.print (iTmp);
   client.print F(" of ");
