@@ -1,5 +1,4 @@
 
-
 //try this http://gammon.com.au/forum/?id=11488&reply=5#reply5 for interrupts
 //Digital pin 7 is used as a handshake pin between the WiFi shield and the Arduino, and should not be used
 // http://www.arduino.cc/playground/Code/AvailableMemory
@@ -2762,22 +2761,19 @@ void writehomepage ()
   client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"\n");
   client.print F("cellspacing=\"2\"><tbody><tr>\n");
   client.print F("<td style=\"vertical-align: top; width = 33%\">genotype</td>\n");
-  client.print F("<td style=\"vertical-align: top; width = 33%\">Age:</td>\n");
+  client.print F("<td style=\"vertical-align: top; width = 33%\">Hairdryer:</td>\n");
 
   client.print F("</tr><tr>\n");
   client.print F("<td style=\"vertical-align: top;\">\n");
   client.print F("<select name=\"GAL4\" size = 6>\n");
-  client.print F("<option value=\"kcc_DHS\" selected>kcc DHS</option>\n");
+  client.print F("<option value=\"shibire\" selected>shibire</option>\n");
   client.print F("<option value=\"w_minus\" >w-</option>\n");
   client.print F("</select><br></td>\n");
 
   client.print F("<td style=\"vertical-align: top;\">\n");
   client.print F("<select name=\"Age\" size = 6>\n");
-  client.print F("<option value=\"0_4\">4 hours</option>\n");
-  client.print F("<option value=\"1\" selected>1 day</option>\n");
-  client.print F("<option value=\"3\">3</option>\n");
-  client.print F("<option value=\"7\" >7</option>\n");
-  client.print F("<option value=\"-1\">unknown</option>\n");
+  client.print F("<option value=\"Y\">Yes</option>\n");
+  client.print F("<option value=\"N\" selected>No</option>\n");
   client.print F("</select><br></td></tr></tbody></table><BR>\n");
 
   client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody ><tr>\n");
