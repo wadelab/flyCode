@@ -246,7 +246,7 @@ volatile int stimvalue [max_data + presamples] ;
 
 volatile long mean = 0;
 
-volatile long sampleCount = max_data + 2;        // will store number of A/D samples taken
+volatile long sampleCount = 0 ; //max_data + 2;        // will store number of A/D samples taken
 volatile long mStart ;
 int pSummary [maxRepeats * maxContrasts * 10];
 unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
@@ -1171,8 +1171,8 @@ void addSummary ()
   {
     // fft
     iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 - 10;
-    //    Serial.println F("Offset ");
-    //    Serial.println ( iOffset );
+    Serial.print F("Offset ");
+    Serial.println ( iOffset );
 
     pSummary[iOffset + kk] = time_stamp[max_data - 1] ;
     kk ++ ;
@@ -1184,7 +1184,7 @@ void addSummary ()
     //    // save erg as we do an in place FFT
     //    int erg_tmp [ max_data];
     //    for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
-    do_fft() ;
+    //do_fft() ;
 
     // F2-F1
     pSummary[iOffset + kk] = erg_in[12] ;
@@ -1200,9 +1200,20 @@ void addSummary ()
     pSummary[iOffset + kk] = erg_in[221] ;
     kk ++ ;
     pSummary[iOffset + kk] = erg_in[205] ; // 50Hz
+    kk ++ ;
 
     // restore erg
     //    for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
+    Serial.print F("kk:");
+    Serial.println (kk) ;
+
+    for (int q = 0; q < iOffset + kk ; q++)
+    {
+      Serial.print (pSummary[q]) ;
+      Serial.print F(",");
+
+    }
+    Serial.println();
   }
 }
 
@@ -1267,11 +1278,11 @@ bool writeSummaryFile(const char * cMain)
   }
   if (bDoFlash)
   {
-    strcpy (cTmp, "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2\n");
+    strcpy (cTmp, "\nstart,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2\n");
   }
   else
   {
-    strcpy (cTmp, "probe contrast, mask, repeat, F2-F1, 1F1, 2F1, 2F2, 1F1+1F2, 2F1+2F2, 50 Hz\n");
+    strcpy (cTmp, "\nprobe contrast, mask, repeat, F2-F1, 1F1, 2F1, 2F2, 1F1+1F2, 2F1+2F2, 50 Hz\n");
   }
   iBytesWritten = file.write((uint8_t *)cTmp, strlen(cTmp)) ;
   if (iBytesWritten <= 0)
@@ -1884,7 +1895,7 @@ void TC3_Handler()
   {
     stopTimer();
     Serial.println F("Timer done");
-    tidyUp_Collection();
+    //    tidyUp_Collection();
     return ;
   }
 
@@ -1947,25 +1958,36 @@ void tidyUp_Collection()
 
     sampleCount ++ ;
     analogWrite(usedLED, 127);
-    iThisContrast ++;
-    if (iThisContrast >= maxContrasts)
-    {
-      iThisContrast = 0;
-      nRepeats ++;
-      doShuffle ();
-    }
+    //    iThisContrast ++;
+    //    if (iThisContrast >= maxContrasts)
+    //    {
+    //      iThisContrast = 0;
+    //      nRepeats ++;
+    //      doShuffle ();
+    //    }
   }
   if (! bTestFlash)
   {
     bool bResult = writeFile(cFile);
     if (bResult)
     {
+      Serial.println F("Now try summary file");
       addSummary() ;
     }
     else
     {
       Serial.println F("File not written :");
       Serial.println (cFile);
+    }
+  }
+  if (!bDoFlash)
+  {
+    iThisContrast ++;
+    if (iThisContrast >= maxContrasts)
+    {
+      iThisContrast = 0;
+      nRepeats ++;
+      doShuffle ();
     }
   }
   long mEnd = millis();
@@ -1982,7 +2004,7 @@ void flickerPage()
 
   // script to reload ...
   client.println F("<script>");
-  client.println F("var myVar = setInterval(function(){myTimer()}, 8500);"); //mu sec
+  client.println F("var myVar = setInterval(function(){myTimer()}, 10500);"); //mu sec
   client.println F("function myTimer() {");
   client.println F("location.reload(true);");
   client.println F("};");
@@ -2656,6 +2678,12 @@ void loop()
 #ifdef ESP8266
   delay(1);
 #endif
+  if (sampleCount >= max_data - 1)
+  {
+    tidyUp_Collection() ;
+    sampleCount = 0 ;
+  }
+
   boolean currentLineIsBlank = true;
   // listen for incoming clients
 
@@ -2765,13 +2793,13 @@ void writehomepage ()
 
   client.print F("</tr><tr>\n");
   client.print F("<td style=\"vertical-align: top;\">\n");
-  client.print F("<select name=\"GAL4\" size = 6>\n");
+  client.print F("<select name=\"fly\" size = 6>\n");
   client.print F("<option value=\"shibire\" selected>shibire</option>\n");
   client.print F("<option value=\"w_minus\" >w-</option>\n");
   client.print F("</select><br></td>\n");
 
   client.print F("<td style=\"vertical-align: top;\">\n");
-  client.print F("<select name=\"Age\" size = 6>\n");
+  client.print F("<select name=\"HairD\" size = 6>\n");
   client.print F("<option value=\"Y\">Yes</option>\n");
   client.print F("<option value=\"N\" selected>No</option>\n");
   client.print F("</select><br></td></tr></tbody></table><BR>\n");
@@ -2792,7 +2820,7 @@ void writehomepage ()
 
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG_T\" checked>Test ERG<br>\n");
-  client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG\" >flash ERG<br>\n");
+  client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG\" >Save ERG<br>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"SSVEP\" >SSVEP (sine)<br></td>\n");
 
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
@@ -2830,8 +2858,8 @@ void writehomepage ()
   client.print F("<td bgcolor=\"Black\">\n");
   client.print F("<A href=\"/black/\"><font color=\"White\">Black</font></a></td>\n");
 
-  client.print F("<td><a href=\"/\">Test setup</a></td><td>\n");
-  client.print F("<a href=\"/dir=\">Directory</a></table></body></html>\n");
+  //client.print F("<td><a href=\"/\">Test setup</a></td>\n");
+  client.print F("<td><a href=\"/dir=\">Directory</a></td></table></body></html>\n");
 
 }
 
