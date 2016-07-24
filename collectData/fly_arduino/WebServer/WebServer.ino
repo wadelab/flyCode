@@ -30,7 +30,7 @@
 
 
 #define due5
-#define USE_DHCP
+//#define USE_DHCP
 
 
 #ifndef ARDUINO_LINUX
@@ -239,9 +239,9 @@ byte freq2 = 15 ; // flicker of LED Hz
 #define presamples 102
 
 const int data_block_size = 8 * max_data ;
-volatile unsigned int time_stamp [max_data] ;
+volatile unsigned int time_stamp [max_data + presamples] ;
 volatile int erg_in [max_data];
-volatile int stimvalue [max_data + presamples] ;
+volatile int * stimvalue = (int *) time_stamp ;
 
 
 volatile long mean = 0;
