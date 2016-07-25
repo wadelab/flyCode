@@ -1133,7 +1133,7 @@ void addSummary ()
   if (bDoFlash)
   {
     iOffset = (nRepeats - 1) * 14 ;
-    // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2");
+    // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,");
 
     pSummary[iOffset + kk] = erg_in[1] ;
     //    Serial.println (pSummary[iOffset + kk]);
@@ -1280,7 +1280,7 @@ bool writeSummaryFile(const char * cMain)
   }
   if (bDoFlash)
   {
-    strcpy (cTmp, "\nstart,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2\n");
+    strcpy (cTmp, "\nstart,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,\n");
   }
   else
   {
@@ -1778,14 +1778,14 @@ void doreadSummaryFile (const char * c)
     * pNext = ',';
     pNext = strchr ((char *)cPtr, '&');
   }
-  
+
   pNext = strchr ((char *)cPtr, '?');
   while (pNext)
   {
     * pNext = ',';
     pNext = strchr ((char *)cPtr, '?');
   }
-  
+
   client.print ((char *)cPtr);
   client.println F(",<BR>");
 
@@ -2473,20 +2473,31 @@ void sendReply ()
 
         writeSummaryFile(cFile);
 
+        String sPicture = sFile;
         if (bDoFlash)
         {
-          String sPicture = sFile;
           sPicture.replace ("ERG", "ERP" );
-          client.print ("<A HREF= \"" + sPicture + "\" > (averaged picture) </A>" );
+          client.print F("<A HREF= \"");
+          client.print (sPicture) ;
+          client.print F("\" >(averaged picture)</A>" );
+          sPicture.replace ("ERP", "CSV" );
         }
+        else
+        {
+          sPicture.replace ("SVP", "CSV" );
+        }
+
+        client.print F("<A HREF= \"");
+        client.print (sPicture) ;
+        client.print F("\" >(summary file)</A>" );
       }
       else
       {
         wfile.close() ;
       }
-      client.println F("<BR><BR>To setup for another test please ") ;
+      client.print F("<BR><BR>To setup for another test please \n") ;
       send_GoBack_to_Stim_page ();
-      client.println F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR><BR>");
+      client.print F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR><BR> \n");
       if (bDoFlash)
       {
         sendGraphic();
