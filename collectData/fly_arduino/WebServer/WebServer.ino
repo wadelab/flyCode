@@ -238,10 +238,10 @@ byte freq2 = 15 ; // flicker of LED Hz
 #define max_data 1025
 #define presamples 102
 
-const int data_block_size = 8 * max_data ;
+#define data_block_size  8 * max_data
 volatile unsigned int time_stamp [max_data + presamples] ;
 volatile int erg_in [max_data];
-volatile int * stimvalue = (int *) time_stamp ;
+volatile int * stimvalue = (int *) time_stamp ; // save memory by sharing time_stamp...
 
 
 volatile long mean = 0;
@@ -1170,7 +1170,7 @@ void addSummary ()
   else
   {
     // fft
-    iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 - 10;
+    iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 ;
     Serial.print F("Offset ");
     Serial.println ( iOffset );
 
@@ -1184,7 +1184,7 @@ void addSummary ()
     //    // save erg as we do an in place FFT
     //    int erg_tmp [ max_data];
     //    for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
-    //do_fft() ;
+    do_fft() ;
 
     // F2-F1
     pSummary[iOffset + kk] = erg_in[12] ;
@@ -1204,16 +1204,18 @@ void addSummary ()
 
     // restore erg
     //    for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
-    Serial.print F("kk:");
-    Serial.println (kk) ;
 
-    for (int q = 0; q < iOffset + kk ; q++)
-    {
-      Serial.print (pSummary[q]) ;
-      Serial.print F(",");
+    //    Serial.print F("kk:");
+    //    Serial.println (kk) ;
+    //
+    //    for (int q = 0; q < iOffset + kk ; q++)
+    //    {
+    //      Serial.print (pSummary[q]) ;
+    //      Serial.print F(",");
+    //
+    //    }
+    //    Serial.println();
 
-    }
-    Serial.println();
   }
 }
 
@@ -1282,7 +1284,7 @@ bool writeSummaryFile(const char * cMain)
   }
   else
   {
-    strcpy (cTmp, "\nprobe contrast, mask, repeat, F2-F1, 1F1, 2F1, 2F2, 1F1+1F2, 2F1+2F2, 50 Hz\n");
+    strcpy (cTmp, "\nprobe contrast, mask, repeat, F2-F1, 1F1, 2F1, 2F2, 1F1+1F2, 2F1+2F2, 50 Hz,\n");
   }
   iBytesWritten = file.write((uint8_t *)cTmp, strlen(cTmp)) ;
   if (iBytesWritten <= 0)
@@ -1383,7 +1385,7 @@ bool writeFile(char * c)
     }
     else
     {
-      Serial.println F ("Error in seeking on file");
+      Serial.print F ("Error in seeking on file");
       Serial.println (c);
 
     }
@@ -1564,13 +1566,13 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
     iBytesRead = file.read ((unsigned char *)time_stamp, iBytesRequested );
     nBlocks ++;
     // stop when mask and probe are both 30%
-    Serial.println F("time ");
-    Serial.print (time_stamp[max_data - 1]);
-    Serial.println F(" erg ");
-    Serial.println (erg_in[max_data - 1]);
+    //    Serial.println F("time ");
+    //    Serial.print (time_stamp[max_data - 1]);
+    //    Serial.println F(" erg ");
+    //    Serial.println (erg_in[max_data - 1]);
     if ( time_stamp[max_data - 1] == 30 && erg_in[max_data - 1] == 30 )
     {
-      Serial.println F("about to do FFT ");
+      Serial.print F("about to do FFT ");
       int m = millis();
       do_fft();
       // add to the average
@@ -1578,8 +1580,8 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
       {
         erg_in2[ii] = erg_in2[ii] + erg_in[ii];
       }
-      Serial.print (erg_in[48]);
-      Serial.println F(" done FFT in");
+      //      Serial.print (erg_in[48]);
+      Serial.print F(" done FFT in");
       Serial.print (millis() - m);
       Serial.println F(" milliseconds");
     }
@@ -1769,15 +1771,23 @@ void doreadSummaryFile (const char * c)
     return ;
   }
   sendLastModified((char *)cPtr, (char *) c, true); // make this HTML so we can display it...
-  // write out the string ....
+  // write out the string .... after replacing & or ? with ,
   char * pNext = strchr ((char *)cPtr, '&');
   while (pNext)
   {
     * pNext = ',';
     pNext = strchr ((char *)cPtr, '&');
   }
+  
+  pNext = strchr ((char *)cPtr, '?');
+  while (pNext)
+  {
+    * pNext = ',';
+    pNext = strchr ((char *)cPtr, '?');
+  }
+  
   client.print ((char *)cPtr);
-  client.println F("<BR>");
+  client.println F(",<BR>");
 
   // inefficiently read the file a byte at a time, and send it to the client
   // replace \n with <BR>
@@ -2218,6 +2228,7 @@ void plotInColour (int iStart, const String & str_col)
   client.println F("ctx.fill();");
   client.println F("ctx.stroke();");
 }
+
 void sendGraphic()
 {
   sendGraphic(true);
@@ -2786,13 +2797,11 @@ void writehomepage ()
 
   client.print F("<form action=\"/\">\n");
 
-  client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"\n");
-  client.print F("cellspacing=\"2\"><tbody><tr>\n");
-  client.print F("<td style=\"vertical-align: top; width = 33%\">genotype</td>\n");
-  client.print F("<td style=\"vertical-align: top; width = 33%\">Hairdryer:</td>\n");
+  client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody><tr>\n");
+  client.print F("<td style=\"vertical-align: top; width = 50%\">genotype</td>\n");
+  client.print F("<td style=\"vertical-align: top; width = 50%\">Hairdryer:</td></tr>\n");
 
-  client.print F("</tr><tr>\n");
-  client.print F("<td style=\"vertical-align: top;\">\n");
+  client.print F("<tr><td style=\"vertical-align: top;\">\n");
   client.print F("<select name=\"fly\" size = 6>\n");
   client.print F("<option value=\"shibire\" selected>shibire</option>\n");
   client.print F("<option value=\"w_minus\" >w-</option>\n");
@@ -2806,9 +2815,9 @@ void writehomepage ()
 
   client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody ><tr>\n");
 
-  client.print F("<td style=\"vertical-align: top; width = 20%\"><BR>Colour</td>\n");
-  client.print F("<td style=\"vertical-align: top; width = 20%\"><BR>Protocol</td>\n");
-  client.print F("<td style=\"vertical-align: top; width = 20%\"><BR>Intensity</td></tr><tr>\n");
+  client.print F("<td style=\"vertical-align: top; width = 33%\"><BR>Colour</td>\n");
+  client.print F("<td style=\"vertical-align: top; width = 33%\"><BR>Protocol</td>\n");
+  client.print F("<td style=\"vertical-align: top; width = 33%\"><BR>ERG Intensity</td></tr><tr>\n");
 
 
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
@@ -2883,7 +2892,7 @@ void do_fft()
   memset( f_i, 0, sizeof (f_i));                   // Image -zero.
   radix.rev_bin( f_r, FFT_SIZE);
   delay(0);
- 
+
   radix.fft_radix4_I( f_r, f_i, LOG2_FFT);
   radix.gain_Reset( f_r, LOG2_FFT - 1);
   radix.gain_Reset( f_i, LOG2_FFT - 1);
