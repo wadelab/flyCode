@@ -195,10 +195,16 @@ const byte grnled = 5;
 const byte bluLED = 7;
 #endif
 
+//#ifdef ESP8266
+//const byte redled = 4;
+//const byte grnled = 0;
+//const byte bluLED = 5;
+//#endif
+
 #ifdef ESP8266
-const byte redled = 4;
-const byte grnled = 0;
-const byte bluLED = 5;
+const byte redled = 13;
+const byte grnled = 15;
+const byte bluLED = 2;
 #endif
 
 volatile byte analogPin = 0 ;
@@ -526,15 +532,6 @@ void setup() {
   // only call this once
   os_timer_setfn((ETSTimer *) &myTimer, TC3_Handler, NULL);
 
-  // text display the IP address
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 0);
-
-  display.println ("IP: ");
-  display.println (myIP);
-  display.setCursor(0, 0);
-  display.display(); // actually display all of the above
 #endif
 }
 
@@ -567,8 +564,20 @@ void setupESPWiFi()
   Serial.println (AP_NameString);
   WiFi.softAP(AP_NameChar, WiFiAPPSK);
   myIP = WiFi.softAPIP() ;
-  Serial.println F("ESP accesspoint :");
-  Serial.print (myIP) ;
+  Serial.print F("ESP accesspoint :");
+  Serial.println (myIP) ;
+
+  // text display the IP address
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+
+  display.print ("IP: ");
+  display.println (myIP);
+  display.print ("on net: ");
+  display.println (AP_NameString);
+  display.setCursor(0, 0);
+  display.display(); // actually display all of the above
 }
 #endif
 
@@ -691,9 +700,9 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
   //Serial.println F("colouring 1");
 #ifdef ESP8266
   //0/1023 with high values giving least light
-  analogWrite( redled, 1023 - 4 * r );
-  analogWrite( grnled, 1023 - 4 * g );
-  analogWrite( bluLED, 1023 - 4 * b );
+  analogWrite( redled, 4 * r );
+  analogWrite( grnled, 4 * g );
+  analogWrite( bluLED, 4 * b );
 #else
   analogWrite( redled, r );
   analogWrite( grnled, g );
