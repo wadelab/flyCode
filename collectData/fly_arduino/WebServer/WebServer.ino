@@ -202,9 +202,9 @@ const byte bluLED = 7;
 //#endif
 
 #ifdef ESP8266
-const byte redled = 13;
-const byte grnled = 15;
-const byte bluLED = 2;
+const byte redled = 13; // Farnell 2080005
+const byte grnled = 15; // 1855562
+const byte bluLED = 2;  // 1045418
 #endif
 
 volatile byte analogPin = 0 ;
@@ -699,7 +699,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
 {
   //Serial.println F("colouring 1");
 #ifdef ESP8266
-  //0/1023 with high values giving least light
+  //0/1023 rather than 0/255
   analogWrite( redled, 4 * r );
   analogWrite( grnled, 4 * g );
   analogWrite( bluLED, 4 * b );
