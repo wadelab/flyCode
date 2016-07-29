@@ -21,8 +21,9 @@
 
 #ifdef ESP8266
 #define __wifisetup__
-// run as standalone access point ??
+#define __CLASSROOMSETUP__
 
+// run as standalone access point ??
 #define ESP8266AP
 #endif
 
@@ -2774,6 +2775,9 @@ void loop()
 
 void writehomepage ()
 {
+  
+#ifdef __CLASSROOMSETUP__
+
   client.print F("<!DOCTYPE html> <html> <head> <base href=\"http://");
   client.print  (myIP);
   client.println F("\"><script>\n");
@@ -2890,6 +2894,8 @@ void writehomepage ()
   //client.print F("<td><a href=\"/\">Test setup</a></td>\n");
   client.print F("<td><a href=\"/dir=\">Directory</a></td></table></body></html>\n");
 
+#endif 
+//__CLASSROOMSETUP__
 }
 
 void do_fft()
