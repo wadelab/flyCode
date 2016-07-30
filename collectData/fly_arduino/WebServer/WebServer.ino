@@ -18,7 +18,7 @@
 #define __wifisetup__
 #endif
 
-
+#define __CLASSROOMSETUP__
 #ifdef ESP8266
 #define __wifisetup__
 #define __CLASSROOMSETUP__
@@ -1708,7 +1708,7 @@ void doreadFile ( char * c)
     Serial.print F("brightness decoded as ");
     Serial.println (brightness);
   }
-   // write out the string ....
+  // write out the string ....
   char * pNext = strchr ((char *)cPtr, '&');
   while (pNext)
   {
@@ -1722,10 +1722,10 @@ void doreadFile ( char * c)
     * pNext = '\t';
     pNext = strchr ((char *)cPtr, '?');
   }
-   
+
   client.print ((char *)cPtr);
   client.println ();
-  
+
   // now on to the data
   iBytesRequested = max_data * sizeof (int);
   iBytesRead = file.read((unsigned char *)erg_in, iBytesRequested);
@@ -1825,13 +1825,13 @@ void doreadSummaryFile (const char * c)
   bool b = file.read(cPtr, 1);
   while (b)
   {
-    if (*cPtr == '\n')
+    switch ( *cPtr )
     {
-      client.println F("<BR>");
-    }
-    else
-    {
-      client.print ((char *)cPtr);
+      case '\n':   client.println F("<BR>");
+        break;
+      case ',':   client.println F("\t");
+        break;
+      default:  client.print ((char *)cPtr);
     }
     b = file.read(cPtr, 1);
   }
@@ -2798,7 +2798,7 @@ void writehomepage ()
 
 #ifdef __CLASSROOMSETUP__
 
-  client.print F("<!DOCTYPE html> <html> <head> <base href=\"http://");
+  client.print F("<!DOCTYPE html> <html> <head> <title> Welcome to FlyLab! </title> <base href=\"http://");
   client.print  (myIP);
   client.println F("\"><script>\n");
   ////////////////////////////////////
@@ -2837,7 +2837,7 @@ void writehomepage ()
   client.print F("</head>\n");
 
   client.print F("<!-- body onload=\"startTime()\" -->\n");
-  client.print F("<body><div id=\"txt\">Arduino Starter page</div><BR>\n");
+  client.print F("<body><div id=\"txt\">Flylab Starter page</div><BR>\n");
 
   client.print F("<form action=\"/\">\n");
 
