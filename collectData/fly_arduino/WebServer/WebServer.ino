@@ -1295,11 +1295,11 @@ bool writeSummaryFile(const char * cMain)
   }
   if (bDoFlash)
   {
-    strcpy (cTmp, "\nstart\t 10\t 20\t 30\t 40\t 50\t 60\t 70\t 80\t 90%\t max1\t min1\t max2\t min2\t \n");
+    strcpy (cTmp, "\nstart,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,\n");
   }
   else
   {
-    strcpy (cTmp, "\nprobe contrast\t  mask\t  repeat\t  F2-F1\t  1F1\t  2F1\t  2F2\t  1F1+1F2\t  2F1+2F2\t  50 Hz\t \n");
+    strcpy (cTmp, "\nprobe contrast, mask, repeat, F2-F1, 1F1, 2F1, 2F2, 1F1+1F2, 2F1+2F2, 50 Hz,\n");
   }
   iBytesWritten = file.write((uint8_t *)cTmp, strlen(cTmp)) ;
   if (iBytesWritten <= 0)
@@ -1323,14 +1323,14 @@ bool writeSummaryFile(const char * cMain)
     for (int jj = 0; jj < iOfssfet; jj++)
     {
       iBytesWritten = iBytesWritten + file.print (pSummary[ii * iOfssfet + jj]);
-      iBytesWritten = iBytesWritten + file.print ("\t ");
+      iBytesWritten = iBytesWritten + file.print (",");
     }
     iBytesWritten = iBytesWritten + file.print ("\n");
   }
 
   if (iBytesWritten <= 0)
   {
-    Serial.println F("Error in writing erg data to file");
+    Serial.println F("Error in writing summary data to file");
     file.close();
     return false;
   }
@@ -1712,14 +1712,14 @@ void doreadFile ( char * c)
   char * pNext = strchr ((char *)cPtr, '&');
   while (pNext)
   {
-    * pNext = '\t';
+    * pNext = ',';
     pNext = strchr ((char *)cPtr, '&');
   }
 
   pNext = strchr ((char *)cPtr, '?');
   while (pNext)
   {
-    * pNext = '\t';
+    * pNext = ',';
     pNext = strchr ((char *)cPtr, '?');
   }
 
@@ -1741,7 +1741,7 @@ void doreadFile ( char * c)
     {
       // make a string for assembling the data to log:
       client.print (time_stamp[i]);
-      client.print ( "\t ");
+      client.print ( ", ");
       if (bERG)
       {
         client.print ( fERG_Now (i) ); // i is related to max data, not the actual time
@@ -1750,7 +1750,7 @@ void doreadFile ( char * c)
       {
         client.print (Get_br_Now(time_stamp[i],  time_stamp [max_data - 1], erg_in [max_data - 1]));
       }
-      client.print F("\t ");
+      client.print F(", ");
 
       client.print (erg_in[i]);
       client.println ();
@@ -1758,10 +1758,10 @@ void doreadFile ( char * c)
 
     // write out contrast
 
-    client.print ( "-99\t " );
+    client.print ( "-99, " );
 
     client.print (time_stamp[max_data - 1]);
-    client.print ( "\t " );
+    client.print ( ", " );
 
     client.print (erg_in[max_data - 1]);
     client.println ();
@@ -1800,45 +1800,36 @@ void doreadSummaryFile (const char * c)
     file.close();
     return ;
   }
-  sendLastModified((char *)cPtr, (char *) c, true); // make this HTML so we can display it...
+  sendLastModified((char *)cPtr, (char *) c, false);
   // write out the string .... after replacing & or ? with ,
   char * pNext = strchr ((char *)cPtr, '&');
   while (pNext)
   {
-    * pNext = '\t';
+    * pNext = ',';
     pNext = strchr ((char *)cPtr, '&');
   }
 
   pNext = strchr ((char *)cPtr, '?');
   while (pNext)
   {
-    * pNext = '\t';
+    * pNext = ',';
     pNext = strchr ((char *)cPtr, '?');
   }
 
   client.print ((char *)cPtr);
-  client.println F("\t<BR>");
+  client.println F("\n");
 
   // inefficiently read the file a byte at a time, and send it to the client
-  // replace \n with <BR>
   memset (cPtr, 0, 20 );
   bool b = file.read(cPtr, 1);
   while (b)
   {
-    switch ( *cPtr )
-    {
-      case '\n':   client.println F("<BR>");
-        break;
-      case ',':   client.println F("\t");
-        break;
-      default:  client.print ((char *)cPtr);
-    }
+    client.print ((char *)cPtr);
     b = file.read(cPtr, 1);
   }
 
-
   file.close();
-  sendFooter();
+
 }
 
 #ifdef ESP8266
