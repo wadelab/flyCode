@@ -22,6 +22,7 @@
 #ifdef ESP8266
 #define __wifisetup__
 #define __CLASSROOMSETUP__
+//#define ESP8266_DISPLAY
 
 // run as standalone access point ??
 #define ESP8266AP
@@ -106,7 +107,7 @@
 // is 10 on normal uno
 
 #include <SPI.h>
-#ifdef ESP8266
+#ifdef ESP8266_DISPLAY
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -305,7 +306,9 @@ IPAddress myIP, theirIP, dnsIP ;
 WiFiServer server (80);
 
 #ifdef ESP8266
+#ifdef ESP8266_DISPLAY
 Adafruit_SSD1306 display = Adafruit_SSD1306();
+#endif
 volatile os_timer_t myTimer;
 WiFiClient client ;
 #else
@@ -394,7 +397,7 @@ void setup() {
 
 
 #ifdef ESP8266
-
+#ifdef ESP8266_DISPLAY
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
   display.display();
@@ -403,7 +406,7 @@ void setup() {
   // Clear the buffer.
   display.clearDisplay();
   display.display();
-
+#endif
 #else
 
   // ...
@@ -568,6 +571,7 @@ void setupESPWiFi()
   Serial.print F("ESP accesspoint :");
   Serial.println (myIP) ;
 
+#ifdef ESP8266_DISPLAY
   // text display the IP address
   display.setTextSize(1);
   display.setTextColor(WHITE);
@@ -579,6 +583,7 @@ void setupESPWiFi()
   display.println (AP_NameString);
   display.setCursor(0, 0);
   display.display(); // actually display all of the above
+#endif
 }
 #endif
 
@@ -1290,11 +1295,11 @@ bool writeSummaryFile(const char * cMain)
   }
   if (bDoFlash)
   {
-    strcpy (cTmp, "\nstart,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,\n");
+    strcpy (cTmp, "\nstart\t 10\t 20\t 30\t 40\t 50\t 60\t 70\t 80\t 90%\t max1\t min1\t max2\t min2\t \n");
   }
   else
   {
-    strcpy (cTmp, "\nprobe contrast, mask, repeat, F2-F1, 1F1, 2F1, 2F2, 1F1+1F2, 2F1+2F2, 50 Hz,\n");
+    strcpy (cTmp, "\nprobe contrast\t  mask\t  repeat\t  F2-F1\t  1F1\t  2F1\t  2F2\t  1F1+1F2\t  2F1+2F2\t  50 Hz\t \n");
   }
   iBytesWritten = file.write((uint8_t *)cTmp, strlen(cTmp)) ;
   if (iBytesWritten <= 0)
@@ -1318,7 +1323,7 @@ bool writeSummaryFile(const char * cMain)
     for (int jj = 0; jj < iOfssfet; jj++)
     {
       iBytesWritten = iBytesWritten + file.print (pSummary[ii * iOfssfet + jj]);
-      iBytesWritten = iBytesWritten + file.print (", ");
+      iBytesWritten = iBytesWritten + file.print ("\t ");
     }
     iBytesWritten = iBytesWritten + file.print ("\n");
   }
@@ -1694,9 +1699,6 @@ void doreadFile ( char * c)
 
   sendLastModified((char *)cPtr, c, false);
 
-  // write out the string ....
-  client.print ((char *)cPtr);
-  client.println ();
   // test if its an ERG
   boolean bERG = ( NULL != strstr ( (char *) cPtr, "stim=fERG&") ) ;
   bIsSine = ( NULL == strstr ((char *) cPtr, "stm=SQ") ) ;
@@ -1706,6 +1708,24 @@ void doreadFile ( char * c)
     Serial.print F("brightness decoded as ");
     Serial.println (brightness);
   }
+   // write out the string ....
+  char * pNext = strchr ((char *)cPtr, '&');
+  while (pNext)
+  {
+    * pNext = '\t';
+    pNext = strchr ((char *)cPtr, '&');
+  }
+
+  pNext = strchr ((char *)cPtr, '?');
+  while (pNext)
+  {
+    * pNext = '\t';
+    pNext = strchr ((char *)cPtr, '?');
+  }
+   
+  client.print ((char *)cPtr);
+  client.println ();
+  
   // now on to the data
   iBytesRequested = max_data * sizeof (int);
   iBytesRead = file.read((unsigned char *)erg_in, iBytesRequested);
@@ -1721,16 +1741,16 @@ void doreadFile ( char * c)
     {
       // make a string for assembling the data to log:
       client.print (time_stamp[i]);
-      client.print ( ", ");
+      client.print ( "\t ");
       if (bERG)
       {
-        client.print ( fERG_Now (time_stamp[i] - time_stamp[0] ) );
+        client.print ( fERG_Now (i) ); // i is related to max data, not the actual time
       }
       else
       {
         client.print (Get_br_Now(time_stamp[i],  time_stamp [max_data - 1], erg_in [max_data - 1]));
       }
-      client.print F(", ");
+      client.print F("\t ");
 
       client.print (erg_in[i]);
       client.println ();
@@ -1738,10 +1758,10 @@ void doreadFile ( char * c)
 
     // write out contrast
 
-    client.print ( "-99, " );
+    client.print ( "-99\t " );
 
     client.print (time_stamp[max_data - 1]);
-    client.print ( ", " );
+    client.print ( "\t " );
 
     client.print (erg_in[max_data - 1]);
     client.println ();
@@ -1785,19 +1805,19 @@ void doreadSummaryFile (const char * c)
   char * pNext = strchr ((char *)cPtr, '&');
   while (pNext)
   {
-    * pNext = ',';
+    * pNext = '\t';
     pNext = strchr ((char *)cPtr, '&');
   }
 
   pNext = strchr ((char *)cPtr, '?');
   while (pNext)
   {
-    * pNext = ',';
+    * pNext = '\t';
     pNext = strchr ((char *)cPtr, '?');
   }
 
   client.print ((char *)cPtr);
-  client.println F(",<BR>");
+  client.println F("\t<BR>");
 
   // inefficiently read the file a byte at a time, and send it to the client
   // replace \n with <BR>
@@ -2775,7 +2795,7 @@ void loop()
 
 void writehomepage ()
 {
-  
+
 #ifdef __CLASSROOMSETUP__
 
   client.print F("<!DOCTYPE html> <html> <head> <base href=\"http://");
@@ -2894,8 +2914,8 @@ void writehomepage ()
   //client.print F("<td><a href=\"/\">Test setup</a></td>\n");
   client.print F("<td><a href=\"/dir=\">Directory</a></td></table></body></html>\n");
 
-#endif 
-//__CLASSROOMSETUP__
+#endif
+  //__CLASSROOMSETUP__
 }
 
 void do_fft()
