@@ -97,7 +97,7 @@ for freqFF = 1: freqmax;
             else
                 offset = genotypemax + 3;
             end
-            numcells{ fly , genotype + offset} = (max_response) ;
+            numcells{ fly , genotype + offset} = 1000 * (max_response) ;
         end
         end
         
