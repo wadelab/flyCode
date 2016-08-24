@@ -189,7 +189,7 @@ status=xlwrite(filename, phenName, '2F1', 'A1');
 status=xlwrite(filename, phenotypeAmps(:,:,1), '1F1', 'A2');
 status=xlwrite(filename, phenotypeAmps(:,:,3), '2F1', 'A2');
 
-%% now add a page with the data tabulated vertically
+%% now add a page with the data tabulated vertically 
 outcells={'genotype','1F1','2F1'};
 iPreviousFlies = 1;
 sZ = size(phenotypeAmps(:,:,1));
