@@ -152,7 +152,7 @@ for phen = 1 : nPhenotypes
     %if we are here, its bound to be an SSVEP...
     phenName{phen} = strrep(strjoin(tmpTxt),'SSVEP','');
         
-    plot_mean_crf ({myTxt,phenName{phen}}, squeeze(meanCRF(phen,:,:)), dirName, [' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)), maxCRR);
+    plot_mean_crf ({myTxt,phenName{phen}}, squeeze(meanCRF(phen,:,:)), dirName, [' phenotype ', num2str(phen)], true, squeeze(SE_CRF(phen,:,:)), maxCRR);
 end
 
 %% write out the max CRF for each phenotype
