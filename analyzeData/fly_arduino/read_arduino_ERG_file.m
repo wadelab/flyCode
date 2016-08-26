@@ -140,6 +140,13 @@ lineSaved = [lineSaved, {['on-transient =', num2str(max(meandata(300:380))-mean(
 lineSaved = [lineSaved, {['peak-peak =', num2str(max(meandata)-min(meandata))]}];
 lineSaved = [lineSaved, {['noise =', num2str(myNoise)]}];
 
+%% calculate average every 10%
+for i = 1:10
+    k = (i-1)*100 + 1;
+    lineSaved = [lineSaved, {[num2str((i-1)*10), '% =', num2str(mean(meandata(k:k+23)))]}];
+end
+
+%% write out line
 for i = 1:length(lineSaved)
     disp(lineSaved{i});
 end
