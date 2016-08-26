@@ -183,11 +183,16 @@ javaaddpath(fullfile(POIPATH,'poi_library/stax-api-1.0.1.jar'));
 
 
 %%  [status, message]=xlwrite(filename,A,sheet, range)
-filename = [ dirName, '/SSVEP_summary.xls']
+dt = datestr(now,'mmm_dd_HH_MM');
+filename = [ dirName, '/SSVEP_', dt, '_summary.xls']
 status=xlwrite(filename, phenName, '1F1', 'A1');
 status=xlwrite(filename, phenName, '2F1', 'A1');
 status=xlwrite(filename, phenotypeAmps(:,:,1), '1F1', 'A2');
 status=xlwrite(filename, phenotypeAmps(:,:,3), '2F1', 'A2');
+status=xlwrite(filename, phenName, '1F1_phase', 'A1');
+status=xlwrite(filename, phenName, '2F1_phase', 'A1');
+status=xlwrite(filename, phenotypePh(:,:,1), '1F1_phase', 'A2');
+status=xlwrite(filename, phenotypePh(:,:,3), '2F1_phase', 'A2');
 
 %% now add a page with the data tabulated vertically 
 outcells={'genotype','1F1','2F1'};
@@ -201,6 +206,8 @@ for j = 1: sZ(2)
             outcells{iPreviousFlies,1} = phenName{j};
             outcells{iPreviousFlies,2} = phenotypeAmps(i,j,1);
             outcells{iPreviousFlies,3} = phenotypeAmps(i,j,3);
+            outcells{iPreviousFlies,4} = phenotypePh(i,j,1);
+            outcells{iPreviousFlies,5} = phenotypePh(i,j,3);
         end
     end
 end

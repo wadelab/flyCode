@@ -72,6 +72,47 @@ if ~isempty(num)
 end
 thisFlyData.F2=F2;
 
+%% remove garbage in Tom's data set
+% find and delete the filename
+ix = strfind(line, 'Filter=') ;
+ix = find(~cellfun(@isempty,ix));
+line (ix)=[];
+
+ix = strfind(line, 'sex=') ;
+ix = find(~cellfun(@isempty,ix));
+line (ix)=[];
+
+ix = strfind(line, 'org=') ;
+ix = find(~cellfun(@isempty,ix));
+line (ix)=[];
+
+ix = strfind(line, 'col=') ;
+ix = find(~cellfun(@isempty,ix));
+line (ix)=[];
+
+ix = strfind(line, 'bri=') ;
+ix = find(~cellfun(@isempty,ix));
+line (ix)=[];
+
+%some flies were missing UAS2=
+n=3 ;
+if isempty(strmatch('UAS2',line))
+    line(n+1:end+1) = line(n:end);
+    line{n}= 'UAS2=none';
+else
+    disp('UAS2 found');
+end
+
+
+if isempty(strmatch('Age=1',line))
+    thisFlyData.Error = ['wrong age : ', fName];
+    disp(thisFlyData.Error);
+    success = false ;
+    return
+end
+
+
+%% Back to normal processing
 thisFlyData.phenotypes = line ;
 
 
@@ -123,12 +164,12 @@ timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
 
 %% These constants are fixed
-nContrasts = 9; 
+nContrasts = 9;
 iStart = 1;
 iEnd = 1024;
 ss = get (0,'screensize') ;
 printFilename = [pathstr, filesep, fileName, '_RawData', sExt];
-bplotFigure = ~(exist(printFilename, 'file') == 2); 
+bplotFigure = ~(exist(printFilename, 'file') == 2);
 
 %% plot raw data
 if bplotFigure
@@ -187,7 +228,7 @@ complx_fftData= zeros(nSamples,1000);
 for i = 1:nSamples
     rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
     % limit it to 1 sec worth of data
-    complx_fftData(i,:)=fft(rawdata(i,1:1000)); %% return this to main program and then average first and then calculate the abs
+    complx_fftData(i,:)=fft(rawdata(i,1:1000)) /1000; %% return this to main program and then average first and then calculate the abs
 end
 % ignore dc component on complex fft
 complx_fftData (:,1) = [];
