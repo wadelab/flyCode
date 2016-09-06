@@ -54,8 +54,9 @@ javaaddpath(fullfile(a,'poi_library/stax-api-1.0.1.jar'));
 
 contrastmax = length(analysisStruct.contRange);
 genotypemax = length(analysisStruct.phenotypeName) ;
-outcells{1,1} = 'unmasked 35';
-outcells{genotypemax + 3,1} = 'masked 35';
+masklabels = {'unmasked 35','masked 35'}
+% outcells{1,1} = 'unmasked 35';
+% outcells{genotypemax + 3,1} = 'masked 35';
 
 maskmax = 2 ;
 
@@ -80,6 +81,8 @@ for genotype = 1 : genotypemax
     
 end
 
+
+
 %% now do the output
 
 FreqLabels ={'1F1','1F2','2F1','2F2', '1F1+1F2','2F1+2F2'};
@@ -87,9 +90,10 @@ contrast = 5 ;
 freqmax=length(FreqLabels);
 for freqFF = 1: freqmax;
     
-    
+    for mask = 1 : maskmax
     for genotype = 1 : genotypemax
-        %%convert the indexes to humean friendly forms...
+
+                %%convert the indexes to humean friendly forms...
         genotype_str = analysisStruct.phenotypeName{genotype} ;
         genotype_str = strrep (genotype_str,'all', '');
         genotype_str = strrep (genotype_str,'_1_', ' 01, ');
@@ -108,16 +112,17 @@ for freqFF = 1: freqmax;
         genotype_str = strrep (genotype_str,'006', '');
         genotype_str = strrep (genotype_str,'  ', ' ');
         genotype_str = strtrim(genotype_str);
+        
         outcells{genotype + 1, 1} = genotype_str ;
-        outcells{genotypemax + genotype + 3, 1} = genotype_str ;
+%         outcells{genotypemax + genotype + 3, 1} = genotype_str ;
         
         flymax = analysisStruct.nFlies{genotype};
-        for mask = 1 : maskmax
-            if mask == 1
+        
+%             if mask == 1
                 offset = 1;
-            else
-                offset = genotypemax + 3;
-            end
+%             else
+%                 offset = genotypemax + 3;
+%             end
             
             for fly = 1 : flymax
                 response = abs(analysisStruct.allFlyDataCoh{1,genotype}(fly,freqFF,contrast,mask));
@@ -127,13 +132,14 @@ for freqFF = 1: freqmax;
                 end
             end
         end
-        
-    end
+   
     
     
-    %%     % Generate XLSX file
+    % Generate XLSX file
     disp([' processing : ', FreqLabels{freqFF} ]);
-    [status]=xlwrite(outfile, outcells,FreqLabels{freqFF},'g8');
-    [status]=xlwrite(outfile, numcells,FreqLabels{freqFF},'i8');
+    [status]=xlwrite(outfile, outcells,[FreqLabels{freqFF}, ' ', masklabels{mask}],'g8');
+    [status]=xlwrite(outfile, numcells,[FreqLabels{freqFF}, ' ', masklabels{mask}],'i8');
+         
+    end
 end
 disp (['file written ', outfile]);

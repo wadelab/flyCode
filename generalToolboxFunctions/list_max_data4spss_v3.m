@@ -62,7 +62,7 @@ end
 
 FreqLabels ={'1F1','1F2','2F1','2F2', '1F1+1F2','2F1+2F2'};
 freqmax=length(FreqLabels);
-maskLabel = {'_masked','_unmasked'};
+maskLabel = {'_unmasked','_masked'};
 
 
 %% write the heading line
@@ -93,6 +93,9 @@ for genotype = 1 : genotypemax
     genotype_str = strrep (genotype_str,'_14_', ' 14, ');
     genotype_str = strrep (genotype_str,'_21_', ' 21, ');
     genotype_str = strrep (genotype_str,'_', ' ');
+    genotype_str = strrep (genotype_str,'st1 st1', 'st1');
+    genotype_str = strrep (genotype_str,'St1', 'st1');
+    genotype_str = regexprep (genotype_str,'00.', '');
     genotype_str = strrep (genotype_str,'D ', '');
     genotype_str = strrep (genotype_str,'0uM Bottle', '');
     
