@@ -24,16 +24,24 @@ function subDirList=fly_getDataDirectoriesOrig(baseDir)
 %
 %
 %
-%
-allSubDirList=dir([baseDir,'/all*']); % List all the directories starting with 'all'
+%% added 22 aug
+% just get directorires
+%%
+allSubDirList = walk_a_directory_recursively(baseDir, 'all*');
+%dleted chris 22 Aug
+%allSubDirList=dir([baseDir,'/all*']); % List all the directories starting with 'all'
 
 thisSubDirIndex=0;
 
+%%
 for thisSubDir=1:length(allSubDirList);
-    if  (allSubDirList(thisSubDir).isdir)
+    if  (isdir(strtrim(char(allSubDirList(thisSubDir))))) %(allSubDirList(thisSubDir).isdir)
         
-        subDirList_element.dirName=fullfile(baseDir,allSubDirList(thisSubDir).name);
-        subDirList_element.type=allSubDirList(thisSubDir).name;
+       % subDirList_element.dirName=fullfile(baseDir,allSubDirList(thisSubDir));
+
+        subDirList_element.dirName=strtrim(char(allSubDirList(thisSubDir)));
+        subDirList_element.type=strrep(subDirList_element.dirName,baseDir,'');
+        subDirList_element.type=strrep(subDirList_element.type,'/','_')
         
         % Now go into each phenotype and find how many expts...
         exptList=dir([subDirList_element.dirName,'/Fly*']);
@@ -55,8 +63,8 @@ for thisSubDir=1:length(allSubDirList);
                 repeatedMeasureList=dir([ff,'/*.mat']);
                 nMats = length(repeatedMeasureList);
                 
-                if (nMats <1)
-                    warning('***---No data files found in this directory:');
+                if (nMats <2)
+                    warning('***---Not enough data files found in this directory:');
                     disp(ff);
                 else
                     exptIndex=exptIndex+1;
@@ -86,4 +94,3 @@ for thisSubDir=1:length(allSubDirList);
     end % End check on whether we are looking in a directory at the genotype/phenotype level
     
 end % Next genotype
-
