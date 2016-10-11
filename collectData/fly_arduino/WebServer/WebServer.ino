@@ -557,7 +557,7 @@ void setupESPWiFi()
   String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
                  String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
   macID.toUpperCase();
-  String AP_NameString = "ThingDev-" + macID;
+  String AP_NameString = "FlyBox-" + macID;
 
   char AP_NameChar[AP_NameString.length() + 1];
   memset(AP_NameChar, 0, AP_NameString.length() + 1);
@@ -571,7 +571,6 @@ void setupESPWiFi()
   Serial.print F("ESP accesspoint :");
   Serial.println (myIP) ;
 
-#ifdef ESP8266_DISPLAY
   // text display the IP address
   display.setTextSize(1);
   display.setTextColor(WHITE);
@@ -581,9 +580,10 @@ void setupESPWiFi()
   display.println (myIP);
   display.print ("on net: ");
   display.println (AP_NameString);
+  display.print ("Passwd: ");
+  display.println (WiFiAPPSK);
   display.setCursor(0, 0);
   display.display(); // actually display all of the above
-#endif
 }
 #endif
 
