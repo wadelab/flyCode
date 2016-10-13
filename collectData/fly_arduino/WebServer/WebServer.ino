@@ -18,7 +18,7 @@
 #define __wifisetup__
 #endif
 
-#define __CLASSROOMSETUP__
+//#define __CLASSROOMSETUP__
 #ifdef ESP8266
 #define __wifisetup__
 #define __CLASSROOMSETUP__
@@ -30,9 +30,9 @@
 
 #ifndef __wifisetup__
 
-
+// for ethernet ..............................................................................
 #define due5
-//#define USE_DHCP
+#define USE_DHCP
 
 
 #ifndef ARDUINO_LINUX
@@ -661,9 +661,9 @@ void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML
   client.println ();
   if (isHTML)
   {
-    client.println F("<!DOCTYPE HTML><html><title>");
+    client.println F("<!DOCTYPE HTML><head><html><title>");
     client.println (sTitle);
-    client.println F("</title><body ");
+    client.println F("</title><link rel=\"icon\" type=\"image/png\" href=\"http://biolpc1677.york.ac.uk/favicons/favicon-32x32.png\" sizes=\"32x32\"></head><body ");
     client.println (sINBody);
     client.println F(">");
   }
@@ -2789,7 +2789,7 @@ void writehomepage ()
 
 #ifdef __CLASSROOMSETUP__
 
-  client.print F("<!DOCTYPE html> <html> <head> <title> Welcome to FlyLab! </title> <base href=\"http://");
+  client.print F("<!DOCTYPE html> <html> <head> <title> Welcome to FlyLab! </title> <link rel=\"icon\" type=\"image/png\" href=\"http://biolpc1677.york.ac.uk/favicons/favicon-32x32.png\" sizes=\"32x32\"> <base href=\"http://");
   client.print  (myIP);
   client.println F("\"><script>\n");
   ////////////////////////////////////
@@ -2905,8 +2905,13 @@ void writehomepage ()
   //client.print F("<td><a href=\"/\">Test setup</a></td>\n");
   client.print F("<td><a href=\"/dir=\">Directory</a></td></table></body></html>\n");
 
-#endif
+#else
   //__CLASSROOMSETUP__
+
+  sendHeader (String("Fly lab here!"));
+  client.print F("Please try <a href = \"http://biolpc1677.york.ac.uk/pages\">biolpc1677</a> for starter page");
+  sendFooter();
+ #endif 
 }
 
 void do_fft()
