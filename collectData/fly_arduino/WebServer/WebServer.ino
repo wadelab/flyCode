@@ -18,10 +18,11 @@
 #define __wifisetup__
 #endif
 
-
+//#define __CLASSROOMSETUP__
 #ifdef ESP8266
 #define __wifisetup__
 #define __CLASSROOMSETUP__
+//#define ESP8266_DISPLAY
 
 // run as standalone access point ??
 #define ESP8266AP
@@ -29,9 +30,9 @@
 
 #ifndef __wifisetup__
 
-
+// for ethernet ..............................................................................
 #define due5
-//#define USE_DHCP
+#define USE_DHCP
 
 
 #ifndef ARDUINO_LINUX
@@ -42,7 +43,7 @@
 #endif
 #endif
 
- 
+
 
 //_____________________________________________________
 
@@ -106,7 +107,7 @@
 // is 10 on normal uno
 
 #include <SPI.h>
-#ifdef ESP8266
+#ifdef ESP8266_DISPLAY
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -238,7 +239,7 @@ bool bFileOK = true ;
 bool has_filesystem = true ;
 File file, wfile;
 
-boolean bDoFlash = false ;
+
 byte freq1 = 12 ; // flicker of LED Hz
 byte freq2 = 15 ; // flicker of LED Hz
 // as of 18 June, maxdata of 2048 is too big for the mega....
@@ -305,7 +306,9 @@ IPAddress myIP, theirIP, dnsIP ;
 WiFiServer server (80);
 
 #ifdef ESP8266
+#ifdef ESP8266_DISPLAY
 Adafruit_SSD1306 display = Adafruit_SSD1306();
+#endif
 volatile os_timer_t myTimer;
 WiFiClient client ;
 #else
@@ -327,7 +330,7 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
 void goColour(const byte r, const bool boolUpdatePage);
 void goColour(const byte r, const byte g, const byte b, const byte f, const bool boolUpdatePage);
 void serve_dir ();
-void run_graph();
+//void run_graph();
 void printTwoDigits(char * p, uint8_t v);
 void printDirectory(String s);
 void webTime ();
@@ -343,8 +346,8 @@ void getData ();
 void plotInColour (int iStart, const String & str_col);
 void TC3_Handler(void *pArg);
 void tidyUp_Collection() ;
-void sendGraphic(bool plot_stimulus);
-void sendGraphic();
+void sendGraphic(StimTypes plot_stimulus);
+//void sendGraphic();
 void sendReply ();
 //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
 //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
@@ -357,7 +360,7 @@ int fERG_Now (unsigned int t);
 int DayOfWeek (int d, int m, int y);
 
 bool writeFile(char * c);
-bool fileExists( char * c);
+
 
 bool collect_Data ();
 void AppendWaitReport ();
@@ -383,6 +386,17 @@ int myReadADC (int i)
 }
 #endif
 
+typedef enum StimTypes  {flash, SSVEP, zap};
+StimTypes eDoFlash = flash ;
+
+/////////////////////////// prototypes for dues
+bool fileExists( char * c);
+void sendGraphic(StimTypes plot_stimulus);
+int light_NOW( int i,  StimTypes bErg ) ;
+int GetStimType (unsigned char * c) ;
+
+
+///////////////////////////////////////////////////////////
 
 void setup() {
 
@@ -394,7 +408,7 @@ void setup() {
 
 
 #ifdef ESP8266
-
+#ifdef ESP8266_DISPLAY
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
   display.display();
@@ -403,7 +417,7 @@ void setup() {
   // Clear the buffer.
   display.clearDisplay();
   display.display();
-
+#endif
 #else
 
   // ...
@@ -541,7 +555,7 @@ void setup() {
 #ifdef __wifisetup__
 
 #ifdef ESP8266
-const char WiFiAPPSK[] = "FruitFly";
+const char WiFiAPPSK[] = "sparkfun";
 
 void setupESPWiFi()
 {
@@ -658,9 +672,9 @@ void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML
   client.println ();
   if (isHTML)
   {
-    client.println F("<!DOCTYPE HTML><html><title>");
+    client.println F("<!DOCTYPE HTML><head><html><title>");
     client.println (sTitle);
-    client.println F("</title><body ");
+    client.println F("</title><link rel=\"icon\" type=\"image/png\" href=\"http://biolpc1677.york.ac.uk/favicons/favicon-32x32.png\" sizes=\"32x32\"></head><body ");
     client.println (sINBody);
     client.println F(">");
   }
@@ -750,102 +764,102 @@ void serve_dir (String s)
   sendFooter();
 }
 
-void run_graph()
-{
-  // turn off any LEDs, always do flash with blue
-  goColour(255, false);
-  // reset the wait count
-  nWaits = nMaxWaits;
-
-  // read the value of  analog input pin and turn light on if in mid-stimulus...
-  short sensorReading = myReadADC(connectedPin);
-  //  Serial.println F(" dc is : ");
-  //  Serial.print (sensorReading);
-  //// seems to be about 50
-
-  if (sensorReading < 2 || sensorReading > 4090)
-  {
-    //probably no contact
-    digitalWrite (noContactLED, HIGH);
-    //    Serial.println F("on");
-  }
-  else
-  {
-    digitalWrite (noContactLED, LOW);
-  }
-
-  //  int sensorReadinga = myReadADC(analogPin);
-  //  Serial.println F(" ac is : ");
-  //  Serial.println (sensorReadinga);
-
-  myGraphData[iIndex] = sensorReading * 5 ;
-  iIndex ++ ;
-
-  sendHeader ("Graph of last sweep", "onload=\"init()\"") ;
-  client.println F("<script>");
-
-  // script to reload ...
-  client.println F("var myVar = setInterval(function(){myTimer()}, 1000);"); //mu sec
-  client.println F("function myTimer() {");
-  client.println F("location.reload(true);");
-  client.println F("};");
-
-  client.println F("function myStopFunction() {");
-  client.println F("clearInterval(myVar); }");
-  client.println F("");
-  client.println F("</script>");
-  // now do the graph...
-  client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
-  client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
-
-  client.println F("<script>");
-  client.println F("var can;");
-  client.println F("var ctx;");
-  client.println F("var i = 20; ");
-
-  client.println F("function l(v){");
-  client.println F("ctx.lineTo(i,v);");
-  client.println F("i = i + 20;");
-  client.println F("};");
-  client.println F("function m(v){");
-  client.println F("ctx.moveTo(i,v);");
-  client.println F("i = i + 20;");
-  client.println F("};");
-
-  client.println F("function init() {");
-  client.println F(" can = document.getElementById(\"myCanvas\");");
-  client.println F(" ctx = can.getContext(\"2d\");");
-
-  if (iIndex >= max_graph_data) iIndex = 0;
-  for (int i = 0; i < max_graph_data - 2; i++)
-  {
-    if (i < iIndex - 1 || i > iIndex + 1)
-    {
-      client.print F("l(");
-      client.print (myGraphData[i + 1] );
-      client.print F(");");
-    }
-    else
-    {
-      client.print F("m(");
-      client.print (myGraphData[i] );
-      client.print F(");");
-    }
-  }
-  client.print F("ctx.strokeStyle=\"blue\";");
-  client.println F("ctx.stroke();");
-  client.println F("}");
-
-  client.println F("</script>");
-  client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
-
-  client.println F("To run a test please stop and then load ") ;
-
-  send_GoBack_to_Stim_page ();
-
-  sendFooter();
-
-}
+//void run_graph()
+//{
+//  // turn off any LEDs, always do flash with blue
+//  goColour(255, false);
+//  // reset the wait count
+//  nWaits = nMaxWaits;
+//
+//  // read the value of  analog input pin and turn light on if in mid-stimulus...
+//  short sensorReading = myReadADC(connectedPin);
+//  //  Serial.println F(" dc is : ");
+//  //  Serial.print (sensorReading);
+//  //// seems to be about 50
+//
+//  if (sensorReading < 2 || sensorReading > 4090)
+//  {
+//    //probably no contact
+//    digitalWrite (noContactLED, HIGH);
+//    //    Serial.println F("on");
+//  }
+//  else
+//  {
+//    digitalWrite (noContactLED, LOW);
+//  }
+//
+//  //  int sensorReadinga = myReadADC(analogPin);
+//  //  Serial.println F(" ac is : ");
+//  //  Serial.println (sensorReadinga);
+//
+//  myGraphData[iIndex] = sensorReading * 5 ;
+//  iIndex ++ ;
+//
+//  sendHeader ("Graph of last sweep", "onload=\"init()\"") ;
+//  client.println F("<script>");
+//
+//  // script to reload ...
+//  client.println F("var myVar = setInterval(function(){myTimer()}, 1000);"); //mu sec
+//  client.println F("function myTimer() {");
+//  client.println F("location.reload(true);");
+//  client.println F("};");
+//
+//  client.println F("function myStopFunction() {");
+//  client.println F("clearInterval(myVar); }");
+//  client.println F("");
+//  client.println F("</script>");
+//  // now do the graph...
+//  client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+//  client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
+//
+//  client.println F("<script>");
+//  client.println F("var can;");
+//  client.println F("var ctx;");
+//  client.println F("var i = 20; ");
+//
+//  client.println F("function l(v){");
+//  client.println F("ctx.lineTo(i,v);");
+//  client.println F("i = i + 20;");
+//  client.println F("};");
+//  client.println F("function m(v){");
+//  client.println F("ctx.moveTo(i,v);");
+//  client.println F("i = i + 20;");
+//  client.println F("};");
+//
+//  client.println F("function init() {");
+//  client.println F(" can = document.getElementById(\"myCanvas\");");
+//  client.println F(" ctx = can.getContext(\"2d\");");
+//
+//  if (iIndex >= max_graph_data) iIndex = 0;
+//  for (int i = 0; i < max_graph_data - 2; i++)
+//  {
+//    if (i < iIndex - 1 || i > iIndex + 1)
+//    {
+//      client.print F("l(");
+//      client.print (myGraphData[i + 1] );
+//      client.print F(");");
+//    }
+//    else
+//    {
+//      client.print F("m(");
+//      client.print (myGraphData[i] );
+//      client.print F(");");
+//    }
+//  }
+//  client.print F("ctx.strokeStyle=\"blue\";");
+//  client.println F("ctx.stroke();");
+//  client.println F("}");
+//
+//  client.println F("</script>");
+//  client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
+//
+//  client.println F("To run a test please stop and then load ") ;
+//
+//  send_GoBack_to_Stim_page ();
+//
+//  sendFooter();
+//
+//}
 
 
 void printTwoDigits(char * p, uint8_t v)
@@ -1001,6 +1015,16 @@ int fERG_Now (unsigned int t)
   return brightness;
 }
 
+int zap_Now (unsigned int t)
+{
+  // 2ms per sample ???
+  if (t < 10) return 0;
+  if (0 == (t % 100) ) return 255 ;
+  return 0;
+}
+
+
+
 void webTime ()
 {
 #ifdef __wifisetup__
@@ -1136,97 +1160,92 @@ bool file_time (char * cIn)
   Serial.println (year) ;
   return (year != 0) ;
 }
-
+void do_fft();
 void addSummary ()
 {
 
   int iOffset = 0;
   int kk = 0 ;
-  if (bDoFlash)
+  switch (eDoFlash)
   {
-    iOffset = (nRepeats - 1) * 14 ;
-    // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,");
+    case flash:
+    case zap:
+      {
+        iOffset = (nRepeats - 1) * 14 ;
+        // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,");
 
-    pSummary[iOffset + kk] = erg_in[1] ;
-    //    Serial.println (pSummary[iOffset + kk]);
+        pSummary[iOffset + kk] = erg_in[1] ;
+        //    Serial.println (pSummary[iOffset + kk]);
 
 
-    for (int ii = max_data / 10; ii < max_data - 1; ii = ii + max_data / 10)
-    {
-      pSummary [iOffset + kk] = erg_in[ii] ;
-      kk ++ ;
-    }
-    int myminsofar = erg_in[0];
-    int mymaxsofar = erg_in[0];
-    for (int ii = 1; ii < (max_data - 1) / 2; ii++)
-    {
-      if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;
-      if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;
-    }
-    pSummary [iOffset + kk] = mymaxsofar ;
-    kk ++ ;
-    pSummary [iOffset + kk] = myminsofar ;
-    kk ++;
-    myminsofar = erg_in[(max_data - 1) / 2];
-    mymaxsofar = erg_in[(max_data - 1) / 2];
-    for (int ii = (max_data - 1) / 2; ii < max_data - 1; ii++)
-    {
-      if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;
-      if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;
-    }
-    pSummary [iOffset + kk] = mymaxsofar ;
-    kk ++ ;
-    pSummary [iOffset + kk] = myminsofar ;
-    kk ++;
-  }
-  else
-  {
-    // fft
-    iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 ;
-    Serial.print F("Offset ");
-    Serial.println ( iOffset );
+        for (int ii = max_data / 10; ii < max_data - 1; ii = ii + max_data / 10)
+        {
+          pSummary [iOffset + kk] = erg_in[ii] ;
+          kk ++ ;
+        }
+        int myminsofar = erg_in[0];
+        int mymaxsofar = erg_in[0];
+        for (int ii = 1; ii < (max_data - 1) / 2; ii++)
+        {
+          if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;
+          if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;
+        }
+        pSummary [iOffset + kk] = mymaxsofar ;
+        kk ++ ;
+        pSummary [iOffset + kk] = myminsofar ;
+        kk ++;
+        myminsofar = erg_in[(max_data - 1) / 2];
+        mymaxsofar = erg_in[(max_data - 1) / 2];
+        for (int ii = (max_data - 1) / 2; ii < max_data - 1; ii++)
+        {
+          if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;
+          if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;
+        }
+        pSummary [iOffset + kk] = mymaxsofar ;
+        kk ++ ;
+        pSummary [iOffset + kk] = myminsofar ;
+        kk ++;
 
-    pSummary[iOffset + kk] = time_stamp[max_data - 1] ;
-    kk ++ ;
-    pSummary[iOffset + kk] = erg_in[max_data - 1] ;
-    kk ++ ;
-    pSummary[iOffset + kk] = nRepeats ;
-    kk ++ ;
+      }
+      break ;
 
-    //    // save erg as we do an in place FFT
-    //    int erg_tmp [ max_data];
-    //    for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
-    do_fft() ;
+    case SSVEP:
+      {
+        // fft
+        iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 ;
+        Serial.print F("Offset ");
+        Serial.println ( iOffset );
 
-    // F2-F1
-    pSummary[iOffset + kk] = erg_in[12] ;
-    kk ++ ;
-    pSummary[iOffset + kk] = erg_in[49] ;
-    kk ++ ;
-    pSummary[iOffset + kk] = erg_in[61] ;
-    kk ++ ;
-    pSummary[iOffset + kk] = erg_in[98] ;
-    kk ++ ;
-    pSummary[iOffset + kk] = erg_in[111] ;
-    kk ++ ;
-    pSummary[iOffset + kk] = erg_in[221] ;
-    kk ++ ;
-    pSummary[iOffset + kk] = erg_in[205] ; // 50Hz
-    kk ++ ;
+        pSummary[iOffset + kk] = time_stamp[max_data - 1] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[max_data - 1] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = nRepeats ;
+        kk ++ ;
 
-    // restore erg
-    //    for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
+        //    // save erg as we do an in place FFT
+        //    int erg_tmp [ max_data];
+        //    for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
+        do_fft() ;
 
-    //    Serial.print F("kk:");
-    //    Serial.println (kk) ;
-    //
-    //    for (int q = 0; q < iOffset + kk ; q++)
-    //    {
-    //      Serial.print (pSummary[q]) ;
-    //      Serial.print F(",");
-    //
-    //    }
-    //    Serial.println();
+        // F2-F1
+        pSummary[iOffset + kk] = erg_in[12] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[49] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[61] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[98] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[111] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[221] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[205] ; // 50Hz
+        kk ++ ;
+
+      }
+      break ;
 
   }
 }
@@ -1290,13 +1309,25 @@ bool writeSummaryFile(const char * cMain)
     file.close();
     return false ;
   }
-  if (bDoFlash)
+
+  // for nor bFlash
+  int iOfssfet  = 10;
+  int mm = maxRepeats * maxContrasts ;
+
+  switch (eDoFlash)
   {
-    strcpy (cTmp, "\nstart,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,\n");
-  }
-  else
-  {
-    strcpy (cTmp, "\nprobe contrast, mask, repeat, F2-F1, 1F1, 2F1, 2F2, 1F1+1F2, 2F1+2F2, 50 Hz,\n");
+    case SSVEP:
+      strcpy (cTmp, "\nprobe contrast, mask, repeat, F2-F1, 1F1, 2F1, 2F2, 1F1+1F2, 2F1+2F2, 50 Hz,\n");
+      break ;
+
+    default :
+    case flash :
+      strcpy (cTmp, "\nstart,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,\n");
+
+      iOfssfet = 14;
+      mm = maxRepeats ;
+
+      break ;
   }
   iBytesWritten = file.write((uint8_t *)cTmp, strlen(cTmp)) ;
   if (iBytesWritten <= 0)
@@ -1306,28 +1337,19 @@ bool writeSummaryFile(const char * cMain)
     return false ;
   }
 
-  // for nor bFlash
-  int iOfssfet  = 10;
-  int mm = maxRepeats * maxContrasts ;
-  if (bDoFlash)
-  {
-    iOfssfet = 14;
-    mm = maxRepeats ;
-  }
-
   for ( int ii = 0; ii < mm ; ii++)
   {
     for (int jj = 0; jj < iOfssfet; jj++)
     {
       iBytesWritten = iBytesWritten + file.print (pSummary[ii * iOfssfet + jj]);
-      iBytesWritten = iBytesWritten + file.print (", ");
+      iBytesWritten = iBytesWritten + file.print (",");
     }
     iBytesWritten = iBytesWritten + file.print ("\n");
   }
 
   if (iBytesWritten <= 0)
   {
-    Serial.println F("Error in writing erg data to file");
+    Serial.println F("Error in writing summary data to file");
     file.close();
     return false;
   }
@@ -1456,13 +1478,13 @@ void doplotFile ()
   unsigned char * cPtr;
   cPtr = (unsigned char *) erg_in ;
 
-  Serial.println F("trying to open:");
+  Serial.print F("trying to plot:");
   Serial.println (cFile);
   if (file) file.close();
   file = SD.open( cFile, FILE_READ);
   if (!file)
   {
-    client.println F("Error opening file ");
+    client.print F("Error opening file ");
     client.println (cFile);
     sendFooter();
     return ;
@@ -1475,18 +1497,17 @@ void doplotFile ()
   iBytesRead = file.read(cPtr, iBytesRequested);
   if (iBytesRead < iBytesRequested)
   {
-    client.println F("Error reading header data in file ");
+    client.print F("Error reading header data in file ");
     client.println (cFile);
     sendFooter();
     return ;
   }
 
+  // test if its an ERG
+  StimTypes ss = (StimTypes) GetStimType (cPtr) ;
   // write out the string ....
   client.println ((char *)cPtr);
-  client.println F("<BR>");
-  // test if its an ERG
-  //boolean bERG = ( NULL != strstr ( cPtr, "stim=fERG&") ) ;
-  client.print F("Download file <a HREF=\"");
+  client.println F("<BR>Download file <a HREF=\"");
   client.print (cFile);
   client.print F("\">");
   client.print (cFile);
@@ -1528,7 +1549,9 @@ void doplotFile ()
   {
     erg_in[i] = erg_in [i] / nBlocks;
   }
-  sendGraphic ();
+  Serial.println("file read");
+
+  sendGraphic ( ss );
   sendFooter();
 
 }
@@ -1595,7 +1618,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
       //      Serial.print (erg_in[48]);
       Serial.print F(" done FFT in");
       Serial.print (millis() - m);
-      Serial.println F(" milliseconds");
+      Serial.println F(" msec");
     }
 
     //read next block
@@ -1611,7 +1634,7 @@ void doFFTFile (const char * c, bool bNeedHeadFooter)
   }
   Serial.print (erg_in[48]);
   // now plot data in erg_in
-  sendGraphic(false);
+  sendGraphic(SSVEP);
   Serial.println F(" plotted FFT");
   if (bNeedHeadFooter) sendFooter ();
 
@@ -1670,6 +1693,39 @@ void sendLastModified(char * cPtr, char * c, bool bIsHTML)
   }
 }
 
+
+int light_NOW( int i,  StimTypes bErg )
+{
+  switch (bErg)
+  {
+    case flash:
+    default :
+      return ( fERG_Now (i) ); // i is related to max data, not the actual time
+
+    case SSVEP:
+      return (Get_br_Now(time_stamp[i],  time_stamp [max_data - 1], erg_in [max_data - 1]));
+
+    case zap :
+      return zap_Now (i);
+  }
+}
+
+
+int GetStimType (unsigned char * cPtr)
+{
+  // test if its an ERG
+  Serial.print("Hello ");
+  Serial.println((char *)cPtr) ;
+  StimTypes bERG = SSVEP;
+  if (strstr ( (char *) cPtr, "stim=fERG&") )
+  {
+    bERG = flash ;
+    Serial.println("flash found");
+  }
+  if (strstr ( (char *) cPtr, "stim=fERG_Z") ) bERG = zap ;
+  return (int) bERG ;
+}
+
 void doreadFile ( char * c)
 {
   //String dataString ;
@@ -1696,18 +1752,34 @@ void doreadFile ( char * c)
 
   sendLastModified((char *)cPtr, c, false);
 
-  // write out the string ....
-  client.print ((char *)cPtr);
-  client.println ();
   // test if its an ERG
-  boolean bERG = ( NULL != strstr ( (char *) cPtr, "stim=fERG&") ) ;
+  StimTypes bERG = (StimTypes) GetStimType (cPtr);
+
   bIsSine = ( NULL == strstr ((char *) cPtr, "stm=SQ") ) ;
-  if (bERG)
+  if (bERG == flash)
   {
     brightness = atoi(4 + strstr((char *) cPtr, "bri="));
     Serial.print F("brightness decoded as ");
     Serial.println (brightness);
   }
+  // write out the string ....
+  char * pNext = strchr ((char *)cPtr, '&');
+  while (pNext)
+  {
+    * pNext = ',';
+    pNext = strchr ((char *)cPtr, '&');
+  }
+
+  pNext = strchr ((char *)cPtr, '?');
+  while (pNext)
+  {
+    * pNext = ',';
+    pNext = strchr ((char *)cPtr, '?');
+  }
+
+  client.print ((char *)cPtr);
+  client.println ();
+
   // now on to the data
   iBytesRequested = max_data * sizeof (int);
   iBytesRead = file.read((unsigned char *)erg_in, iBytesRequested);
@@ -1724,16 +1796,8 @@ void doreadFile ( char * c)
       // make a string for assembling the data to log:
       client.print (time_stamp[i]);
       client.print ( ", ");
-      if (bERG)
-      {
-        client.print ( fERG_Now (time_stamp[i] - time_stamp[0] ) );
-      }
-      else
-      {
-        client.print (Get_br_Now(time_stamp[i],  time_stamp [max_data - 1], erg_in [max_data - 1]));
-      }
+      client.print ( light_NOW( i, bERG ) );
       client.print F(", ");
-
       client.print (erg_in[i]);
       client.println ();
     } //for
@@ -1741,10 +1805,8 @@ void doreadFile ( char * c)
     // write out contrast
 
     client.print ( "-99, " );
-
     client.print (time_stamp[max_data - 1]);
     client.print ( ", " );
-
     client.print (erg_in[max_data - 1]);
     client.println ();
 
@@ -1782,7 +1844,7 @@ void doreadSummaryFile (const char * c)
     file.close();
     return ;
   }
-  sendLastModified((char *)cPtr, (char *) c, true); // make this HTML so we can display it...
+  sendLastModified((char *)cPtr, (char *) c, false);
   // write out the string .... after replacing & or ? with ,
   char * pNext = strchr ((char *)cPtr, '&');
   while (pNext)
@@ -1799,28 +1861,19 @@ void doreadSummaryFile (const char * c)
   }
 
   client.print ((char *)cPtr);
-  client.println F(",<BR>");
+  client.println F("\n");
 
   // inefficiently read the file a byte at a time, and send it to the client
-  // replace \n with <BR>
   memset (cPtr, 0, 20 );
   bool b = file.read(cPtr, 1);
   while (b)
   {
-    if (*cPtr == '\n')
-    {
-      client.println F("<BR>");
-    }
-    else
-    {
-      client.print ((char *)cPtr);
-    }
+    client.print ((char *)cPtr);
     b = file.read(cPtr, 1);
   }
 
-
   file.close();
-  sendFooter();
+
 }
 
 #ifdef ESP8266
@@ -1852,7 +1905,7 @@ void startTimer (uint32_t frequency)
   startTimer(TC1, 0, TC3_IRQn, frequency); // fixed 0.5 kHz
 }
 
-void startTimer(Tc *tc, uint32_t channel, IRQn_Type irq, uint32_t frequency) {
+void startTimer(Tc * tc, uint32_t channel, IRQn_Type irq, uint32_t frequency) {
   pmc_set_writeprotect(false);
   pmc_enable_periph_clk((uint32_t)irq);
   TC_Configure(tc, channel, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK4);
@@ -1870,7 +1923,7 @@ void stopTimer()
   stopTimer(TC1, 0, TC3_IRQn);
 }
 
-void stopTimer(Tc *tc, uint32_t channel, IRQn_Type irq)
+void stopTimer(Tc * tc, uint32_t channel, IRQn_Type irq)
 {
   TC_Stop(tc, channel);
   NVIC_DisableIRQ(irq);
@@ -1927,24 +1980,35 @@ void StartTo_collect_Data ()
 {
   mStart = millis();
   sampleCount = -presamples ;
-  if (bDoFlash)
+  switch (eDoFlash)
   {
-    iThisContrast = maxContrasts;
-    nRepeats ++;
-    for (int i = 0; i < max_data + presamples; i++)
-    {
-      stimvalue[i] = fERG_Now (i - presamples);
-    }
-    startTimer(500);
-  }
-  else
-  {
-    // SSVEP
-    for (int i = 0; i < max_data + presamples; i++)
-    {
-      stimvalue[i] = br_Now (i * 4);
-    }
-    startTimer(250);
+    case flash:
+
+      iThisContrast = maxContrasts;
+      nRepeats ++;
+      for (int i = 0; i < max_data + presamples; i++)
+      {
+        stimvalue[i] = fERG_Now (i - presamples);
+      }
+      startTimer(500);
+      return ;
+
+    case SSVEP:
+      for (int i = 0; i < max_data + presamples; i++)
+      {
+        stimvalue[i] = br_Now (i * 4);
+      }
+      startTimer(250);
+      return ;
+
+    case zap:
+      nRepeats ++;
+      for (int i = 0; i < max_data + presamples; i++)
+      {
+        stimvalue[i] = zap_Now (i - presamples);
+      }
+      startTimer(5000);
+      return ;
   }
 
 }
@@ -1954,40 +2018,34 @@ void StartTo_collect_Data ()
 void tidyUp_Collection()
 {
   sampleCount ++ ;
-  if (bDoFlash)
+  switch (eDoFlash)
   {
-    analogWrite(usedLED, 0);
-    iThisContrast = maxContrasts ; //++;
-    for (int i = 0; i < max_data; i++)
-    {
-      time_stamp[i] = i * 2 ; // fixed 2 ms per sample
-    }
-  }
-  else
-  {
-    // SSVEP
-    // now done with sampling....
-    for (int i = 0; i < max_data; i++)
-    {
-      time_stamp[i] = i * 4 ; // fixed 4 ms per sample
-    }
-    //save contrasts we've used...
-    int randomnumber = contrastOrder[iThisContrast];
-    int F2index = 0 ;
-    if (randomnumber > F2contrastchange) F2index = 1;
-    time_stamp [max_data - 1] = F1contrast[randomnumber];
-    erg_in [max_data - 1] = F2contrast[F2index] ;
+    case flash :
+    case zap:
+      analogWrite(usedLED, 0);
+      iThisContrast = maxContrasts ; //++;
+      for (int i = 0; i < max_data; i++)
+      {
+        time_stamp[i] = i * 2 ; // fixed 2 ms per sample
+      }
+      break ;
+    case SSVEP:
+      // now done with sampling....
+      for (int i = 0; i < max_data; i++)
+      {
+        time_stamp[i] = i * 4 ; // fixed 4 ms per sample
+      }
+      //save contrasts we've used...
+      int randomnumber = contrastOrder[iThisContrast];
+      int F2index = 0 ;
+      if (randomnumber > F2contrastchange) F2index = 1;
+      time_stamp [max_data - 1] = F1contrast[randomnumber];
+      erg_in [max_data - 1] = F2contrast[F2index] ;
 
-    sampleCount ++ ;
-    analogWrite(usedLED, 127);
-    //    iThisContrast ++;
-    //    if (iThisContrast >= maxContrasts)
-    //    {
-    //      iThisContrast = 0;
-    //      nRepeats ++;
-    //      doShuffle ();
-    //    }
+      sampleCount ++ ;
+      analogWrite(usedLED, 127);
   }
+
   if (! bTestFlash)
   {
     bool bResult = writeFile(cFile);
@@ -2002,15 +2060,21 @@ void tidyUp_Collection()
       Serial.println (cFile);
     }
   }
-  if (!bDoFlash)
+
+  switch (eDoFlash)
   {
-    iThisContrast ++;
-    if (iThisContrast >= maxContrasts)
-    {
-      iThisContrast = 0;
-      nRepeats ++;
-      doShuffle ();
-    }
+    case SSVEP:
+      iThisContrast ++;
+      if (iThisContrast >= maxContrasts)
+      {
+        iThisContrast = 0;
+        nRepeats ++;
+        doShuffle ();
+      }
+      break;
+
+    default:
+      break;
   }
   long mEnd = millis();
   Serial.print F("took AD ");
@@ -2040,20 +2104,22 @@ void flickerPage()
   client.println F("</script>");
 
 
-  if (bDoFlash)
+  switch (eDoFlash)
   {
-    if (nWaits > 0)
-    {
-      AppendWaitReport ();
-    }
-    else
-    {
-      AppendFlashReport ();
-    }
-  }
-  else
-  {
-    AppendSSVEPReport();
+    case flash:
+    case zap:
+      if (nWaits > 0)
+      {
+        AppendWaitReport ();
+      }
+      else
+      {
+        AppendFlashReport ();
+      }
+      break;
+
+    case SSVEP:
+      AppendSSVEPReport();
   }
   sendFooter ();
 }
@@ -2085,7 +2151,7 @@ void AppendFlashReport()
 
   if (nRepeats > 0)
   {
-    sendGraphic();
+    sendGraphic(eDoFlash);
   }
 }
 
@@ -2202,7 +2268,7 @@ void getData ()
 {
   if (sampleCount < 0)
   {
-    if (bDoFlash)
+    if (eDoFlash == flash || eDoFlash == zap)
     {
       if (nWaits > 0) return ;
     }
@@ -2241,12 +2307,8 @@ void plotInColour (int iStart, const String & str_col)
   client.println F("ctx.stroke();");
 }
 
-void sendGraphic()
-{
-  sendGraphic(true);
-}
 
-void sendGraphic(bool plot_stimulus)
+void sendGraphic(StimTypes plot_stimulus)
 {
 
   istep = 15;
@@ -2255,7 +2317,7 @@ void sendGraphic(bool plot_stimulus)
   iYFactor = 50 ;
   iBaseline = 260 ;
   iXDiv = 6 ;
-  if (!plot_stimulus)
+  if (SSVEP == plot_stimulus)
   {
     istep = 1;
     plot_limit = plot_limit / 2;
@@ -2308,22 +2370,23 @@ void sendGraphic(bool plot_stimulus)
   }
   client.println F("ctx.stroke();");
 
-  if (plot_stimulus)
+  if (SSVEP != plot_stimulus)
   {
     client.println F("ctx.beginPath();");
     client.print F("m(");
-    client.print (10 + (10 * fERG_Now(time_stamp[1] - time_stamp[0])) / iYFactor);
+    client.print (10 + (10 * light_NOW(time_stamp[1] - time_stamp[0], plot_stimulus)) / iYFactor);
     client.println F(");");
 
     for (int i = 2 * istep; i < plot_limit; i = i + istep)
     {
       client.print F("l(");
-      client.print (10 + (10 * fERG_Now(time_stamp[i / 2] - time_stamp[0]) ) / iYFactor);
+      client.print (10 + (10 * light_NOW(time_stamp[i / 2] - time_stamp[0], plot_stimulus) ) / iYFactor);
       client.println F(");");
     }
     client.println F("ctx.stroke();");
   }
-  else
+
+  if (SSVEP == plot_stimulus)
   {
     plotInColour (4 * 12, String ("#0000FF"));
     plotInColour (4 * 15, String ("#0088FF"));
@@ -2391,8 +2454,10 @@ void sendReply ()
     if (MyInputString.indexOf ("col=bvio&") > 0 ) usedLED  = bluvioletLED ; //
 
     //flash ERG or SSVEP?
+    eDoFlash = SSVEP;
     bTestFlash = MyInputString.indexOf ("=fERG_T") > 0  ;
-    bDoFlash = MyInputString.indexOf ("=fERG") > 0  ;
+    if (MyInputString.indexOf ("=fERG") > 0 ) eDoFlash = flash ;
+    if (MyInputString.indexOf ("=fERG_Z") > 0 ) eDoFlash = zap ;
     bIsSine = MyInputString.indexOf ("_SQ&") < 0  ; // -1 if not found
 
     int ibrPos  = MyInputString.indexOf ("bri=") + 4;
@@ -2421,17 +2486,19 @@ void sendReply ()
       sFile = sFile.substring(1);
       //Serial.println F(" Proposed saving filename " + sFile );
     }
-    if (bDoFlash)
+    switch (eDoFlash)
     {
-      sFile = sFile + (".ERG");
-      exp_size = exp_size + (maxRepeats * data_block_size) ;
-      analogPin = 0 ;
-    }
-    else
-    {
-      sFile = sFile + (".SVP");
-      exp_size = exp_size + (maxRepeats * maxContrasts * data_block_size) ;
-      analogPin = 3 ;
+      case flash :
+      case zap:
+        sFile = sFile + (".ERG");
+        exp_size = exp_size + (maxRepeats * data_block_size) ;
+        analogPin = 0 ;
+        break ;
+
+      case SSVEP:
+        sFile = sFile + (".SVP");
+        exp_size = exp_size + (maxRepeats * maxContrasts * data_block_size) ;
+        analogPin = 3 ;
     }
 
     //Serial.println F(" Proposed filename now" + sFile + ";");
@@ -2456,6 +2523,7 @@ void sendReply ()
       nRepeats = iThisContrast = 0 ;
       nWaits = nMaxWaits ;
       if (bTestFlash) nWaits = 1;
+      if (eDoFlash == zap) nWaits = 1;
       //turn off any lights we have on...
       goColour(0, false);
     }
@@ -2486,17 +2554,19 @@ void sendReply ()
         writeSummaryFile(cFile);
 
         String sPicture = sFile;
-        if (bDoFlash)
+        switch (eDoFlash)
         {
-          sPicture.replace ("ERG", "ERP" );
-          client.print F("<A HREF= \"");
-          client.print (sPicture) ;
-          client.print F("\" >(averaged picture)</A>" );
-          sPicture.replace ("ERP", "CSV" );
-        }
-        else
-        {
-          sPicture.replace ("SVP", "CSV" );
+          case flash:
+          case zap:
+            sPicture.replace ("ERG", "ERP" );
+            client.print F("<A HREF= \"");
+            client.print (sPicture) ;
+            client.print F("\" >(averaged picture)</A>" );
+            sPicture.replace ("ERP", "CSV" );
+            break ;
+
+          case SSVEP:
+            sPicture.replace ("SVP", "CSV" );
         }
 
         client.print F("<A HREF= \"");
@@ -2510,13 +2580,15 @@ void sendReply ()
       client.print F("<BR><BR>To setup for another test please \n") ;
       send_GoBack_to_Stim_page ();
       client.print F("<BR><A HREF= \"dir=\"  > Full directory</A> <BR><BR> \n");
-      if (bDoFlash)
+      switch (eDoFlash)
       {
-        sendGraphic();
-      }
-      else
-      {
-        doFFTFile (cFile, false) ;
+        case flash :
+        case zap:
+          sendGraphic(eDoFlash);
+          break ;
+
+        case SSVEP:
+          doFFTFile (cFile, false) ;
       }
       sendFooter ();
 
@@ -2777,10 +2849,10 @@ void loop()
 
 void writehomepage ()
 {
-  
+
 #ifdef __CLASSROOMSETUP__
 
-  client.print F("<!DOCTYPE html> <html> <head> <base href=\"http://");
+  client.print F("<!DOCTYPE html> <html> <head> <title> Welcome to FlyLab! </title> <link rel=\"icon\" type=\"image/png\" href=\"http://biolpc1677.york.ac.uk/favicons/favicon-32x32.png\" sizes=\"32x32\"> <base href=\"http://");
   client.print  (myIP);
   client.println F("\"><script>\n");
   ////////////////////////////////////
@@ -2819,7 +2891,7 @@ void writehomepage ()
   client.print F("</head>\n");
 
   client.print F("<!-- body onload=\"startTime()\" -->\n");
-  client.print F("<body><div id=\"txt\">Arduino Starter page</div><BR>\n");
+  client.print F("<body><div id=\"txt\">Flylab Starter page</div><BR>\n");
 
   client.print F("<form action=\"/\">\n");
 
@@ -2896,8 +2968,13 @@ void writehomepage ()
   //client.print F("<td><a href=\"/\">Test setup</a></td>\n");
   client.print F("<td><a href=\"/dir=\">Directory</a></td></table></body></html>\n");
 
-#endif 
-//__CLASSROOMSETUP__
+#else
+  //__CLASSROOMSETUP__
+
+  sendHeader (String("Fly lab here!"));
+  client.print F("Please try <a href = \"http://biolpc1677.york.ac.uk/pages\">biolpc1677</a> for starter page");
+  sendFooter();
+#endif
 }
 
 void do_fft()
