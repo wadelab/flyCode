@@ -346,7 +346,7 @@ void getData ();
 void plotInColour (int iStart, const String & str_col);
 void TC3_Handler(void *pArg);
 void tidyUp_Collection() ;
-void sendGraphic(StimTypes plot_stimulus);
+//void sendGraphic(StimTypes plot_stimulus);
 //void sendGraphic();
 void sendReply ();
 //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
@@ -555,7 +555,7 @@ void setup() {
 #ifdef __wifisetup__
 
 #ifdef ESP8266
-const char WiFiAPPSK[] = "sparkfun";
+const char WiFiAPPSK[] = "FlyLab2016";
 
 void setupESPWiFi()
 {
@@ -582,6 +582,7 @@ void setupESPWiFi()
   Serial.print F("ESP accesspoint :");
   Serial.println (myIP) ;
 
+#ifdef ESP8266_DISPLAY
   // text display the IP address
   display.setTextSize(1);
   display.setTextColor(WHITE);
@@ -595,6 +596,7 @@ void setupESPWiFi()
   display.println (WiFiAPPSK);
   display.setCursor(0, 0);
   display.display(); // actually display all of the above
+#endif
 }
 #endif
 
@@ -871,7 +873,28 @@ void printTwoDigits(char * p, uint8_t v)
 
 }
 
+size_t GetFreeSpace ( WiFiClient * client)
+{
+#ifdef ESP8266
+  FSInfo fs_info;
+  SPIFFS.info(fs_info);
+  size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
 
+  if (client)
+  {
+    client->print F("Disk size ");
+    client->println (fs_info.totalBytes);
+    client->print F("<BR>used Bytes " );
+    client->println ( fs_info.usedBytes);
+    client->print F("<BR>Free Bytes " );
+    client->println ( fBytes);
+    client->print F("<BR>");
+  }
+  return fBytes ;
+
+#endif
+  return (size_t) -1 ;
+}
 
 void printDirectory(String s)
 {
@@ -922,18 +945,7 @@ void printDirectory(String s)
   }
 #endif
 
-#ifdef ESP8266
-  FSInfo fs_info;
-  SPIFFS.info(fs_info);
-  client.print F("Disk size ");
-  client.println (fs_info.totalBytes);
-  client.print F("<BR>used Bytes " );
-  client.println ( fs_info.usedBytes);
-  size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
-  client.print F("<BR>Free Bytes " );
-  client.println ( fBytes);
-  client.print F("<BR>");
-#endif
+  GetFreeSpace (& client);
 
   client.print (iFiles);
   client.print F(" files found on disk  ");
@@ -2507,6 +2519,19 @@ void sendReply ()
 
     if (bNewCommand)
     {
+      // no disk space ??
+      if (GetFreeSpace(NULL) < exp_size)
+      {
+        sendHeader ("Disk Full");
+        client.print F("No space left on disk (only ");
+        client.print (GetFreeSpace(NULL));
+        client.print F(" bytes ) <BR> Click here to go back to the ");
+
+        send_GoBack_to_Stim_page ();
+        sendFooter();
+        return ;
+      }
+
       //if file exists... ????
       if (fileExists(cFile))
       {
