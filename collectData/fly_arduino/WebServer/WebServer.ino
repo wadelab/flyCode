@@ -271,7 +271,7 @@ String MyInputString = String(MaxInputStr + 1);
 
 char cFile [30];
 char cInput [MaxInputStr + 2] = "";
-char cLastInput [MaxInputStr + 2] = "oldInput";
+unsigned int iLastCRC = 0;
 
 // for graphic plotting
 int istep = 15;
@@ -346,7 +346,7 @@ void getData ();
 void plotInColour (int iStart, const String & str_col);
 void TC3_Handler(void *pArg);
 void tidyUp_Collection() ;
-void sendGraphic(StimTypes plot_stimulus);
+//void sendGraphic(StimTypes plot_stimulus);
 //void sendGraphic();
 void sendReply ();
 //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
@@ -555,7 +555,7 @@ void setup() {
 #ifdef __wifisetup__
 
 #ifdef ESP8266
-const char WiFiAPPSK[] = "sparkfun";
+const char WiFiAPPSK[] = "FlyLab2016";
 
 void setupESPWiFi()
 {
@@ -582,6 +582,7 @@ void setupESPWiFi()
   Serial.print F("ESP accesspoint :");
   Serial.println (myIP) ;
 
+#ifdef ESP8266_DISPLAY
   // text display the IP address
   display.setTextSize(1);
   display.setTextColor(WHITE);
@@ -595,24 +596,11 @@ void setupESPWiFi()
   display.println (WiFiAPPSK);
   display.setCursor(0, 0);
   display.display(); // actually display all of the above
+#endif
 }
 #endif
 
 void printWifiStatus() {
-  // print the SSID of the network you're attached to:
-  //  Serial.println F("SSID: ");
-  //  Serial.println (WiFi.SSID());
-  //
-  //  // print your WiFi shield's IP address:
-  //
-  //  Serial.println F("IP Address: ");
-  //  Serial.println (myIP);
-  //
-  //  // print the received signal strength:
-  //  long rssi = WiFi.RSSI();
-  //  Serial.println F("signal strength (RSSI):");
-  //  Serial.print (rssi);
-  //  Serial.println F(" dBm");
   //  // print where to go in a browser:
   Serial.print F("Open a browser to http://");
   Serial.println (myIP);
@@ -642,7 +630,37 @@ void doShuffle()
   }
 }
 
+// ----------------------------- crc32b --------------------------------
 
+// http://www.hackersdelight.org/hdcodetxt/crc.c.txt
+
+/* This is the basic CRC-32 calculation with some optimization but no
+table lookup. The the byte reversal is avoided by shifting the crc reg
+right instead of left and by using a reversed 32-bit word to represent
+the polynomial.
+   When compiled to Cyclops with GCC, this function executes in 8 + 72n
+instructions, where n is the number of bytes in the input message. It
+should be doable in 4 + 61n instructions.
+   If the inner loop is strung out (approx. 5*8 = 40 instructions),
+it would take about 6 + 46n instructions. */
+
+unsigned int crc32b(unsigned char *message) {
+   int i, j;
+   unsigned int byte, crc, mask;
+
+   i = 0;
+   crc = 0xFFFFFFFF;
+   while (message[i] != 0) {
+      byte = message[i];            // Get next byte.
+      crc = crc ^ byte;
+      for (j = 7; j >= 0; j--) {    // Do eight times.
+         mask = -(crc & 1);
+         crc = (crc >> 1) ^ (0xEDB88320 & mask);
+      }
+      i = i + 1;
+   }
+   return ~crc;
+}
 
 
 #ifdef ESP8266
@@ -871,7 +889,28 @@ void printTwoDigits(char * p, uint8_t v)
 
 }
 
+size_t GetFreeSpace ( WiFiClient * client)
+{
+#ifdef ESP8266
+  FSInfo fs_info;
+  SPIFFS.info(fs_info);
+  size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
 
+  if (client)
+  {
+    client->print F("Disk size ");
+    client->println (fs_info.totalBytes);
+    client->print F("<BR>used Bytes " );
+    client->println ( fs_info.usedBytes);
+    client->print F("<BR>Free Bytes " );
+    client->println ( fBytes);
+    client->print F("<BR>");
+  }
+  return fBytes ;
+
+#endif
+  return (size_t) -1 ;
+}
 
 void printDirectory(String s)
 {
@@ -922,18 +961,7 @@ void printDirectory(String s)
   }
 #endif
 
-#ifdef ESP8266
-  FSInfo fs_info;
-  SPIFFS.info(fs_info);
-  client.print F("Disk size ");
-  client.println (fs_info.totalBytes);
-  client.print F("<BR>used Bytes " );
-  client.println ( fs_info.usedBytes);
-  size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
-  client.print F("<BR>Free Bytes " );
-  client.println ( fBytes);
-  client.print F("<BR>");
-#endif
+  GetFreeSpace (& client);
 
   client.print (iFiles);
   client.print F(" files found on disk  ");
@@ -2433,13 +2461,13 @@ void sendReply ()
 
     // save the commandline....
     MyInputString.toCharArray(cInput, MaxInputStr + 2);
-    if (0 != strcmp(cLastInput, cInput))
+    unsigned int myCRC = crc32b ((unsigned char *)cInput);
+    if (myCRC != iLastCRC)
     {
       bNewCommand = true ;
-      strcpy (cLastInput, cInput);
+      iLastCRC = myCRC ;
       memset (pSummary, 0, maxRepeats * maxContrasts * 10 * sizeof (int));
     }
-    strncpy(cLastInput, cInput, MaxInputStr);
     char * cP = strstr(cInput, "HTTP/");
     if (cP) cP = '\0';
     // now choose the colour
@@ -2507,6 +2535,21 @@ void sendReply ()
 
     if (bNewCommand)
     {
+      // no disk space ??
+      if (GetFreeSpace(NULL) < exp_size)
+      {
+        sendHeader ("Disk Full");
+        client.print F("No space left on disk (only ");
+        client.print (GetFreeSpace(NULL));
+        client.print F(" bytes free, ");
+        client.print (exp_size);
+        client.print F(" bytes needed) <BR><BR> Click here to go back to the ");
+
+        send_GoBack_to_Stim_page ();
+        sendFooter();
+        return ;
+      }
+
       //if file exists... ????
       if (fileExists(cFile))
       {
