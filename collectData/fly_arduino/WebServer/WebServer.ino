@@ -271,7 +271,7 @@ String MyInputString = String(MaxInputStr + 1);
 
 char cFile [30];
 char cInput [MaxInputStr + 2] = "";
-char cLastInput [MaxInputStr + 2] = "oldInput";
+unsigned int iLastCRC = 0;
 
 // for graphic plotting
 int istep = 15;
@@ -601,20 +601,6 @@ void setupESPWiFi()
 #endif
 
 void printWifiStatus() {
-  // print the SSID of the network you're attached to:
-  //  Serial.println F("SSID: ");
-  //  Serial.println (WiFi.SSID());
-  //
-  //  // print your WiFi shield's IP address:
-  //
-  //  Serial.println F("IP Address: ");
-  //  Serial.println (myIP);
-  //
-  //  // print the received signal strength:
-  //  long rssi = WiFi.RSSI();
-  //  Serial.println F("signal strength (RSSI):");
-  //  Serial.print (rssi);
-  //  Serial.println F(" dBm");
   //  // print where to go in a browser:
   Serial.print F("Open a browser to http://");
   Serial.println (myIP);
@@ -644,7 +630,37 @@ void doShuffle()
   }
 }
 
+// ----------------------------- crc32b --------------------------------
 
+// http://www.hackersdelight.org/hdcodetxt/crc.c.txt
+
+/* This is the basic CRC-32 calculation with some optimization but no
+table lookup. The the byte reversal is avoided by shifting the crc reg
+right instead of left and by using a reversed 32-bit word to represent
+the polynomial.
+   When compiled to Cyclops with GCC, this function executes in 8 + 72n
+instructions, where n is the number of bytes in the input message. It
+should be doable in 4 + 61n instructions.
+   If the inner loop is strung out (approx. 5*8 = 40 instructions),
+it would take about 6 + 46n instructions. */
+
+unsigned int crc32b(unsigned char *message) {
+   int i, j;
+   unsigned int byte, crc, mask;
+
+   i = 0;
+   crc = 0xFFFFFFFF;
+   while (message[i] != 0) {
+      byte = message[i];            // Get next byte.
+      crc = crc ^ byte;
+      for (j = 7; j >= 0; j--) {    // Do eight times.
+         mask = -(crc & 1);
+         crc = (crc >> 1) ^ (0xEDB88320 & mask);
+      }
+      i = i + 1;
+   }
+   return ~crc;
+}
 
 
 #ifdef ESP8266
@@ -2445,13 +2461,13 @@ void sendReply ()
 
     // save the commandline....
     MyInputString.toCharArray(cInput, MaxInputStr + 2);
-    if (0 != strcmp(cLastInput, cInput))
+    unsigned int myCRC = crc32b ((unsigned char *)cInput);
+    if (myCRC != iLastCRC)
     {
       bNewCommand = true ;
-      strcpy (cLastInput, cInput);
+      iLastCRC = myCRC ;
       memset (pSummary, 0, maxRepeats * maxContrasts * 10 * sizeof (int));
     }
-    strncpy(cLastInput, cInput, MaxInputStr);
     char * cP = strstr(cInput, "HTTP/");
     if (cP) cP = '\0';
     // now choose the colour
@@ -2525,7 +2541,9 @@ void sendReply ()
         sendHeader ("Disk Full");
         client.print F("No space left on disk (only ");
         client.print (GetFreeSpace(NULL));
-        client.print F(" bytes ) <BR> Click here to go back to the ");
+        client.print F(" bytes free, ");
+        client.print (exp_size);
+        client.print F(" bytes needed) <BR><BR> Click here to go back to the ");
 
         send_GoBack_to_Stim_page ();
         sendFooter();
