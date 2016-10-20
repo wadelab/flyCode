@@ -346,7 +346,7 @@ void getData ();
 void plotInColour (int iStart, const String & str_col);
 void TC3_Handler(void *pArg);
 void tidyUp_Collection() ;
-//void sendGraphic(StimTypes plot_stimulus);
+void sendGraphic(StimTypes plot_stimulus);
 //void sendGraphic();
 void sendReply ();
 //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
@@ -555,7 +555,7 @@ void setup() {
 #ifdef __wifisetup__
 
 #ifdef ESP8266
-const char WiFiAPPSK[] = "FlyLab2016";
+const char WiFiAPPSK[] = "sparkfun";
 
 void setupESPWiFi()
 {
@@ -582,7 +582,6 @@ void setupESPWiFi()
   Serial.print F("ESP accesspoint :");
   Serial.println (myIP) ;
 
-#ifdef ESP8266_DISPLAY
   // text display the IP address
   display.setTextSize(1);
   display.setTextColor(WHITE);
@@ -596,9 +595,7 @@ void setupESPWiFi()
   display.println (WiFiAPPSK);
   display.setCursor(0, 0);
   display.display(); // actually display all of the above
-  #endif
 }
-
 #endif
 
 void printWifiStatus() {
