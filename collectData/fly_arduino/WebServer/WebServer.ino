@@ -22,10 +22,10 @@
 #ifdef ESP8266
 #define __wifisetup__
 #define __CLASSROOMSETUP__
-//#define ESP8266_DISPLAY
+#define ESP8266_DISPLAY
 
 // run as standalone access point ??
-#define ESP8266AP
+//#define ESP8266AP
 #endif
 
 #ifndef __wifisetup__
@@ -489,18 +489,25 @@ void setup() {
   //char pass[] = "PASSWD";  // your network password
 #include "./secret.h"
 
-  int status = WL_IDLE_STATUS;
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect(false);
+
+  // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+  int status = WiFi.begin(ssid, pass);
+
   while ( status != WL_CONNECTED)
   {
-    Serial.println F("Attempting to connect to Network named: ");
-    Serial.println (ssid);                   // print the network name (SSID);
-
-    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-    status = WiFi.begin(ssid, pass);
+    Serial.print F("Attempting to connect to Network named: ");
+    Serial.print (ssid);                   // print the network name (SSID);
+    Serial.print F(" with Password: ");
+    Serial.println (pass);
+    status = WiFi.status();
+    Serial.print F("Wifi status ");
+    Serial.println (status);
     // wait 10 seconds for connection:
     delay(10000); // 2 s seems enough
-    myIP = WiFi.localIP();
   }
+  myIP = WiFi.localIP();
 #endif
   Serial.println F("Connected ...");
   printWifiStatus();                        // you're connected now, so print out the status
@@ -555,7 +562,7 @@ void setup() {
 #ifdef __wifisetup__
 
 #ifdef ESP8266
-const char WiFiAPPSK[] = "FlyLab2016";
+const char pass[] = "FlyLab2016";
 
 void setupESPWiFi()
 {
@@ -577,12 +584,21 @@ void setupESPWiFi()
     AP_NameChar[i] = AP_NameString.charAt(i);
   Serial.println F("Setting up access point 8266");
   Serial.println (AP_NameString);
-  WiFi.softAP(AP_NameChar, WiFiAPPSK);
+  WiFi.softAP(AP_NameChar, pass);
   myIP = WiFi.softAPIP() ;
   Serial.print F("ESP accesspoint :");
   Serial.println (myIP) ;
 
-#ifdef ESP8266_DISPLAY
+
+}
+#endif
+
+void printWifiStatus() {
+  //  // print where to go in a browser:
+  Serial.print F("Open a browser to http://");
+  Serial.println (myIP);
+
+  #ifdef ESP8266_DISPLAY
   // text display the IP address
   display.setTextSize(1);
   display.setTextColor(WHITE);
@@ -591,19 +607,12 @@ void setupESPWiFi()
   display.print ("IP: ");
   display.println (myIP);
   display.print ("on net: ");
-  display.println (AP_NameString);
+  display.println (WiFi.SSID());
   display.print ("Passwd: ");
-  display.println (WiFiAPPSK);
+  display.println (WiFi.psk());
   display.setCursor(0, 0);
   display.display(); // actually display all of the above
 #endif
-}
-#endif
-
-void printWifiStatus() {
-  //  // print where to go in a browser:
-  Serial.print F("Open a browser to http://");
-  Serial.println (myIP);
 }
 
 #endif
@@ -635,31 +644,31 @@ void doShuffle()
 // http://www.hackersdelight.org/hdcodetxt/crc.c.txt
 
 /* This is the basic CRC-32 calculation with some optimization but no
-table lookup. The the byte reversal is avoided by shifting the crc reg
-right instead of left and by using a reversed 32-bit word to represent
-the polynomial.
+  table lookup. The the byte reversal is avoided by shifting the crc reg
+  right instead of left and by using a reversed 32-bit word to represent
+  the polynomial.
    When compiled to Cyclops with GCC, this function executes in 8 + 72n
-instructions, where n is the number of bytes in the input message. It
-should be doable in 4 + 61n instructions.
+  instructions, where n is the number of bytes in the input message. It
+  should be doable in 4 + 61n instructions.
    If the inner loop is strung out (approx. 5*8 = 40 instructions),
-it would take about 6 + 46n instructions. */
+  it would take about 6 + 46n instructions. */
 
 unsigned int crc32b(unsigned char *message) {
-   int i, j;
-   unsigned int byte, crc, mask;
+  int i, j;
+  unsigned int byte, crc, mask;
 
-   i = 0;
-   crc = 0xFFFFFFFF;
-   while (message[i] != 0) {
-      byte = message[i];            // Get next byte.
-      crc = crc ^ byte;
-      for (j = 7; j >= 0; j--) {    // Do eight times.
-         mask = -(crc & 1);
-         crc = (crc >> 1) ^ (0xEDB88320 & mask);
-      }
-      i = i + 1;
-   }
-   return ~crc;
+  i = 0;
+  crc = 0xFFFFFFFF;
+  while (message[i] != 0) {
+    byte = message[i];            // Get next byte.
+    crc = crc ^ byte;
+    for (j = 7; j >= 0; j--) {    // Do eight times.
+      mask = -(crc & 1);
+      crc = (crc >> 1) ^ (0xEDB88320 & mask);
+    }
+    i = i + 1;
+  }
+  return ~crc;
 }
 
 
@@ -909,7 +918,7 @@ size_t GetFreeSpace ( WiFiClient * client)
   return fBytes ;
 
 #endif
-  return (size_t) -1 ;
+  return (size_t) - 1 ;
 }
 
 void printDirectory(String s)
