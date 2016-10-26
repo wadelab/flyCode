@@ -8,12 +8,23 @@ function [success,lineSaved] = read_arduino_ERG_file (fName, do_fft);
 [fid, msg] = fopen(fName, 'rt');
 line1a = fgets(fid);
 fclose(fid);
-line1b=strrep(line1a, 'GET /?'  ,'');
-line1c=strrep(line1b, 'HTTP/1.1','');
 
-% will return line as cell array
-lineSaved = strsplit(line1c, '&');
-line = lineSaved ;
+if (strfind(line1a, 'GET /?'))
+    line1b=strrep(line1a, 'GET /?'  ,'');
+    line1c=strrep(line1b, 'HTTP/1.1','');
+    
+    % will return line as cell array
+    lineSaved = strsplit(line1c, '&');
+    line = lineSaved ;
+else
+    %newer code
+    line1b=strrep(line1a, 'GET /'  ,'');
+    line1c=strrep(line1b, 'HTTP/1.1','');
+    
+    % will return line as cell array
+    lineSaved = strsplit(line1c, ',');
+    line = lineSaved ;
+end
 
 % find and delete the filename
 ix = strfind(line, 'filename=') ;

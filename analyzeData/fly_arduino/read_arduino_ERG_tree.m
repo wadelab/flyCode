@@ -9,7 +9,7 @@ addmetothepath ;
 
 
 success = true ;
-% 
+%
 % [f,dirName]=uigetfile('*.ERG');
 % filName=fullfile(dirName,f);
 
@@ -18,8 +18,8 @@ ERGfiles = walk_a_directory_recursively(dirName, '*.ERG');
 
 %% now we have a list of all the files with .SVP in that tree
 if (length(ERGfiles) ==0)
-   disp(['Exiting becuase No SVP files were found in ',dirName]);
-   return 
+    disp(['Exiting becuase No SVP files were found in ',dirName]);
+    return
 end
 
 for i=1:length(ERGfiles)
@@ -41,13 +41,14 @@ for i=1:min(length(ERGfiles),maxFilesToRead)
 end;
 
 if (iSuccesseses == 1)
-   disp(['Exiting becuase No **Readable** SVP files were found in ',dirName]);
-   return 
+    disp(['Exiting becuase No **Readable** SVP files were found in ',dirName]);
+    return
 end
 
 
 disp('Number of flies in this analysis');
-nFlies = length(Collected_ERG_Data)
+sss = size(Collected_ERG_Data) ;
+nFlies = sss(1)
 savefileName = [dirName, filesep, 'CollectedData.mat'];
 save(savefileName);
 
@@ -62,8 +63,10 @@ for i = 1:col
 end
 for k = 1 : row
     for i = 1 : col
-        C = strsplit(Collected_ERG_Data{k,i}, '=');
-        ERG_4_disp{k+1, i} = C{2};
+        if strfind(Collected_ERG_Data{k,i}, '=')
+            C = strsplit(Collected_ERG_Data{k,i}, '=');
+            ERG_4_disp{k+1, i} = C{2};
+        end
     end
 end
 
@@ -88,7 +91,7 @@ status=xlwrite(filename, ERG_4_disp, 'ERGs', 'A1');
 
 
 
-%% 
+%%
 disp(' ');
 disp ([dirName, ' done! ']);
 disp(' ');
