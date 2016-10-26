@@ -1265,12 +1265,16 @@ void addSummary ()
         pSummary[iOffset + kk] = nRepeats ;
         kk ++ ;
 
-        //    // save erg as we do an in place FFT
+        // save erg as we do an in place FFT
+        // For ESP we could save some memory by making erg_tmp a byte (and divide by 4 here)
+#ifndef ESP8266
         int erg_tmp [ max_data];
         for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
+#endif
         do_fft() ;
+#ifndef ESP8266
         for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
-
+#endif
         // F2-F1
         pSummary[iOffset + kk] = erg_in[12] ;
         kk ++ ;
