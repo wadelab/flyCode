@@ -897,9 +897,10 @@ void printTwoDigits(char * p, uint8_t v)
 
 }
 
+
+#ifdef ESP8266
 size_t GetFreeSpace ( WiFiClient * client)
 {
-#ifdef ESP8266
   FSInfo fs_info;
   SPIFFS.info(fs_info);
   size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
@@ -915,10 +916,14 @@ size_t GetFreeSpace ( WiFiClient * client)
     client->print F("<BR>");
   }
   return fBytes ;
+}
 
-#endif
+#else
+size_t GetFreeSpace ( EthernetClient * client)
+{
   return (size_t) - 1 ;
 }
+#endif
 
 void printDirectory(String s)
 {
@@ -1196,6 +1201,7 @@ bool file_time (char * cIn)
   Serial.println (year) ;
   return (year != 0) ;
 }
+
 void do_fft();
 void addSummary ()
 {
@@ -1260,9 +1266,10 @@ void addSummary ()
         kk ++ ;
 
         //    // save erg as we do an in place FFT
-        //    int erg_tmp [ max_data];
-        //    for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
+        int erg_tmp [ max_data];
+        for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
         do_fft() ;
+        for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
 
         // F2-F1
         pSummary[iOffset + kk] = erg_in[12] ;
