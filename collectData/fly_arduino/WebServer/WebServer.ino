@@ -18,14 +18,13 @@
 #define __wifisetup__
 #endif
 
-//#define __CLASSROOMSETUP__
 #ifdef ESP8266
 #define __wifisetup__
 #define __CLASSROOMSETUP__
-#define ESP8266_DISPLAY
+//#define ESP8266_DISPLAY
 
 // run as standalone access point ??
-//#define ESP8266AP
+#define ESP8266AP
 #endif
 
 #ifndef __wifisetup__
@@ -598,7 +597,7 @@ void printWifiStatus() {
   Serial.print F("Open a browser to http://");
   Serial.println (myIP);
 
-  #ifdef ESP8266_DISPLAY
+#ifdef ESP8266_DISPLAY
   // text display the IP address
   display.setTextSize(1);
   display.setTextColor(WHITE);
@@ -2058,12 +2057,19 @@ void tidyUp_Collection()
   switch (eDoFlash)
   {
     case flash :
-    case zap:
       analogWrite(usedLED, 0);
       iThisContrast = maxContrasts ; //++;
       for (int i = 0; i < max_data; i++)
       {
         time_stamp[i] = i * 2 ; // fixed 2 ms per sample
+      }
+      break ;
+    case zap:
+      analogWrite(usedLED, 0);
+      iThisContrast = maxContrasts ; //++;
+      for (int i = 0; i < max_data; i++)
+      {
+        time_stamp[i] = i * 200 ; // fixed 2 mus per sample
       }
       break ;
     case SSVEP:
