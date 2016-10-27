@@ -21,7 +21,7 @@
 #ifdef ESP8266
 #define __wifisetup__
 #define __CLASSROOMSETUP__
-//#define ESP8266_DISPLAY
+#define ESP8266_DISPLAY
 
 // run as standalone access point ??
 #define ESP8266AP
@@ -1270,9 +1270,9 @@ void addSummary ()
 #ifndef ESP8266
         int erg_tmp [ max_data];
         for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
-#endif
+
         do_fft() ;
-#ifndef ESP8266
+
         for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
 #endif
         // F2-F1
