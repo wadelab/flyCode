@@ -1203,6 +1203,12 @@ bool file_time (char * cIn)
 }
 
 void do_fft();
+
+#ifdef ESP8266
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
+#endif
+
 void addSummary ()
 {
 
@@ -1272,8 +1278,6 @@ void addSummary ()
         for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
 
         do_fft() ;
-
-        for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
 #endif
         // F2-F1
         pSummary[iOffset + kk] = erg_in[12] ;
@@ -1290,7 +1294,9 @@ void addSummary ()
         kk ++ ;
         pSummary[iOffset + kk] = erg_in[205] ; // 50Hz
         kk ++ ;
-
+#ifndef ESP8266
+        for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
+#endif
       }
       break ;
 
@@ -2180,11 +2186,18 @@ void flickerPage()
 
 void AppendWaitReport()
 {
-  client.print F("waiting ") ;
-  client.print ( nWaits );
-  client.print F(" of ");
-  client.print (nMaxWaits);
-  client.println F(" time so far " );
+  if (bTestFlash)
+  {
+    client.print F("waiting for first sample ") ;
+  }
+  else
+  {
+    client.print F("waiting ") ;
+    client.print ( nWaits );
+    client.print F(" of ");
+    client.print (nMaxWaits);
+    client.println F(" time so far " );
+  }
   client.println F("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
   client.println ( "<BR> ");
