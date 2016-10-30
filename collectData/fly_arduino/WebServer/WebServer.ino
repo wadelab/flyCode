@@ -1213,8 +1213,8 @@ void addSummary ()
     case flash:
     case zap:
       {
-        iOffset = (nRepeats - 1) * 14 ;
-        // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,");
+        iOffset = (nRepeats - 1) * 15 ;
+        // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,peak-peak");
 
         pSummary[iOffset + kk] = erg_in[1] ;
         //    Serial.println (pSummary[iOffset + kk]);
@@ -1247,7 +1247,7 @@ void addSummary ()
         kk ++ ;
         pSummary [iOffset + kk] = myminsofar ;
         kk ++;
-
+        pSummary [iOffset + kk] = max( pSummary [iOffset + kk - 2] , pSummary [iOffset + kk - 4] ) - min( pSummary [iOffset + kk - 1] , pSummary [iOffset + kk - 3] );
       }
       break ;
 
@@ -1364,14 +1364,14 @@ bool writeSummaryFile(const char * cMain)
   switch (eDoFlash)
   {
     case SSVEP:
-      strcpy (cTmp, "\nprobe contrast, mask, repeat, F2-F1, 1F1, 2F1, 2F2, 1F1+1F2, 2F1+2F2, 50 Hz,\n");
+      strcpy_P (cTmp, (PGM_P) F("\nprobe contrast, mask, repeat, F2-F1, 1F1, 2F1, 2F2, 1F1+1F2, 2F1+2F2, 50 Hz,\n"));
       break ;
 
     default :
     case flash :
-      strcpy (cTmp, "\nstart,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,\n");
+      strcpy_P (cTmp, (PGM_P) F("\nstart,10%,20%,30%,40%,50%,60%,70%,80%,90%,max1,min1,max2,min2,peak-peak\n"));
 
-      iOfssfet = 14;
+      iOfssfet = 15;
       mm = maxRepeats ;
 
       break ;
@@ -2970,7 +2970,7 @@ void writehomepage ()
 
   client.print F("<tr><td style=\"vertical-align: top;\">\n");
   client.print F("<select name=\"fly\" size = 6>\n");
-  client.print F("<option value=\"shibire\" selected>shibire</option>\n");
+  client.print F("<option value=\"CS\" selected>CS</option>\n");
   client.print F("<option value=\"w_minus\" >w-</option>\n");
   client.print F("</select><br></td>\n");
 
