@@ -30,8 +30,8 @@
 #ifndef __wifisetup__
 
 // for ethernet ..............................................................................
-#define due5
-#define USE_DHCP
+#define due6
+//#define USE_DHCP
 
 
 #ifndef ARDUINO_LINUX
@@ -221,7 +221,8 @@ const byte maxRepeats = 5;
 byte nWaits = 15;
 byte nMaxWaits = 15 ;
 
-byte brightness = 255 ;
+#define maxbrightness 255 
+byte brightness = maxbrightness ;
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
 const byte F1contrast[] = {
@@ -2521,6 +2522,7 @@ void sendReply ()
     if (MyInputString.indexOf ("col=bvio&") > 0 ) usedLED  = bluvioletLED ; //
 
     //flash ERG or SSVEP?
+    StimTypes lastStim = eDoFlash ;
     eDoFlash = SSVEP;
     bTestFlash = MyInputString.indexOf ("=fERG_T") > 0  ;
     if (MyInputString.indexOf ("=fERG") > 0 ) eDoFlash = flash ;
@@ -2529,7 +2531,8 @@ void sendReply ()
 
     int ibrPos  = MyInputString.indexOf ("bri=") + 4;
     brightness = atoi(cInput + ibrPos);
-
+    if (bTestFlash) brightness = maxbrightness;
+    
     // find filename
     String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
     // first check for overlong URLs
@@ -2604,8 +2607,15 @@ void sendReply ()
       // new file
       nRepeats = iThisContrast = 0 ;
       nWaits = nMaxWaits ;
-      if (bTestFlash) nWaits = 1;
-      if (eDoFlash == zap) nWaits = 1;
+      if (bTestFlash)
+      {
+        nWaits = 1;
+      }
+      else
+      {
+        if (eDoFlash == zap) nWaits = 1;
+        if (lastStim == flash ) nWaits = 1 ;
+      }
       //turn off any lights we have on...
       goColour(0, false);
     }
@@ -2681,7 +2691,9 @@ void sendReply ()
     sampleCount = -102 ; //implies collectData();
     return ;
   }
-
+  // otherwise itd not a stimulus protocol
+  // FIX me - would it be better to have a nostim parameter to StimTypes ?
+  eDoFlash = zap;
   // show directory
   fPOS = MyInputString.indexOf ("dir=");
   //  Serial.println F("  Position of dir was:" + String(fPOS));
