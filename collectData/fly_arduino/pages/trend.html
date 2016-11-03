@@ -36,7 +36,8 @@ function checkTime(i) {
 function changeText() 
 {
     x = document.getElementById("FileID");
-    x.value = getTimeString() 
+    x.value = getTimeString();
+    document.myform.submit(); 
 }
 </script>
 </head>
@@ -47,7 +48,7 @@ function changeText()
 <div id="txt">Arduino SSVEP starter page</div>
 <BR>
 
-<form action="/">
+<form name = "myform" action="/">
 
 <table style="text-align: left; width: 50%;" border="1" cellpadding="2"
 cellspacing="2">
@@ -142,12 +143,8 @@ cellspacing="2">
 
 
 
-<BR>
-File name: <input id="FileID" type="text" name="filename"> 
-<button onclick="changeText()" type="button">Auto</button><br>
-
-<BR><BR>
-<input type="submit" value="Submit">
+<BR><input id="FileID" type="hidden" name="filename"> 
+<button onclick="changeText()" type="button">Stimulate!</button><br>
 
 </form>
 
@@ -173,8 +170,6 @@ File name: <input id="FileID" type="text" name="filename">
 </td>
 
 <td>
-<a href="/">Test setup</a>
-</td><td>
 <a href="/dir=">Directory</a>
 </table>
 </body>
