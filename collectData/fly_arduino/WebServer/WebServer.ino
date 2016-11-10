@@ -30,9 +30,13 @@
 #ifndef __wifisetup__
 
 // for ethernet ..............................................................................
-#define due6
+// for ethernet ..............................................................................
+// define the due in an external file so we don't keep fighting with git, like this:
+
+//#define due5
 //#define USE_DHCP
 
+#include "./due.h"
 
 #ifndef ARDUINO_LINUX
 #define EthernetShield Ethernet
