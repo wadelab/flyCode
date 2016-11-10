@@ -2197,9 +2197,9 @@ void AppendWaitReport()
     client.print ( nWaits );
     client.print F(" of ");
     client.print (nMaxWaits);
-    client.println F(" time so far " );
+ //   client.println F(" time so far " );
   }
-  client.println F("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
+  client.println F(" <button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
   client.println ( "<BR> ");
   nWaits -- ;
@@ -2209,12 +2209,15 @@ void AppendFlashReport()
 {
   client.print F("Acquired ") ;
   client.print ( nRepeats );
+  if (!bTestFlash)
+  {
   client.print F(" of ");
   client.print (maxRepeats);
   client.println F(" data blocks so far " );
-  client.println F("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
+  }
+  client.println F(" <button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
-  client.println ( "<BR> ");
+  client.println F( "<BR> ");
 
 
   if (nRepeats > 0)
@@ -2259,7 +2262,8 @@ void AppendSSVEPReport()
     client.println ();
 
     client.println F("please wait....<BR>");
-    if (iThisContrast > 0)
+    //if (iThisContrast > 0)
+    if (wfile && (wfile.size() > MaxInputStr + 2 + data_block_size ) ) // at least one data block
     {
       iThisContrast -- ;
       client.println F("<canvas id=\"myCanvas\" width=\"620\" height=\"450\" style=\"border:1px solid #d3d3d3;\">");
@@ -2653,7 +2657,7 @@ void sendReply ()
             sPicture.replace ("ERG", "ERP" );
             client.print F("<A HREF= \"");
             client.print (sPicture) ;
-            client.print F("\" >(averaged picture)</A>" );
+            client.print F("\" > (averaged picture)</A>" );
             sPicture.replace ("ERP", "CSV" );
             break ;
 
@@ -2663,7 +2667,7 @@ void sendReply ()
 
         client.print F("<A HREF= \"");
         client.print (sPicture) ;
-        client.print F("\" >(summary file)</A>" );
+        client.print F("\" > (summary file)</A>" );
       }
       else
       {
