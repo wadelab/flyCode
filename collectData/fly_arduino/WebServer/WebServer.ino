@@ -21,7 +21,7 @@
 #ifdef ESP8266
 #define __wifisetup__
 #define __CLASSROOMSETUP__
-#define ESP8266_DISPLAY
+//#define ESP8266_DISPLAY
 
 // run as standalone access point ??
 #define ESP8266AP
@@ -253,6 +253,7 @@ byte freq2 = 15 ; // flicker of LED Hz
 #define data_block_size  8 * max_data
 volatile unsigned int time_stamp [max_data + presamples] ;
 volatile int erg_in [max_data];
+ int f_i[FFT_SIZE] ;
 volatile int * stimvalue = (int *) time_stamp ; // save memory by sharing time_stamp...
 
 
@@ -586,7 +587,7 @@ void setupESPWiFi()
 
   for (int i = 0; i < AP_NameString.length(); i++)
     AP_NameChar[i] = AP_NameString.charAt(i);
-  Serial.println F("Setting up access point 8266");
+  Serial.print F("Setting up access point 8266 with network ");
   Serial.println (AP_NameString);
   WiFi.softAP(AP_NameChar, pass);
   myIP = WiFi.softAPIP() ;
@@ -1278,12 +1279,12 @@ void addSummary ()
 
         // save erg as we do an in place FFT
         // For ESP we could save some memory by making erg_tmp a byte (and divide by 4 here)
-#ifndef ESP8266
-        int erg_tmp [ max_data];
-        for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = erg_in[iERG];
+
+        byte erg_tmp [ max_data];
+        for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = (byte)(erg_in[iERG] / 4);
 
         do_fft() ;
-#endif
+
         // F2-F1
         pSummary[iOffset + kk] = erg_in[12] ;
         kk ++ ;
@@ -2211,13 +2212,17 @@ void AppendWaitReport()
 
 void AppendFlashReport()
 {
+    if (!bTestFlash)
+  {
   client.print F("Acquired ") ;
   client.print ( nRepeats );
-  if (!bTestFlash)
-  {
   client.print F(" of ");
   client.print (maxRepeats);
   client.println F(" data blocks so far " );
+  }
+  else
+  {
+    client.print F("Showing one sample ") ;
   }
   client.println F(" <button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
@@ -2531,6 +2536,10 @@ void sendReply ()
 
     //flash ERG or SSVEP?
     StimTypes lastStim = eDoFlash ;
+    if (bTestFlash)
+    {
+      lastStim = SSVEP ; //if it was a test flash, pretend it was SSVEP to force a wait
+    }
     eDoFlash = SSVEP;
     bTestFlash = MyInputString.indexOf ("=fERG_T") > 0  ;
     if (MyInputString.indexOf ("=fERG") > 0 ) eDoFlash = flash ;
@@ -3071,7 +3080,7 @@ void writehomepage ()
   client.print F("<td><a href=\"/dir=\">Directory</a></td></table></body></html>\n");
 
 #else
-  //__CLASSROOMSETUP__
+  // thus not __CLASSROOMSETUP__
 
   sendHeader (String("Fly lab here!"));
   client.print F("Please try <a href = \"http://biolpc1677.york.ac.uk/pages\">biolpc1677</a> for starter page");
@@ -3085,10 +3094,11 @@ void do_fft()
   //  read it  in erg_in, transfer it to f_ and then put the fft back in erg_in
   // FFT_SIZE IS DEFINED in Header file Radix4.h
   // #define   FFT_SIZE           1024
-
   //  static int         f_r[FFT_SIZE]   = { 0};
+  
 #define f_r (int *) erg_in
-  static int         f_i[FFT_SIZE]   = { 0};
+  // static int         f_i[FFT_SIZE]   = { 0 };
+  
   //  static int         out[FFT_SIZE / 2]     = { 0};     // Magnitudes
 
   Radix4     radix;
