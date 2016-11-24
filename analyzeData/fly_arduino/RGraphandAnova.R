@@ -1,4 +1,8 @@
 # put data in the clipboard from excel
+
+# run this as 
+# source('RGraphandAnova.R', echo=TRUE, print.eval=TRUE)
+
 xx <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
 head (xx)
 attach(xx)
