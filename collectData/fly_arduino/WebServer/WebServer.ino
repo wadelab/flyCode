@@ -129,6 +129,7 @@
 //wifi of some sort...
 
 #ifdef ESP8266
+const char pass[] = "FlyLab2016";
 extern "C" {
 #include "user_interface.h"
 }
@@ -225,7 +226,7 @@ const byte maxRepeats = 5;
 byte nWaits = 15;
 byte nMaxWaits = 15 ;
 
-#define maxbrightness 255 
+#define maxbrightness 255
 byte brightness = maxbrightness ;
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
@@ -253,7 +254,7 @@ byte freq2 = 15 ; // flicker of LED Hz
 #define data_block_size  8 * max_data
 volatile unsigned int time_stamp [max_data + presamples] ;
 volatile int erg_in [max_data];
- int f_i[FFT_SIZE] ;
+int f_i[FFT_SIZE] ;
 volatile int * stimvalue = (int *) time_stamp ; // save memory by sharing time_stamp...
 
 
@@ -322,8 +323,8 @@ WiFiClient client (80);
 #endif
 
 #ifdef ESP8266
-void setupESPWiFi();
-void printWifiStatus();
+void setupAP_ESPWiFi();
+void printWifiStatus(char * c);
 void doShuffle();
 void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML = true, char * pDate = NULL);
 void sendFooter();
@@ -450,12 +451,11 @@ void setup() {
     myGraphData[i] = 0;
   }
 
+  ////////////////////////////////// Setup Disk first
+
 #ifdef ESP8266
   // initialise Flash disk
   Serial.println F("Now trying flash drive card ...\n");
-
-
-
   if (SPIFFS.begin())
   {
     Serial.println F("Setting up flash drive  succeded OK...\n");
@@ -484,12 +484,45 @@ void setup() {
 #define openDir open
 #endif
 
-
+  /////////////////////////// Now setup network...................
 #ifdef __wifisetup__
 
 #ifdef ESP8266AP
-  setupESPWiFi();                            // start the web server on port 80
+  setupAP_ESPWiFi();
 #else
+  setupESPClientWiFi () ;
+#endif
+  server.begin();                           // start the web server on port 80
+
+
+#else
+  // no wifi so ethernet
+  setupEthernet();
+#endif
+
+  //  //////////////////////////////////////// basic settings for all
+
+  analogReadResolution(12);
+  iGainFactor = 4 ;
+  goColour(0, 0, 0, 0, false);
+  doShuffle();
+
+#ifdef ESP8266
+  // only call this once
+  os_timer_setfn((ETSTimer *) &myTimer, TC3_Handler, NULL);
+
+#endif
+
+}
+
+
+
+#ifdef __wifisetup__
+
+#ifdef ESP8266
+
+void setupESPClientWiFi ()
+{
   //char ssid[] = "SSID";     //  your network SSID (name)
   //char pass[] = "PASSWD";  // your network password
 #include "./secret.h"
@@ -513,13 +546,72 @@ void setup() {
     delay(10000); // 2 s seems enough
   }
   myIP = WiFi.localIP();
-#endif
+
   Serial.println F("Connected ...");
-  printWifiStatus();                        // you're connected now, so print out the status
+  printWifiStatus(ssid);                        // you're connected now, so print out the status
 
-  server.begin();                           // start the web server on port 80
+}
 
-#else
+void setupAP_ESPWiFi()
+{
+  WiFi.mode(WIFI_AP);
+
+  // Do a little work to get a unique-ish name. Append the
+  // last two bytes of the MAC (HEX'd) to "ThingDev-":
+  uint8_t mac[WL_MAC_ADDR_LENGTH];
+  WiFi.softAPmacAddress(mac);
+  String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
+                 String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
+  macID.toUpperCase();
+  String AP_NameString = "FlyBox-" + macID;
+
+  char AP_NameChar[AP_NameString.length() + 1];
+  memset(AP_NameChar, 0, AP_NameString.length() + 1);
+
+  for (int i = 0; i < AP_NameString.length(); i++)
+    AP_NameChar[i] = AP_NameString.charAt(i);
+  Serial.print F("Setting up access point 8266 with network ");
+  Serial.println (AP_NameString);
+  WiFi.softAP(AP_NameChar, pass);
+  myIP = WiFi.softAPIP() ;
+  Serial.print F("ESP accesspoint :");
+  Serial.println (myIP) ;
+  printWifiStatus(AP_NameChar);
+
+}
+#endif
+
+void printWifiStatus(char * c) {
+  //  // print where to go in a browser:
+  Serial.print F("Open a browser to http://");
+  Serial.println (myIP);
+  Serial.print ("on net: ");
+  Serial.println (c);
+  Serial.print ("Passwd: ");
+  Serial.println (pass);
+
+#ifdef ESP8266_DISPLAY
+  // text display the IP address
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+
+  display.print ("IP: ");
+  display.println (myIP);
+  display.print ("on net: ");
+  display.println (WiFi.SSID());
+  display.print ("Passwd: ");
+  display.println (WiFi.psk());
+  display.setCursor(0, 0);
+  display.display(); // actually display all of the above
+#endif
+}
+
+#endif
+
+#ifndef __wifisetup__
+void setupEthernet()
+{
   digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
   Serial.println F("Setting up the Ethernet card...\n");
   // start the Ethernet connection and the server:
@@ -546,82 +638,8 @@ void setup() {
   Serial.print (myIP);
   Serial.print F(" using dns server ");
   Serial.println (dnsIP);
-
-#endif
-
-  analogReadResolution(12);
-  iGainFactor = 4 ;
-  goColour(0, 0, 0, 0, false);
-
-  doShuffle();
-
-#ifdef ESP8266
-  // only call this once
-  os_timer_setfn((ETSTimer *) &myTimer, TC3_Handler, NULL);
-
-#endif
-}
-
-
-
-#ifdef __wifisetup__
-
-#ifdef ESP8266
-const char pass[] = "FlyLab2016";
-
-void setupESPWiFi()
-{
-  WiFi.mode(WIFI_AP);
-
-  // Do a little work to get a unique-ish name. Append the
-  // last two bytes of the MAC (HEX'd) to "ThingDev-":
-  uint8_t mac[WL_MAC_ADDR_LENGTH];
-  WiFi.softAPmacAddress(mac);
-  String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
-                 String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
-  macID.toUpperCase();
-  String AP_NameString = "FlyBox-" + macID;
-
-  char AP_NameChar[AP_NameString.length() + 1];
-  memset(AP_NameChar, 0, AP_NameString.length() + 1);
-
-  for (int i = 0; i < AP_NameString.length(); i++)
-    AP_NameChar[i] = AP_NameString.charAt(i);
-  Serial.print F("Setting up access point 8266 with network ");
-  Serial.println (AP_NameString);
-  WiFi.softAP(AP_NameChar, pass);
-  myIP = WiFi.softAPIP() ;
-  Serial.print F("ESP accesspoint :");
-  Serial.println (myIP) ;
-
-
 }
 #endif
-
-void printWifiStatus() {
-  //  // print where to go in a browser:
-  Serial.print F("Open a browser to http://");
-  Serial.println (myIP);
-
-#ifdef ESP8266_DISPLAY
-  // text display the IP address
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 0);
-
-  display.print ("IP: ");
-  display.println (myIP);
-  display.print ("on net: ");
-  display.println (WiFi.SSID());
-  display.print ("Passwd: ");
-  display.println (WiFi.psk());
-  display.setCursor(0, 0);
-  display.display(); // actually display all of the above
-#endif
-}
-
-#endif
-
 
 void doShuffle()
 {
@@ -2202,7 +2220,7 @@ void AppendWaitReport()
     client.print ( nWaits );
     client.print F(" of ");
     client.print (nMaxWaits);
- //   client.println F(" time so far " );
+    //   client.println F(" time so far " );
   }
   client.println F(" <button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
@@ -2212,13 +2230,13 @@ void AppendWaitReport()
 
 void AppendFlashReport()
 {
-    if (!bTestFlash)
+  if (!bTestFlash)
   {
-  client.print F("Acquired ") ;
-  client.print ( nRepeats );
-  client.print F(" of ");
-  client.print (maxRepeats);
-  client.println F(" data blocks so far " );
+    client.print F("Acquired ") ;
+    client.print ( nRepeats );
+    client.print F(" of ");
+    client.print (maxRepeats);
+    client.println F(" data blocks so far " );
   }
   else
   {
@@ -2549,7 +2567,7 @@ void sendReply ()
     int ibrPos  = MyInputString.indexOf ("bri=") + 4;
     brightness = atoi(cInput + ibrPos);
     if (bTestFlash) brightness = maxbrightness;
-    
+
     // find filename
     String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
     // first check for overlong URLs
@@ -2885,7 +2903,6 @@ void sendReply ()
 
 void loop()
 {
-
   String sTmp = "";
   MyInputString = "";
   getData ();
@@ -3095,10 +3112,10 @@ void do_fft()
   // FFT_SIZE IS DEFINED in Header file Radix4.h
   // #define   FFT_SIZE           1024
   //  static int         f_r[FFT_SIZE]   = { 0};
-  
+
 #define f_r (int *) erg_in
   // static int         f_i[FFT_SIZE]   = { 0 };
-  
+
   //  static int         out[FFT_SIZE / 2]     = { 0};     // Magnitudes
 
   Radix4     radix;
