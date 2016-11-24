@@ -211,6 +211,9 @@ const byte bluLED = 7;
 const byte redled = 13; // Farnell 2080005
 const byte grnled = 15; // 1855562
 const byte bluLED = 2;  // 1045418
+#ifdef __CLASSROOMSETUP__
+#define TemperatureLED  grnled
+#endif
 #endif
 
 volatile byte analogPin = 0 ;
@@ -228,6 +231,9 @@ byte nMaxWaits = 15 ;
 
 #define maxbrightness 255
 byte brightness = maxbrightness ;
+#ifdef __CLASSROOMSETUP__
+byte Temperature = 0;
+#endif
 const byte maxContrasts = 9 ;
 const byte F2contrastchange = 4;
 const byte F1contrast[] = {
@@ -2567,6 +2573,11 @@ void sendReply ()
     int ibrPos  = MyInputString.indexOf ("bri=") + 4;
     brightness = atoi(cInput + ibrPos);
     if (bTestFlash) brightness = maxbrightness;
+#ifdef __CLASSROOMSETUP__
+    ibrPos  = MyInputString.indexOf ("IR=") + 4;
+    Temperature = atoi(cInput + ibrPos);
+    if (bTestFlash) Temperature = 0;
+#endif
 
     // find filename
     String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
@@ -2653,6 +2664,9 @@ void sendReply ()
       }
       //turn off any lights we have on...
       goColour(0, false);
+#ifdef __CLASSROOMSETUP__
+      analogWrite(TemperatureLED, Temperature);
+#endif
     }
     //Serial.println F("repeats now ");
     //Serial.println (nRepeats);
@@ -2719,6 +2733,10 @@ void sendReply ()
       }
       sendFooter ();
 
+#ifdef __CLASSROOMSETUP__
+      analogWrite(TemperatureLED, 0);
+#endif
+
       return ;
     }
 
@@ -2756,10 +2774,18 @@ void sendReply ()
   fPOS = MyInputString.indexOf ("white/");
   if (fPOS > 0)
   {
+#ifdef __CLASSROOMSETUP__
+    // we get white light from the LEDS normally on the RED pin
+    goColour(255, 0, 0, 0, true) ;
+    return;
+#else
     goColour(255, true) ;
     return ;
+#endif
   }
 
+#ifndef __CLASSROOMSETUP__
+  // none of these colours can be shown in the classroom mode
   fPOS = MyInputString.indexOf ("amber/");
   if (fPOS > 0)
   {
@@ -2792,7 +2818,6 @@ void sendReply ()
   if (fPOS > 0)
   {
     goColour(0, 0, 255, 0, true) ;
-
     return ;
   }
   fPOS = MyInputString.indexOf ("green/");
@@ -2801,17 +2826,26 @@ void sendReply ()
     goColour(0, 255, 0, 0, true) ;
     return ;
   }
+
+  fPOS = MyInputString.indexOf ("fiber/");
+  if (fPOS > 0)
+  {
+    goColour(0, 0, 0, 255, true) ;
+    return ;
+  }
+#endif
+  // but classroomsetup can do blue and black
+  fPOS = MyInputString.indexOf ("blue/");
+  if (fPOS > 0)
+  {
+    goColour(0, 0, 255, 0, true) ;
+    return ;
+  }
   fPOS = MyInputString.indexOf ("black/");
   if (fPOS > 0)
   {
     //    Serial.println F("off");
     goColour(0, true) ;
-    return ;
-  }
-  fPOS = MyInputString.indexOf ("fiber/");
-  if (fPOS > 0)
-  {
-    goColour(0, 0, 0, 255, true) ;
     return ;
   }
 
@@ -3024,8 +3058,8 @@ void writehomepage ()
   client.print F("<form name = \"myform\" action=\"/\">\n");
 
   client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody><tr>\n");
-  client.print F("<td style=\"vertical-align: top; width = 50%\">genotype</td>\n");
-  client.print F("<td style=\"vertical-align: top; width = 50%\">Hairdryer:</td></tr>\n");
+  client.print F("<td style=\"vertical-align: top; width = 50%\">Genotype</td>\n");
+  client.print F("<td style=\"vertical-align: top; width = 50%\">InfraRed Heating:</td></tr>\n");
 
   client.print F("<tr><td style=\"vertical-align: top;\">\n");
   client.print F("<select name=\"fly\" size = 6>\n");
@@ -3035,9 +3069,16 @@ void writehomepage ()
   client.print F("</select><br></td>\n");
 
   client.print F("<td style=\"vertical-align: top;\">\n");
-  client.print F("<select name=\"HairD\" size = 6>\n");
-  client.print F("<option value=\"Y\">Yes</option>\n");
-  client.print F("<option value=\"N\" selected>No</option>\n");
+  client.print F("<select name=\"IR\" size = 6>\n");
+  client.print F("<option value=\"255\"  >100%</option>\n");
+  client.print F("<option value=\"127\"  >50%</option>\n");
+  client.print F("<option value=\"64\"  >25%</option>\n");
+  client.print F("<option value=\"25\"  >10%</option>\n");
+  client.print F("<option value=\"13\"  >5%</option>\n");
+  client.print F("<option value=\"6\"  >2%</option>\n");
+  client.print F("<option value=\"3\"  >1%</option>\n");
+  client.print F("<option value=\"2\"  >0.5%</option>\n");
+  client.print F("<option value=\"0\"  selected>0.0%</option>\n");
   client.print F("</select><br></td></tr></tbody></table><BR>\n");
 
   client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody ><tr>\n");
@@ -3047,11 +3088,9 @@ void writehomepage ()
 
 
   //  client.print F("<td style=\"vertical-align: top;\"><BR>\n");
-  //  client.print F("<input type=\"radio\" name=\"col\" value=\"blue\" checked>blue<br>\n");
+  client.print F("<input type=\"hidden\" name=\"col\" value=\"blue\" checked>blue<br>\n");
   //  client.print F("<input type=\"radio\" name=\"col\" value=\"green\">green<br>\n");
   //  client.print F("<input type=\"radio\" name=\"col\" value=\"red\">red<br></td>\n");
-
-
 
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG_T\" checked>Test ERG<br>\n");
