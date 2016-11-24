@@ -3014,14 +3014,14 @@ void writehomepage ()
   client.print F("function changeText() \n");
   client.print F("{\n");
   client.print F("x = document.getElementById(\"FileID\");\n");
-  client.print F("x.value = getTimeString() }\n");
+  client.print F("x.value = getTimeString() ; \ndocument.myform.submit(); \n }\n");
   client.print F("</script>\n");
   client.print F("</head>\n");
 
   client.print F("<!-- body onload=\"startTime()\" -->\n");
   client.print F("<body><div id=\"txt\">Flylab Starter page</div><BR>\n");
 
-  client.print F("<form action=\"/\">\n");
+  client.print F("<form name = \"myform\" action=\"/\">\n");
 
   client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody><tr>\n");
   client.print F("<td style=\"vertical-align: top; width = 50%\">genotype</td>\n");
@@ -3031,6 +3031,7 @@ void writehomepage ()
   client.print F("<select name=\"fly\" size = 6>\n");
   client.print F("<option value=\"CS\" selected>CS</option>\n");
   client.print F("<option value=\"w_minus\" >w-</option>\n");
+  client.print F("<option value=\"shi\" >shibire</option>\n");
   client.print F("</select><br></td>\n");
 
   client.print F("<td style=\"vertical-align: top;\">\n");
@@ -3041,23 +3042,23 @@ void writehomepage ()
 
   client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody ><tr>\n");
 
-  client.print F("<td style=\"vertical-align: top; width = 33%\"><BR>Colour</td>\n");
   client.print F("<td style=\"vertical-align: top; width = 33%\"><BR>Protocol</td>\n");
   client.print F("<td style=\"vertical-align: top; width = 33%\"><BR>ERG Intensity</td></tr><tr>\n");
 
 
-  client.print F("<td style=\"vertical-align: top;\"><BR>\n");
-  client.print F("<input type=\"radio\" name=\"col\" value=\"blue\" checked>blue<br>\n");
-  client.print F("<input type=\"radio\" name=\"col\" value=\"green\">green<br>\n");
-  client.print F("<input type=\"radio\" name=\"col\" value=\"red\">red<br></td>\n");
+  //  client.print F("<td style=\"vertical-align: top;\"><BR>\n");
+  //  client.print F("<input type=\"radio\" name=\"col\" value=\"blue\" checked>blue<br>\n");
+  //  client.print F("<input type=\"radio\" name=\"col\" value=\"green\">green<br>\n");
+  //  client.print F("<input type=\"radio\" name=\"col\" value=\"red\">red<br></td>\n");
 
 
 
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG_T\" checked>Test ERG<br>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG\" >Save ERG<br>\n");
+#ifndef ESP8266
   client.print F("<input type=\"radio\" name=\"stim\" value=\"SSVEP\" >SSVEP (sine)<br></td>\n");
-
+#endif
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<select name=\"bri\" size = 7>\n");
   client.print F("<option value=\"255\"  >100%</option>\n");
@@ -3074,24 +3075,17 @@ void writehomepage ()
 
 
   client.print F("<BR>\n");
-  client.print F("File name: <input id=\"FileID\" type=\"text\" name=\"filename\"> \n");
-  client.print F("<button onclick=\"changeText()\" type=\"button\">Auto</button><br><BR><BR>\n");
-  client.print F("<input type=\"submit\" value=\"Submit\">\n");
+  client.print F("<input id=\"FileID\" type=\"hidden\" name=\"filename\"> \n");
+  client.print F("<button onclick=\"changeText()\" type=\"button\">Stimulate!</button><br><BR><BR>\n");
+  // client.print F("<input type=\"submit\" value=\"Submit\">\n");
 
   client.print F("</form>\n");
 
   client.print F("<BR><BR><table><tr><td>\n");
-  client.print F("<A href=\"/white/\">White</a></td>\n");
+  client.print F("<A href=\"/white/\">Light on</a></td>\n");
 
-  client.print F("<td bgcolor=\"Red\">\n");
-  client.print F("<A href=\"/red/\"><font color=\"White\">Red </font></a></td>\n");
-
-  client.print F("<td bgcolor=\"Green\">\n");
-  client.print F("<A href=\"/green/\"><font color=\"White\">Green </font></a></td>\n");
-  client.print F("<td bgcolor=\"Blue\">\n");
-  client.print F("<A href=\"/blue/\"><font color=\"White\">Blue </font></a></td>\n");
   client.print F("<td bgcolor=\"Black\">\n");
-  client.print F("<A href=\"/black/\"><font color=\"White\">Black</font></a></td>\n");
+  client.print F("<A href=\"/black/\"><font color=\"White\">Light off</font></a></td>\n");
 
   //client.print F("<td><a href=\"/\">Test setup</a></td>\n");
   client.print F("<td><a href=\"/dir=\">Directory</a></td></table></body></html>\n");
