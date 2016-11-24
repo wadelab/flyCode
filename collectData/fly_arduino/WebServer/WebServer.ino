@@ -21,7 +21,7 @@
 #ifdef ESP8266
 #define __wifisetup__
 #define __CLASSROOMSETUP__
-//#define ESP8266_DISPLAY
+#define ESP8266_DISPLAY
 
 // run as standalone access point ??
 #define ESP8266AP
@@ -591,9 +591,9 @@ void printWifiStatus(char * c) {
   //  // print where to go in a browser:
   Serial.print F("Open a browser to http://");
   Serial.println (myIP);
-  Serial.print ("on net: ");
+  Serial.print F("on net: ");
   Serial.println (c);
-  Serial.print ("Passwd: ");
+  Serial.print F("Passwd: ");
   Serial.println (pass);
 
 #ifdef ESP8266_DISPLAY
@@ -602,12 +602,12 @@ void printWifiStatus(char * c) {
   display.setTextColor(WHITE);
   display.setCursor(0, 0);
 
-  display.print ("IP: ");
+  display.print F("IP: ");
   display.println (myIP);
-  display.print ("on net: ");
-  display.println (WiFi.SSID());
-  display.print ("Passwd: ");
-  display.println (WiFi.psk());
+  display.print F("on net: ");
+  display.println (c);
+  display.print F("Passwd: ");
+  display.println (pass);
   display.setCursor(0, 0);
   display.display(); // actually display all of the above
 #endif
