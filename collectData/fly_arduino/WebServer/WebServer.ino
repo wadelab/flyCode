@@ -134,7 +134,7 @@ extern "C" {
 #include "user_interface.h"
 }
 #include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
+//#include <ESP8266mDNS.h>
 #else
 #include <WiFi.h>
 #endif
@@ -562,27 +562,23 @@ void setupAP_ESPWiFi()
 {
   WiFi.mode(WIFI_AP);
 
-  // Do a little work to get a unique-ish name. Append the
-  // last two bytes of the MAC (HEX'd) to "ThingDev-":
-  uint8_t mac[WL_MAC_ADDR_LENGTH];
-  WiFi.softAPmacAddress(mac);
-  String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
-                 String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
-  macID.toUpperCase();
-  String AP_NameString = "FlyBox-" + macID;
+  char macadr [WL_MAC_ADDR_LENGTH];
+  strcpy (macadr, WiFi.softAPmacAddress().c_str());
 
-  char AP_NameChar[AP_NameString.length() + 1];
-  memset(AP_NameChar, 0, AP_NameString.length() + 1);
+  strcpy ( macadr, "FlyBox-" );
+  strcpy ( macadr + 7, macadr + 12 ) ;
+  strcpy ( macadr + 9, macadr + 15 ) ;
 
-  for (int i = 0; i < AP_NameString.length(); i++)
-    AP_NameChar[i] = AP_NameString.charAt(i);
   Serial.print F("Setting up access point 8266 with network ");
-  Serial.println (AP_NameString);
-  WiFi.softAP(AP_NameChar, pass);
+  Serial.println (macadr);
+  WiFi.softAP(macadr, pass);
   myIP = WiFi.softAPIP() ;
   Serial.print F("ESP accesspoint :");
   Serial.println (myIP) ;
-  printWifiStatus(AP_NameChar);
+// This would allow access via Bonjour to FlyBox-5DF0.local for example
+// comment this out saves ~ 500 bytes
+// MDNS.begin(macadr);
+  printWifiStatus(macadr);
 
 }
 #endif
@@ -3088,7 +3084,7 @@ void writehomepage ()
 
 
   //  client.print F("<td style=\"vertical-align: top;\"><BR>\n");
-  client.print F("<input type=\"hidden\" name=\"col\" value=\"blue\" checked>blue<br>\n");
+  //  client.print F("<input type=\"hidden\" name=\"col\" value=\"blue\" checked>blue<br>\n");
   //  client.print F("<input type=\"radio\" name=\"col\" value=\"green\">green<br>\n");
   //  client.print F("<input type=\"radio\" name=\"col\" value=\"red\">red<br></td>\n");
 
@@ -3122,7 +3118,7 @@ void writehomepage ()
 
   client.print F("<BR><BR><table><tr><td>\n");
   client.print F("<A href=\"/white/\">Light on</a></td>\n");
-
+  client.print F("<td bgcolor=\"Blue\">\n");
   client.print F("<td bgcolor=\"Black\">\n");
   client.print F("<A href=\"/black/\"><font color=\"White\">Light off</font></a></td>\n");
 
