@@ -24,7 +24,7 @@
 #define ESP8266_DISPLAY
 
 // run as standalone access point ??
-#define ESP8266AP
+// #define ESP8266AP
 #endif
 
 #ifndef __wifisetup__
@@ -128,8 +128,11 @@
 #else
 //wifi of some sort...
 
-#ifdef ESP8266
+#ifdef ESP8266AP
 const char pass[] = "FlyLab2016";
+#endif 
+
+#ifdef ESP8266
 extern "C" {
 #include "user_interface.h"
 }
@@ -330,6 +333,7 @@ WiFiClient client (80);
 
 #ifdef ESP8266
 void setupAP_ESPWiFi();
+void setupESPClientWiFi ();
 void printWifiStatus(char * c);
 void doShuffle();
 void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML = true, char * pDate = NULL);
@@ -527,12 +531,12 @@ void setup() {
 
 #ifdef ESP8266
 
-void setupESPClientWiFi ()
-{
   //char ssid[] = "SSID";     //  your network SSID (name)
   //char pass[] = "PASSWD";  // your network password
 #include "./secret.h"
 
+void setupESPClientWiFi ()
+{
   WiFi.mode(WIFI_STA);
   WiFi.disconnect(false);
 
@@ -554,7 +558,7 @@ void setupESPClientWiFi ()
   myIP = WiFi.localIP();
 
   Serial.println F("Connected ...");
-  printWifiStatus(ssid);                        // you're connected now, so print out the status
+  printWifiStatus((char *)ssid);                        // you're connected now, so print out the status
 
 }
 
