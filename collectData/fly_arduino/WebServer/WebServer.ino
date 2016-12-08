@@ -248,6 +248,7 @@ const byte F2contrast[] = {
 byte contrastOrder[ maxContrasts ];
 byte iThisContrast = 0 ;
 
+#define maxDirSize 513
 bool bNoInternet = false ;
 bool bFileOK = true ;
 bool has_filesystem = true ;
@@ -965,8 +966,8 @@ void printDirectory(String s)
   MyDir dir = SD.openDir(cTmp) ;
   // if (!dir) return ; FIX
 
-  char sArray [512 * 15];
-  long lArray [512] ;
+  char sArray [maxDirSize * 15];
+  long lArray [maxDirSize] ;
 #ifdef ESP8266
   bool bNext ;
 
