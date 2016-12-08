@@ -24,7 +24,7 @@
 #define ESP8266_DISPLAY
 
 // run as standalone access point ??
-// #define ESP8266AP
+//#define ESP8266AP
 #endif
 
 #ifndef __wifisetup__
@@ -130,7 +130,7 @@
 
 #ifdef ESP8266AP
 const char pass[] = "FlyLab2016";
-#endif 
+#endif
 
 #ifdef ESP8266
 extern "C" {
@@ -332,8 +332,7 @@ WiFiClient client (80);
 #endif
 
 #ifdef ESP8266
-void setupAP_ESPWiFi();
-void setupESPClientWiFi ();
+void setupESPWiFi ();
 void printWifiStatus(char * c);
 void doShuffle();
 void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML = true, char * pDate = NULL);
@@ -424,6 +423,8 @@ void setup() {
 
 
 #ifdef ESP8266
+  system_update_cpu_freq(160);
+
 #ifdef ESP8266_DISPLAY
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
@@ -496,15 +497,8 @@ void setup() {
 
   /////////////////////////// Now setup network...................
 #ifdef __wifisetup__
-
-#ifdef ESP8266AP
-  setupAP_ESPWiFi();
-#else
-  setupESPClientWiFi () ;
-#endif
+  setupESPWiFi();
   server.begin();                           // start the web server on port 80
-
-
 #else
   // no wifi so ethernet
   setupEthernet();
@@ -531,11 +525,13 @@ void setup() {
 
 #ifdef ESP8266
 
-  //char ssid[] = "SSID";     //  your network SSID (name)
-  //char pass[] = "PASSWD";  // your network password
+#ifndef ESP8266AP
+//char ssid[] = "SSID";     //  your network SSID (name)
+//char pass[] = "PASSWD";  // your network password
 #include "./secret.h"
 
-void setupESPClientWiFi ()
+// client wifi
+void setupESPWiFi ()
 {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect(false);
@@ -562,7 +558,10 @@ void setupESPClientWiFi ()
 
 }
 
-void setupAP_ESPWiFi()
+#else
+
+// access point wifi
+void setupESPWiFi()
 {
   WiFi.mode(WIFI_AP);
 
@@ -579,13 +578,14 @@ void setupAP_ESPWiFi()
   myIP = WiFi.softAPIP() ;
   Serial.print F("ESP accesspoint :");
   Serial.println (myIP) ;
-// This would allow access via Bonjour to FlyBox-5DF0.local for example
-// comment this out saves ~ 500 bytes
-// MDNS.begin(macadr);
+  // This would allow access via Bonjour to FlyBox-5DF0.local for example
+  // comment this out saves ~ 500 bytes
+  // MDNS.begin(macadr);
   printWifiStatus(macadr);
 
 }
-#endif
+#endif //access point or not
+#endif // wifi
 
 void printWifiStatus(char * c) {
   //  // print where to go in a browser:
