@@ -75,6 +75,7 @@ p3 <- ggplot(xx, aes(x=genotype,y=X1F1,color=genotype)) + geom_boxplot() + geom_
 coord_cartesian(ylim = c(0, 1.05 * max(X1F1))) +
 theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+p4 <- p3 + annotate("text", x= xxSE$genotype, y = 10, label = xxSE$N, size = 3)
 p3
 
 #ggsave("1F1.pdf")
