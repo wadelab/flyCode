@@ -85,43 +85,43 @@ end
 thisFlyData.F2=F2;
 
 %% remove garbage in Tom's data set
-% find and delete the filename
-ix = strfind(line, 'Filter=') ;
-ix = find(~cellfun(@isempty,ix));
-line (ix)=[];
-
-ix = strfind(line, 'sex=') ;
-ix = find(~cellfun(@isempty,ix));
-line (ix)=[];
-
-ix = strfind(line, 'org=') ;
-ix = find(~cellfun(@isempty,ix));
-line (ix)=[];
-
-ix = strfind(line, 'col=') ;
-ix = find(~cellfun(@isempty,ix));
-line (ix)=[];
-
-ix = strfind(line, 'bri=') ;
-ix = find(~cellfun(@isempty,ix));
-line (ix)=[];
-
-%some flies were missing UAS2=
-n=3 ;
-if isempty(strmatch('UAS2',line))
-    line(n+1:end+1) = line(n:end);
-    line{n}= 'UAS2=none';
-else
-    disp('UAS2 found');
-end
-
-
-if isempty(strmatch('Age=1',line))
-    thisFlyData.Error = ['wrong age : ', fName];
-    disp(thisFlyData.Error);
-    success = false ;
-    return
-end
+% % find and delete the filename
+% ix = strfind(line, 'Filter=') ;
+% ix = find(~cellfun(@isempty,ix));
+% line (ix)=[];
+% 
+% ix = strfind(line, 'sex=') ;
+% ix = find(~cellfun(@isempty,ix));
+% line (ix)=[];
+% 
+% ix = strfind(line, 'org=') ;
+% ix = find(~cellfun(@isempty,ix));
+% line (ix)=[];
+% 
+% ix = strfind(line, 'col=') ;
+% ix = find(~cellfun(@isempty,ix));
+% line (ix)=[];
+% 
+% ix = strfind(line, 'bri=') ;
+% ix = find(~cellfun(@isempty,ix));
+% line (ix)=[];
+% 
+% %some flies were missing UAS2=
+% n=3 ;
+% if isempty(strmatch('UAS2',line))
+%     line(n+1:end+1) = line(n:end);
+%     line{n}= 'UAS2=none';
+% else
+%     disp('UAS2 found');
+% end
+% 
+% 
+% if isempty(strmatch('Age=1',line))
+%     thisFlyData.Error = ['wrong age : ', fName];
+%     disp(thisFlyData.Error);
+%     success = false ;
+%     return
+% end
 
 
 %% Back to normal processing
