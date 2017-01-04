@@ -1,7 +1,17 @@
 # put data in the clipboard from excel
 
 # run this as 
-# source('RGraphandAnova.R', echo=TRUE, print.eval=TRUE)
+# source('ERG_GraphandAnova.R', echo=TRUE, print.eval=TRUE)
+
+
+## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
+##   data: a data frame.
+##   measurevar: the name of a column that contains the variable to be summariezed
+##   groupvars: a vector containing names of columns that contain grouping variables
+##   na.rm: a boolean that indicates whether to ignore NA's
+##   conf.interval: the percent range of the confidence interval (default is 95%)
+##  http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/
+
 
 summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 conf.interval=.95, .drop=TRUE) {
@@ -43,35 +53,31 @@ xx <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
 head (xx)
 attach(xx)
 library(ggplot2)
-ggplot(xx, aes(x=genotype,y=peak.peak,color=genotype)) + geom_point(shape=1)
+p1 <- ggplot(xx, aes(x=genotype,y=peak.peak,color=genotype)) + geom_point(shape=1) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p1
+
+xxSE=summarySE(xx, measurevar= "peak.peak", groupvars=c("genotype"))
+
 myANOVA= aov(peak.peak ~ genotype)
 summary(myANOVA)
 TukeyHSD(myANOVA)
 
-## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
-##   data: a data frame.
-##   measurevar: the name of a column that contains the variable to be summariezed
-##   groupvars: a vector containing names of columns that contain grouping variables
-##   na.rm: a boolean that indicates whether to ignore NA's
-##   conf.interval: the percent range of the confidence interval (default is 95%)
-##  http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/
-
-
-
-
-
-
-
-
-p <- ggplot(xxSE, aes(x=genotype, y=peak.peak, colour=genotype)) +
+p2 <- ggplot(xxSE, aes(x=genotype, y=peak.peak, colour=genotype)) +
 geom_errorbar(aes(ymin=peak.peak-se, ymax=peak.peak+se), width=.1) +
 geom_line() +
-geom_point()
+geom_point()  + 
+theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-p
-
-p + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-ggsave("peak2peak.pdf")
+p2
 
 
+p3 <- ggplot(xx, aes(x=genotype,y=peak.peak,color=genotype)) + geom_boxplot() + geom_point(position=position_jitterdodge(dodge.width=0.75)) +
+coord_cartesian(ylim = c(0, 1.05 * max(peak.peak))) +
+theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p3
+
+#ggsave("1F1.pdf")
+
+# see also https://www.datacamp.com/community/tutorials/15-questions-about-r-plots
+# and https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf
