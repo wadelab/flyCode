@@ -3,24 +3,6 @@
 # run this as 
 # source('RGraphandAnova.R', echo=TRUE, print.eval=TRUE)
 
-xx <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
-head (xx)
-attach(xx)
-library(ggplot2)
-ggplot(xx, aes(x=genotype,y=peak.peak,color=genotype)) + geom_point(shape=1)
-myANOVA= aov(peak.peak ~ genotype)
-summary(myANOVA)
-TukeyHSD(myANOVA)
-
-## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
-##   data: a data frame.
-##   measurevar: the name of a column that contains the variable to be summariezed
-##   groupvars: a vector containing names of columns that contain grouping variables
-##   na.rm: a boolean that indicates whether to ignore NA's
-##   conf.interval: the percent range of the confidence interval (default is 95%)
-##  http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/
-
-
 summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 conf.interval=.95, .drop=TRUE) {
     library(plyr)
@@ -57,7 +39,29 @@ conf.interval=.95, .drop=TRUE) {
     return(datac)
 }
 
-xxSE <- summarySE(xx, measurevar="peak.peak", groupvars=c("genotype"))
+xx <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
+head (xx)
+attach(xx)
+library(ggplot2)
+ggplot(xx, aes(x=genotype,y=peak.peak,color=genotype)) + geom_point(shape=1)
+myANOVA= aov(peak.peak ~ genotype)
+summary(myANOVA)
+TukeyHSD(myANOVA)
+
+## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
+##   data: a data frame.
+##   measurevar: the name of a column that contains the variable to be summariezed
+##   groupvars: a vector containing names of columns that contain grouping variables
+##   na.rm: a boolean that indicates whether to ignore NA's
+##   conf.interval: the percent range of the confidence interval (default is 95%)
+##  http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/
+
+
+
+
+
+
+
 
 p <- ggplot(xxSE, aes(x=genotype, y=peak.peak, colour=genotype)) +
 geom_errorbar(aes(ymin=peak.peak-se, ymax=peak.peak+se), width=.1) +
