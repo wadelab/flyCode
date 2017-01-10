@@ -24,7 +24,7 @@
 #define ESP8266_DISPLAY
 
 // run as standalone access point ??
-//#define ESP8266AP
+#define ESP8266AP
 #endif
 
 #ifndef __wifisetup__
@@ -2420,7 +2420,7 @@ void sendGraphic(StimTypes plot_stimulus)
   istep = 15;
   plot_limit = max_data - max_data / 6 ;
   iXFactor = 4;
-  iYFactor = 50 ;
+  iYFactor = 10 ;
   iBaseline = 260 ;
   iXDiv = 6 ;
   if (SSVEP == plot_stimulus)
