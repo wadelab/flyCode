@@ -1597,6 +1597,13 @@ void doplotFile ()
   client.print (cFile);
   client.println F("</a><BR>");
 
+  if (ss == flash)
+  {
+    brightness = atoi(4 + strstr((char *) cPtr, "bri="));
+    Serial.print F("brightness decoded as ");
+    Serial.println (brightness);
+  }
+
   // now on to the data
   int nBlocks = 0;
 
@@ -1964,7 +1971,7 @@ void doreadSummaryFile (const char * c)
 void startTimer (uint32_t frequency)
 {
   //os_timer_setfn((ETSTimer *) &myTimer, TC3_Handler, NULL);
-  os_timer_arm((ETSTimer *) &myTimer, 1000 / frequency, true); // 1000/frequency
+  os_timer_arm((ETSTimer *) &myTimer, 500 / frequency, true); // 1000/frequency
 }
 
 
@@ -2548,6 +2555,10 @@ void sendReply ()
     }
     char * cP = strstr(cInput, "HTTP/");
     if (cP) cP = '\0';
+
+#ifdef __CLASSROOMSETUP__
+    usedLED = bluLED;
+#else
     // now choose the colour
     int oldLED = usedLED ;
     if (MyInputString.indexOf ("col=blue&") > 0 ) usedLED  = bluLED ; //
@@ -2558,6 +2569,7 @@ void sendReply ()
     if (MyInputString.indexOf ("col=amber&") > 0 ) usedLED  = amberled ; //
     if (MyInputString.indexOf ("col=cyan&") > 0 ) usedLED  = cyaled ; //
     if (MyInputString.indexOf ("col=bvio&") > 0 ) usedLED  = bluvioletLED ; //
+#endif
 
     //flash ERG or SSVEP?
     StimTypes lastStim = eDoFlash ;
