@@ -21,7 +21,7 @@
 #ifdef ESP8266
 #define __wifisetup__
 #define __CLASSROOMSETUP__
-#define ESP8266_DISPLAY
+//#define ESP8266_DISPLAY
 
 // run as standalone access point ??
 #define ESP8266AP
@@ -2833,12 +2833,7 @@ void sendReply ()
     goColour(0, 0, 255, 0, true) ;
     return ;
   }
-  fPOS = MyInputString.indexOf ("green/");
-  if (fPOS > 0)
-  {
-    goColour(0, 255, 0, 0, true) ;
-    return ;
-  }
+
 
   fPOS = MyInputString.indexOf ("fiber/");
   if (fPOS > 0)
@@ -2859,6 +2854,14 @@ void sendReply ()
   {
     //    Serial.println F("off");
     goColour(0, true) ;
+    return ;
+  }
+
+  // infrared LED connected to green
+    fPOS = MyInputString.indexOf ("green/");
+  if (fPOS > 0)
+  {
+    goColour(0, 255, 0, 0, true) ;
     return ;
   }
 
