@@ -195,7 +195,7 @@ status=xlwrite(filename, phenotypePh(:,:,1), '1F1_phase', 'A2');
 status=xlwrite(filename, phenotypePh(:,:,3), '2F1_phase', 'A2');
 
 %% now add a page with the data tabulated vertically 
-outcells={'genotype','1F1','2F1'};
+outcells={'genotype','1F1','2F1','1F1_phase','2F1_phase'};
 iPreviousFlies = 1;
 sZ = size(phenotypeAmps(:,:,1));
 myNAN = isnan(phenotypeAmps(:,:,1));
