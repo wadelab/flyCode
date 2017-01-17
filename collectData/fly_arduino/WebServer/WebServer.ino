@@ -21,7 +21,7 @@
 #ifdef ESP8266
 #define __wifisetup__
 #define __CLASSROOMSETUP__
-//#define ESP8266_DISPLAY
+#define ESP8266_DISPLAY
 
 // run as standalone access point ??
 #define ESP8266AP
@@ -2070,6 +2070,11 @@ void TC3_Handler()
 void StartTo_collect_Data ()
 {
   mStart = millis();
+#ifdef __CLASSROOMSETUP__
+  //turn off warmth while we record...
+  analogWrite(TemperatureLED, 0);
+  //  Serial.println ("Temp off, data starting..");
+#endif
   sampleCount = -presamples ;
   switch (eDoFlash)
   {
@@ -2143,6 +2148,10 @@ void tidyUp_Collection()
       sampleCount ++ ;
       analogWrite(usedLED, 127);
   }
+#ifdef __CLASSROOMSETUP__
+  analogWrite(TemperatureLED, Temperature * 4);
+  //  Serial.println("Temperature on again");
+#endif
 
   if (! bTestFlash)
   {
@@ -2587,7 +2596,7 @@ void sendReply ()
     brightness = atoi(cInput + ibrPos);
     if (bTestFlash) brightness = maxbrightness;
 #ifdef __CLASSROOMSETUP__
-    ibrPos  = MyInputString.indexOf ("IR=") + 4;
+    ibrPos  = MyInputString.indexOf ("IR=") + 3;
     Temperature = atoi(cInput + ibrPos);
     if (bTestFlash) Temperature = 0;
 #endif
@@ -2678,7 +2687,9 @@ void sendReply ()
       //turn off any lights we have on...
       goColour(0, false);
 #ifdef __CLASSROOMSETUP__
-      analogWrite(TemperatureLED, Temperature);
+      analogWrite(TemperatureLED, Temperature * 4); // range to 1023 on an ESP
+      //      Serial.print("Temperature on at ");
+      //      Serial.println (Temperature);
 #endif
     }
     //Serial.println F("repeats now ");
@@ -2748,6 +2759,7 @@ void sendReply ()
 
 #ifdef __CLASSROOMSETUP__
       analogWrite(TemperatureLED, 0);
+      //      Serial.println("Temperature off");
 #endif
 
       return ;
@@ -2858,7 +2870,7 @@ void sendReply ()
   }
 
   // infrared LED connected to green
-    fPOS = MyInputString.indexOf ("green/");
+  fPOS = MyInputString.indexOf ("green/");
   if (fPOS > 0)
   {
     goColour(0, 255, 0, 0, true) ;
@@ -3087,13 +3099,12 @@ void writehomepage ()
   client.print F("<td style=\"vertical-align: top;\">\n");
   client.print F("<select name=\"IR\" size = 6>\n");
   client.print F("<option value=\"255\"  >100%</option>\n");
+  client.print F("<option value=\"191\"  >75%</option>\n");
   client.print F("<option value=\"127\"  >50%</option>\n");
   client.print F("<option value=\"64\"  >25%</option>\n");
   client.print F("<option value=\"25\"  >10%</option>\n");
   client.print F("<option value=\"13\"  >5%</option>\n");
   client.print F("<option value=\"6\"  >2%</option>\n");
-  client.print F("<option value=\"3\"  >1%</option>\n");
-  client.print F("<option value=\"2\"  >0.5%</option>\n");
   client.print F("<option value=\"0\"  selected>0.0%</option>\n");
   client.print F("</select><br></td></tr></tbody></table><BR>\n");
 
