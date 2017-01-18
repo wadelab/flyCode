@@ -2334,11 +2334,23 @@ void plotInColour (int iStart, const String & str_col)
   client.println F("ctx.stroke();");
 }
 
+int max_array(int * a, int num_elements)
+{
+   int i, mymax=-32000;
+   for (i=0; i<num_elements; i++)
+   {
+   if (a[i]>mymax)
+   {
+      mymax=a[i];
+   }
+   }
+   return(mymax);
+}
 
 void sendGraphic(StimTypes plot_stimulus)
 {
 
-  istep = 1; // was 15
+  istep = 15;
   plot_limit = max_data - max_data / 6 ;
   iXFactor = 4;
   iYFactor = 10 ;
@@ -2380,20 +2392,20 @@ void sendGraphic(StimTypes plot_stimulus)
   client.println F("function init() {");
   client.println F(" can = document.getElementById(\"myCanvas\");");
   client.println F(" ctx = can.getContext(\"2d\");");
-
+  //client.println F(" ctx.scale(0.21,1);");
 
   // move to start of line
   client.println F("ctx.beginPath();");
   client.print F("m(");
   client.print (iBaseline - (10 * myGraphData[istep]) / iYFactor);
-  client.println F(");");
+  client.print F(");\n");
 
   //now join up the line
-  for (int i = 2 * istep; i < plot_limit; i = i + istep)
+  for (int i = 2 * istep + 1; i < plot_limit; i = i + 15) // default is istep of 15 
   {
     client.print F("l(");
-    client.print (iBaseline - (10 * myGraphData[i]) / iYFactor);
-    client.println F(");");
+    client.print (iBaseline - (10 * max_array(myGraphData+i,istep)) / iYFactor);
+    client.print F(");\n");
   }
   client.println F("ctx.stroke();");
 
@@ -2404,7 +2416,7 @@ void sendGraphic(StimTypes plot_stimulus)
     client.print (10 + (10 * light_NOW(time_stamp[1] - time_stamp[0], plot_stimulus)) / iYFactor);
     client.println F(");");
 
-    for (int i = 2 * istep; i < plot_limit; i = i + istep)
+    for (int i = 2 * istep + 1; i < plot_limit; i = i + 15)
     {
       client.print F("l(");
       client.print (10 + (10 * light_NOW(time_stamp[i / 2] - time_stamp[0], plot_stimulus) ) / iYFactor);
