@@ -821,102 +821,7 @@ void serve_dir (String s)
   sendFooter();
 }
 
-//void run_graph()
-//{
-//  // turn off any LEDs, always do flash with blue
-//  goColour(255, false);
-//  // reset the wait count
-//  nWaits = nMaxWaits;
-//
-//  // read the value of  analog input pin and turn light on if in mid-stimulus...
-//  short sensorReading = myReadADC(connectedPin);
-//  //  Serial.println F(" dc is : ");
-//  //  Serial.print (sensorReading);
-//  //// seems to be about 50
-//
-//  if (sensorReading < 2 || sensorReading > 4090)
-//  {
-//    //probably no contact
-//    digitalWrite (noContactLED, HIGH);
-//    //    Serial.println F("on");
-//  }
-//  else
-//  {
-//    digitalWrite (noContactLED, LOW);
-//  }
-//
-//  //  int sensorReadinga = myReadADC(analogPin);
-//  //  Serial.println F(" ac is : ");
-//  //  Serial.println (sensorReadinga);
-//
-//  myGraphData[iIndex] = sensorReading * 5 ;
-//  iIndex ++ ;
-//
-//  sendHeader ("Graph of last sweep", "onload=\"init()\"") ;
-//  client.println F("<script>");
-//
-//  // script to reload ...
-//  client.println F("var myVar = setInterval(function(){myTimer()}, 1000);"); //mu sec
-//  client.println F("function myTimer() {");
-//  client.println F("location.reload(true);");
-//  client.println F("};");
-//
-//  client.println F("function myStopFunction() {");
-//  client.println F("clearInterval(myVar); }");
-//  client.println F("");
-//  client.println F("</script>");
-//  // now do the graph...
-//  client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
-//  client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
-//
-//  client.println F("<script>");
-//  client.println F("var can;");
-//  client.println F("var ctx;");
-//  client.println F("var i = 20; ");
-//
-//  client.println F("function l(v){");
-//  client.println F("ctx.lineTo(i,v);");
-//  client.println F("i = i + 20;");
-//  client.println F("};");
-//  client.println F("function m(v){");
-//  client.println F("ctx.moveTo(i,v);");
-//  client.println F("i = i + 20;");
-//  client.println F("};");
-//
-//  client.println F("function init() {");
-//  client.println F(" can = document.getElementById(\"myCanvas\");");
-//  client.println F(" ctx = can.getContext(\"2d\");");
-//
-//  if (iIndex >= max_graph_data) iIndex = 0;
-//  for (int i = 0; i < max_graph_data - 2; i++)
-//  {
-//    if (i < iIndex - 1 || i > iIndex + 1)
-//    {
-//      client.print F("l(");
-//      client.print (myGraphData[i + 1] );
-//      client.print F(");");
-//    }
-//    else
-//    {
-//      client.print F("m(");
-//      client.print (myGraphData[i] );
-//      client.print F(");");
-//    }
-//  }
-//  client.print F("ctx.strokeStyle=\"blue\";");
-//  client.println F("ctx.stroke();");
-//  client.println F("}");
-//
-//  client.println F("</script>");
-//  client.println F("<BR><BR><button onclick=\"myStopFunction()\">Stop display</button>");
-//
-//  client.println F("To run a test please stop and then load ") ;
-//
-//  send_GoBack_to_Stim_page ();
-//
-//  sendFooter();
-//
-//}
+
 
 
 void printTwoDigits(char * p, uint8_t v)
@@ -2433,7 +2338,7 @@ void plotInColour (int iStart, const String & str_col)
 void sendGraphic(StimTypes plot_stimulus)
 {
 
-  istep = 15;
+  istep = 1; // was 15
   plot_limit = max_data - max_data / 6 ;
   iXFactor = 4;
   iYFactor = 10 ;
@@ -2682,7 +2587,10 @@ void sendReply ()
       else
       {
         if (eDoFlash == zap) nWaits = 1;
+#ifndef __CLASSROOMSETUP__
+// for shibire, always allow time for temperature to change
         if (lastStim == flash ) nWaits = 1 ;
+#endif
       }
       //turn off any lights we have on...
       goColour(0, false);
