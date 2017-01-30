@@ -82,3 +82,9 @@ p3
 
 # see also https://www.datacamp.com/community/tutorials/15-questions-about-r-plots
 # and https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf
+
+
+# if you have age and genotype something like this:
+# ggplot(hg, aes(x=genotype,y= X1F1,color=day,group= interaction(genotype,day))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20)) +
+# + coord_cartesian(ylim = c(0, 1.05 * max(X1F1))) +
+# + theme(axis.text.x = element_text(angle = 45, hjust = 1))
