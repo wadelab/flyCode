@@ -116,7 +116,15 @@ for i = 1 : length(myphenotypes)
 end
 
 %% now we need the peak-peak values..
+% have a default value
 iPeakPeak = 17 ;
+for k = 1 : col
+   sTmp = Collected_ERG_Data{1, k}; 
+   if strfind(sTmp, 'peak-peak')
+       iPeakPeak = k ;
+   end    
+end
+
 for k = 1 : row
     myValue = Collected_ERG_Data{k,iPeakPeak};
     ERG_Table {k+1, iIndex(k)} = strrep(myValue, 'peak-peak =','');
