@@ -92,7 +92,42 @@ status=xlwrite(filename, ERG_4_disp, 'ERGs', 'A1');
 
 
 
+
+
+%% now try and build a list for excle more sanely...
+clear phenotypelistZ ;
+clear ERG_Table ;
+for k = 1 : row
+    disp(k);
+    sTmp = strjoin(Collected_ERG_Data(k,1:9));
+    if k == 1
+        phenotypelistZ = {sTmp} ;
+    else
+        phenotypelistZ = [phenotypelistZ, sTmp ];
+    end
+end
+
+%% now we have aphenotype list, so put it in the new Excel sheet
+[myphenotypes,iN,iIndex]=unique(phenotypelistZ);
+
+for i = 1 : length(myphenotypes)
+    sTmp = myphenotypes {i} ;
+    ERG_Table {1,i} = strrep(sTmp, 'org=fly col=blue F1=12 F2=15 stim=fERG',''); 
+end
+
+%% now we need the peak-peak values..
+iPeakPeak = 17 ;
+for k = 1 : row
+    myValue = Collected_ERG_Data{k,iPeakPeak};
+    ERG_Table {k+1, iIndex(k)} = strrep(myValue, 'peak-peak =','');
+    
+end
+
+%% write out next sheet
+status=xlwrite(filename, ERG_Table, 'ERG Peak-Peak', 'A1');
+
 %%
 disp(' ');
 disp ([dirName, ' done! ']);
 disp(' ');
+
