@@ -24,7 +24,7 @@
 #define ESP8266_DISPLAY
 
 // run as standalone access point ??
-#define ESP8266AP
+//#define ESP8266AP
 #endif
 
 #ifndef __wifisetup__
