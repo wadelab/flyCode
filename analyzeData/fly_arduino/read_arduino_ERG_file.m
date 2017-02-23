@@ -61,20 +61,29 @@ timedata = timedata - timedata(1);
 
 iStart = 1;
 iEnd = 1024;
-xdata = linspace(1,250);
+xdata = linspace(0,250); % fft will go to 250 Hz if we have 2ms / sample
 
 %% test if figure exists, if so close it
 if ~isempty(findall(0,'Type','Figure'))
     close;
 end
-%%
+%% big screen picture...
+if (do_fft)
+    ss = get (0,'screensize') ;
+    myPos = ss ;
+    myPos(1) = 10 ;
+    myPos(3) = ss(3) - 10 ;
+    figure ('Name', strcat('Data from: ',fileName), 'Position', myPos);
+end
 
-figure ('Name', strcat('Data from: ',fileName));
-
+%% do plotting
 ymax = 1500 ; %max(alldata(:,3)) ;
 ymin = -2000 ; %min(alldata(:,3)) ;
 
 rawdata=zeros(nContrasts,1024);
+fft1 = zeros(nContrasts,200);
+fft2 = zeros(nContrasts,200);
+
 for i = 1:nContrasts
     
     rawdata(i,:)=alldata(iStart:iEnd,3) ;
@@ -97,24 +106,26 @@ for i = 1:nContrasts
         line1e = strrep(line1d, '_',' ');
         text(-500,ymax*1.2,line1e);
     end
-    
+    %   keyboard;
     if (do_fft)
-        fft1=abs(fft(rawdata(i,1:200)));
+        fft1(i,:)=abs(fft(rawdata(i,1:200)))/1000;
         subplot(nContrasts +1, 3, (i*3)-1);
-        plot (xdata, fft1(1:100));
+        bar (xdata(20:100), fft1(i,20:100));
+        axis([0 175 0 15]);
         
-        fft2=abs(fft(rawdata(i,350:670)));
+        fft2(i,:)=abs(fft(rawdata(i,401:600)))/1000;
         subplot(nContrasts +1, 3, (i*3));
-        plot (xdata, fft2(1:100));
+        bar (xdata(20:100), fft2(i,20:100));
+        axis([0 175 0 15]);
     end
     
     iStart = iStart + 1025;
     iEnd = iEnd + 1025;
 end;
-xTxt = 'scales are in ms, Hz';
-xlabel(xTxt);
+
+%% average graphs
 if (do_fft)
-    subplot(nContrasts +1 ,1, nContrasts +1);
+    subplot(nContrasts +1 ,3, (nContrasts*3) +1);
 else
     subplot(3, 2, 6);
 end ;
@@ -122,6 +133,26 @@ meandata = mean(rawdata);
 plot (timedata, meandata);
 axis([0 timedata(1024) ymin ymax]);
 ylabel('mean');
+%% plot mean ffts
+if (do_fft)
+    meanfft1= mean(fft1);
+    meanfft2= mean(fft2);
+    subplot(nContrasts +1 ,3, (nContrasts*3) +2);
+    bar (xdata(20:100), meanfft1(20:100));
+    axis([0 175 0 15]);
+    
+    subplot(nContrasts +1 ,3, (nContrasts*3) +3);
+    bar (xdata(20:100), meanfft2(20:100));
+    axis([0 175 0 15]);
+    [maxfft1,maxfft1at] = max(meanfft1(20:100));
+    [maxfft2,maxfft2at] = max(meanfft2(20:100));
+    
+    maxfft1at = xdata(maxfft1at + 19) ;
+    maxfft2at = xdata(maxfft2at + 19) ;
+end
+xTxt = 'scales are in ms, Hz';
+xlabel(xTxt);
+
 
 %% is it too noisy ?
 myNoise = std(meandata(1:300));
@@ -136,9 +167,9 @@ print( '-dpsc', printFilename );
 
 % %% not sure this is the best discriminat
 % if (myNoise > 100)
-%     return 
+%     return
 % end
-    
+
 
 %% get some data out
 disp('mean ERG:');
@@ -150,6 +181,14 @@ lineSaved = [lineSaved, {['recovery =', num2str(max(meandata(720:820))-mean(mean
 lineSaved = [lineSaved, {['on-transient =', num2str(max(meandata(300:380))-mean(meandata(300:340)))]}];
 lineSaved = [lineSaved, {['peak-peak =', num2str(max(meandata)-min(meandata))]}];
 lineSaved = [lineSaved, {['noise =', num2str(myNoise)]}];
+
+if (do_fft)
+    %keyboard;
+    lineSaved = [lineSaved, {['maxFFT_start =', num2str(maxfft1)]}];
+    lineSaved = [lineSaved, {['maxFFT_start_freq =', num2str(maxfft1at)]}];
+    lineSaved = [lineSaved, {['maxFFT_stim =', num2str(maxfft2)]}];
+    lineSaved = [lineSaved, {['maxFFT_stim_freq =', num2str(maxfft2at)]}];
+end
 
 %% calculate average every 10%
 for i = 1:10
