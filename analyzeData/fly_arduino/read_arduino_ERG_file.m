@@ -91,7 +91,7 @@ for i = 1:nContrasts
     
     %now we've read the data, lets plot it
     if (do_fft)
-        subplot(nContrasts +1, 3, (i*3)-2);
+        subplot(nContrasts +1, 4, (i*4)-3);
     else
         subplot(3, 2, i);
     end
@@ -109,14 +109,17 @@ for i = 1:nContrasts
     %   keyboard;
     if (do_fft)
         fft1(i,:)=abs(fft(rawdata(i,1:200)))/1000;
-        subplot(nContrasts +1, 3, (i*3)-1);
+        subplot(nContrasts +1, 4, (i*4)-2);
         bar (xdata(20:100), fft1(i,20:100));
         axis([0 175 0 15]);
         
         fft2(i,:)=abs(fft(rawdata(i,401:600)))/1000;
-        subplot(nContrasts +1, 3, (i*3));
+        subplot(nContrasts +1, 4, (i*4)-1);
         bar (xdata(20:100), fft2(i,20:100));
         axis([0 175 0 15]);
+        
+        subplot(nContrasts +1, 4, (i*4));
+        spectrogram(rawdata(i,:),64, 32, [], 500,'yaxis')
     end
     
     iStart = iStart + 1025;
@@ -125,7 +128,7 @@ end;
 
 %% average graphs
 if (do_fft)
-    subplot(nContrasts +1 ,3, (nContrasts*3) +1);
+    subplot(nContrasts +1 ,4, (nContrasts*4) +1);
 else
     subplot(3, 2, 6);
 end ;
@@ -137,11 +140,11 @@ ylabel('mean');
 if (do_fft)
     meanfft1= mean(fft1);
     meanfft2= mean(fft2);
-    subplot(nContrasts +1 ,3, (nContrasts*3) +2);
+    subplot(nContrasts +1 ,4, (nContrasts*4) +2);
     bar (xdata(20:100), meanfft1(20:100));
     axis([0 175 0 15]);
     
-    subplot(nContrasts +1 ,3, (nContrasts*3) +3);
+    subplot(nContrasts +1 ,4, (nContrasts*4) +3);
     bar (xdata(20:100), meanfft2(20:100));
     axis([0 175 0 15]);
     [maxfft1,maxfft1at] = max(meanfft1(20:100));
@@ -183,7 +186,7 @@ lineSaved = [lineSaved, {['peak-peak =', num2str(max(meandata)-min(meandata))]}]
 lineSaved = [lineSaved, {['noise =', num2str(myNoise)]}];
 
 if (do_fft)
-    %keyboard;
+    keyboard;
     lineSaved = [lineSaved, {['maxFFT_start =', num2str(maxfft1)]}];
     lineSaved = [lineSaved, {['maxFFT_start_freq =', num2str(maxfft1at)]}];
     lineSaved = [lineSaved, {['maxFFT_stim =', num2str(maxfft2)]}];
