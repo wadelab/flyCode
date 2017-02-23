@@ -52,15 +52,24 @@ conf.interval=.95, .drop=TRUE) {
 xx <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
 head (xx)
 attach(xx)
-library(ggplot2)
-p1 <- ggplot(xx, aes(x=genotype,y=X1F1,color=genotype)) + geom_point(shape=1) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-p1
 
 xxSE=summarySE(xx, measurevar= "X1F1", groupvars=c("genotype"))
 
 myANOVA= aov(X1F1 ~ genotype)
 summary(myANOVA)
 TukeyHSD(myANOVA)
+
+myANOVA= aov(X2F1 ~ genotype)
+summary(myANOVA)
+TukeyHSD(myANOVA)
+
+library(ggplot2)
+p1 <- ggplot(xx, aes(x=genotype,y=X1F1,color=genotype)) + geom_point(shape=1) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p1
+
+
+
+
 
 p2 <- ggplot(xxSE, aes(x=genotype, y=X1F1, colour=genotype)) +
 geom_errorbar(aes(ymin=X1F1-se, ymax=X1F1+se), width=.1) +
@@ -75,8 +84,12 @@ p3 <- ggplot(xx, aes(x=genotype,y=X1F1,color=genotype)) + geom_boxplot() + geom_
 coord_cartesian(ylim = c(0, 1.05 * max(X1F1))) +
 theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+p32 <- ggplot(xx, aes(x=genotype,y=X2F1,color=genotype)) + geom_boxplot() + geom_point(position=position_jitterdodge(dodge.width=0.75)) +
+coord_cartesian(ylim = c(0, 1.05 * max(X2F1))) +
+theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 p4 <- p3 + annotate("text", x= xxSE$genotype, y = 10, label = xxSE$N, size = 3)
-p3
+p4
 
 #ggsave("1F1.pdf")
 
@@ -84,7 +97,19 @@ p3
 # and https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf
 
 
-# if you have age and genotype something like this:
-# ggplot(hg, aes(x=genotype,y= X1F1,color=day,group= interaction(genotype,day))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20)) +
-# + coord_cartesian(ylim = c(0, 1.05 * max(X1F1))) +
-# + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# if you have two factors, eg two UAS lines, or age and genotype something like this:
+
+myANOVA= aov(X1F1 ~ l2*s15)
+summary(myANOVA)
+TukeyHSD(myANOVA)
+
+myANOVA= aov(X2F1 ~ l2*s15)
+summary(myANOVA)
+TukeyHSD(myANOVA)
+
+xxSE=summarySE(xx, measurevar= "X1F1", groupvars=c("l2","s15"),na.rm=TRUE)
+xxSE
+
+ggplot(xx, aes(x=s15,y= X1F1,color=l2,group= interaction(s15,l2))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20))
++ coord_cartesian(ylim = c(0, 1.05 * max(X1F1, na.rm=TRUE)))
++ theme(axis.text.x = element_text(angle = 45, hjust = 1))
