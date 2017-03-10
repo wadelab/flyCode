@@ -186,7 +186,7 @@ lineSaved = [lineSaved, {['peak-peak =', num2str(max(meandata)-min(meandata))]}]
 lineSaved = [lineSaved, {['noise =', num2str(myNoise)]}];
 
 if (do_fft)
-    keyboard;
+   % keyboard;
     lineSaved = [lineSaved, {['maxFFT_start =', num2str(maxfft1)]}];
     lineSaved = [lineSaved, {['maxFFT_start_freq =', num2str(maxfft1at)]}];
     lineSaved = [lineSaved, {['maxFFT_stim =', num2str(maxfft2)]}];
