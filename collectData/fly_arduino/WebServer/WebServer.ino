@@ -3042,9 +3042,9 @@ void writehomepage ()
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG_T\" checked>Test ERG<br>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG\" >Save ERG<br>\n");
-#ifndef ESP8266
+//#ifndef ESP8266
   client.print F("<input type=\"radio\" name=\"stim\" value=\"SSVEP\" >SSVEP (sine)<br></td>\n");
-#endif
+//#endif
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<select name=\"bri\" size = 7>\n");
   client.print F("<option value=\"255\"  >100%</option>\n");
@@ -3087,7 +3087,7 @@ void writehomepage ()
 
 void do_fft()
 {
-
+#ifndef ESP8266
   //  read it  in erg_in, transfer it to f_ and then put the fft back in erg_in
   // FFT_SIZE IS DEFINED in Header file Radix4.h
   // #define   FFT_SIZE           1024
@@ -3111,6 +3111,6 @@ void do_fft()
   radix.gain_Reset( f_r, LOG2_FFT - 1);
   radix.gain_Reset( f_i, LOG2_FFT - 1);
   radix.get_Magnit( f_r, f_i, (int *) erg_in);
-
+#endif
 }
 
