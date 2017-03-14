@@ -58,6 +58,8 @@ end
 timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
 
+stimdata = alldata(1:1024,2);
+[mm,ii]=max(stimdata) ;
 
 iStart = 1;
 iEnd = 1024;
@@ -77,8 +79,8 @@ if (do_fft)
 end
 
 %% do plotting
-ymax = 1500 ; %max(alldata(:,3)) ;
-ymin = -2000 ; %min(alldata(:,3)) ;
+ymax = 600 ; %max(alldata(:,3)) ;
+ymin = -1200 ; %min(alldata(:,3)) ;
 
 rawdata=zeros(nContrasts,1024);
 fft1 = zeros(nContrasts,200);
@@ -91,11 +93,11 @@ for i = 1:nContrasts
     
     %now we've read the data, lets plot it
     if (do_fft)
-        subplot(nContrasts +1, 4, (i*4)-3);
+        subplot(nContrasts +2, 4, (i*4)-3);
     else
-        subplot(3, 2, i);
+        subplot(4, 2, i);
     end
-    plot (timedata, rawdata(i,:));
+    plot (timedata, rawdata(i,:), timedata, stimdata);
     axis([0 timedata(1024) ymin ymax]);
     
     yTxt = strcat(num2str(i), '//') ;
@@ -109,17 +111,18 @@ for i = 1:nContrasts
     %   keyboard;
     if (do_fft)
         fft1(i,:)=abs(fft(rawdata(i,1:200)))/1000;
-        subplot(nContrasts +1, 4, (i*4)-2);
+        subplot(nContrasts +2, 4, (i*4)-2);
         bar (xdata(20:100), fft1(i,20:100));
         axis([0 175 0 15]);
         
         fft2(i,:)=abs(fft(rawdata(i,401:600)))/1000;
-        subplot(nContrasts +1, 4, (i*4)-1);
+        subplot(nContrasts +2, 4, (i*4)-1);
         bar (xdata(20:100), fft2(i,20:100));
         axis([0 175 0 15]);
         
-        subplot(nContrasts +1, 4, (i*4));
-        spectrogram(rawdata(i,:),64, 32, [], 500,'yaxis')
+        subplot(nContrasts +2, 4, (i*4));
+        spectrogram(rawdata(i,:),64, 32, [], 500,'yaxis');
+        %caxis
     end
     
     iStart = iStart + 1025;
@@ -128,23 +131,25 @@ end;
 
 %% average graphs
 if (do_fft)
-    subplot(nContrasts +1 ,4, (nContrasts*4) +1);
+    subplot(nContrasts +2 ,4, (nContrasts*4) +1);
 else
-    subplot(3, 2, 6);
+    subplot(4, 2, 7);
 end ;
 meandata = mean(rawdata);
-plot (timedata, meandata);
+
+
+plot (timedata, meandata,  timedata, stimdata);
 axis([0 timedata(1024) ymin ymax]);
 ylabel('mean');
 %% plot mean ffts
 if (do_fft)
     meanfft1= mean(fft1);
     meanfft2= mean(fft2);
-    subplot(nContrasts +1 ,4, (nContrasts*4) +2);
+    subplot(nContrasts +2 ,4, (nContrasts*4) +2);
     bar (xdata(20:100), meanfft1(20:100));
     axis([0 175 0 15]);
     
-    subplot(nContrasts +1 ,4, (nContrasts*4) +3);
+    subplot(nContrasts +2 ,4, (nContrasts*4) +3);
     bar (xdata(20:100), meanfft2(20:100));
     axis([0 175 0 15]);
     [maxfft1,maxfft1at] = max(meanfft1(20:100));
@@ -153,6 +158,28 @@ if (do_fft)
     maxfft1at = xdata(maxfft1at + 19) ;
     maxfft2at = xdata(maxfft2at + 19) ;
 end
+
+%% fit line to decay... extract decay in stimulus
+[max_val,max_pos] = max(meandata) ;
+[min_val,min_pos] = min(meandata) ;
+[stim_end_val, stim_end_pos] = min(stimdata(min_pos:end));
+stim_end_pos= stim_end_pos+min_pos + 1;
+
+decaydata = meandata (min_pos:stim_end_pos);
+decaytimedata = timedata(min_pos:stim_end_pos);
+decaytimedata = decaytimedata - decaytimedata(1);
+%%% now do fit
+f = fit(decaytimedata(:),decaydata(:),'exp1');
+[ab]=coeffvalues(f);
+if (do_fft)
+    subplot(nContrasts +2 ,4, (nContrasts*4) +4);
+else
+    subplot(4, 2, 8);
+end
+
+plot (f,decaytimedata, decaydata);
+
+
 xTxt = 'scales are in ms, Hz';
 xlabel(xTxt);
 
@@ -177,8 +204,13 @@ print( '-dpsc', printFilename );
 %% get some data out
 disp('mean ERG:');
 lineSaved = [lineSaved, {['nRepeats =',num2str(nContrasts  )]}];
-lineSaved = [lineSaved, {['max =',     num2str(max(meandata))]}];
-lineSaved = [lineSaved, {['min =',     num2str(min(meandata))]}];
+lineSaved = [lineSaved, {['max =',     num2str(max_val)]}];
+lineSaved = [lineSaved, {['max_pos =', num2str(timedata(2)*max_pos)]}];
+lineSaved = [lineSaved, {['min =',     num2str(min_val)]}];
+lineSaved = [lineSaved, {['min_pos =', num2str(timedata(2)*min_pos)]}];
+
+lineSaved = [lineSaved, {['timeconst of response =', num2str(ab(2))]}];
+
 lineSaved = [lineSaved, {['off-transient =', num2str(min(meandata(680:720))-mean(meandata(650:680)))]}];
 lineSaved = [lineSaved, {['recovery =', num2str(max(meandata(720:820))-mean(meandata(650:680)))]}];
 lineSaved = [lineSaved, {['on-transient =', num2str(max(meandata(300:380))-mean(meandata(300:340)))]}];
