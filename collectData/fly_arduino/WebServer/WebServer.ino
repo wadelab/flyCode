@@ -20,11 +20,11 @@
 
 #ifdef ESP8266
 #define __wifisetup__
-#define __CLASSROOMSETUP__
+//#define __CLASSROOMSETUP__
 #define ESP8266_DISPLAY
 
 // run as standalone access point ??
-//#define ESP8266AP
+#define ESP8266AP
 #endif
 
 #ifndef __wifisetup__
@@ -3087,7 +3087,7 @@ void writehomepage ()
 
 void do_fft()
 {
-#ifndef ESP8266
+
   //  read it  in erg_in, transfer it to f_ and then put the fft back in erg_in
   // FFT_SIZE IS DEFINED in Header file Radix4.h
   // #define   FFT_SIZE           1024
@@ -3104,13 +3104,13 @@ void do_fft()
   //    f_r[i] = erg_in[i];
   //  }
   memset( f_i, 0, sizeof (f_i));                   // Image -zero.
+  
   radix.rev_bin( f_r, FFT_SIZE);
   delay(0);
-
   radix.fft_radix4_I( f_r, f_i, LOG2_FFT);
   radix.gain_Reset( f_r, LOG2_FFT - 1);
   radix.gain_Reset( f_i, LOG2_FFT - 1);
   radix.get_Magnit( f_r, f_i, (int *) erg_in);
-#endif
+
 }
 
