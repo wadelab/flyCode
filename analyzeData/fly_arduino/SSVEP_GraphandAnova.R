@@ -48,10 +48,12 @@ conf.interval=.95, .drop=TRUE) {
     
     return(datac)
 }
-
+`
 xx <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
 head (xx)
 attach(xx)
+
+yy<-subset(xx, !duplicated(xx))	
 
 xxSE=summarySE(xx, measurevar= "X1F1", groupvars=c("genotype"))
 
@@ -98,7 +100,8 @@ p4
 
 
 # if you have two factors, eg two UAS lines, or age and genotype something like this:
-
+xx$age <- as.factor(xx$age) #if the no of df is wrong, age may be trweated as numeric
+attach(xx) # need to reattach the data it seems
 myANOVA= aov(X1F1 ~ l2*s15)
 summary(myANOVA)
 TukeyHSD(myANOVA)
@@ -113,3 +116,22 @@ xxSE
 ggplot(xx, aes(x=s15,y= X1F1,color=l2,group= interaction(s15,l2))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20))
 + coord_cartesian(ylim = c(0, 1.05 * max(X1F1, na.rm=TRUE)))
 + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#line graph
+ggplot(xxSE, aes(x = age, y = X1F1_masked, colour = genotype))+
++   geom_line(stat='identity', position=dodge) + geom_errorbar(limits, position=dodge, width=0.25) + geom_point(shape=2, position=dodge)
+
+#age v genotype; note this is 95% CI
+limits = aes(ymax = X2F1_masked + (1.96*se), ymin= X2F1_masked - (1.96*se))
+dodge <- position_dodge(width=0.25)
+ggplot(xxSE, aes(x = age, y = X2F1_masked, colour = genotype)) +
+geom_line(aes(linetype=genotype), size=1, position=dodge) + geom_errorbar(limits, position=dodge, width=0.25) + geom_point(position=dodge) +
+scale_colour_manual(values=c("#FF00FF", "#0000FF", "#00FF00","#FF00FF", "#0000FF", "#00FF00"))+ scale_linetype_manual(values = c(1,1,3,3,3,1))
+
+#same with SE, and linestyle according to TNT
+xxSE=summarySE(xx, measurevar= "X2F1_masked", groupvars=c("genotype","age","hasTNT"))
+limits = aes(ymax = X2F1_masked + se, ymin= X2F1_masked - se)
+ggplot(xxSE, aes(x = age, y = X2F1_masked, colour = genotype)) +
+geom_line(aes(linetype=hasTNT), size=1, position=dodge) + geom_errorbar(limits, position=dodge, width=0.25) + geom_point(position=dodge) +
+scale_colour_manual(values=c("#FF00FF", "#0000FF", "#00FF00","#FF00FF", "#0000FF", "#00FF00"))
+xxSE
