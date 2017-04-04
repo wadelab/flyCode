@@ -162,11 +162,13 @@ end
 %% fit line to decay... extract decay in stimulus
 [max_val,max_pos] = max(meandata) ;
 [min_val,min_pos] = min(meandata) ;
-[stim_end_val, stim_end_pos] = min(stimdata(min_pos:end));
-stim_end_pos= stim_end_pos+min_pos + 1;
 
-decaydata = meandata (min_pos:stim_end_pos);
-decaytimedata = timedata(min_pos:stim_end_pos);
+[stim_start_val, stim_start_pos] = max(stimdata);
+[stim_end_val, stim_end_pos] = min(stimdata(stim_start_pos +1:end));
+stim_end_pos= stim_end_pos+stim_start_pos + 1;
+
+decaydata = meandata (stim_start_pos:stim_end_pos);
+decaytimedata = timedata(stim_start_pos:stim_end_pos);
 decaytimedata = decaytimedata - decaytimedata(1);
 %%% now do fit
 f = fit(decaytimedata(:),decaydata(:),'exp1');
@@ -178,7 +180,7 @@ else
 end
 
 plot (f,decaytimedata, decaydata);
-
+legend('off');
 
 xTxt = 'scales are in ms, Hz';
 xlabel(xTxt);
