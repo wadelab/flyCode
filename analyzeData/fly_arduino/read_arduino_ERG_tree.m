@@ -15,7 +15,8 @@ success = true ;
 
 dirName=uigetdir();
 ERGfiles = walk_a_directory_recursively(dirName, '*.ERG');
-ERGfiles = [ERGfiles, walk_a_directory_recursively(dirName, '*.erg')];
+ERGfiles = [ERGfiles; walk_a_directory_recursively(dirName, '*.erg')];
+ERGfiles = [ERGfiles; walk_a_directory_recursively(dirName, '*.ERG.txt')];
 
 %% now we have a list of all the files with .SVP in that tree
 if (length(ERGfiles) ==0)
