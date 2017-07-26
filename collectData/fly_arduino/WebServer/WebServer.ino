@@ -272,7 +272,6 @@ volatile long mean = 0;
 
 volatile long sampleCount = 0 ; //max_data + 2;        // will store number of A/D samples taken
 volatile long mStart ;
-int pSummary [maxRepeats * maxContrasts * 10];
 unsigned long interval = 4;           // interval (5ms) at which to - 2 ms is also ok in this version
 unsigned long last_time = 0;
 unsigned int start_time = 0;
@@ -350,7 +349,6 @@ void serve_dir ();
 void printTwoDigits(char * p, uint8_t v);
 void printDirectory(String s);
 void webTime ();
-void addSummary ();
 void doplotFile ();
 void doFFTFile (const char * c, bool bNeedHeadFooter);
 void doreadFile (const char * c);
@@ -1145,211 +1143,6 @@ void do_fft();
 #define max(a,b) ((a)>(b)?(a):(b))
 #endif
 
-void addSummary ()
-{
-
-  int iOffset = 0;
-  int kk = 0 ;
-  switch (eDoFlash)
-  {
-    case flash:
-    case zap:
-      {
-        iOffset = (nRepeats - 1) * 15 ;
-        // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,peak-peak");
-
-        pSummary[iOffset + kk] = erg_in[1] ;
-        //    Serial.println (pSummary[iOffset + kk]);
-
-
-        for (int ii = max_data / 10; ii < max_data - 1; ii = ii + max_data / 10)
-        {
-          pSummary [iOffset + kk] = erg_in[ii] ;
-          kk ++ ;
-        }
-        int myminsofar = erg_in[0];
-        int mymaxsofar = erg_in[0];
-        for (int ii = 1; ii < (max_data - 1) / 2; ii++)
-        {
-          if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;
-          if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;
-        }
-        pSummary [iOffset + kk] = mymaxsofar ;
-        kk ++ ;
-        pSummary [iOffset + kk] = myminsofar ;
-        kk ++;
-        myminsofar = erg_in[(max_data - 1) / 2];
-        mymaxsofar = erg_in[(max_data - 1) / 2];
-        for (int ii = (max_data - 1) / 2; ii < max_data - 1; ii++)
-        {
-          if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;
-          if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;
-        }
-        pSummary [iOffset + kk] = mymaxsofar ;
-        kk ++ ;
-        pSummary [iOffset + kk] = myminsofar ;
-        kk ++;
-        pSummary [iOffset + kk] = max( pSummary [iOffset + kk - 2] , pSummary [iOffset + kk - 4] ) - min( pSummary [iOffset + kk - 1] , pSummary [iOffset + kk - 3] );
-      }
-      break ;
-
-    case SSVEP:
-      {
-        // fft
-        iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 ;
-        Serial.print F("Offset ");
-        Serial.println ( iOffset );
-
-        pSummary[iOffset + kk] = time_stamp[max_data - 1] ;
-        kk ++ ;
-        pSummary[iOffset + kk] = erg_in[max_data - 1] ;
-        kk ++ ;
-        pSummary[iOffset + kk] = nRepeats ;
-        kk ++ ;
-
-        // save erg as we do an in place FFT
-        // For ESP we could save some memory by making erg_tmp a byte (and divide by 4 here)
-
-        byte erg_tmp [ max_data];
-        for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = (byte)(erg_in[iERG] / 4);
-
-        do_fft() ;
-
-        // F2-F1
-        pSummary[iOffset + kk] = erg_in[12] ;
-        kk ++ ;
-        pSummary[iOffset + kk] = erg_in[49] ;
-        kk ++ ;
-        pSummary[iOffset + kk] = erg_in[61] ;
-        kk ++ ;
-        pSummary[iOffset + kk] = erg_in[98] ;
-        kk ++ ;
-        pSummary[iOffset + kk] = erg_in[111] ;
-        kk ++ ;
-        pSummary[iOffset + kk] = erg_in[221] ;
-        kk ++ ;
-        pSummary[iOffset + kk] = erg_in[205] ; // 50Hz
-        kk ++ ;
-#ifndef ESP8266
-        for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
-#endif
-      }
-      break ;
-
-  }
-}
-
-bool writeSummaryFile(const char * cMain)
-{
-  int iCharMaxHere = 100 ;
-  char c [iCharMaxHere]; // will hold filename
-  char cTmp [iCharMaxHere]; // to hold text to write
-  char * pDot = strchr ((char *)cMain, '.');
-
-  Serial.println F("Summarising filename ");
-  Serial.println (cMain);
-  Serial.flush();
-  if (!pDot)
-  {
-    Serial.println F("Error in filename");
-    Serial.println (c);
-    Serial.flush();
-    return false ;
-  }
-  Serial.println F("filename extension:");
-  Serial.println (pDot);
-  Serial.flush();
-  int iBytes = pDot - cMain ;
-
-  Serial.println F("length of string:");
-  Serial.println (iBytes);
-  Serial.flush();
-
-  strncpy (c, cMain , iBytes);
-  c[iBytes] = 0;
-  strcat (c, ".CSV");
-
-  Serial.println F("now writing summary: ");
-  Serial.println (c);
-  Serial.flush();
-
-  int16_t iBytesWritten ;
-
-  if (fileExists(c))
-  {
-    Serial.println F("Error in opening file");
-    Serial.println (c);
-    Serial.flush();
-    return false; // FIX - send error to usrrs
-  }
-  file = SD.open(c, FILE_WRITE);
-  if ( !file )
-  {
-    Serial.println F("Error in opening file");
-    Serial.println (c);
-    Serial.flush();
-    return false;
-  }
-
-  iBytesWritten = file.write((uint8_t *)cInput, MaxInputStr + 2);
-  if (iBytesWritten <= 0)
-  {
-    Serial.println F("Error in writing header to file");
-    file.close();
-    return false ;
-  }
-
-  // for nor bFlash
-  int iOfssfet  = 10;
-  int mm = maxRepeats * maxContrasts ;
-
-  switch (eDoFlash)
-  {
-    case SSVEP:
-      strcpy_P (cTmp, (PGM_P) F("\nprobe contrast, mask, repeat, F2-F1, 1F1, 2F1, 2F2, 1F1+1F2, 2F1+2F2, 50 Hz,\n"));
-      break ;
-
-    default :
-    case flash :
-      strcpy_P (cTmp, (PGM_P) F("\nstart,10%,20%,30%,40%,50%,60%,70%,80%,90%,max1,min1,max2,min2,peak-peak\n"));
-
-      iOfssfet = 15;
-      mm = maxRepeats ;
-
-      break ;
-  }
-  iBytesWritten = file.write((uint8_t *)cTmp, strlen(cTmp)) ;
-  if (iBytesWritten <= 0)
-  {
-    Serial.println F("Error in writing header to file");
-    file.close();
-    return false ;
-  }
-
-  for ( int ii = 0; ii < mm ; ii++)
-  {
-    for (int jj = 0; jj < iOfssfet; jj++)
-    {
-      iBytesWritten = iBytesWritten + file.print (pSummary[ii * iOfssfet + jj]);
-      iBytesWritten = iBytesWritten + file.print (",");
-    }
-    iBytesWritten = iBytesWritten + file.print ("\n");
-  }
-
-  if (iBytesWritten <= 0)
-  {
-    Serial.println F("Error in writing summary data to file");
-    file.close();
-    return false;
-  }
-
-  Serial.print F(" More bytes writen to file.........");
-  Serial.print  (c);
-  Serial.print F(" size now ");
-  Serial.println (file.size());
-  file.close();
-  return true ;
-}
 
 
 
@@ -2060,14 +1853,8 @@ void tidyUp_Collection()
 
   if (! bTestFlash)
   {
-    bool bResult = writeFile(cFile);
-    if (bResult)
-    {
-      Serial.println F("Now try summary file");
-      addSummary() ;
-    }
-    else
-    {
+    if (! writeFile(cFile) )
+     {
       Serial.println F("File not written :");
       Serial.println (cFile);
     }
@@ -2198,7 +1985,6 @@ void AppendSSVEPReport()
   client.println F("<button onclick=\"myStopFunction()\">Stop Data Acquisition</button><BR>");
   client.println (cInput);
   client.println ( "<BR> ");
-
 
   if (iThisContrast < maxContrasts)
   {
@@ -2477,7 +2263,7 @@ void sendReply ()
     {
       bNewCommand = true ;
       iLastCRC = myCRC ;
-      memset (pSummary, 0, maxRepeats * maxContrasts * 10 * sizeof (int));
+      //memset (pSummary, 0, maxRepeats * maxContrasts * 10 * sizeof (int));
     }
     char * cP = strstr(cInput, "HTTP/");
     if (cP) cP = '\0';
@@ -2636,8 +2422,6 @@ void sendReply ()
         client.print (exp_size);
         wfile.close() ;
 
-        writeSummaryFile(cFile);
-
         String sPicture = sFile;
         switch (eDoFlash)
         {
@@ -2647,16 +2431,11 @@ void sendReply ()
             client.print F("<A HREF= \"");
             client.print (sPicture) ;
             client.print F("\" > (averaged picture)</A>" );
-            sPicture.replace ("ERP", "CSV" );
+
             break ;
 
-          case SSVEP:
-            sPicture.replace ("SVP", "CSV" );
         }
 
-        client.print F("<A HREF= \"");
-        client.print (sPicture) ;
-        client.print F("\" > (summary file)</A>" );
       }
       else
       {
