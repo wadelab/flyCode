@@ -45,6 +45,7 @@ for thisSubDir=1:length(allSubDirList);
         
         % Now go into each phenotype and find how many expts...
         exptList=dir([subDirList_element.dirName,'/Fly*']);
+        exptList=[exptList,dir([subDirList_element.dirName,'/fly*'])];
          
         
         exptIndex=0;
