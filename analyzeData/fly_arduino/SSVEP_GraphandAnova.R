@@ -57,11 +57,11 @@ yy<-subset(xx, !duplicated(xx))
 
 xxSE=summarySE(xx, measurevar= "X1F1", groupvars=c("genotype"))
 
-myANOVA= aov(X1F1 ~ genotype)
+myANOVA= aov(X1F1_masked ~ genotype)
 summary(myANOVA)
 TukeyHSD(myANOVA)
 
-myANOVA= aov(X2F1 ~ genotype)
+myANOVA= aov(X2F1_masked ~ genotype)
 summary(myANOVA)
 TukeyHSD(myANOVA)
 
@@ -69,7 +69,9 @@ library(ggplot2)
 p1 <- ggplot(xx, aes(x=genotype,y=X1F1,color=genotype)) + geom_point(shape=1) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 p1
 
-
+#install.packages('psych')
+library(psych)
+describeBy(CCAll, genotype)
 
 
 
