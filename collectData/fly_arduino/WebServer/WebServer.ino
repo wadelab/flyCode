@@ -68,7 +68,7 @@
 
 #ifdef due3
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x75, 0x17
-//90-A2-DA-0E-09-A2 biolpc2899
+// biolpc2899 144.32.87.178
 #endif
 
 #ifdef due4
@@ -78,7 +78,7 @@
 
 #ifdef due5
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
-//biolpc2804
+//biolpc2804 //144.32.86.146 
 #endif
 
 #ifdef __wifisetup__
