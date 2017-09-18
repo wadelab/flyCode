@@ -49,10 +49,24 @@ conf.interval=.95, .drop=TRUE) {
     return(datac)
 }
 
-xx <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
-head (xx)
-attach(xx)
-library(ggplot2)
+erg <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
+install.packages('ggplot2')
+head(erg)
+ggplot(erg, aes(x=bri,y=off.transient,color=genotype)) + geom_point(shape=1) + geom_smooth(method=lm)
+
+ggplot(erg, aes(x=bri,y=peak.peak,color=genotype,fill=age)) + geom_point(shape=23, size=3) + geom_smooth(method=lm)
+
+attach(erg)
+myANOVA= aov(off.transient ~ genotype*age)
+summary(myANOVA)
+TukeyHSD(myANOVA)
+
+
+myANOVA= aov(peak.peak ~ genotype)
+summary(myANOVA)
+TukeyHSD(myANOVA)
+
+
 p1 <- ggplot(xx, aes(x=genotype,y=peak.peak,color=genotype)) + geom_point(shape=1) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 p1
 
