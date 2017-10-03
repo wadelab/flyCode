@@ -1,7 +1,7 @@
-% This version of the code sweeps over tf and sf space with no mask. It's
-% just to generate the sftf sensitivity surfaces that we like so much...
+% This version of the code sweeps over tf and contrast space with no mask. It's
+% just to generate the comtrast vs tf sensitivity surfaces that we like so much...
 % It replaces the original 'sweep' code and makes sure that everything is
-% specified in the same units (in particular sf).
+% specified in the same units (in particular tf).
 % ARW June 11 2014
 % ARW Feb 2016: This version sweeps over contrast and TF (not SF)
 close all;
@@ -16,7 +16,7 @@ if (~DUMMYRUN)
     Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
     HideCursor % Hides the mouse cursor
     
-    
+   
     % Get the calibration and compute the gamma table
     
     igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
@@ -24,12 +24,12 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\Marc';
+datadir='C:\data\SSERG\data\Marc\Disco_TCRF\PINK15_7d_Disco';
 flyTV_startTime=now;
 
 
 dpy.res = [1920 1080]; % screen resoloution
-dpy.size = [.53 .3] % Meters
+dpy.size = [.53 .3]; % Meters
 dpy.distance = [.22]; % Meters
 dpy.frameRate=144;
 % dpy will eventually contain all the info about the display e.g. size,
@@ -118,12 +118,12 @@ for thisRun=1:nRepeats  % 5 repeats
             
         end % End check on dummy run
         
-        
+        jheapcl;
     end % Next contrast pair
 end % Next repetition
 totalSessionTime=toc;
 if (~DUMMYRUN)
-    filename=fullfile(datadir,['flyTV_',datestr(flyTV_startTime,30),'.mat'])
+    filename=fullfile(datadir,['flyTV_CRF',datestr(flyTV_startTime,30),'.mat'])
     save(filename);
     
     

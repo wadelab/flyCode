@@ -4,6 +4,9 @@
 % specified in the same units (in particular sf).
 % ARW June 11 2014
 %
+%DO NOT CHANGE ANYTHING EXCEPT - data directory (line 30), fly genotypes
+%line 104
+
 close all;
 clear all;
 jheapcl;
@@ -24,7 +27,7 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\Stavroula\Rab7_RNAi\7d\';
+datadir='C:\data\SSERG\data\Chris_birman\';
 flyTV_startTime=now;
 
 
@@ -99,7 +102,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.flyName{2}='mecp2r106w_longGMR_2';
             
             
-            finalData.comment='1:Rab7_RNAi_7DPE_1 2:Rab7_RNAi_7DPE_2 '; % Here : the first data channel ('ai0') is the bottom fly.
+            finalData.comment='1:aw-8 2:aw-9 '; % Here : the first data channel ('ai0') is the bottom fly.
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;
@@ -109,16 +112,16 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.tfList=tfList;
             finalData.sfList=sfList;
             
-            %singleRunDat=d.Data;
+            singleRunDat=d.Data;
             filename=fullfile(datadir,[int2str(t),'_',int2str(s),'_',int2str(thisRun),'_',datestr(flyTV_startTime,30),'.mat'])
-            %save(filename,'finalData','d','singleRunDat');
+            save(filename,'finalData','d','singleRunDat');
             metaData{thisRun,thisCond}=finalData; % Put the extracted data into an array tf x sf x nrepeats
             data(thisRun,thisCond,:,:)=d.Data;
             
             
         end % End check on dummy run
         
-        
+         jheapcl;
     end % Next contrast pair
 end % Next repetition
 totalSessionTime=toc;
