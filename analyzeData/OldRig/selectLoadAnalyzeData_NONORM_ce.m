@@ -263,7 +263,7 @@ for thisPhenotype=1:length(phenotypeList)
     if (DOFLYNORM==1 || DOFLYNORM==2 || DOFLYNORM==3)
         plotParams.maxYLim=[1 1 0.4 0.2 0.25 0.02]; % Zero for adaptive scaling
     else
-        plotParams.maxYLim=[200 300 50 30 50 10]/10000;
+        plotParams.maxYLim=[320 220 90 17 75 10]/10000;% Modified for per0 and csxiso. For jrk trio parameters see pink book.
     end
     
     
