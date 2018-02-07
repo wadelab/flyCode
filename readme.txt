@@ -1,0 +1,3 @@
+This is a readme file - we want one of these in each dir. For now I have this just to learn more about git...
+ARW 07/02/2018
+
