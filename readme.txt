@@ -4,3 +4,4 @@ ARW 07/02/2018
 Now I have edited it on the web. Then I can 'pull' the edit...
 
 
+Now I have made a conflicting edit remotely
