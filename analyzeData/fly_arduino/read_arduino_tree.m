@@ -9,7 +9,9 @@ sExt = getPictExt () ;
 
 dirName=uigetdir();
 SVPfiles =  walk_a_directory_recursively(dirName, '*.SVP');
-SVPfiles = [SVPfiles, walk_a_directory_recursively(dirName, '*.svp')];
+SVPfiles = [SVPfiles; walk_a_directory_recursively(dirName, '*.svp')];
+SVPfiles = [SVPfiles; walk_a_directory_recursively(dirName, '*.SVP.txt')];
+
 
 %% now we have a list of all the files with .SVP in that tree
 if (length(SVPfiles) ==0)

@@ -115,7 +115,7 @@ for i = 1 : Nphenotypes
     sTmp = myphenotypes {i} ;
     sTmp = strrep(sTmp, 'org=fly col=blue F1=12 F2=15 stim=fERG','');
     sTmp = strrep(sTmp, 'sex=f col=blue F1=12 F2=15 stim=fERG','');
-   ERG_Table {1,i} = sTmp; 
+   ERG_Table {i,1} = sTmp; 
 end
 
 %% now we need the peak-peak values..
@@ -134,7 +134,7 @@ for k = 1 : row
     myValue = Collected_ERG_Data{k,iPeakPeak};
     myColumn = iIndex(k) ;
     ERG_index(myColumn) = ERG_index(myColumn) + 1;
-    ERG_Table {ERG_index(myColumn), iIndex(k)} = strrep(myValue, 'peak-peak =','');
+    ERG_Table {iIndex(k), ERG_index(myColumn)} = strrep(myValue, 'peak-peak =','');
     
 end
 
