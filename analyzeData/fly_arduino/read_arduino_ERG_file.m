@@ -18,7 +18,7 @@ if (strfind(line1a, 'GET /?'))
     line = lineSaved ;
 else
     %newer code
-    line1b=strrep(line1a, 'GET /'  ,'');
+    line1b=strrep(line1a, 'GET /,'  ,'');
     line1c=strrep(line1b, 'HTTP/1.1','');
     
     % will return line as cell array

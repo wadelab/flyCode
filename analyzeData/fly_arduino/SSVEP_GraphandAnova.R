@@ -48,7 +48,7 @@ conf.interval=.95, .drop=TRUE) {
     
     return(datac)
 }
-`
+
 xx <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
 head (xx)
 attach(xx)
@@ -57,11 +57,11 @@ yy<-subset(xx, !duplicated(xx))
 
 xxSE=summarySE(xx, measurevar= "X1F1", groupvars=c("genotype"))
 
-myANOVA= aov(X1F1 ~ genotype)
+myANOVA= aov(X1F1_masked ~ genotype)
 summary(myANOVA)
 TukeyHSD(myANOVA)
 
-myANOVA= aov(X2F1 ~ genotype)
+myANOVA= aov(X2F1_masked ~ genotype)
 summary(myANOVA)
 TukeyHSD(myANOVA)
 
@@ -69,7 +69,9 @@ library(ggplot2)
 p1 <- ggplot(xx, aes(x=genotype,y=X1F1,color=genotype)) + geom_point(shape=1) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 p1
 
-
+#install.packages('psych')
+library(psych)
+describeBy(CCAll, genotype)
 
 
 
@@ -92,6 +94,9 @@ theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 p4 <- p3 + annotate("text", x= xxSE$genotype, y = 10, label = xxSE$N, size = 3)
 p4
+
+> myVar <- X1F1_masked
+> ggplot(ee, aes(x=genotype,y= myVar,color=genotype)) + geom_boxplot() + geom_point(position=position_jitterdodge(dodge.width=0.75)) + coord_cartesian(ylim = c(0, 1.05 * max(myVar))) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme_classic() + ylab("photoreceptor")
 
 #ggsave("1F1.pdf")
 
@@ -135,3 +140,9 @@ ggplot(xxSE, aes(x = age, y = X2F1_masked, colour = genotype)) +
 geom_line(aes(linetype=hasTNT), size=1, position=dodge) + geom_errorbar(limits, position=dodge, width=0.25) + geom_point(position=dodge) +
 scale_colour_manual(values=c("#FF00FF", "#0000FF", "#00FF00","#FF00FF", "#0000FF", "#00FF00"))
 xxSE
+
+
+> # The colour blind friendly palette with black:
+cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+ggplot(dc, aes(x=cell.group,y= neurons,color=status, group=interaction(cell.group,status))) + geom_boxplot() + geom_point(position=position_jitterdodge(dodge.width=0.75)) + coord_cartesian(ylim = c(0, 1.05 * max(neurons))) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme_classic() + ylab("neuron count") + scale_colour_manual(values=cbbPalette)

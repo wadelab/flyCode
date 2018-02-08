@@ -62,7 +62,7 @@ end
 
 FreqLabels ={'1F1','1F2','2F1','2F2', '1F1+1F2','2F1+2F2'};
 freqmax=length(FreqLabels);
-maskLabel = {'_masked','_unmasked'};
+maskLabel = {'_unmasked','_masked'};
 
 
 %% write the heading line
