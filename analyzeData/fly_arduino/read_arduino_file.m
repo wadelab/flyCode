@@ -1,6 +1,6 @@
 
 
-function [thisFlyData, success] = read_arduino_file (fName, bCloseGraphs)
+function [thisFlyData, success] = read_arduino_file (fName, bplotFigure)
 % This reads SSVEP data downloaded from the flyCode arduino; each fly is
 % stimulated ~45 times, with blocks of 1024 intger data; each line contains
 % time, stimulus, response
@@ -15,6 +15,7 @@ function [thisFlyData, success] = read_arduino_file (fName, bCloseGraphs)
 success = true ;
 thisFlyData.Error = 'None' ;
 sExt = getPictExt () ;
+bCloseGraphs = true ;
 
 % [f,p]=uigetfile('*.SVP');
 % fName=fullfile(p,f);
@@ -181,7 +182,9 @@ iStart = 1;
 iEnd = 1024;
 ss = get (0,'screensize') ;
 printFilename = [pathstr, filesep, fileName, '_RawData', sExt];
+if bplotFigure
 bplotFigure = ~(exist(printFilename, 'file') == 2);
+end ;
 
 %% plot raw data
 if bplotFigure
