@@ -3,7 +3,7 @@
   Turns on an LED on for one second, then off for one second, repeatedly.
 
   Most Arduinos have an on-board LED you can control. On the UNO, MEGA and ZERO 
-  it is attached to digital pin 13, on MKR1000 on pin 6. LED_BUILTIN takes care 
+  it is attached to digital pin 13, on MKR1000 on pin 6. 11 takes care 
   of use the correct LED pin whatever is the board used.
   If you want to know what pin the on-board LED is connected to on your Arduino model, check
   the Technical Specs of your board  at https://www.arduino.cc/en/Main/Products
@@ -16,21 +16,21 @@
   modified 2 Sep 2016
   by Arturo Guadalupi
 */
-const long lTime = 1000 * 60 * 2 ;
+const long lTime = 1000 ; //* 60 * 2 ;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-  // initialize digital pin LED_BUILTIN as an output.
-  pinMode(LED_BUILTIN, OUTPUT);
+  // initialize digital pin 11 as an output.
+  pinMode(11, OUTPUT);
 
-  pinMode(53, OUTPUT);
-  digitalWrite(53, HIGH);
+  pinMode(49, OUTPUT);
+  digitalWrite(49, HIGH);
 }
 
 // the loop function runs over and over again forever
 void loop() {
-  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+  digitalWrite(11, HIGH);   // turn the LED on (HIGH is the voltage level)
   delay(lTime);                       // wait for a second
-  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
+  digitalWrite(11, LOW);    // turn the LED off by making the voltage LOW
   delay(lTime);                       // wait for a second
 }
