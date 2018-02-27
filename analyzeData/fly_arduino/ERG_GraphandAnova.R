@@ -70,6 +70,8 @@ TukeyHSD(myANOVA)
 p1 <- ggplot(xx, aes(x=genotype,y=peak.peak,color=genotype)) + geom_point(shape=1) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 p1
 
+ggplot(xx, aes(x=UAS,y=peak.peak,group=Disco, color=Disco, fill=Disco)) + geom_point(shape=24) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 xxSE=summarySE(xx, measurevar= "peak.peak", groupvars=c("genotype"))
 
 myANOVA= aov(peak.peak ~ genotype)

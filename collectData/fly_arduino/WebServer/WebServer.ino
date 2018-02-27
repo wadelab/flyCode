@@ -78,7 +78,7 @@
 
 #ifdef due5
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x42, 0x02
-//biolpc2804 //144.32.86.146 
+//biolpc2804 //144.32.86.146
 #endif
 
 #ifdef __wifisetup__
@@ -1749,7 +1749,9 @@ void TC3_Handler()
   }
   else
   {
+#ifndef __CONTACTLESS__
     mean = mean + long(myReadADC(analogPin));
+#endif
   }
   int intensity = stimvalue [sampleCount + presamples] ;
   analogWrite(usedLED, intensity);
@@ -1854,7 +1856,7 @@ void tidyUp_Collection()
   if (! bTestFlash)
   {
     if (! writeFile(cFile) )
-     {
+    {
       Serial.println F("File not written :");
       Serial.println (cFile);
     }
@@ -2122,15 +2124,15 @@ void plotInColour (int iStart, const String & str_col)
 
 int max_array(int * a, int num_elements)
 {
-   int i, mymax=-32000;
-   for (i=0; i<num_elements; i++)
-   {
-   if (a[i]>mymax)
-   {
-      mymax=a[i];
-   }
-   }
-   return(mymax);
+  int i, mymax = -32000;
+  for (i = 0; i < num_elements; i++)
+  {
+    if (a[i] > mymax)
+    {
+      mymax = a[i];
+    }
+  }
+  return (mymax);
 }
 
 void sendGraphic(StimTypes plot_stimulus)
@@ -2187,10 +2189,10 @@ void sendGraphic(StimTypes plot_stimulus)
   client.print F(");\n");
 
   //now join up the line
-  for (int i = 2 * istep + 1; i < plot_limit; i = i + 15) // default is istep of 15 
+  for (int i = 2 * istep + 1; i < plot_limit; i = i + 15) // default is istep of 15
   {
     client.print F("l(");
-    client.print (iBaseline - (10 * max_array(myGraphData+i,istep)) / iYFactor);
+    client.print (iBaseline - (10 * max_array(myGraphData + i, istep)) / iYFactor);
     client.print F(");\n");
   }
   client.println F("ctx.stroke();");
@@ -2386,7 +2388,7 @@ void sendReply ()
       {
         if (eDoFlash == zap) nWaits = 1;
 #ifndef __CLASSROOMSETUP__
-// for shibire, always allow time for temperature to change
+        // for shibire, always allow time for temperature to change
         if (lastStim == flash ) nWaits = 1 ;
 #endif
       }
@@ -2821,9 +2823,9 @@ void writehomepage ()
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG_T\" checked>Test ERG<br>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG\" >Save ERG<br>\n");
-//#ifndef ESP8266
+  //#ifndef ESP8266
   client.print F("<input type=\"radio\" name=\"stim\" value=\"SSVEP\" >SSVEP (sine)<br></td>\n");
-//#endif
+  //#endif
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<select name=\"bri\" size = 7>\n");
   client.print F("<option value=\"255\"  >100%</option>\n");
@@ -2883,7 +2885,7 @@ void do_fft()
   //    f_r[i] = erg_in[i];
   //  }
   memset( f_i, 0, sizeof (f_i));                   // Image -zero.
-  
+
   radix.rev_bin( f_r, FFT_SIZE);
   delay(0);
   radix.fft_radix4_I( f_r, f_i, LOG2_FFT);

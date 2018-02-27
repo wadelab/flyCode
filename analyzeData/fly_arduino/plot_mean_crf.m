@@ -136,7 +136,8 @@ print('-dpsc', printFilename );
 if (bCloseGraphs)
     delete(gcf) ;
 end
-
+%% avoid this normally....
+if false
 %% now plot all the CRFs
 ss = get (0,'screensize') ;
 
@@ -192,3 +193,4 @@ if (bCloseGraphs)
     delete(gcf) ;
 end
 
+end

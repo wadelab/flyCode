@@ -4,12 +4,15 @@ clear all;
 
 
 SVPfiles = {};
+badSVPFiles = {};
 addmetothepath ;
 sExt = getPictExt () ;
 
 dirName=uigetdir();
 SVPfiles =  walk_a_directory_recursively(dirName, '*.SVP');
-SVPfiles = [SVPfiles, walk_a_directory_recursively(dirName, '*.svp')];
+SVPfiles = [SVPfiles; walk_a_directory_recursively(dirName, '*.svp')];
+SVPfiles = [SVPfiles; walk_a_directory_recursively(dirName, '*.SVP.txt')];
+
 
 %% now we have a list of all the files with .SVP in that tree
 if (length(SVPfiles) ==0)
@@ -39,6 +42,8 @@ for i=1:min(length(SVPfiles),maxFilesToRead)
         phenotypeList{iSuccesseses} = strjoin(transpose(flydata.phenotypes(:)),'&');
         
         iSuccesseses = iSuccesseses + 1;
+    else
+        badSVPFiles = [badSVPFiles;SVPfiles{i}];
     end
 end;
 
@@ -196,8 +201,9 @@ status=xlwrite(filename, phenotypePh(:,:,1), '1F1_phase', 'A2');
 status=xlwrite(filename, phenotypePh(:,:,3), '2F1_phase', 'A2');
 
 %% now add a page with the data tabulated vertically 
-outcells={'genotype','1F1','2F1','1F1_phase','2F1_phase'};
+outcells={'genotype','1F1','2F1','1F1_phase','2F1_phase', 'filename'};
 iPreviousFlies = 1;
+k = 1 ;
 sZ = size(phenotypeAmps(:,:,1));
 myNAN = isnan(phenotypeAmps(:,:,1));
 for j = 1: sZ(2)
@@ -209,6 +215,8 @@ for j = 1: sZ(2)
             outcells{iPreviousFlies,3} = phenotypeAmps(i,j,3);
             outcells{iPreviousFlies,4} = phenotypePh(i,j,1);
             outcells{iPreviousFlies,5} = phenotypePh(i,j,3);
+            outcells{iPreviousFlies,6} = strrep(SortedData(k).fileName,'filename=','') ;
+            k = k + 1 ;
         end
     end
 end
@@ -238,6 +246,9 @@ end
 
 savefileName = [dirName, filesep, 'CollectedArduinoData.mat'];
 save(savefileName);
+
+%% add list of files not read
+status=xlwrite(filename, badSVPFiles, 'Unread SSVEP Files', 'A1');
 
 %% 
 disp(' ');
