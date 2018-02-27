@@ -4,6 +4,7 @@ close all;
 clear all;
 
 ERGfiles = {};
+badERGFiles = {};
 
 addmetothepath ;
 
@@ -37,8 +38,15 @@ for i=1:min(length(ERGfiles),maxFilesToRead)
     disp(['Reading:', ERGfiles{i}]);
     [success, ERGData] = read_arduino_ERG_file ( ERGfiles{i}, false  );
     if (success)
-        Collected_ERG_Data=[Collected_ERG_Data;ERGData];
+        try
+            Collected_ERG_Data=[Collected_ERG_Data;ERGData];  
+        catch
+            disp([ 'At ', ERGfiles{i}, ' sizes of matrix are ', size(ERGData), ' and ', size(Collected_ERG_Data)]);
+            badERGFiles = [badERGFiles;ERGfiles{i}];
+        end
         iSuccesseses = iSuccesseses + 1 ;
+    else
+        badERGFiles = [badERGFiles;ERGfiles{i}];
     end
 end;
 
@@ -99,7 +107,7 @@ status=xlwrite(filename, ERG_4_disp, 'ERGs', 'A1');
 clear phenotypelistZ ;
 clear ERG_Table ;
 for k = 1 : row
-    disp(k);
+    % badE  disp(k);
     sTmp = strjoin(Collected_ERG_Data(k,1:9));
     if k == 1
         phenotypelistZ = {sTmp} ;
@@ -141,6 +149,8 @@ end
 
 %% write out next sheet
 status=xlwrite(filename, ERG_Table, 'ERG Peak-Peak', 'A1');
+
+status=xlwrite(filename, badERGFiles, 'Unread ERG Files', 'A1');
 
 %%
 disp(' ');

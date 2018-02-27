@@ -301,9 +301,13 @@ end
 thisFlyData.sortedContrasts = zeros(size(contrasts)) ;
 thisFlyData.sortedContrasts = contrasts( sortindex,:);
 
-% sort the rawdata and fft to go with the CRFs
+% sort the rawdata, stimdata and fft to go with the CRFs
 thisFlyData.sortedRawData = zeros(size(rawdata)) ;
 thisFlyData.sortedRawData( [1:nSamples],: ) = rawdata(sortindex,:);
+
+% sort the rawdata and fft to go with the CRFs
+thisFlyData.sortedStimData = zeros(size(rawdata)) ;
+thisFlyData.sortedStimData( [1:nSamples],: ) = stimdata(sortindex,:);
 
 thisFlyData.sortedComplex_FFTdata = zeros(size(complx_fftData)) ;
 thisFlyData.sortedComplex_FFTdata( [1:nSamples],: ) = complx_fftData(sortindex,:);

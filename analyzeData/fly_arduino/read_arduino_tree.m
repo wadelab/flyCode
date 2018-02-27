@@ -4,6 +4,7 @@ clear all;
 
 
 SVPfiles = {};
+badSVPFiles = {};
 addmetothepath ;
 sExt = getPictExt () ;
 
@@ -41,6 +42,8 @@ for i=1:min(length(SVPfiles),maxFilesToRead)
         phenotypeList{iSuccesseses} = strjoin(transpose(flydata.phenotypes(:)),'&');
         
         iSuccesseses = iSuccesseses + 1;
+    else
+        badSVPFiles = [badSVPFiles;SVPfiles{i}];
     end
 end;
 
@@ -240,6 +243,9 @@ end
 
 savefileName = [dirName, filesep, 'CollectedArduinoData.mat'];
 save(savefileName);
+
+%% add list of files not read
+status=xlwrite(filename, badSVPFiles, 'Unread SSVEP Files', 'A1');
 
 %% 
 disp(' ');

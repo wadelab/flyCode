@@ -13,8 +13,15 @@ if (strfind(line1a, 'GET /?'))
     line1b=strrep(line1a, 'GET /?'  ,'');
     line1c=strrep(line1b, 'HTTP/1.1','');
     
+    if (strfind(line1c, 'UAS'))
+        line1d = line1c ;
+    else
+        % UAS not clicked on...
+        line1d = strrep(line1c, 'Age', 'UAS=homozygote&Age');
+    end
+    
     % will return line as cell array
-    lineSaved = strsplit(line1c, '&');
+    lineSaved = strsplit(line1d, '&');
     line = lineSaved ;
 else
     %newer code
@@ -39,7 +46,14 @@ thisFlyData.phenotypes = line ;
 % each set of raw data followed by a line (which would be contrast data in
 % SSVEP)
 
-alldata = csvread(fName, 1,0);
+try
+    alldata = csvread(fName, 1,0);
+catch
+    thisFlyData.Error = ['error in CSV format : ', fName]
+    success = false ;
+    return
+end
+
 
 [nContrasts,c] = size(alldata);
 nContrasts= nContrasts/1025 ;
