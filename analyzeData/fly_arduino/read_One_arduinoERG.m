@@ -12,7 +12,7 @@ success = true ;
 filName=fullfile(dirName,f);
 
 %% save the data
-[success,ERG_data]=read_arduino_ERG_file (filName);
+[success,ERG_data]=read_arduino_ERG_file (filName, false);
 
 %% test for valid file..
 if (success)

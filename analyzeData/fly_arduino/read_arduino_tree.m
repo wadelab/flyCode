@@ -8,7 +8,8 @@ addmetothepath ;
 sExt = getPictExt () ;
 
 dirName=uigetdir();
-SVPfiles = walk_a_directory_recursively(dirName, '*.SVP');
+SVPfiles =  walk_a_directory_recursively(dirName, '*.SVP');
+SVPfiles = [SVPfiles, walk_a_directory_recursively(dirName, '*.svp')];
 
 %% now we have a list of all the files with .SVP in that tree
 if (length(SVPfiles) ==0)
@@ -152,7 +153,7 @@ for phen = 1 : nPhenotypes
     %if we are here, its bound to be an SSVEP...
     phenName{phen} = strrep(strjoin(tmpTxt),'SSVEP','');
         
-    plot_mean_crf ({myTxt,phenName{phen}}, squeeze(meanCRF(phen,:,:)), dirName, [' phenotype ', num2str(phen)], false, squeeze(SE_CRF(phen,:,:)), maxCRR);
+    plot_mean_crf ({myTxt,phenName{phen}}, squeeze(meanCRF(phen,:,:)), dirName, [' phenotype ', num2str(phen)], true, squeeze(SE_CRF(phen,:,:)), maxCRR);
 end
 
 %% write out the max CRF for each phenotype
@@ -183,14 +184,19 @@ javaaddpath(fullfile(POIPATH,'poi_library/stax-api-1.0.1.jar'));
 
 
 %%  [status, message]=xlwrite(filename,A,sheet, range)
-filename = [ dirName, '/SSVEP_summary.xls']
+dt = datestr(now,'mmm_dd_HH_MM');
+filename = [ dirName, '/SSVEP_', dt, '_summary.xls']
 status=xlwrite(filename, phenName, '1F1', 'A1');
 status=xlwrite(filename, phenName, '2F1', 'A1');
 status=xlwrite(filename, phenotypeAmps(:,:,1), '1F1', 'A2');
 status=xlwrite(filename, phenotypeAmps(:,:,3), '2F1', 'A2');
+status=xlwrite(filename, phenName, '1F1_phase', 'A1');
+status=xlwrite(filename, phenName, '2F1_phase', 'A1');
+status=xlwrite(filename, phenotypePh(:,:,1), '1F1_phase', 'A2');
+status=xlwrite(filename, phenotypePh(:,:,3), '2F1_phase', 'A2');
 
-%% now add a page with the data tabulated vertically
-outcells={'genotype','1F1','2F1'};
+%% now add a page with the data tabulated vertically 
+outcells={'genotype','1F1','2F1','1F1_phase','2F1_phase'};
 iPreviousFlies = 1;
 sZ = size(phenotypeAmps(:,:,1));
 myNAN = isnan(phenotypeAmps(:,:,1));
@@ -201,6 +207,8 @@ for j = 1: sZ(2)
             outcells{iPreviousFlies,1} = phenName{j};
             outcells{iPreviousFlies,2} = phenotypeAmps(i,j,1);
             outcells{iPreviousFlies,3} = phenotypeAmps(i,j,3);
+            outcells{iPreviousFlies,4} = phenotypePh(i,j,1);
+            outcells{iPreviousFlies,5} = phenotypePh(i,j,3);
         end
     end
 end

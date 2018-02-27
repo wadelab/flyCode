@@ -80,38 +80,39 @@ for thisSubDir=1:length(subDirList) % Loop over all subdirectories
     
     % Go into each subd irectory. Find out how
     % many 'Expt...' subdirectories it contains.
-    
-    nExpts=length(subDirList{thisSubDir}.exptDir);
-
-    
-    for thisExptIndex=1:nExpts % Loop over all expts in a single subDirectory. An expt is defined as a new set of files : a new 'pressing of the go button'
-        % Build up lists of complex response amps, average waveforms etc
-   
-        thisExptResponse=subDirData{thisSubDir}.expt{thisExptIndex}.allfCondDat;
+    if (isfield(subDirList{thisSubDir},'exptDir'))
+        
+        nExpts=length(subDirList{thisSubDir}.exptDir);
         
         
-        % We just concatenate these responses into a big long list and get
-        % the hashing algorithm to sort them out later.
-        % The secret here is that we don't need the 'subdir' sorting at all
-        % - it's just for the convenienceof the human experimenter.
-        
-        nFliesInResponseStruct=size(thisExptResponse,2); % In fact there are this number -1 actual flies because one channel is the photodiode
-        
-        for thisFlyInResp=1:nFliesInResponseStruct
+        for thisExptIndex=1:nExpts % Loop over all expts in a single subDirectory. An expt is defined as a new set of files : a new 'pressing of the go button'
+            % Build up lists of complex response amps, average waveforms etc
             
-            allExptResponses(thisStatIndex,:,:)=squeeze(thisExptResponse(:,thisFlyInResp,:));
-            % Make a list of hashes 
-            allPTHashes(thisStatIndex)=cellstr(params.outType(exptIndex).flyHash(thisFlyInResp));
-            allFlyNames{thisStatIndex}=params.outType(exptIndex).flyName(thisFlyInResp);
-            allFlyStartTimes{thisStatIndex} = subDirData{thisSubDir}.expt{thisExptIndex}.StartTime;
+            thisExptResponse=subDirData{thisSubDir}.expt{thisExptIndex}.allfCondDat;
             
-            thisStatIndex=thisStatIndex+1;
-        end % End which fly in resp
-        
-        exptIndex=exptIndex+1;
-    end % Next experiment
-    %
-    
+            
+            % We just concatenate these responses into a big long list and get
+            % the hashing algorithm to sort them out later.
+            % The secret here is that we don't need the 'subdir' sorting at all
+            % - it's just for the convenienceof the human experimenter.
+            
+            nFliesInResponseStruct=size(thisExptResponse,2); % In fact there are this number -1 actual flies because one channel is the photodiode
+            
+            for thisFlyInResp=1:nFliesInResponseStruct
+                
+                allExptResponses(thisStatIndex,:,:)=squeeze(thisExptResponse(:,thisFlyInResp,:));
+                % Make a list of hashes
+                allPTHashes(thisStatIndex)=cellstr(params.outType(exptIndex).flyHash(thisFlyInResp));
+                allFlyNames{thisStatIndex}=params.outType(exptIndex).flyName(thisFlyInResp);
+                allFlyStartTimes{thisStatIndex} = subDirData{thisSubDir}.expt{thisExptIndex}.StartTime;
+                
+                thisStatIndex=thisStatIndex+1;
+            end % End which fly in resp
+            
+            exptIndex=exptIndex+1;
+        end % Next experiment
+        %
+    end % no experiments in this dir
 end % Next sub directory
 
 %% 

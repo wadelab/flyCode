@@ -1,4 +1,4 @@
-function subDirList=fly_getDataDirectories(baseDir)
+function subDirList=fly_getDataDirectories_multi(baseDir)
 % subDirList=fly_getDataDirectories(baseDir)
 % Given a 'base' directory, this function will traverse the directory
 % structure finding genotype/phenotype directories (identified with an
@@ -25,18 +25,24 @@ function subDirList=fly_getDataDirectories(baseDir)
 %
 %
 %
-allSubDirList=dir([baseDir,'/all*']); % List all the directories starting with 'all'
+subDirList = walk_a_directory_recursively(baseDir, '*.');
+
+for i=1:length(subDirList)
+    subDirList{i} = deblank(subDirList{i});
+end
 
 thisSubDirIndex=0;
 
-for thisSubDir=1:length(allSubDirList);
-    if  (allSubDirList(thisSubDir).isdir)
+for thisSubDir=1:length(subDirList);
+    if  (isdir(char(subDirList(thisSubDir))))
+        disp(['Dir is ',char(subDirList(thisSubDir)) ]);
         thisSubDirIndex=thisSubDirIndex+1;
-        subDirList{thisSubDirIndex}.dirName=fullfile(baseDir,allSubDirList(thisSubDir).name);
-        subDirList{thisSubDirIndex}.type=allSubDirList(thisSubDir).name;
+        [pathstr, name, ext] = fileparts(char(subDirList(thisSubDir)));
+        subDirList{thisSubDirIndex}.dirName=pathstr ;
+        subDirList{thisSubDirIndex}.type=name;
         
         % Now go into each phenotype and find how many expts...
-        exptList=dir([subDirList{thisSubDirIndex}.dirName,'/Expt*']);
+        exptList=dir([pathstr,'/Expt*']);
         
         exptIndex=0;
         for thisExpt=1:length(exptList)
@@ -73,7 +79,7 @@ for thisSubDir=1:length(allSubDirList);
         end % Next expt
         
     else
-        disp('Not a directory...');
+        disp(['Not a directory...', char(subDirList(thisSubDir))]);
     end % End check on whether we are looking in a directory at the genotype/phenotype level
     
 end % Next genotype

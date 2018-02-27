@@ -6,7 +6,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <inttypes.h>
+#ifdef ESP8266
+#include <pgmspace.h>
+#else
 #include <avr/pgmspace.h>
+#endif
 
 #define    FFT_SIZE          1024 //256
 #define    MIRROR        FFT_SIZE / 2
@@ -34,7 +38,11 @@ const int16_t  Sinewave[NWAVE] = {
    -1567,   -1473,   -1379,   -1284,   -1188,   -1092,    -995,    -897,    -798,    -700,    -600,    -501,    -401,    -301,    -200,    -100
 };
 */
+#ifdef ESP8266
+const short int  Sinewave[NWAVE]  = {
+#else
 const int16_t  Sinewave[NWAVE] PROGMEM = {
+#endif
 
     +0,   +13,   +25,   +38,   +50,   +63,   +75,   +88,  +100,  +113,  +126,  +138,  +151,  +163,  +176,  +188,
   +201,  +213,  +226,  +239,  +251,  +264,  +276,  +289,  +301,  +314,  +326,  +339,  +351,  +364,  +376,  +389,

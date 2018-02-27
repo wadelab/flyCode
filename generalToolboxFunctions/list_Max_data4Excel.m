@@ -24,7 +24,7 @@ load(fullfile(newpathToLoad,newfileToLoad)); % This is the file you got from the
 
 %% now calculate a csv file name
 [pathstr, name, ext] = fileparts([newpathToLoad,newfileToLoad]);
-outfile = [pathstr, '/', name,'_MAX_4Excel.xlsx'];
+outfile = [pathstr, '/', name,'_MAX_4_Excel.xlsx'];
 
 
 
@@ -68,44 +68,46 @@ for freqFF = 1: freqmax;
     for genotype = 1 : genotypemax
         %%convert the indexes to humean friendly forms...
         genotype_str = analysisStruct.phenotypeName{genotype} ;
-        genotype_str = strrep (genotype_str,'all', '');
-        genotype_str = strrep (genotype_str,'_1_', ' 01, ');
-        genotype_str = strrep (genotype_str,'_7_', ' 07, ');
-        genotype_str = strrep (genotype_str,'_14_', ' 14, ');
-        genotype_str = strrep (genotype_str,'_21_', ' 21, ');
-        genotype_str = strrep (genotype_str,'_', ' ');
-        genotype_str = strrep (genotype_str,'D ', '');
-        genotype_str = strrep (genotype_str,'0uM Bottle', '');
-        outcells{6, genotype + 1} = genotype_str ;
-        outcells{6, genotypemax + genotype + 3} = genotype_str ;
-        
-        flymax = analysisStruct.nFlies{genotype};
-        for mask = 1 : maskmax
-        for fly = 1 : flymax
+        if isempty (strfind(genotype_str, 'Photodiode'))
+            genotype_str = strrep (genotype_str,'all', '');
+            genotype_str = strrep (genotype_str,'_1_', ' 01, ');
+            genotype_str = strrep (genotype_str,'_7_', ' 07, ');
+            genotype_str = strrep (genotype_str,'_14_', ' 14, ');
+            genotype_str = strrep (genotype_str,'_21_', ' 21, ');
+            genotype_str = strrep (genotype_str,'_', ' ');
+            genotype_str = strrep (genotype_str,'D ', '');
+            genotype_str = strrep (genotype_str,'0uM Bottle', '');
+            outcells{6, genotype + 1} = genotype_str ;
+            outcells{6, genotypemax + genotype + 3} = genotype_str ;
             
-            max_response= 0.0;
-            for contrast = 1 : contrastmax
-                %calculate the response
-                response = abs(analysisStruct.allFlyDataCoh{1,genotype}(fly,freqFF,contrast,mask));
-                if (response > max_response)
-                    max_response = response ;
-                end ;
-                
-            end % contrast
-            if mask == 1 
-                offset = 1
-            else
-                offset = genotypemax + 3;
+            flymax = analysisStruct.nFlies{genotype};
+            for mask = 1 : maskmax
+                for fly = 1 : flymax
+                    
+                    max_response= 0.0;
+                    for contrast = 1 : contrastmax
+                        %calculate the response
+                        response = abs(analysisStruct.allFlyDataCoh{1,genotype}(fly,freqFF,contrast,mask));
+                        if (response > max_response)
+                            max_response = response ;
+                        end ;
+                        
+                    end % contrast
+                    if mask == 1
+                        offset = 1;
+                    else
+                        offset = genotypemax + 3;
+                    end
+                    numcells{ fly , genotype + offset} = (max_response) ;
+                end
             end
-            outcells{ fly + 7 , genotype + offset} = { num2str(max_response) };
         end
-        end
-        
     end
     
     
     %%     % Generate XLSX file
     disp([' processing : ', FreqLabels{freqFF} ]);
     [status]=xlwrite(outfile, outcells,FreqLabels{freqFF},'A2');
+    [status]=xlwrite(outfile, numcells,FreqLabels{freqFF},'A8');
 end
 disp (['file written ', outfile]);

@@ -27,7 +27,7 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\Chris_birman\';
+datadir='C:\data\SSERG\data\Zoe\W1118_disco7_10\';
 flyTV_startTime=now;
 
 
@@ -102,7 +102,7 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.flyName{2}='mecp2r106w_longGMR_2';
             
             
-            finalData.comment='1:aw-8 2:aw-9 '; % Here : the first data channel ('ai0') is the bottom fly.
+            finalData.comment='1: 2:W1118_disco7_10'; %Here:the first data channel ('ai0') is the bottom fly.
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;
