@@ -248,7 +248,9 @@ savefileName = [dirName, filesep, 'CollectedArduinoData.mat'];
 save(savefileName);
 
 %% add list of files not read
-status=xlwrite(filename, badSVPFiles, 'Unread SSVEP Files', 'A1');
+if length(badSVPFiles)
+   status=xlwrite(filename, badSVPFiles, 'Unread SSVEP Files', 'A1');
+end
 
 %% 
 disp(' ');
