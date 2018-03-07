@@ -16,7 +16,10 @@
   modified 2 Sep 2016
   by Arturo Guadalupi
 */
-const long lTime = 1000 ; //* 60 * 2 ;
+// 171-6703 Blue LED 465 nm
+// 1573495 IR LED
+
+const long lTime = 1000 * 60 * 2 ;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
