@@ -10,8 +10,9 @@ sampleRate=256;
 
 
 
+dataDir='/Volumes/GoogleDrive/My Drive/Personal/Projects/Tunis/TunisNew/Data';
 
-dataDir=uigetdir;
+%dataDir=uigetdir;
 fList=dir(fullfile(dataDir,'EEG_*.mat'))
 
 nSessions=length(fList);
@@ -80,10 +81,12 @@ fToAnalyze=6;
 [u,v,i]=unique(type); % This tells us which patient types we had.
 normCont=find(i==1);
 PDAll=find(i~=1);
-offMedsGenetic=[find(i==4),find(i==6)];
+offMedsGenetic=[find(i==4);find(i==5)];
+%;find(i==8)];
 
 controlGroup=grandMeanBins(normCont,:,:,:);
 offGroups=grandMeanBins(offMedsGenetic,:,:,:);
+close all
 
 
 channelsToAverage=[1 2];
@@ -106,19 +109,19 @@ mFTPD_g2=squeeze(mean(offGroups(:,:,:,channelsToAverage),4));
 
 
 % Also look at coherence
- noiseFreqPerBin=[  2 3 4 5 7 9 11 13 14 15 17 18 19]
-%%
-%noiseFreqPerBin=[7 9]
+% noiseFreqPerBin=[  2 3 4 5 7 9 11 13 14 15 17 18 19 20 21 22 23]
+
+noiseFreqPerBin=[3 4 5 7 8 9]
 % Compute coherence on a per subject basis
 cohBinNoiseG1=squeeze(sqrt(sum(abs(mFTPD_g1(:,:,(noiseFreqPerBin+1),:).^2),3)));
 cohBinNoiseG2=squeeze(sqrt(sum(abs(mFTPD_g2(:,:,(noiseFreqPerBin+1),:).^2),3)));
 
 
-cohSignalG1=squeeze(mFTPD_g1(:,:,(fToAnalyze+1)))./cohBinNoiseG1;
-cohSignalG2=squeeze(mFTPD_g2(:,:,(fToAnalyze+1)))./cohBinNoiseG2;
+cohSignalG1=(squeeze(mFTPD_g1(:,:,(fToAnalyze+1)))./cohBinNoiseG1);
+cohSignalG2=(squeeze(mFTPD_g2(:,:,(fToAnalyze+1)))./cohBinNoiseG2);
 
 figure(2);
-
+hold off;
 meanSigG1=(squeeze(mean(cohSignalG1)));
 meanSigG2=(squeeze(mean(cohSignalG2)));
 
@@ -126,9 +129,9 @@ meanSigG2=(squeeze(mean(cohSignalG2)));
 meanSig2G1A=abs(meanSigG1);
 meanSig2G2A=abs(meanSigG2);
 
-stSigG1=squeeze(std(cohSignalG1)/sqrt(nSessions));
-stSigG2=squeeze(std(cohSignalG2)/sqrt(nSessions));
-%%
+stSigG1=squeeze(std(cohSignalG1)/sqrt(length(cohSignalG1)));
+stSigG2=squeeze(std(cohSignalG2)/sqrt(length(cohSignalG2)));
+
 contList=[0.001 .02 .04 .08 .16 .32 .69];
 hold off;
 subplot(1,2,1);
@@ -147,6 +150,48 @@ set(h1,'LineWidth',2);
 set(h2,'LineWidth',2);
 legend('Control','GenPDOff')
 subplot(1,2,2);
-barweb([meanSig2G1A(9);meanSig2G2A(9)],[stSigG1(9);stSigG2(9)],.8);
+bar([meanSig2G1A(9);meanSig2G2A(9)]',[stSigG1(9);stSigG2(9)]');
 ylabel('Max unmasked amp');
 title('Max unmasked amps');
+
+
+%% Great, now fit and boot the data.
+% First just fit the mean.
+nFits=2;
+
+for t=1:nFits
+    [p1(t,:)]=fit_powerFunTunis(meanSig2G1A(1:8)');
+
+[p2(t,:)]=fit_powerFunTunis(meanSig2G2A(1:8)');
+disp(',');
+end
+
+
+avp1=median(p1);
+avp2=median(p2);
+%%
+figure(2);
+
+subplot(1,2,1);
+hold on;
+
+h1=plot(contList,powerFunction(avp1,contList),'b');
+h2=plot(contList,powerFunction(avp2,contList),'r');
+
+set(h1,'LineWidth',2);
+set(h2,'LineWidth',2);
+nBoot=10;
+[ci_1,bs_1]=bootci(nBoot,@fit_powerFunTunis,cohSignalG1(:,1:8));
+[ci_2,bs_2]=bootci(nBoot,@fit_powerFunTunis,cohSignalG2(:,1:8));
+
+ci_1
+ci_2
+avp1
+avp2
+%%
+figure(3);
+subplot(2,1,1);
+hist(bs_2(:,2))
+subplot(2,1,2);
+hist(bs_1(:,2))
+ 
