@@ -69,11 +69,11 @@ ftBinData=(fft(binnedData(:,:,2:nBins,:),[],2));
 meanBinnedData=squeeze(mean(ftBinData,3));
 
 % Average across flies
-flyBin=squeeze(mean(abs(meanBinnedData),3));
+flyBin=squeeze((mean((meanBinnedData),3)));
 semBinnedData=squeeze(std((meanBinnedData),[],3))/sqrt(nFlies);
 figure(2);
 
-g=barweb(squeeze(abs(flyBin(:,2:41)))',squeeze(semBinnedData(:,2:41))',1,[],'Probe responses','Frequency','Amp',bone,[],{'Adapt','noAdapt','Ctrl'});
+g=barweb(squeeze(abs(flyBin(:,2:20)))',squeeze(semBinnedData(:,2:20))',1,[],'Probe responses','Frequency','Amp',bone,[],{'NoAdapt','AdaptL','Ctrl','AdaptR'});
 axis on
 
    

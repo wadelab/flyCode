@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html>
 <Head>
+<base href="http://biolpc2804.york.ac.uk/">
 <script>
 
 
 function getTimeString() {
     var today=new Date();
-    var mo=today.getMonth();
+    var yr=today.getFullYear();
+    var mo=today.getMonth()+1;
     var d=today.getDate();
     var h=today.getHours();
     var m=today.getMinutes();
-    var s = today.getSeconds()
+    var s = today.getSeconds();
+
+    d = checkTime(d);
     m = checkTime(m);
-	mo = checkTime(mo);
-	h = checkTime(h);
-	s = checkTime(s);
-    return d + "_" + mo + "_" + h + "h" + m + "m" + s ;
+    mo = checkTime(mo);
+    h = checkTime(h);
+    s = checkTime(s);
+    return yr + "_" + mo + "_" + d + "_" + h + "h" + m + "m" + s ;
     }
     
 function startTime()
@@ -43,7 +47,7 @@ function changeText()
 <div id="txt">Arduino SSVEP starter page</div>
 <BR><BR>
 
-<form action="http://biolpc2804.york.ac.uk/">
+<form action="/">
 
 <table style="text-align: left; width: 50%;" border="1" cellpadding="2"
 cellspacing="2">
@@ -59,15 +63,15 @@ cellspacing="2">
 <option value="w">w-</option>
 <option value="w_apr">w^apr</option>
 <option value="CS">CS</option>
-<option value="TH" selected>TH</option>
+<option value="ort" selected>ort-</option>
 </select><br>
 </td>
 <td style="vertical-align: top;">
 <select name="UAS" size = 6>
-<option value="homoz">homozygote</option>
+<option value="homoz" selected>homozygote</option>
 <option value="w">w-</option>
 <option value="w_apr">w^apr</option>
-<option value="G2019S" selected>G2019S</option>
+<option value="G2019S">G2019S</option>
 <option value="hLRRK2">hLRRK2</option>
 </select><br>
 </td>
@@ -95,8 +99,8 @@ cellspacing="2">
 <td style="vertical-align: top; width = 20%"><BR> Sex: <BR></td>
 <td style="vertical-align: top; width = 20%"><BR>Organism: <BR></td>
 <td style="vertical-align: top; width = 20%"><BR>Colour</td>
-<td style="vertical-align: top; width = 20%"><BR>Frequencies</td>
 <td style="vertical-align: top; width = 20%"><BR>Protocol</td>
+<td style="vertical-align: top; width = 20%"><BR>SSVEP wave shape</td>
 </tr>
 <tr>
 <td style="vertical-align: top;"><BR>
@@ -118,15 +122,22 @@ cellspacing="2">
 <input type="radio" name="col" value="red">red<br>
 </td>
 
-<td style="vertical-align: top;"><BR>
-<input type="checkbox" name="F1" value="12" checked> F1: 12 Hz<br>
-<input type="checkbox" name="F2" value="15" checked> F2: 15 Hz<br>
-</td>
+
+<input type="hidden" name="F1" value="12" checked> F1: 12 Hz<br>
+<input type="hidden" name="F2" value="15" checked> F2: 15 Hz<br>
+
 
 <td style="vertical-align: top;"><BR>
 <input type="radio" name="stim" value="fERG" checked>flash ERG<br>
 <input type="radio" name="stim" value="SSVEP" checked>SSVEP<br>
+<input type="radio" name="stim" value="Test" checked>Test<br>
 </td>
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="stm" value="SI" >Sine Wave<br>
+<input type="radio" name="stm" value="SQ" checked>Square wave<br>
+</td>
+
 </tr>
 </tbody>
 </table>
@@ -147,21 +158,27 @@ File name: <input id="FileID" type="text" name="filename">
 
 <table>
 <tr><td>
-<A href="http://biolpc2804.york.ac.uk/white/">White</a>
-</td></tr>
-<tr><td>
-<A href="http://biolpc2804.york.ac.uk/red/">Red</a>
-</td></tr>
-<tr><td>
-<A href="http://biolpc2804.york.ac.uk/green/">Green</a>
-</td></tr>
-<tr><td>
-<A href="http://biolpc2804.york.ac.uk/blue/">Blue</a>
-</td></tr>
-<tr><td>
-<A href="http://biolpc2804.york.ac.uk/black/">Black</a>
-</td></tr>
+<A href="/white/">White</a>
+</td>
 
+<td bgcolor="Red">
+<A href="/red/"><font color="White">Red </font></a>
+</td>
+
+<td bgcolor="Green">
+<A href="/green/"><font color="White">Green </font></a>
+</td>
+<td bgcolor="Blue">
+<A href="/blue/"><font color="White">Blue </font></a>
+</td>
+<td bgcolor="Black">
+<A href="/black/"><font color="White">Black</font></a>
+</td>
+
+<td>
+<a href="/">Test setup</a>
+</td><td>
+<a href="/dir=">Directory</a>
 </table>
 </body>
 </html>

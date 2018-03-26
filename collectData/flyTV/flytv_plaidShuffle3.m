@@ -4,8 +4,12 @@
 % specified in the same units (in particular sf).
 % ARW June 11 2014
 %
+%DO NOT CHANGE ANYTHING EXCEPT - data directory (line 30), fly genotypes
+%line 104
+
 close all;
 clear all;
+jheapcl;
 startTime=tic;
 DUMMYRUN=0;
 
@@ -23,7 +27,7 @@ if (~DUMMYRUN)
 end
 
 
-datadir='C:\data\SSERG\data\NewSweep\PINK1\1DPE\w1male\';
+datadir='C:\data\SSERG\data\Zoe\W1118_disco7_10\';
 flyTV_startTime=now;
 
 
@@ -94,11 +98,11 @@ for thisRun=1:nRepeats  % 5 repeats
             finalData.TimeStamps=d.TimeStamps;
             finalData.Source=d.Source;
             finalData.EventName=d.EventName;
-            finalData.flyName{1}='repo-G2019s_1_1dpe';
-            finalData.flyName{2}='repo-G2019s_2_1dpe';
+            finalData.flyName{1}='mecp2r106w_longGMR_1';
+            finalData.flyName{2}='mecp2r106w_longGMR_2';
             
             
-            finalData.comment='1:w1male_1DPE_11 2:w1male_1DPE_12 '; % Here : the first data channel ('ai0') is the bottom fly.
+            finalData.comment='1: 2:W1118_disco7_10'; %Here:the first data channel ('ai0') is the bottom fly.
             finalData.stim=stim;
             finalData.now=now;
             finalData.nRepeats=nRepeats;
@@ -117,7 +121,7 @@ for thisRun=1:nRepeats  % 5 repeats
             
         end % End check on dummy run
         
-        
+         jheapcl;
     end % Next contrast pair
 end % Next repetition
 totalSessionTime=toc;

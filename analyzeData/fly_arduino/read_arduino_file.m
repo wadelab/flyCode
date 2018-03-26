@@ -1,6 +1,6 @@
 
 
-function [thisFlyData, success] = read_arduino_file (fName, bCloseGraphs)
+function [thisFlyData, success] = read_arduino_file (fName, bplotFigure)
 % This reads SSVEP data downloaded from the flyCode arduino; each fly is
 % stimulated ~45 times, with blocks of 1024 intger data; each line contains
 % time, stimulus, response
@@ -15,6 +15,7 @@ function [thisFlyData, success] = read_arduino_file (fName, bCloseGraphs)
 success = true ;
 thisFlyData.Error = 'None' ;
 sExt = getPictExt () ;
+bCloseGraphs = true ;
 
 % [f,p]=uigetfile('*.SVP');
 % fName=fullfile(p,f);
@@ -31,15 +32,32 @@ end
 
 line1a = fgets(fid);
 fclose(fid);
-line1b=strrep(line1a, 'GET /?'  ,'');
-line1c=strrep(line1b, 'HTTP/1.1','');
 
-% will return line as cell array
-line = strsplit(line1c, '&');
+if (strfind(line1a, 'GET /?'))
+    line1b=strrep(line1a, 'GET /?'  ,'');
+    line1c=strrep(line1b, 'HTTP/1.1','');
+    
+    % will return line as cell array
+    lineSaved = strsplit(line1c, '&');
+    line = lineSaved ;
+else
+    %newer code
+    line1b=strrep(line1a, 'GET /'  ,'');
+    line1c=strrep(line1b, 'HTTP/1.1','');
+    
+    % will return line as cell array
+    lineSaved = strsplit(line1c, ',');
+    line = lineSaved ;
+end
 
 % find and delete the filename
 ix = strfind(line, 'filename=') ;
 ix = find(~cellfun(@isempty,ix));
+if (isempty(ix))
+    thisFlyData.Error = ['Not a proper SVP file: ', fName]
+    success = false ;
+    return
+end
 thisFlyData.fileName = line{ix};
 line (ix)=[];
 
@@ -67,6 +85,47 @@ if ~isempty(num)
 end
 thisFlyData.F2=F2;
 
+%% remove garbage in Tom's data set
+% % find and delete the filename
+% ix = strfind(line, 'Filter=') ;
+% ix = find(~cellfun(@isempty,ix));
+% line (ix)=[];
+% 
+% ix = strfind(line, 'sex=') ;
+% ix = find(~cellfun(@isempty,ix));
+% line (ix)=[];
+% 
+% ix = strfind(line, 'org=') ;
+% ix = find(~cellfun(@isempty,ix));
+% line (ix)=[];
+% 
+% ix = strfind(line, 'col=') ;
+% ix = find(~cellfun(@isempty,ix));
+% line (ix)=[];
+% 
+% ix = strfind(line, 'bri=') ;
+% ix = find(~cellfun(@isempty,ix));
+% line (ix)=[];
+% 
+% %some flies were missing UAS2=
+% n=3 ;
+% if isempty(strmatch('UAS2',line))
+%     line(n+1:end+1) = line(n:end);
+%     line{n}= 'UAS2=none';
+% else
+%     disp('UAS2 found');
+% end
+% 
+% 
+% if isempty(strmatch('Age=1',line))
+%     thisFlyData.Error = ['wrong age : ', fName];
+%     disp(thisFlyData.Error);
+%     success = false ;
+%     return
+% end
+
+
+%% Back to normal processing
 thisFlyData.phenotypes = line ;
 
 
@@ -117,18 +176,23 @@ end
 timedata = alldata(1:1024,1);
 timedata = timedata - timedata(1);
 
-%% These constants are fixed 
+%% These constants are fixed
 nContrasts = 9;
 iStart = 1;
 iEnd = 1024;
 ss = get (0,'screensize') ;
+printFilename = [pathstr, filesep, fileName, '_RawData', sExt];
+if bplotFigure
+bplotFigure = ~(exist(printFilename, 'file') == 2);
+end ;
 
 %% plot raw data
-myPos = get(gcf, 'Position');
-myPos(1) = 10 ;
-myPos(3) = ss(3) - 10 ;
-figure ('Name', strcat('Rawdata of: ',fileName), 'Position', myPos);
-
+if bplotFigure
+    myPos = ss ;
+    myPos(1) = 10 ;
+    myPos(3) = ss(3) - 10 ;
+    figure ('Name', strcat('Rawdata of: ',fileName), 'Position', myPos);
+end
 %set(gcf, 'Position', myPos );
 
 m = nSamples / nContrasts;
@@ -146,29 +210,32 @@ for i = 1:nSamples
     contrasts(i,:) = alldata(iEnd+1,:) ;
     
     %now we've read the data, lets plot it
-    subplot(m,nContrasts,i);
-    plot ( timedata, rawdata(i,:), timedata, stimdata(i,:));
-    axis([0 4092 ymin ymax]);
-    
-    yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
-    ylabel(yTxt);
+    if bplotFigure
+        subplot(m,nContrasts,i);
+        plot ( timedata, rawdata(i,:), timedata, stimdata(i,:));
+        axis([0 4092 ymin ymax]);
+        
+        yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
+        ylabel(yTxt);
+    end
     
     iStart = iStart + 1025;
     iEnd = iEnd + 1025;
 end;
-xlabel('xscale is in ms');
 
-
-printFilename = [pathstr, filesep, fileName, '_RawData', sExt];
-h=gcf;
-set(h,'PaperOrientation','landscape');
-set(h,'PaperUnits','normalized');
-set(h,'PaperPosition', [0 0 1 1]);
-print( '-dpsc', printFilename );
-if (bCloseGraphs)
-    delete(gcf) ;
+if bplotFigure
+    xlabel('xscale is in ms');
+    
+    
+    h=gcf;
+    set(h,'PaperOrientation','landscape');
+    set(h,'PaperUnits','normalized');
+    set(h,'PaperPosition', [0 0 1 1]);
+    print( '-dpsc', printFilename );
+    if (bCloseGraphs)
+        delete(gcf) ;
+    end
 end
-
 
 %%  do fft
 fft_display_limit = 250 ;
@@ -176,54 +243,55 @@ complx_fftData= zeros(nSamples,1000);
 for i = 1:nSamples
     rawdata(i,:)=rawdata(i,:)-mean(rawdata(i,:));
     % limit it to 1 sec worth of data
-    complx_fftData(i,:)=fft(rawdata(i,1:1000)); %% return this to main program and then average first and then calculate the abs
+    complx_fftData(i,:)=fft(rawdata(i,1:1000)) /1000; %% return this to main program and then average first and then calculate the abs
 end
-% ignore dc component on complex fft 
+% ignore dc component on complex fft
 complx_fftData (:,1) = [];
 
 
 %% plot fft
-figure('Name', strcat('FFT of: ',fileName));
-myPos = get(gcf, 'Position');
-myPos(1) = 10 ;
-myPos(2) = 30 ;
-
-myPos(3) = ss(3) - 10 ;
-set(gcf, 'Position', myPos );
-
-max_fft = max(max(abs(complx_fftData)));
-for i = 1:nSamples
-    subplot(m,nContrasts,i);
-    bar(abs(complx_fftData(i,1:fft_display_limit)));
-    axis([0 fft_display_limit 0 max_fft]); % plot to 25Hz
-    set(gca,'XTickLabel',''); % no tick labels (unless bottom row, see below)
+if bplotFigure
+    figure('Name', strcat('FFT of: ',fileName));
+    myPos = get(gcf, 'Position');
+    myPos(1) = 10 ;
+    myPos(2) = 30 ;
     
-    yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
-    ylabel(yTxt);
+    myPos(3) = ss(3) - 10 ;
+    set(gcf, 'Position', myPos );
     
-    if (i> (m-1)*nContrasts)
-        % label bottom row
-        set(gca,'XTickmode','manual');
-        set(gca,'XTick',[0,12.5,25,37.5,50,62.5]*4);
-        set(gca,'XTickLabel',{'0','12.5','25','37.5','50','62.5'});
+    max_fft = max(max(abs(complx_fftData)));
+    for i = 1:nSamples
+        subplot(m,nContrasts,i);
+        bar(abs(complx_fftData(i,1:fft_display_limit)));
+        axis([0 fft_display_limit 0 max_fft]); % plot to 25Hz
+        set(gca,'XTickLabel',''); % no tick labels (unless bottom row, see below)
         
-    end ;
-end;
-xlabel('xscale is in Hz');
-
-printFilename = [pathstr, filesep, fileName, '_FFT', sExt];
-h=gcf;
-set(h,'PaperOrientation','landscape');
-set(h,'PaperUnits','normalized');
-set(h,'PaperPosition', [0 0 1 1]);
-print( '-dpsc', printFilename );
-
-if (bCloseGraphs)
-    delete(gcf) ;
+        yTxt = strcat(num2str(contrasts(i,2)), '//', num2str(contrasts(i,3))) ;
+        ylabel(yTxt);
+        
+        if (i> (m-1)*nContrasts)
+            % label bottom row
+            set(gca,'XTickmode','manual');
+            set(gca,'XTick',[0,12.5,25,37.5,50,62.5]*4);
+            set(gca,'XTickLabel',{'0','12.5','25','37.5','50','62.5'});
+            
+        end ;
+    end;
+    xlabel('xscale is in Hz');
+    
+    printFilename = [pathstr, filesep, fileName, '_FFT', sExt];
+    h=gcf;
+    set(h,'PaperOrientation','landscape');
+    set(h,'PaperUnits','normalized');
+    set(h,'PaperPosition', [0 0 1 1]);
+    print( '-dpsc', printFilename );
+    
+    if (bCloseGraphs)
+        delete(gcf) ;
+    end
+    
+    
 end
-
-
-
 
 
 %% Sort the data
@@ -231,11 +299,15 @@ end
 [dummy_CRF, sortindex] = sortrows(fliplr(contrasts));
 
 thisFlyData.sortedContrasts = zeros(size(contrasts)) ;
-thisFlyData.sortedContrasts = contrasts( sortindex,:); 
+thisFlyData.sortedContrasts = contrasts( sortindex,:);
 
-% sort the rawdata and fft to go with the CRFs
+% sort the rawdata, stimdata and fft to go with the CRFs
 thisFlyData.sortedRawData = zeros(size(rawdata)) ;
 thisFlyData.sortedRawData( [1:nSamples],: ) = rawdata(sortindex,:);
+
+% sort the rawdata and fft to go with the CRFs
+thisFlyData.sortedStimData = zeros(size(rawdata)) ;
+thisFlyData.sortedStimData( [1:nSamples],: ) = stimdata(sortindex,:);
 
 thisFlyData.sortedComplex_FFTdata = zeros(size(complx_fftData)) ;
 thisFlyData.sortedComplex_FFTdata( [1:nSamples],: ) = complx_fftData(sortindex,:);
@@ -246,49 +318,55 @@ thisFlyData.sortedComplex_FFTdata( [1:nSamples],: ) = complx_fftData(sortindex,:
 thisFlyData.meanFFT=zeros(nContrasts,240);
 thisFlyData.meanContrasts=zeros(nContrasts,3);
 
-figure('Name', strcat('Mean FFT of: ',fileName));
-xScale=0.25:0.25:60 ;
+if bplotFigure
+    figure('Name', strcat('Mean FFT of: ',fileName));
+    xScale=0.25:0.25:60 ;
+end
+
 for i = 1 : nContrasts
-    subplot(3,3,i);
+    
     RPT = 5*(i-1) + 1 ;
     
-    % to extract just some repeats alter code here; 
+    % to extract just some repeats alter code here;
     % don't add more than 4 [5 repeats, inclusive counting]
-    % eg to ignore 1st round 
+    % eg to ignore 1st round
     % startRPT = RPT + 1
-    startRPT = RPT ;
+    startRPT = RPT + 1 ;
     end_RPT = RPT + 4 ; % RPT ;
     %find mean and plot it
     %keyboard;
     
     meanFFT = mean(thisFlyData.sortedComplex_FFTdata(startRPT:end_RPT,1:240),1) ;
-    bar(xScale,abs(meanFFT));
-    axis([0 max(xScale) 0 max_fft]);
-    
-    yTxt = strcat(num2str(thisFlyData.sortedContrasts(RPT,2)), '//', num2str(thisFlyData.sortedContrasts(RPT,3))) ;
-    ylabel(yTxt);
-    
+    if bplotFigure
+        subplot(3,3,i);
+        bar(xScale,abs(meanFFT));
+        axis([0 max(xScale) 0 max_fft]);
+        
+        yTxt = strcat(num2str(thisFlyData.sortedContrasts(RPT,2)), '//', num2str(thisFlyData.sortedContrasts(RPT,3))) ;
+        ylabel(yTxt);
+    end
     thisFlyData.meanFFT(i,:) = meanFFT;
     thisFlyData.meanContrasts(i,:) = thisFlyData.sortedContrasts(RPT,:);
 end
-
-xlabel('xscale is in Hz');
-
-printFilename = [pathstr, filesep, fileName, '_mean_FFT', sExt];
-h=gcf;
-set(h,'PaperOrientation','landscape');
-set(h,'PaperUnits','normalized');
-set(h,'PaperPosition', [0 0 1 1]);
-print( printFilename );
-
-if (bCloseGraphs)
-    delete(gcf) ;
+if bplotFigure
+    xlabel('xscale is in Hz');
+    
+    printFilename = [pathstr, filesep, fileName, '_mean_FFT', sExt];
+    h=gcf;
+    set(h,'PaperOrientation','landscape');
+    set(h,'PaperUnits','normalized');
+    set(h,'PaperPosition', [0 0 1 1]);
+    print( '-dpsc', printFilename );
+    
+    if (bCloseGraphs)
+        delete(gcf) ;
+    end
 end
-
 %% calculate + plot CRF for this fly...
 complx_CRF = Calculate_CRF(thisFlyData.meanContrasts, thisFlyData.meanFFT);
-plot_mean_crf (cellstr(fileName), complx_CRF,pathstr,fileName, bCloseGraphs);
-
+if bplotFigure
+    plot_mean_crf (cellstr(fileName), complx_CRF,pathstr,fileName, bCloseGraphs);
+end
 
 
 

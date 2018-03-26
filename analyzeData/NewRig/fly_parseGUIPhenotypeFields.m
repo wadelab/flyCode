@@ -25,10 +25,17 @@ for thisFly=[1,3]
                 if (strcmp(lower(stringVal),'none'))
                     stringVal='';
                 end
+                if (strcmp(lower(stringVal),'n'))
+                    stringVal='';
+                end
                 stringVal(~isstrprop(stringVal,'alphanum')) = ''; % Strip out non alphanumeric
                 phenotypeValues{thisFly,thisPhenoField}=stringVal;
                 
                 flyName{thisFly}=strcat(flyName{thisFly},'_',stringVal);
+                if  ~isempty(strfind(flyName{thisFly},'_n'))
+                    disp(flyName{thisFly})
+                    keyboard;
+                end
             end % End if
         end % Next GUI field to check
     end % Next ptype field top search for

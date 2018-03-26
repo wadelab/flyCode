@@ -41,7 +41,11 @@ freqmax=length(FreqLabels);
 
 genotypemax = length(analysisStruct.phenotypeName) ;
 
-outcells(iPreviousFlies,:) = {'genotype';   'max response'; 'max/masked F2[1]'; 'fly'; 'mask'; 'freq';};
+if (isfield(analysisStruct,'startingTime'))
+    outcells(iPreviousFlies,:) = {'genotype';   'max response'; 'max/masked F2[1]'; 'fly'; 'mask'; 'freq';'time date'};
+else
+    outcells(iPreviousFlies,:) = {'genotype';   'max response'; 'max/masked F2[1]'; 'fly'; 'mask'; 'freq'};
+end
 iPreviousFlies = iPreviousFlies + 1;
 
 for freq = 1 : freqmax
@@ -88,7 +92,13 @@ for freq = 1 : freqmax
                     ratio_response = max_response / F2_response ;
                     
                     %%write the line
-                    outcells(iPreviousFlies, :) = {genotype_str;  num2str(max_response); num2str(ratio_response); num2str(fly); mask_str; freq_str };
+                    if (isfield(analysisStruct,'startingTime'))
+                    outcells(iPreviousFlies, :) = {genotype_str;  num2str(max_response); num2str(ratio_response); ...
+                        num2str(fly); mask_str; freq_str ; analysisStruct.startingTime{genotype,fly}};
+                    else
+                       outcells(iPreviousFlies, :) = {genotype_str;  num2str(max_response); num2str(ratio_response); ...
+                        num2str(fly); mask_str; freq_str };  
+                    end
                     iPreviousFlies = iPreviousFlies + 1;
                     
                 end

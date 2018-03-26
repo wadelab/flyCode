@@ -33,7 +33,7 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
     if (isfield(subDirList{thisSubDir},'exptDir'))
         nExpts=length(subDirList{thisSubDir}.exptDir);
     else
-        disp('No expt directories found in this subDir');
+        disp(['No expt directories found in this subDir',subDirList{thisSubDir}.dirName]);
         nExpts=0;
     end
     
@@ -163,6 +163,9 @@ for thisSubDir=1:length(subDirList) % The concept of individual directories for 
                 
             phenotypeData{thisSubDir}.expt{thisExptIndex}.allfCondDat=meanDat; % Average in the complex fourier domain across bins, then across repetitions
             phenotypeData{thisSubDir}.expt{thisExptIndex}.allAbsfCondDat=absMeanDat; % Average of abs data (incoherent)
+            i_underscore=strfind(allData.filename,'_') ;
+            phenotypeData{thisSubDir}.expt{thisExptIndex}.StartTime=allData.filename(i_underscore+1:i_underscore+15) ; %'params.startTimeString' ;%{1};
+            
                         
             overallExptIndex=overallExptIndex+1;
             

@@ -55,7 +55,6 @@ stim(8).temporal.duration=30; % Probe period
 
 stim(9)=stim(2); % Second order reverse probe 2Hz
 % Change the alternation frequency to be a little lower....
-
 stim(9).temporal.modulation.frequency=[2 2]; % This is the reversal frequency for stimuli that drift
 
 stim(10)=stim(4); % First order probe again - 2Hz reversal
@@ -64,11 +63,29 @@ stim(10).temporal.modulation.frequency=[2 2]; % This is the reversal frequency f
 stim(11)=stim(2); % Second order reverse probe 6Hz
 % Change the alternation frequency to be a little lower....
 stim(11).temporal.modulation.frequency=[6 6]; % This is the reversal frequency for stimuli that drift
+stim(11).label='2ndOrder6HzProbe';
 
 stim(12)=stim(4); % First order reverse probe again - 6Hz reversal
 stim(12).temporal.modulation.frequency=[6 6]; % This is the reversal frequency for stimuli that drift
+stim(12).label='1storder6HzProbe';
 
 stim(13)=stim(3); % First order adaptor - change direction
 stim(13).temporal.modulation.direction=[1 1]; % This is the direction in which the grating moves. 1 means a leftward drift, -1 means rightward
+stim(13).label='LeftwardAdapt';
 
+stim(14)=stim(4); % First order reverse probe again - 8Hz reversal
+stim(14).temporal.modulation.frequency=[8 8]; % This is the reversal frequency for stimuli that drift
+stim(14).label='1stOrder8HzProbe';
+
+stim(15)=stim(4); % First order reverse probe again - 6Hz reversal
+stim(15).temporal.modulation.frequency=[4 4]; % This is the reversal frequency for stimuli that drift
+stim(15).label='1stOrder4HzProbe';
+
+stim(16)=stim(5);
+stim(16).temporal.duration=1;
+stim(16).label='Blank 1second';
+
+stim(17)= stim(14);
+stim(17).contrast=[5 0]; 
+stim(17).label='1storder8Hzprobe5contrast';
 

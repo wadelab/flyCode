@@ -35,31 +35,36 @@ javaaddpath(fullfile(a,'poi_library/stax-api-1.0.1.jar'));
 
 for sheetIndex=1:length(xlParams.labelList)
     sheetName=xlParams.labelList{sheetIndex};
-    absData=[]; semData=[]; phenotypeCode=[];
+    absData=[]; semData=[]; phenotypeCode=[]; contrastCode=[];
     for thisPhenotype=1:length(xlParams.phenotypeList)
-        allData=xlsData{thisPhenotype}; 
+        allData=xlsData{thisPhenotype};
         allsemData=semXlsData{thisPhenotype};
         cData=abs(squeeze(allData(sheetIndex,:,:)));
         sData=abs(squeeze(allsemData(sheetIndex,:,:)));
         absData=[cat(1,absData,cData)];
-        size(sData)
+        size(sData);
         
         semData=[cat(1,semData,sData)];
+        contrastCode = cat (1,contrastCode,transpose(xlParams.contRange));
         phenotypeCode=cat(1,phenotypeCode,ones(size(cData,1),1)*thisPhenotype);
         
     end
-     size(absData)
-     size(semData)
-     size(phenotypeCode)
-     outputData=cat(2,phenotypeCode,absData,semData);
-     
-%% Generate XLSX file
-sheetName=xlParams.labelList{sheetIndex};
-disp(sheetName)
-[status]=xlwrite(filename, {'Phenotype index','Unmasked abs','Masked abs','Unmasked SEM','Masked SEM'},sheetName,'A1')
-[status]=xlwrite(filename, outputData,sheetName,'A2')
-sheetIndex
 
+    outputData=cat(2,phenotypeCode,contrastCode,absData,semData);
+    sZ = size(outputData);
+    AData = num2cell(outputData);
+    
+    for i=1:sZ(1)
+         AData{i,1} = xlParams.phenotypeList{outputData(i,1)}.type;   
+    end
+    
+    % Generate XLSX file
+    sheetName=xlParams.labelList{sheetIndex};
+    disp(sheetName);
+    [status]=xlwrite(filename, {'Phenotype index','Contrast','Unmasked abs','Masked abs','Unmasked SEM','Masked SEM'},sheetName,'A1');
+    [status]=xlwrite(filename, AData,sheetName,'A2');
+    
+    
 end
 
 

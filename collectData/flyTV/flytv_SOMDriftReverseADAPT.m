@@ -79,13 +79,13 @@ eegInfo.DORECORDEEG=1;
 eegInfo.DAQ_PRESENT=1;
 eegInfo.bufferSizeSeconds=31;
 
-expt.stimType=[5 3 13  5 3 13  ;...
-               12 12 12 11 11 11  ]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
+expt.stimType=[16   16   16  16 ;...
+               15  12 14  6  ]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
 expt.nConds=size(expt.stimType,2); % How many pairs of conditions do we run? In this case it's 2x2 so 4...
 % Later we will randomize these but for
 % now we don't
 
-expt.nRepeats=20; % How many times do we repeat the entire sequence? There is now an expt structure that contains information about the entire experiment
+expt.nRepeats=80; % How many times do we repeat the entire sequence? There is now an expt structure that contains information about the entire experiment
 
 expt.stim=stim;
 expt.eegInfo=eegInfo;

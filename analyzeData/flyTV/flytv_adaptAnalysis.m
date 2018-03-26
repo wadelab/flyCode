@@ -15,7 +15,7 @@ for thisFly=1:nFlies
     dataSetName=fullfile(fName); % Fullfile generates a legal filename on any platform
     
     thisD=load(dataSetName);
-    [nRepeats,nTrials,nSamples]=size(thisD.data)% Data is saved as nReps x nConditions x nSamples. It has to be re-sorted
+    [nRepeats,nTrials,nSamples]=size(thisD.dataOut)% Data is saved as nReps x nConditions x nSamples. It has to be re-sorted
     % Loop over trials extracting sf and tf for each one.
     for thisRep=1:nRepeats
         for thisTrial=1:nTrials
