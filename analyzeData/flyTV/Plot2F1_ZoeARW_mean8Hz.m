@@ -1,6 +1,6 @@
 clear all
 close all;
-dataDir=uigetdir;
+dataDir=uigetdir('c:\data\SSERG\data\Zoe\ALL_DATA_COLLATED');
 fList=dir(fullfile(dataDir,'*.mat'))
 
 nFlies=length(fList);
@@ -90,13 +90,25 @@ for thisFly=1:nFlies
     end % Next TF
 end % Next Fly
 
-%%%plot 3D temporal landscapes
 
+% 
 mExtracted=abs((mean(abs(extractedAmps))));
 SEM=std(abs(extractedAmps))/sqrt(length(extractedAmps))
 SEM=reshape(SEM,[nTFs,nSFs,2]);
 mExtracted=reshape(mExtracted,[nTFs,nSFs,2]);
 
+only8Hz2ndHm=squeeze(extractedAmps(:,5,:,2));
+
+mean8HzPerFly=mean(abs(only8Hz2ndHm(:)),2);
+grandMean8Hz=mean(mean8HzPerFly(:));
+semMean8Hz=std(mean8HzPerFly(:))/sqrt(length(mean8HzPerFly(:)));
+figure(100);
+barweb(grandMean8Hz,semMean8Hz,.6);
+set(gca,'YLim',[0 8e-3]);
+
+fprintf('\n**********   At 8Hz the mean amplitude is %.3d and the SEM is %.3d **********\n',grandMean8Hz,semMean8Hz);
+
+%%%plot 3D temporal landscapes
 if (sum(size(mExtracted)==1)==0) % Check to make sure that all dimensions have at least 2 entries - else you can't make a surface you have to just plot the data...
     
 
@@ -197,6 +209,7 @@ colormap hot; colorbar('off');
 zlab=zlabel('Response Amplitude');
 
 set(gcf, 'color', [1 1 1]);
+fprintf('\n**********   At 8Hz the mean amplitude is %.3d and the SEM is %.3d **********\n',grandMean8Hz,semMean8Hz);
 
 end;
 return;

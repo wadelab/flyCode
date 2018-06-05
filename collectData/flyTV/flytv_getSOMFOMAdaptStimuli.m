@@ -84,3 +84,8 @@ stim(15).label='1stOrder4HzProbe';
 stim(16)=stim(5);
 stim(16).temporal.duration=1;
 stim(16).label='Blank 1second';
+
+stim(17)= stim(14);
+stim(17).contrast=[5 0]; 
+stim(17).label='1storder8Hzprobe5contrast';
+

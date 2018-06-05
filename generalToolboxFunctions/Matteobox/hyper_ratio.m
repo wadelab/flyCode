@@ -1,4 +1,5 @@
 function f = hyper_ratio(pars,cs)
+% function f = hyper_ratio(pars,cs)
 % HYPER_RATIO  hyperbolic ratio function, eg to fit contrast responses
 %
 %	f = hyper_ratio([ Rmax, sigma, n, R0 ],cs)

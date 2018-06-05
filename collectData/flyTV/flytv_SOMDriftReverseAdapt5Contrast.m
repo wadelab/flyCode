@@ -18,7 +18,7 @@ commentFromHeader='Testingwapr';
 
 if (strcmp(computer,'PCWIN64'))
     jheapcl; % For some reason this is required on PCWin64 arch
-end
+
 
 Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
 HideCursor % Hides the mouse cursor
@@ -27,25 +27,26 @@ HideCursor % Hides the mouse cursor
 igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat');
 dpy.gamma.inverse=igt;
 
+end
 
-datadir='C:\data\SSERG\data\Adapt_Jan4\';
+datadir='C:\data\SSERG\data\drift5con15Jan\';
 flyTV_startTime=now;
 
 % Set up display specific parameters. Really these should be in a proper
 % calibration file a la exptTools
-dpy.res = [1920 1080]; % screen resolution
+dpy.res = [1920 1080]; % screen resolution if you are running a 2-screen-wide setup with extended desktop
 dpy.size = [.53 .3]; % Meters
 dpy.distance = [.22]; % Meters
 dpy.frameRate=144;
-dpy.VisualDebugLevel=1;
+dpy.VisualDebugLevel=0;
 dpy.SkipSyncTests=1;
-dpy.SuppressAllWarnings=1;
+dpy.SuppressAllWarnings=0;
 
 
 if (strcmp(computer,'PCWIN64'))
     dpy.defaultScreen=1;
 else
-    dpy.defaultScreen=0;
+    dpy.defaultScreen=1;
 end
 
 % dpy will eventually contain all the info about the display e.g. size,
@@ -80,7 +81,7 @@ eegInfo.DAQ_PRESENT=1;
 eegInfo.bufferSizeSeconds=31;
 
 expt.stimType=[ 5  3   3  13;...
-               14  14  6  14  ]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
+               17  17  6  17  ]; % This defines the order of the adaptor and probe. 1 means 1st order motion, 2 means 2nd order motion
 expt.nConds=size(expt.stimType,2); % How many pairs of conditions do we run? In this case it's 2x2 so 4...
 % Later we will randomize these but for
 % now we don't
