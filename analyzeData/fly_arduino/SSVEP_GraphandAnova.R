@@ -73,6 +73,14 @@ p1
 library(psych)
 describeBy(CCAll, genotype)
 
+library(doBy)
+summaryBy(1F1 ~ genotype, data=data, FUN=c(length,mean,sd)) #watch out for NA
+
+th5 <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
+th3 <- stack(th5)
+names(th3) <- c("1F1","genotype")
+na.omit(th3)
+
 
 
 p2 <- ggplot(xxSE, aes(x=genotype, y=X1F1, colour=genotype)) +
@@ -95,8 +103,8 @@ theme(axis.text.x = element_text(angle = 45, hjust = 1))
 p4 <- p3 + annotate("text", x= xxSE$genotype, y = 10, label = xxSE$N, size = 3)
 p4
 
-> myVar <- X1F1_masked
-> ggplot(ee, aes(x=genotype,y= myVar,color=genotype)) + geom_boxplot() + geom_point(position=position_jitterdodge(dodge.width=0.75)) + coord_cartesian(ylim = c(0, 1.05 * max(myVar))) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme_classic() + ylab("photoreceptor")
+myVar <- X1F1_masked
+ggplot(ee, aes(x=genotype,y= myVar,color=genotype)) + geom_boxplot() + geom_point(position=position_jitterdodge(dodge.width=0.75)) + coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) + theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1))  + ylab("photoreceptor")
 
 #ggsave("1F1.pdf")
 
@@ -114,6 +122,9 @@ TukeyHSD(myANOVA)
 myANOVA= aov(X2F1 ~ l2*s15)
 summary(myANOVA)
 TukeyHSD(myANOVA)
+
+kruskal.test(myVar~genotype)
+pairwise.wilcox.test(xx$X1F1, xx$genotype, p.adjust.method = "BH")
 
 xxSE=summarySE(xx, measurevar= "X1F1", groupvars=c("l2","s15"),na.rm=TRUE)
 xxSE
@@ -146,3 +157,36 @@ xxSE
 cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 ggplot(dc, aes(x=cell.group,y= neurons,color=status, group=interaction(cell.group,status))) + geom_boxplot() + geom_point(position=position_jitterdodge(dodge.width=0.75)) + coord_cartesian(ylim = c(0, 1.05 * max(neurons))) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme_classic() + ylab("neuron count") + scale_colour_manual(values=cbbPalette)
+
+> M <- cbind(X1F1,X2F1)
+> fit = manova(M~genotype)
+> summary(fit)
+          Df Pillai approx F num Df den Df    Pr(>F)    
+genotype   3 1.1181   14.793      6     70 7.766e-11 ***
+Residuals 35                                            
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> 
+
+
+> n_fun <- function(x){
++   return(data.frame(y = median(x) * 0.92, label = paste0("N = ",length(x))))
++ }
+> ggplot(sc, aes(x=genotype,y=myVar,color= R, na.rm=TRUE)) + geom_boxplot(fill='light grey') + geom_point(position=position_jitterdodge(dodge.width=0.1)) +  coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) + theme_classic() + ylab('period (h)') + stat_summary(fun.data = n_fun, geom = "text")
+> 
+
+library(ggpubr)
+
+> n_fun <- function(x){
+    return(data.frame(y = median(x) * 0.92, label = paste0("N = ",length(x))))
+  }
+> 
+> 
+> ggboxplot(sc, x = "genotype", y = "myVar",
+           color = "R", palette = "jco",
+           add = "jitter") + stat_compare_means(comparisons=my_comparisons) + ylab('period (h)') + coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) +  stat_summary(fun.data = n_fun, geom = "text")
+           
+ggboxplot(sc, x = "genotype", y = "myVar",
++           color = "genotype", palette= c("darkorange", "magenta","firebrick","green"),
++           add = "jitter") +  ylab('power') + coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) +  stat_summary(fun.data = n_fun, geom = "text") + theme(legend.position="none")
+> 
