@@ -54,6 +54,11 @@ void setup () {
   }
 
 
+  // initialize digital pin LED_BUILTIN as an output.
+  // on due, use PIN 13 - Lumier E2005, white LED
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  
 //  if (! rtc.isrunning()) {
 //    Serial.println("RTC is NOT running!");
 //    // following line sets the RTC to the date & time this sketch was compiled
@@ -89,10 +94,12 @@ void loop () {
   if (h < 8 || h > 20)
   {
     rtc.writeSqwPinMode(modes[1]); // led off
+    digitalWrite(LED_BUILTIN, LOW); 
   }
   else
   {
     rtc.writeSqwPinMode(modes[0]); // led on
+    digitalWrite(LED_BUILTIN, HIGH); 
   }
   print_mode();
 
