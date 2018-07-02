@@ -23,23 +23,6 @@ RTC_DS1307 rtc;
 int mode_index = 0;
 
 Ds1307SqwPinMode modes[] = {OFF, ON, SquareWave1HZ, SquareWave4kHz, SquareWave8kHz, SquareWave32kHz};
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-
-
-void print_mode() {
-  Ds1307SqwPinMode mode = rtc.readSqwPinMode();
-
-  Serial.print("Sqw Pin Mode: ");
-  switch (mode) {
-    case OFF:             Serial.println("OFF");       break; // actually the way it is wired OFF is On !!
-    case ON:              Serial.println("ON");        break;
-    case SquareWave1HZ:   Serial.println("1Hz");       break;
-    case SquareWave4kHz:  Serial.println("4.096kHz");  break;
-    case SquareWave8kHz:  Serial.println("8.192kHz");  break;
-    case SquareWave32kHz: Serial.println("32.768kHz"); break;
-    default:              Serial.println("UNKNOWN");   break;
-  }
-}
 
 void setup () {
 
@@ -57,49 +40,35 @@ void setup () {
   // initialize digital pin LED_BUILTIN as an output.
   // on due, use PIN 13 - Lumier E2005, white LED
   pinMode(LED_BUILTIN, OUTPUT);
-   pinMode(7, OUTPUT);
-   pinMode(6, OUTPUT);
-   pinMode(53, OUTPUT);
-   pinMode(48, OUTPUT);
-   pinMode(36, OUTPUT);
+  pinMode(7, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(53, OUTPUT);
+  pinMode(48, OUTPUT);
+  pinMode(36, OUTPUT);
+
+
+  //  if (! rtc.isrunning()) {
+  //    Serial.println("RTC is NOT running!");
+  //    // following line sets the RTC to the date & time this sketch was compiled
+  //    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  //    // This line sets the RTC with an explicit date & time, for example to set
+  //    // January 21, 2014 at 3am you would call:
+  //    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+  //  }
 
   
-//  if (! rtc.isrunning()) {
-//    Serial.println("RTC is NOT running!");
-//    // following line sets the RTC to the date & time this sketch was compiled
-//    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-//    // This line sets the RTC with an explicit date & time, for example to set
-//    // January 21, 2014 at 3am you would call:
-//    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
-//  }
-  
-  print_mode();
 }
 
 void loop () {
 
   DateTime now = rtc.now();
-
-  Serial.print(now.year(), DEC);
-  Serial.print('/');
-  Serial.print(now.month(), DEC);
-  Serial.print('/');
-  Serial.print(now.day(), DEC);
-  Serial.print(" (");
-  Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
-  Serial.print(") ");
   int h = now.hour() ;
   Serial.print(h, DEC);
-  Serial.print(':');
-  Serial.print(now.minute(), DEC);
-  Serial.print(':');
-  Serial.print(now.second(), DEC);
-  Serial.println();
 
   if (h < 8 || h > 20)
   {
-    rtc.writeSqwPinMode(modes[1]); // led off
-    digitalWrite(LED_BUILTIN, LOW); 
+    rtc.writeSqwPinMode(modes[1]); // RTC board led off
+    digitalWrite(LED_BUILTIN, LOW);
     digitalWrite(53, LOW);
     digitalWrite(48, LOW);
     digitalWrite(7, LOW);
@@ -109,17 +78,12 @@ void loop () {
   else
   {
     rtc.writeSqwPinMode(modes[0]); // led on
-    digitalWrite(LED_BUILTIN, HIGH); 
-    digitalWrite(53, HIGH); 
-    digitalWrite(48, HIGH); 
-    digitalWrite(7, HIGH); 
-    digitalWrite(6, HIGH); 
-    digitalWrite(36, HIGH); 
-  }
-  print_mode();
-
-  if (mode_index > 5) {
-    mode_index = 0;
+    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(53, HIGH);
+    digitalWrite(48, HIGH);
+    digitalWrite(7, HIGH);
+    digitalWrite(6, HIGH);
+    digitalWrite(36, HIGH);
   }
 
   delay(5000);
