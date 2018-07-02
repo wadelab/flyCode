@@ -57,6 +57,11 @@ void setup () {
   // initialize digital pin LED_BUILTIN as an output.
   // on due, use PIN 13 - Lumier E2005, white LED
   pinMode(LED_BUILTIN, OUTPUT);
+   pinMode(7, OUTPUT);
+   pinMode(6, OUTPUT);
+   pinMode(53, OUTPUT);
+   pinMode(48, OUTPUT);
+   pinMode(36, OUTPUT);
 
   
 //  if (! rtc.isrunning()) {
@@ -95,11 +100,21 @@ void loop () {
   {
     rtc.writeSqwPinMode(modes[1]); // led off
     digitalWrite(LED_BUILTIN, LOW); 
+    digitalWrite(53, LOW);
+    digitalWrite(48, LOW);
+    digitalWrite(7, LOW);
+    digitalWrite(6, LOW);
+    digitalWrite(36, LOW);
   }
   else
   {
     rtc.writeSqwPinMode(modes[0]); // led on
     digitalWrite(LED_BUILTIN, HIGH); 
+    digitalWrite(53, HIGH); 
+    digitalWrite(48, HIGH); 
+    digitalWrite(7, HIGH); 
+    digitalWrite(6, HIGH); 
+    digitalWrite(36, HIGH); 
   }
   print_mode();
 
