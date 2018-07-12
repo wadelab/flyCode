@@ -49,6 +49,40 @@ conf.interval=.95, .drop=TRUE) {
     return(datac)
 }
 
+
+multiplot <- function(..., plotlist=NULL, cols) {
+    require(grid)
+
+    # Make a list from the ... arguments and plotlist
+    plots <- c(list(...), plotlist)
+
+    numPlots = length(plots)
+
+    # Make the panel
+    plotCols = cols                          # Number of columns of plots
+    plotRows = ceiling(numPlots/plotCols) # Number of rows needed, calculated from # of cols
+
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(plotRows, plotCols)))
+    vplayout <- function(x, y)
+        viewport(layout.pos.row = x, layout.pos.col = y)
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+        curRow = ceiling(i/plotCols)
+        curCol = (i-1) %% plotCols + 1
+        print(plots[[i]], vp = vplayout(curRow, curCol ))
+    }
+
+}
+#or use cowplot
+ myVar <- X1F1
+ p1 <- ggplot(r10, aes(x=g2,y= myVar,color=disco,group= interaction(g2,disco))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20)) + coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) +theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("") + ylab("photoreceptors") + scale_colour_manual(values=cbbPalette)
+ myVar <- X2F1
+ p2 <- ggplot(r10, aes(x=g2,y= myVar,color=disco,group= interaction(g2,disco))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20)) + coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) +theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("") + ylab("lamina neurons") + scale_colour_manual(values=cbbPalette)
+ multiplot(p1,p2,cols=1)
+
 xx <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
 head (xx)
 attach(xx)
@@ -132,6 +166,9 @@ xxSE
 ggplot(xx, aes(x=s15,y= X1F1,color=l2,group= interaction(s15,l2))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20))
 + coord_cartesian(ylim = c(0, 1.05 * max(X1F1, na.rm=TRUE)))
 + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+myVar <- X2F1
+ggplot(r3, aes(x=g2,y= myVar,color=disco,group= interaction(g2,disco))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20)) + coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) +theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("") + ylab("lamina neuron") 
 
 #line graph
 ggplot(xxSE, aes(x = age, y = X1F1_masked, colour = genotype))+
