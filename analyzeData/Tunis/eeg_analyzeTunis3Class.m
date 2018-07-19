@@ -1,15 +1,19 @@
 %load('/Users/alexwade/Downloads/Sweep1 08.04.14.mat') % it is possible to browse files using uigetfile
 clear all
 close all;
+% New version 0 we want to use a linear classifier to try to classify types
+% based on all the harmonics and all the contrasts.
 
-
-nSecs=4;
+nSecs=5;
 nJunkSecs=1;
 sampleRate=256;
 
 
+binSizeSecs=.5;
 
-
+samplesPerBin=binSizeSecs*sampleRate;
+binsInTotal=70;
+nChannels=4;
 dataDir='/Volumes/GoogleDrive/My Drive/Personal/Projects/Tunis/TunisNew/Data';
 
 %dataDir=uigetdir;
@@ -50,49 +54,110 @@ for thisSession=1:nSessions
         sortedData{thisRep,:}=thisRepData;
         
         for thisCond=1:nConds
-            meanData(thisRep,thisCond,:,:)=cell2mat(thisRepData(1,thisCond));
+            meanData(:,thisRep,:,thisCond)=(cell2mat(thisRepData(1,thisCond)));
         end
             
     end
-     allMeanData(thisSession,:,:,:,:)=meanData;   
+    
+    
+    [d1,nSamples,nChans,d1]=size(meanData);
+    %allMeanData(thisSession,:,:,:)=reshape(meanData,  
     % Get rid of first second
-    meanDataCropped=meanData(:,:,(nJunkSecs*256+1):end,:,:);
+    meanDataCropped=meanData((nJunkSecs*samplesPerBin+1):end,:,:,:);%(nJunkSecs*samplesPerBin+1):end,:,:);
     
     % Reshape into 1/2 sec bins... (128 samples)
-    md=reshape(meanDataCropped,[nReps,nConds,128,6,4]); % nReps x nConds x timePointsPerBin x nBins x nChannels
+    md=reshape(meanDataCropped,[samplesPerBin,binsInTotal,nChannels,nConds]); % nReps x nConds x timePointsPerBin x nBins x nChannels
     
-    fMD=fft(md,[],3);
-    mfMD=(squeeze(mean(fMD))); % Coherent average across reps
-    % Also average across bins
-    mmfMD=squeeze(mean(mfMD,3)); % Coherent average across bins
+    fMD=fft(md,[],1);
     
-
     
-    % Compute averages over reps
-    %grandMeanData(thisSession,:,:,:)=squeeze(mean(abs(ftData))); % Phase incoherent averaging
-    grandMeanBins(thisSession,:,:,:)=mmfMD; % NSubs x nConds x nTimePoints x nChannels
+% We don't want all the data - just the nF1 bins
+    fToAnalyze=[6 12 18 24];
+    goodFreqs=fMD(fToAnalyze+1,:,:,:);
+    % Okay - now we also have 4 electrodes for each of those Fs. And each 4
+    % F has two components and we also have 9 conditions. These >all< go
+    % into the SVM
+    [nGF,nBinsInTotal,d1,d2]=size(goodFreqs);
     
-   
+    shiftedGood=shiftdim(goodFreqs,1);
+    reshapedBins=shiftedGood(1:70,:);
+    allSensors(thisSession,:,:)=[real(reshapedBins),imag(reshapedBins)];
+    
+    
     
 end
 %%
-fToAnalyze=6;
+% Approximately - we have 194 sessions with 70 reps of 212 dimensions. I
+% don't think that's ideal - but we can but it down by using averages over
+% channels I expect....
 
+%%
 [u,v,i]=unique(type); % This tells us which patient types we had.
 normCont=find(i==1);
 PDAll=find(i~=1);
 offMedsGenetic=[find(i==4);find(i==5)];
-%;find(i==8)];
+onMedsGenetic=[find(i==2);find(i==3)];
+
+
+% Here we now do the fancy bootstrapping
+% The situation is a little different to what we are used to
+% Before, we classify between conditions run on a single subject - then
+% average those classificaiton accuracies across subs
+% Here each subject is a different instance of a condition. 
+% I >think< what we do in the bootstraps is to take small, random samples
+% of bins from each sub and average them to get a new virtual subject.
+% I don't really see why we can't do this a lot to generate millions of
+% subjects then run a single classify with k-fold validation
+% But psycholgists like error bars - so we'll 
+nBootStrapRuns=1000;
+%condA=normCont;
+%condB=offMedsGenetic;
+
+totalSamples=nBinsInTotal;
+nBinsToAveragePerIteration=20;
+       
+
+for thisBootIndex = 1:nBootStrapRuns % Repeat the sampling over a large number of bootstrapped resamples of different averaged sets
+        condA=onMedsGenetic; %Testing
+        condB=offMedsGenetic;%PDAll;   
+ labels=[ones(length(condA),1)*-1;ones(length(condB),1)];
+        Aindices = randperm(nBinsInTotal,nBinsToAveragePerIteration); % Randomly permute the set of sample indices.
+        Bindices = randperm(nBinsInTotal,nBinsToAveragePerIteration); % Assumes each subject has been run on the same protocol
+       
+        AdataCond = squeeze(allSensors(condA,Aindices,:)); % Then pick out a set relevant to the conditions we are looking at right now.
+        BdataCond = squeeze(allSensors(condB,Bindices,:));
+        
+        datameanvectACond=(squeeze(mean(AdataCond,2)));
+        datameanvectBCond=(squeeze(mean(BdataCond,2)));
+        mean(datameanvectACond(:))
+      
+            fullData=zscore([datameanvectACond;datameanvectBCond]);
+            svmModel=fitcsvm(fullData,labels);
+            crossValModel = crossval(svmModel);
+       
+
+         % svmModel=fitclinear(fullData,labels,'kfold',5);
+         % crossValModel = crossval(svmModel,5);
+          lossFun(thisBootIndex)= crossValModel.kfoldLoss;
+          disp(thisBootIndex);
+%ce = 
+
+        
+    end % next boot
+    lossFun
+    %% ****** THIS BIT FROM PREVIOUS F-domain MMY work
+
+
 
 controlGroup=grandMeanBins(normCont,:,:,:);
 offGroups=grandMeanBins(offMedsGenetic,:,:,:);
 close all
 
 
-channelsToAverage=[1 2];
+%channelsToAverage=[1 2];
 % Average across channels
-mFTPD_g1=squeeze(mean(controlGroup(:,:,:,channelsToAverage),4));
-mFTPD_g2=squeeze(mean(offGroups(:,:,:,channelsToAverage),4));
+%mFTPD_g1=squeeze(mean(controlGroup(:,:,:,channelsToAverage),4));
+%mFTPD_g2=squeeze(mean(offGroups(:,:,:,channelsToAverage),4));
 
 
 % figure(1);

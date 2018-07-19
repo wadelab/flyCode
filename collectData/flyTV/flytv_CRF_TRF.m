@@ -16,7 +16,11 @@ if (~DUMMYRUN)
     Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
     HideCursor % Hides the mouse cursor
     
+<<<<<<< HEAD
+   
+=======
     
+>>>>>>> origin/master
     % Get the calibration and compute the gamma table
     
     igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat')
@@ -24,12 +28,20 @@ if (~DUMMYRUN)
 end
 
 
+<<<<<<< HEAD
+datadir='C:\data\SSERG\data\Marc\Disco_TCRF\PINK15_7d_Disco';
+=======
 datadir='C:\data\SSERG\data\Marc\W-_1d';
+>>>>>>> origin/master
 flyTV_startTime=now;
 
 
 dpy.res = [1920 1080]; % screen resoloution
+<<<<<<< HEAD
+dpy.size = [.53 .3]; % Meters
+=======
 dpy.size = [.53 .3] % Meters
+>>>>>>> origin/master
 dpy.distance = [.22]; % Meters
 dpy.frameRate=144;
 % dpy will eventually contain all the info about the display e.g. size,

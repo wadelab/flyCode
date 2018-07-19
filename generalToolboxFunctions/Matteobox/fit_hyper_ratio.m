@@ -1,4 +1,5 @@
 function [ err, pars ] = fit_hyper_ratio(cs,resps,nn,R0)
+%  [ err, pars ] = fit_hyper_ratio(cs,resps,nn,R0)
 % FIT_HYPER_RATIO fits hyper_ratio to the data
 %
 % 	[ err, pars ] = fit_hyper_ratio(cs,resps)
@@ -60,8 +61,3 @@ else
 end
 
 
-% figure;
-% plot(cs,resps,'o');
-% hold on
-% cc = linspace(min(cs),max(cs));
-% plot(cc,hyper_ratio(pars,cc),'k-');

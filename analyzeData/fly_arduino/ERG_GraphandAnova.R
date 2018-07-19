@@ -49,8 +49,12 @@ conf.interval=.95, .drop=TRUE) {
     return(datac)
 }
 
-erg <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
+
 install.packages('ggplot2')
+library('ggplot2')
+
+erg <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
+
 head(erg)
 ggplot(erg, aes(x=bri,y=off.transient,color=genotype)) + geom_point(shape=1) + geom_smooth(method=lm)
 
@@ -69,6 +73,8 @@ TukeyHSD(myANOVA)
 
 p1 <- ggplot(xx, aes(x=genotype,y=peak.peak,color=genotype)) + geom_point(shape=1) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 p1
+
+ggplot(VE, aes(x=genotype,y=off.transient,color=UAS, fill=UAS)) + geom_point(shape=21) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ggplot(xx, aes(x=UAS,y=peak.peak,group=Disco, color=Disco, fill=Disco)) + geom_point(shape=24) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 

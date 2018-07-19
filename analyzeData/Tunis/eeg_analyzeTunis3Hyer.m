@@ -10,7 +10,7 @@ sampleRate=256;
 
 
 
-dataDir='/Volumes/GoogleDrive/My Drive/Personal/Projects/Tunis/TunisNew/Data';
+dataDir='/Users/alexwade/GoogleDrive/Personal/Projects/Tunis/TunisNew/Data';
 
 %dataDir=uigetdir;
 fList=dir(fullfile(dataDir,'EEG_*.mat'))
@@ -158,11 +158,10 @@ title('Max unmasked amps');
 %% Great, now fit and boot the data.
 % First just fit the mean.
 nFits=2;
-
 for t=1:nFits
-    [p1(t,:)]=fit_powerFunTunis(meanSig2G1A(1:8)');
+    [d1(t),p1(t,:)]=fit_hyper_ratioN2([0, contList],meanSig2G1A(1:8)');
 
-[p2(t,:)]=fit_powerFunTunis(meanSig2G2A(1:8)');
+[d2(t),p2(t,:)]=fit_hyper_ratioN2([0,contList],meanSig2G2A(1:8)');
 disp(',');
 end
 
@@ -175,14 +174,39 @@ figure(2);
 subplot(1,2,1);
 hold on;
 
-h1=plot(contList,powerFunction(avp1,contList),'b');
-h2=plot(contList,powerFunction(avp2,contList),'r');
+h1=plot(contList,hyper_ratio(avp1,contList),'b');
+h2=plot(contList,hyper_ratio(avp2,contList),'r');
 
 set(h1,'LineWidth',2);
 set(h2,'LineWidth',2);
-nBoot=10;
-[ci_1,bs_1]=bootci(nBoot,@fit_powerFunTunis,cohSignalG1(:,1:8));
-[ci_2,bs_2]=bootci(nBoot,@fit_powerFunTunis,cohSignalG2(:,1:8));
+nBoot=1000;
+[ci_1,bs_1]=bootci(nBoot,@fit_hyper_ratioTunis,cohSignalG1(:,1:8));
+[ci_2,bs_2]=bootci(nBoot,@fit_hyper_ratioTunis,cohSignalG2(:,1:8));
+
+goodFits1=find(bs_1(:,5)<(mean(bs_1(:,5)+2*std(bs_1(:,5)))));
+goodFits2=find(bs_2(:,5)<(mean(bs_2(:,5)+2*std(bs_2(:,5)))));
+
+params1=bs_1(goodFits1,:);
+params2=bs_2(goodFits2,:);
+
+mean(params1)
+mean(params2)
+figure(10);
+subplot(1,2,1);
+hold off;
+ht1=histogram(params1(:,2),linspace(0,1,50));
+hold on;
+ht2=histogram(params2(:,2),linspace(0,1,50));
+xlabel('C50');
+subplot(1,2,2);
+hold off;
+ht1=histogram(params1(:,1),linspace(0,1,50));
+hold on;
+ht2=histogram(params2(:,1),linspace(0,1,50));
+xlabel('Rmax');
+
+
+
 
 ci_1
 ci_2
