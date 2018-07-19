@@ -74,8 +74,12 @@ ylabel('response, a.u.');
 text( 150, 0, strjoin(myLabel) );
 subplot(1,2,2);
 
-polar (theta_CRF(1:nUnMasked,3),abs_CRF(1:nUnMasked,3), '-*r');
+t = 0 : .01 : 2 * pi;
+P = polar(t, ymax(3) * ones(size(t)));
+set(P, 'Visible', 'off')
+
 hold on ;
+polar (theta_CRF(1:nUnMasked,3),abs_CRF(1:nUnMasked,3), '-*r');
 polar (theta_CRF(nUnMasked+1:end,3),abs_CRF(nUnMasked+1:end,3), '--Ob');
 hold off;
 
@@ -121,8 +125,13 @@ text( 150, 0, strjoin(myLabel) );
 
 subplot(1,2,2);
 %[t,r] = cart2pol(real(complx_CRF(:,5)), imag(complx_CRF(:,5)));
-polar (theta_CRF(1:nUnMasked,5),abs_CRF(1:nUnMasked,5), '-*r');
+
+t = 0 : .01 : 2 * pi;
+P = polar(t, ymax(5) * ones(size(t)));
+set(P, 'Visible', 'off');
+
 hold on ;
+polar (theta_CRF(1:nUnMasked,5),abs_CRF(1:nUnMasked,5), '-*r');
 polar (theta_CRF(nUnMasked+1:end,5),abs_CRF(nUnMasked+1:end,5), '--Ob');
 hold off;
 
