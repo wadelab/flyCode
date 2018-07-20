@@ -190,3 +190,15 @@ ggboxplot(sc, x = "genotype", y = "myVar",
 +           color = "genotype", palette= c("darkorange", "magenta","firebrick","green"),
 +           add = "jitter") +  ylab('power') + coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) +  stat_summary(fun.data = n_fun, geom = "text") + theme(legend.position="none")
 > 
+
+install.packages("multcomp")
+library('multcomp')
+Rab3$g2 <- relevel(Rab3$g2,"THG w")
+model = lm(X1F1 ~ g2, data=Rab3)
+mc = glht(model, mcp(g2 = "Dunnett"))
+summary(mc)
+
+model = lm(X2F1 ~ g2, data=Rab3)
+mc = glht(model, mcp(g2 = "Dunnett"))
+summary(mc)
+confint(mc, level = 0.95)
