@@ -9,6 +9,15 @@ function [success,lineSaved] = read_arduino_ERG_file (fName, do_fft);
 line1a = fgets(fid);
 fclose(fid);
 
+ss = size(strfind(line1a, 'GET')) ;
+if ss(1) < 1
+    thisFlyData.Error = ['Not a web URL : ', fName]
+    success = false ;
+    lineSaved = line1a ;
+    return
+    
+end
+    
 if (strfind(line1a, 'GET /?'))
     line1b=strrep(line1a, 'GET /?'  ,'');
     line1c=strrep(line1b, 'HTTP/1.1','');
