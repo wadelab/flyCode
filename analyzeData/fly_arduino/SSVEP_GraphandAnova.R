@@ -88,6 +88,7 @@ head (xx)
 attach(xx)
 
 yy<-subset(xx, !duplicated(xx))	
+r10_dark <- r10[r10$disco == "N ", ] #note spaces
 
 xxSE=summarySE(xx, measurevar= "X1F1", groupvars=c("genotype"))
 
