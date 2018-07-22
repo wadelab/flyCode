@@ -196,6 +196,10 @@ cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2"
 
 ggplot(dc, aes(x=cell.group,y= neurons,color=status, group=interaction(cell.group,status))) + geom_boxplot() + geom_point(position=position_jitterdodge(dodge.width=0.75)) + coord_cartesian(ylim = c(0, 1.05 * max(neurons))) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + theme_classic() + ylab("neuron count") + scale_colour_manual(values=cbbPalette)
 
+
+cbbPalette <- c("springgreen4", "magenta", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+ggplot(myData, aes(x=g2,y= myVar,color=disco,group= interaction(g2,disco))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20)) + coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) +theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("") + ylab("photoreceptors") + scale_colour_manual(values=cbbPalette)
+
 > M <- cbind(X1F1,X2F1)
 > fit = manova(M~genotype)
 > summary(fit)
