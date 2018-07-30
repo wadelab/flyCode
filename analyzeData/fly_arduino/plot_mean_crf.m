@@ -1,15 +1,6 @@
 function plot_mean_crf (myLabel, complx_CRF, pathstr, fileName, bCloseGraphs, varargin)
 
-% variable argument is the error bars...
 
-if (nargin < 6)
-    % missing error bars
-    eb = zeros(size(complx_CRF));
-    ymax(1:9) = inf;
-else
-    eb = varargin{1};
-    ymax = varargin{2};
-end
 
 myLabel = strrep (myLabel, '_', ' ');
 FreqNames = GetFreqNames();
@@ -19,15 +10,30 @@ sExt = getPictExt () ;
 %[theta_CRF,abs_CRF] = cart2pol(real(complx_CRF(:,:)), imag(complx_CRF(:,:)))
 theta_CRF=angle(complx_CRF);
 abs_CRF = abs(complx_CRF);
-eb_CRF = abs(eb) ;
 
-% how many unmasked contrasts were given
+%% how many unmasked contrasts were given
 nUnMasked = sum(abs_CRF(:,1)==0) ;
 [dummy, nContrasts] = size (abs_CRF);
 
 
 %return the data
 thisFlyData.nUnMasked = nUnMasked ;
+
+%% handle y max 
+% variable argument is the error bars...
+
+if (nargin < 6)
+    % missing error bars
+    eb = zeros(size(complx_CRF));
+    ymax(1:9) = max(abs_CRF([1:nUnMasked],:)) ;
+else
+    eb = varargin{1};
+    ymax = varargin{2};
+end
+
+eb_CRF = abs(eb) ;
+
+
 
 
 %% everything here is a plot so we get pictures in the directory where the file was
@@ -74,6 +80,7 @@ ylabel('response, a.u.');
 text( 150, 0, strjoin(myLabel) );
 subplot(1,2,2);
 
+    
 t = 0 : .01 : 2 * pi;
 P = polar(t, ymax(3) * ones(size(t)));
 set(P, 'Visible', 'off')
