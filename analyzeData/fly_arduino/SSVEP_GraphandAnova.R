@@ -89,6 +89,9 @@ attach(xx)
 
 yy<-subset(xx, !duplicated(xx))	
 r10_dark <- r10[r10$disco == "N ", ] #note spaces
+LC <- na.omit(LC) #remove all rows that have a NA in any variable
+LC <-[!is.na(LC$B), ] # remove if NA is in column B
+
 
 xxSE=summarySE(xx, measurevar= "X1F1", groupvars=c("genotype"))
 
@@ -189,6 +192,12 @@ ggplot(xxSE, aes(x = age, y = X2F1_masked, colour = genotype)) +
 geom_line(aes(linetype=hasTNT), size=1, position=dodge) + geom_errorbar(limits, position=dodge, width=0.25) + geom_point(position=dodge) +
 scale_colour_manual(values=c("#FF00FF", "#0000FF", "#00FF00","#FF00FF", "#0000FF", "#00FF00"))
 xxSE
+
+
+xx$Gal4 <- substr(xx$genotype,1,3)
+xx$G2 <- substr(xx$genotype, regexpr(" R", xx$genotype),1111) # 1111 is the max length
+xx$G2 <- sub('1 female fly blue N', '', xx$G2)
+ggplot(xx, aes(x=G2,y= X2F1,color=Gal4,group= interaction(Gal4,G2))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20)) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("")
 
 
 > # The colour blind friendly palette with black:
