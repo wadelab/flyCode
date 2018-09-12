@@ -93,7 +93,7 @@ LC <- na.omit(LC) #remove all rows that have a NA in any variable
 LC <-[!is.na(LC$B), ] # remove if NA is in column B
 
 
-xxSE=summarySE(xx, measurevar= "X1F1", groupvars=c("genotype"))
+xxSE<-summarySE(xx, measurevar= "X1F1", groupvars=c("genotype"))
 
 myANOVA= aov(X1F1_masked ~ genotype)
 summary(myANOVA)
@@ -209,15 +209,31 @@ ggplot(dc, aes(x=cell.group,y= neurons,color=status, group=interaction(cell.grou
 cbbPalette <- c("springgreen4", "magenta", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 ggplot(myData, aes(x=g2,y= myVar,color=disco,group= interaction(g2,disco))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20)) + coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) +theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("") + ylab("photoreceptors") + scale_colour_manual(values=cbbPalette)
 
-> M <- cbind(X1F1,X2F1)
-> fit = manova(M~genotype)
-> summary(fit)
+M <- cbind(X1F1,X2F1)
+fit = manova(M~genotype)
+summary(fit)
+summary.aov(fit)
+
           Df Pillai approx F num Df den Df    Pr(>F)    
 genotype   3 1.1181   14.793      6     70 7.766e-11 ***
 Residuals 35                                            
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-> 
+
+
+ Response X1F1 :
+            Df Sum Sq Mean Sq F value    Pr(>F)    
+genotype     6 374224   62371  8.8956 1.331e-07 ***
+Residuals   89 624015    7011                      
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+ Response X2F1 :
+            Df Sum Sq Mean Sq F value    Pr(>F)    
+genotype     6  93955 15659.2  9.7106 3.279e-08 ***
+Residuals   89 143521  1612.6                      
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 
 > n_fun <- function(x){
@@ -253,3 +269,10 @@ model = lm(X2F1 ~ g2, data=Rab3)
 mc = glht(model, mcp(g2 = "Dunnett"))
 summary(mc)
 confint(mc, level = 0.95)
+
+bUpper <- function(N_pass, N_total) {
+	# calculate % error at 95% CI
+	b <- binom.test(N_pass, N_total)
+	bUpper <- 100 * (b$conf.int[2]-b$estimate[1])
+	bUpper[[1]]
+	}
