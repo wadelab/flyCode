@@ -30,7 +30,7 @@ void setup () {
   while (!Serial); // for Leonardo/Micro/Zero
 #endif
 
-  Serial.begin(57600);
+  Serial.begin(115200);
   if (! rtc.begin()) {
     Serial.println("Couldn't find RTC");
     while (1);
@@ -40,50 +40,47 @@ void setup () {
   // initialize digital pin LED_BUILTIN as an output.
   // on due, use PIN 13 - Lumier E2005, white LED
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(7, OUTPUT);
-  pinMode(6, OUTPUT);
-  pinMode(53, OUTPUT);
-  pinMode(48, OUTPUT);
-  pinMode(36, OUTPUT);
+  for (int i = 35; i < 54; i = i + 2)
+  {
+    pinMode(i, OUTPUT);
+  }
 
 
-  //  if (! rtc.isrunning()) {
-  //    Serial.println("RTC is NOT running!");
-  //    // following line sets the RTC to the date & time this sketch was compiled
-  //    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  //    // This line sets the RTC with an explicit date & time, for example to set
-  //    // January 21, 2014 at 3am you would call:
-  //    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
-  //  }
+  if (! rtc.isrunning()) {
+    //    Serial.println("RTC is NOT running!");
+    //    // following line sets the RTC to the date & time this sketch was compiled
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    //    // This line sets the RTC with an explicit date & time, for example to set
+    //    // January 21, 2014 at 3am you would call:
+    //    // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+  }
 
-  
+
 }
 
 void loop () {
 
   DateTime now = rtc.now();
-  int h = now.hour() ;
-  Serial.print(h, DEC);
+  int h = now.hour() ; // minute
+  Serial.println(h, DEC);
 
   if (h < 8 || h > 20)
   {
     rtc.writeSqwPinMode(modes[1]); // RTC board led off
     digitalWrite(LED_BUILTIN, LOW);
-    digitalWrite(53, LOW);
-    digitalWrite(48, LOW);
-    digitalWrite(7, LOW);
-    digitalWrite(6, LOW);
-    digitalWrite(36, LOW);
+    for (int i = 35; i < 54; i = i + 2)
+    {
+      digitalWrite(i, LOW);
+    }
   }
   else
   {
     rtc.writeSqwPinMode(modes[0]); // led on
     digitalWrite(LED_BUILTIN, HIGH);
-    digitalWrite(53, HIGH);
-    digitalWrite(48, HIGH);
-    digitalWrite(7, HIGH);
-    digitalWrite(6, HIGH);
-    digitalWrite(36, HIGH);
+    for (int i = 35; i < 54; i = i + 2)
+    {
+      digitalWrite(i, HIGH);
+    }
   }
 
   delay(5000);
