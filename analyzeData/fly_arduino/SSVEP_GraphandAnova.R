@@ -93,6 +93,8 @@ LC <- na.omit(LC) #remove all rows that have a NA in any variable
 LC <-[!is.na(LC$B), ] # remove if NA is in column B
 
 
+THS_n <-THS[- grep("..Y", THS$ind),]
+
 xxSE<-summarySE(xx, measurevar= "X1F1", groupvars=c("genotype"))
 
 myANOVA= aov(X1F1_masked ~ genotype)
