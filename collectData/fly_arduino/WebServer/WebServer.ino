@@ -6,6 +6,7 @@
 
 // don't use pin 4 or 10-12 either...
 
+//In use for rab 10 data collection
 
 //#define __wifisetup__
 
@@ -2216,7 +2217,7 @@ void do_fft()
 
 
   radix.rev_bin( f_r, FFT_SIZE);
-  radix.fft_radix4_I( f_r, f_i, LOG2_FFT);
+  radix.fft_radix4_I( f_r, f_i, LOG2_FFT); 
   radix.gain_Reset( f_r, LOG2_FFT - 1);
   radix.gain_Reset( f_i, LOG2_FFT - 1);
   radix.get_Magnit( f_r, f_i, erg_in);
