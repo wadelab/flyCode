@@ -28,3 +28,10 @@ library('multcomp')
 model = lm(values ~ ind, data=THS_YY)
 mc = glht(model, mcp(ind = "Dunnett"))
 summary(mc)
+
+THS_YY$ind <- relevel(THS_YY$ind,"TH.w..Y")
+levels(THS_YY$ind)
+
+model = lm(values ~ ind, data=THS_YY)
+mc = glht(model, mcp(ind = "Dunnett"))
+summary(mc)
