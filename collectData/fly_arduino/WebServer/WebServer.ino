@@ -19,7 +19,7 @@
 
 #ifdef ESP8266
 #define __wifisetup__
-//#define __CLASSROOMSETUP__
+#define __CLASSROOMSETUP__
 #define ESP8266_DISPLAY
 
 // run as standalone access point ??
@@ -207,8 +207,8 @@ const byte bluLED = 7;
 
 #ifdef ESP8266
 const byte redled = 13; // Farnell 2080005
-const byte grnled = 15; // 1855562
-const byte bluLED = 2;  // 1045418
+const byte grnled = 2; // 1855562
+const byte bluLED = 15;  // 1045418
 #ifdef __CLASSROOMSETUP__
 #define TemperatureLED  grnled
 #endif
@@ -230,7 +230,7 @@ byte nMaxWaits = 15 ;
 #define maxbrightness 255
 byte brightness = maxbrightness ;
 #ifdef __CLASSROOMSETUP__
-byte Temperature = 0;
+byte Temperature = 20;
 #endif
 const byte maxContrasts = 9 ;
 const int maxsummaryentries = 16 ;
@@ -2062,7 +2062,7 @@ void tidyUp_Collection()
       analogWrite(usedLED, 127);
   }
 #ifdef __CLASSROOMSETUP__
-  analogWrite(TemperatureLED, Temperature * 4);
+  analogWrite(TemperatureLED, (Temperature - 20) * 50);
   //  Serial.println("Temperature on again");
 #endif
 
@@ -2519,7 +2519,7 @@ void sendReply ()
     brightness = atoi(cInput + ibrPos);
     if (bTestFlash) brightness = maxbrightness;
 #ifdef __CLASSROOMSETUP__
-    ibrPos  = MyInputString.indexOf ("IR=") + 3;
+    ibrPos  = MyInputString.indexOf ("Temp=") + 5;
     Temperature = atoi(cInput + ibrPos);
     if (bTestFlash) Temperature = 0;
 #endif
@@ -2607,7 +2607,7 @@ void sendReply ()
         if (eDoFlash == zap) nWaits = 1;
 #ifndef __CLASSROOMSETUP__
         // for shibire, always allow time for temperature to change
-        if (lastStim == flash ) nWaits = 1 ;
+        if (lastStim == flash) nWaits = 1 ;
 #endif
       }
       //turn off any lights we have on...
@@ -2641,7 +2641,7 @@ void sendReply ()
         client.print F(" bytes; expected size ");
         client.print (exp_size);
         wfile.close() ;
-        writeSummaryFile(cFile);
+        //writeSummaryFile(cFile);
 
         String sPicture = sFile;
         switch (eDoFlash)
@@ -2658,9 +2658,9 @@ void sendReply ()
           case SSVEP:    
             sPicture.replace ("SVP", "CSV" );
         }
-   client.print F("<A HREF= \"");    
-       client.print (sPicture) ;    
-        client.print F("\" > (summary file)</A>" );
+//   client.print F("<A HREF= \"");    
+//       client.print (sPicture) ;    
+//        client.print F("\" > (summary file)</A>" );
       }
       else
       {
@@ -3011,25 +3011,22 @@ void writehomepage ()
 
   client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody><tr>\n");
   client.print F("<td style=\"vertical-align: top; width = 50%\">Genotype</td>\n");
-  client.print F("<td style=\"vertical-align: top; width = 50%\">InfraRed Heating:</td></tr>\n");
+  client.print F("<td style=\"vertical-align: top; width = 50%\">Temperature (oC):</td></tr>\n");
 
   client.print F("<tr><td style=\"vertical-align: top;\">\n");
   client.print F("<select name=\"fly\" size = 6>\n");
-  client.print F("<option value=\"CS\" selected>CS</option>\n");
-  client.print F("<option value=\"w_minus\" >w-</option>\n");
+  //client.print F("<option value=\"CS\" selected>CS</option>\n");
+  client.print F("<option value=\"w_minus\" selected>w-</option>\n");
   client.print F("<option value=\"shi\" >shibire</option>\n");
   client.print F("</select><br></td>\n");
 
   client.print F("<td style=\"vertical-align: top;\">\n");
-  client.print F("<select name=\"IR\" size = 6>\n");
-  client.print F("<option value=\"255\"  >100%</option>\n");
-  client.print F("<option value=\"191\"  >75%</option>\n");
-  client.print F("<option value=\"127\"  >50%</option>\n");
-  client.print F("<option value=\"64\"  >25%</option>\n");
-  client.print F("<option value=\"25\"  >10%</option>\n");
-  client.print F("<option value=\"13\"  >5%</option>\n");
-  client.print F("<option value=\"6\"  >2%</option>\n");
-  client.print F("<option value=\"0\"  selected>0.0%</option>\n");
+  client.print F("<select name=\"Temp\" size = 6 style=\"width: 100px\">\n");
+  client.print F("<option value=\"40\"  >40</option>\n");
+  client.print F("<option value=\"35\"  >35</option>\n");
+  client.print F("<option value=\"30\"  >30</option>\n");
+  client.print F("<option value=\"25\"  >25</option>\n");
+  client.print F("<option value=\"20\"  selected>Room temp</option>\n");
   client.print F("</select><br></td></tr></tbody></table><BR>\n");
 
   client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody ><tr>\n");
@@ -3046,20 +3043,18 @@ void writehomepage ()
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG_T\" checked>Test ERG<br>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG\" >Save ERG<br>\n");
-  //#ifndef ESP8266
+  #ifndef ESP8266
   client.print F("<input type=\"radio\" name=\"stim\" value=\"SSVEP\" >SSVEP (sine)<br></td>\n");
-  //#endif
+  #endif
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<select name=\"bri\" size = 7>\n");
-  client.print F("<option value=\"255\"  >100%</option>\n");
-  client.print F("<option value=\"127\"  >50%</option>\n");
-  client.print F("<option value=\"64\"  >25%</option>\n");
-  client.print F("<option value=\"25\"  >10%</option>\n");
-  client.print F("<option value=\"13\" selected >5%</option>\n");
-  client.print F("<option value=\"6\"  >2%</option>\n");
-  client.print F("<option value=\"3\"  >1%</option>\n");
-  client.print F("<option value=\"2\"  >0.5%</option>\n");
-  client.print F("<option value=\"1\"  >0.25%</option>\n");
+  client.print F("<option value=\"50\"  >50%</option>\n");
+  client.print F("<option value=\"25\"  >25%</option>\n");
+  client.print F("<option value=\"10\" selected >10%</option>\n");
+  client.print F("<option value=\"5\"  >5%</option>\n");
+  client.print F("<option value=\"3\"  >3%</option>\n");
+  client.print F("<option value=\"2\"  >2%</option>\n");
+  client.print F("<option value=\"1\"  >1%</option>\n");
   client.print F("</select></td></tr></tbody></table><br>\n");
 
 
