@@ -5,6 +5,7 @@ clear all;
 
 SVPfiles = {};
 badSVPFiles = {};
+fileIDs = {};
 addmetothepath ;
 sExt = getPictExt () ;
 
@@ -32,21 +33,29 @@ for i=1:min(length(SVPfiles),maxFilesToRead)
     disp(['Reading:', SVPfiles{i}]);
     [flydata, success] = read_arduino_file ( SVPfiles{i} , true );
     if (success)
-
-        if (iSuccesseses == 1)
-            %set up an array to fill up
-            Collected_Data = repmat(flydata, maxFilesToRead) ;
+        % test if file already analysed..
+        % if not already analysed
+        if any(strcmp(fileIDs,flydata.fileName))
+            disp(['Duplicate file found' , flydata.fileName]);
+        else
+            fileIDs = [fileIDs;flydata.fileName];
+            
+            if (iSuccesseses == 1)
+                %set up an array to fill up
+                Collected_Data = repmat(flydata, maxFilesToRead) ;
+            end
+            
+            Collected_Data(iSuccesseses) = flydata;
+            phenotypeList{iSuccesseses} = strjoin(transpose(flydata.phenotypes(:)),'&');
+            
+            iSuccesseses = iSuccesseses + 1;
         end
-        
-        Collected_Data(iSuccesseses) = flydata;
-        phenotypeList{iSuccesseses} = strjoin(transpose(flydata.phenotypes(:)),'&');
-        
-        iSuccesseses = iSuccesseses + 1;
     else
         badSVPFiles = [badSVPFiles;SVPfiles{i}];
     end
-end;
+end
 
+%%
 if (iSuccesseses == 1)
    disp(['Exiting becuase No **Readable** SVP files were found in ',dirName]);
    return 
