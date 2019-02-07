@@ -83,6 +83,27 @@ multiplot <- function(..., plotlist=NULL, cols) {
  p2 <- ggplot(r10, aes(x=g2,y= myVar,color=disco,group= interaction(g2,disco))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20)) + coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) +theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("") + ylab("lamina neurons") + scale_colour_manual(values=cbbPalette)
  multiplot(p1,p2,cols=1)
 
+# or facet grid 
+sp<-ggplot(ag, aes(x=mytime,y=value)) + geom_point(size=0.1)
+sp + facet_grid(Fly ~ day)
+
+agm <- aggregate(ag$value, by=list(t=ag$mytime, c=ag$Condition), mean)
+sp<-ggplot(agm, aes(x=t,y=x)) + geom_point(size=0.1)
+sp + facet_grid(c ~ .)
+
+#or 
+library('dplyr')
+ summary.df <- ag %>%
+ filter(day > 7) %>%
+ group_by(mytime,Condition) %>%
+ summarise(Observations = n(), Mean.activity = mean(value))
+ summary.df
+
+library(ggthemes) # Load
+ cbPalette <- c("green", "gold", "blue", "#56B4E9","green", "gold", "blue", "#56B4E9")
+ sp <-ggplot(summary.df, aes(x=mytime,y=Mean.activity,colour=Condition)) + geom_point(size=0.1) + scale_colour_manual(values=cbPalette) + geom_rangeframe() + theme_tufte()
+ sp + facet_grid(Condition ~ .)
+
 xx <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
 head (xx)
 attach(xx)
