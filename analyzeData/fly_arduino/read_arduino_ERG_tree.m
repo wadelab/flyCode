@@ -150,6 +150,10 @@ end
 %% write out next sheet
 status=xlwrite(filename, ERG_Table, 'ERG Peak-Peak', 'A1');
 
+if (max(size(badERGFiles)) == 0)
+    badERGFiles = 'No files were left unread';
+end
+
 status=xlwrite(filename, badERGFiles, 'Unread ERG Files', 'A1');
 
 %%
