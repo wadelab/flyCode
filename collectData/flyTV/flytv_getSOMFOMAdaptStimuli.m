@@ -96,7 +96,7 @@ stim(103).stimulusType='SPOT';
 stim(103).temporal.frequency=[6 0]; % This is in Hz. There are two frequencies so you could, in theory, have two spot populations on the screen at the same time.
 stim(103).spatial.frequency=[.04,.44]; % Spots are hard-edged circles (the whole point really is that they are broadband). And because we can't use the sine wave display code, we just abandon this sf stuff
 stim(103).spatial.radius=[.5 .5]; % These are the radii of the circles
-
+stim(103).spatial.nDots=[30 0];
 %stim(1).temporal.nTF=size(stim(1).temporal.frequency,1); Similarly, these
 %discrete dots are better described using a simpe 'speed' rather than
 %temporal frequency

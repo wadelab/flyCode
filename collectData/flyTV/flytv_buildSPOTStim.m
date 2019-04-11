@@ -4,74 +4,52 @@ function stim=flytv_buildSPOTStim(dpy,stim)
 % We want a set of coherently driftng largeish spots - stimulus parameters
 % are things like radius, velocity
 % ARW 10/04/19
-% 
-% 
-                
-    % Build a procedural sine grating texture for a grating with a support of
-    % res(1) x res(2) pixels and a RGB color offset of 0.5 -- a 50% gray.
+% % 
+% stim(103).stimulusType='SPOT'; 
+% stim(103).temporal.frequency=[6 0]; % This is in Hz. There are two frequencies so you could, in theory, have two spot populations on the screen at the same time.
+% stim(103).spatial.frequency=[.04,.44]; % Spots are hard-edged circles (the whole point really is that they are broadband). And because we can't use the sine wave display code, we just abandon this sf stuff
+% stim(103).spatial.radius=[.5 .5]; % These are the radii of the circles
+% in degrees
 
-    % Update some grating animation parameters:
-    phase=stim.spatial.phase;
-    radPerDegree=pi/180; % Radians per degree
+% stim(103).temporal.velocity=[1 0;0 0] % These are column vectors for the two components. If we make this a RDK at some point, we can use these for the signal dots.
+% 
+% stim(103).spatial.nComponents=size(stim(103).spatial.frequency,1);
+% stim(103).temporal.modulation.type='drift'; % Dots drift around rather than something else (?). I guess we could frequency tag the dots as well?
+% stim(103).temporal.modulation.stopStart=0; % 0 is constant drift direction, 1  is reversing
+% stim(103).temporal.modulation.frequency=[0 0]; % This is the alternation frequency for stimuli that reverse. This stimulus (103) is an adaptor so it doesn't switch
+% 
+% stim(103).temporal.duration=30; % Adaptation period
+% stim(103).contrast=[40 0]; % Percent. This is relative to a mean gray background- so it can be positive or negative (dark or bright)
+
+               
+% Compute some useful calibration parameters
+radPerDegree=pi/180; % Radians per degree    
+radiansPerScreen=atan(dpy.size(1)/(2*dpy.distance))*2;
+degreesPerScreen=radiansPerScreen/radPerDegree;
+pixelsPerMeter=dpy.res(1)/dpy.size(1); % Pixels per horizontal screen meter. Should be somethign like 4000
+pixPerDegree=dpy.res(1)/degreesPerScreen;
+stim.spatial.radiusInPixels=stim.spatial.radius*pixPerDegree;
+pixelsPerScreen=dpy.res(1);
     
-    radiansPerScreen=atan(dpy.size(1)/(2*dpy.distance))*2;
-    degreesPerScreen=radiansPerScreen/radPerDegree;
-    pixelsPerMeter=dpy.res(1)/dpy.size(1); % Pixels per horizontal screen meter. Should be somethign like 4000
-    pixPerDegree=dpy.res(1)/degreesPerScreen;
-    stim.spatial.frequencyCPerPixel=stim.spatial.frequency/pixPerDegree;
-    pixelsPerScreen=dpy.res(1);
-    cyclesPerScreen=degreesPerScreen.*stim.spatial.frequency; % A vector
-    stim.pixelsPerCycle1=pixelsPerScreen(1)./cyclesPerScreen(1); % We need this to generate a larger modulation texture. So that we can crop it in different places to simulate drift.
+% Compute the alpha and amplitudes that we will use
+[amps,alpha]=flytv_computeAlphaAmps(stim.contrast/100); % This was here when we had overlapping gratings and were interested in intermodulation. It's sort of redundant now.
     
-    % Compute the alpha and amplitudes that we will use
-    [amps,alpha]=flytv_computeAlphaAmps(stim.contrast/100); % !!!!! EDIT?
-    
-    % We have to make our own sine wave grating for the modulator because we
-    % only want it to modulate the alpha channel...
-    angleList1=linspace(0,2*pi*cyclesPerScreen(1),dpy.res(1)+stim.pixelsPerCycle1*2); %
-    [xx_mod,yy_mod]=meshgrid(angleList1,[1:dpy.res(2)]);
-    gt1=(((sin(xx_mod))));
-    
-    
-    meanBG=ones([size(gt1,1),size(gt1,2),3])*0;
-    fullText=cat(3,meanBG,gt1);
-    
-    
-    angleList2=linspace(0,2*pi*cyclesPerScreen(2),dpy.res(1)); % This resultion also not set correctly
-    
-    
-    [xx_car,yy_car]=meshgrid(angleList2,[1:dpy.res(2)]);
-    
-    
-    
-    % Fill the whole onscreen window with a neutral 50% intensity
-    % background color and an alpha channel value of 'bgcontrast'.
-    % This becomes the clear color. After each Screen('Flip'), the
-    % backbuffer will be cleared to this neutral 50% intensity gray
-    % and a default 'bgcontrast' background noise contrast level:
-    carrText=0; % Initilize this
-    gCarr=(sin(xx_car));
-  
-    % Problem: I don't think we can compute the multiplied gratings in real
-    % time. It missed VBLs when we do this, causing the timing to be in
-    % error.
-    %
-    % We want to get going on the SOM stimuli so for now let's just check
-    % flicker. We will make two sets of stimuli corresponding to the two
-    % flicker conditions and just alternate between them
-    transLayer=2;
-    lumLayer=1;
-    gray=GrayIndex(0);
-    
-    gt1p1(:,:,lumLayer)=uint8(ones(size(xx_mod))*gray);
-    gt1p1(:,:,transLayer)=uint8(((sin(xx_mod)+1)/2)*255);
+% Make a texture that defines the dots.
+[xx yy]=meshgrid((-stim.spatial.stim.spatial.radiusInPixels):(stim.spatial.stim.spatial.radiusInPixels),(-stim.spatial.stim.spatial.radiusInPixels):(stim.spatial.stim.spatial.radiusInPixels));
+
+diskMap=(xx.^2+yy.^2)<(stim.spatial.radiusInPixels.^2)*stim.contrast(1);
+
+disText=Screen('MakeTexture', win, m, [], [], 2);
+texrect = Screen('Rect', disText);
+inrect = repmat(texrect', 1, stim.spatial.nDots(1));
+
     
     
-    % Make two textures
     
-    gCarr=uint8(((gCarr+1)/2)*255);
     
-    stim.texture{1}=Screen('MakeTexture',dpy.win,gCarr,[],[],[]);
+
+    
+    stim.texture{1}=Screen('MakeTexture',dpy.win,gabortex,[],[],[]);
     stim.texture{2}  = Screen('MakeTexture', dpy.win, gt1p1);
     %  ModTextP2  = Screen('MakeTexture', dpy.win, gt1p2);
     
