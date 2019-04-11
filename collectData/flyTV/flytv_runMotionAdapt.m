@@ -23,7 +23,8 @@ function [dataOut]=fly_runMotionAdapt(dpy,expt)
 stim=expt.stim;
 eegInfo=expt.eegInfo;
 
-dataOut=0;    global gl; % We make this a global variable so that it can be seen from the listener
+dataOut=[];    
+global gl; % We make this a global variable so that it can be seen from the listener
 
 gl=[]; % Hold the data.
 
@@ -69,7 +70,7 @@ try
                         
                 end
                 
-                % Start data acqisotion, then get ready to enter the loop...
+                % Start data acqisition, then get ready to enter the loop...
                 if (eegInfo.DAQ_PRESENT && eegInfo.DORECORDEEG)
                     % Begin data acquisition in the background
                     disp('Running');
@@ -85,6 +86,7 @@ try
                 thisStim.vblStart=dpy.vbl;
                 
                 disp('Entering loop');
+                fprintf('\n Running stim type %s\n',thisStim.stimulusType);
                 
                 switch thisStim.stimulusType
                     case 'FOM'
@@ -99,13 +101,14 @@ try
                 if (eegInfo.DAQ_PRESENT && eegInfo.DORECORDEEG)
                     
                     pause(.1); % Wait for all the data acq to end
-                    
+                     
                     % Bye bye!
                     dataOut.data{thisCond,thisRepeat,thisStimIndex}=gl.Data;
                     dataOut.TimeStamps{thisCond,thisRepeat,thisStimIndex}=gl.TimeStamps;
                     dataOut.stim{thisCond,thisRepeat,thisStimIndex}=thisStim;
                     dataOut.timeStampEnd(thisCond,thisRepeat,thisStimIndex)=now;
                 else
+                    disp('Data out error');
                     dataOut.data{thisCond,thisRepeat,thisStimIndex}=-1;
                 end
             end % Next stim
