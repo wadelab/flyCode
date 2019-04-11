@@ -63,7 +63,9 @@ try
                         [thisStim]=flytv_buildFOMStim(dpy,thisStim); % Build first order motion stim
                     case 'SOM'
                         [thisStim]=flytv_buildSOMStim(dpy,thisStim); % Build second order motion stim
-                        
+                    case 'SPOT'
+                        [thisStim]=flytv_buildSPOTStim(dpy,thisStim); % Build second order motion stim
+
                     otherwise
                         disp('Undefined stimulus');
                         % Nothing
