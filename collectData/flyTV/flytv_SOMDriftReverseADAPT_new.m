@@ -15,11 +15,6 @@ tic
 DUMMYRUN=0;
 commentFromHeader='Testingwapr';
 
-
-if (strcmp(computer,'PCWIN64'))
-    jheapcl; % For some reason this is required on PCWin64 arch
-end
-
 Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
 HideCursor % Hides the mouse cursor
 
@@ -28,7 +23,7 @@ igt=fly_computeInverseGammaFromCalibFile('CalibrationData_200514.mat');
 dpy.gamma.inverse=igt;
 
 
-datadir='C:\data\SSERG\data\Adapt_Jan4\';
+datadir='C:\data\SSERG\data\adapt2\';
 flyTV_startTime=now;
 
 % Set up display specific parameters. Really these should be in a proper
@@ -74,7 +69,7 @@ eegInfo.eegsamplerate = 1000;
 eegInfo.channels = 1;
 eegInfo.nchannels = length(eegInfo.channels);
 eegInfo.hwName='ni';
-eegInfo.hwIndex=3;
+eegInfo.hwIndex=4;
 eegInfo.DORECORDEEG=1;
 eegInfo.DAQ_PRESENT=1;
 eegInfo.bufferSizeSeconds=31;
@@ -85,7 +80,7 @@ expt.nConds=size(expt.stimType,2); % How many pairs of conditions do we run? In 
 % Later we will randomize these but for
 % now we don't
 
-expt.nRepeats=30; % How many times do we repeat the entire sequence? There is now an expt structure that contains information about the entire experiment
+expt.nRepeats=1; % How many times do we repeat the entire sequence? There is now an expt structure that contains information about the entire experiment
 
 expt.stim=stim;
 expt.eegInfo=eegInfo;
@@ -98,10 +93,6 @@ if(dpy.status~=1)
     error('Screen not initialized');
 end
 
-
-if (strcmp(computer,'PCWIN64'))
-    jheapcl; % For some reason this is required on PCWin64 arch
-end
 
 if (~DUMMYRUN)
     try

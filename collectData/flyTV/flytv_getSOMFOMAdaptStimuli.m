@@ -89,3 +89,25 @@ stim(17)= stim(14);
 stim(17).contrast=[5 0]; 
 stim(17).label='1storder8Hzprobe5contrast';
 
+% *************************************************************************
+
+
+stim(103).stimulusType='SPOT'; 
+stim(103).temporal.frequency=[6 0]; % This is in Hz. There are two frequencies so you could, in theory, have two spot populations on the screen at the same time.
+stim(103).spatial.frequency=[.04,.44]; % Spots are hard-edged circles (the whole point really is that they are broadband). And because we can't use the sine wave display code, we just abandon this sf stuff
+stim(103).spatial.radius=[.5 .5]; % These are the radii of the circles
+stim(103).spatial.nDots=[30 0];
+%stim(1).temporal.nTF=size(stim(1).temporal.frequency,1); Similarly, these
+%discrete dots are better described using a simpe 'speed' rather than
+%temporal frequency
+stim(103).temporal.velocity=[1 0;0 0] % These are column vectors for the two components. If we make this a RDK at some point, we can use these for the signal dots.
+
+stim(103).spatial.nComponents=size(stim(103).spatial.frequency,1);
+stim(103).temporal.modulation.type='drift'; % Dots drift around rather than something else (?). I guess we could frequency tag the dots as well?
+stim(103).temporal.modulation.stopStart=0; % 0 is constant drift direction, 1  is reversing
+stim(103).temporal.modulation.frequency=[0 0]; % This is the alternation frequency for stimuli that reverse. This stimulus (103) is an adaptor so it doesn't switch
+
+stim(103).temporal.duration=30; % Adaptation period
+stim(103).contrast=[40 0]; % Percent. This is relative to a mean gray background- so it can be positive or negative (dark or bright)
+
+
