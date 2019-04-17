@@ -22,7 +22,7 @@ baseDir=uigetdir(pwd);
 [a,b1]=fileparts(baseDir);
 b = [baseDir,filesep, b1];
 bookName=[b,'_',datestr(now,30),'_',comment,'.pdf']
-F2Name=[b,'_',datestr(now,30),'_F2_',comment,'.csv']
+aCSVName=[b,'_',datestr(now,30),'_1F1etc_',comment,'.csv']
 aFileName=[b,'_',datestr(now,30),'_AnalysisData_',comment,'.mat']
 allDataName=[b,'_',datestr(now,30),'_AllData_',comment,'.mat']
 
@@ -183,7 +183,9 @@ for thisPhenotype=1:length(phenotypeList)
                         allNormFlyResponses(thisFlyIndex,:,:,:)=allFlyResponses(thisFlyIndex,:,:,:);
                 end % End of check on NORMALIZATION flag
                 
-                meanF2Masked(thisStatIndex)=squeeze(nanmean(squeeze((allNormFlyResponses(thisFlyIndex,6,6:8,2)))));
+                mean1F1Masked(thisStatIndex)=squeeze(nanmean(squeeze((allNormFlyResponses(thisFlyIndex,1,11,2)))));
+                mean2F1Masked(thisStatIndex)=squeeze(nanmean(squeeze((allNormFlyResponses(thisFlyIndex,3,11,2)))));
+                mean2F12F2Masked(thisStatIndex)=squeeze(nanmean(squeeze((allNormFlyResponses(thisFlyIndex,6,6:8,2)))));
                 summaryStatisticName='Mean 2F1+2F2 high cont';
                 
                 categoryType(thisStatIndex)=thisPhenotype; % There is one entry here per fly in the entire dataset. It tells us what the phenotype of that fly is. Useful for ANOVA etc.
@@ -278,7 +280,7 @@ for thisPhenotype=1:length(phenotypeList)
     if (DOFLYNORM==1 || DOFLYNORM==2 || DOFLYNORM==3)
         plotParams.maxYLim=[1 1 0.4 0.2 0.25 0.02]; % Zero for adaptive scaling
     else
-        plotParams.maxYLim=[200 300 50 30 50 10]/10000;
+        plotParams.maxYLim=[200 300 50 30 50 10]/100000; % 20000 for rounds 2 and 5 on same scale
     end
     
     
@@ -313,7 +315,7 @@ for thisPhenotype=1:length(phenotypeList)
     % save this as an EPS file.
     fname=[b, plotParams.ptypeName,'_NoERR_data.eps'];
     
-    print('-depsc','-r300', fname);
+%%%%%%    print('-depsc','-r300', fname);
     % export_fig(bookName,'-pdf','-transparent','-append','-opengl');
     
     no1F=meanNormFlyResp{thisPhenotype};
@@ -330,17 +332,23 @@ end
 for thisPType=1:length(phenotypeList)
     
 end
-
-fout = fopen (F2Name, 'w');
-for thisPhenotype=1:length(meanF2Masked)
-    fprintf(fout, '%d, %d, %s, %g \r\n', thisPhenotype, categoryType(thisPhenotype),  ptName{categoryType(thisPhenotype)}, abs(meanF2Masked(thisPhenotype)))
+%% list the mean F2 ...this is a bit of a sledgehammer to get the per fly data out...
+fout = fopen (aCSVName, 'w');
+fprintf(fout,'%s \r\n','fly, genotype_index, genotype, 1F1_masked, 2F1_masked, 1F1+2F1_masked');
+for ThisFly=1:length(mean2F12F2Masked)
+    fprintf(fout, '%d, %d, %s, %g, %g, %g \r\n', ThisFly, categoryType(ThisFly), ...
+          ptName{categoryType(ThisFly)},  abs(mean1F1Masked(ThisFly)), ...
+          abs(mean2F1Masked(ThisFly)), abs(mean2F12F2Masked(ThisFly)) ) ;
 end
 fclose (fout);
 
 
+
+
+
 %% Check sorting. Check for singleton flies / reps
-g=find(~isnan(meanF2Masked))
-gd1=meanF2Masked(g);
+g=find(~isnan(mean2F12F2Masked))
+gd1=mean2F12F2Masked(g);
 gc1=categoryType(g);
 %[d,p,stats]=manova1([real(gd1(:)), imag(gd1(:))],gc1)
 [d2,p2,stats2]=manova1([abs(gd1(:)),unwrap(angle(gd1(:)))],gc1)
@@ -375,29 +383,31 @@ save('allData');
 %}
 
 %% Look at normalization values
-totalList=[];
-catType=[];
-for thisPhenotype=1:length(phenotypeList)
-    totalList=[totalList;normFlyVals{thisPhenotype}.value(:)];
-    catType=[catType;thisPhenotype*ones(length(normFlyVals{thisPhenotype}.value(:)),1)];
-    
-end
-[dn,pn,sn]=manova1([real(totalList),imag(totalList)],catType);
-% h99=figure(99);
-% %%boxplot([abs(totalList)],catType, 'XTickLabel',ptName);
+% totalList=[];
+% catType=[];
+% for thisPhenotype=1:length(phenotypeList)
+%     totalList=[totalList;normFlyVals{thisPhenotype}.value(:)];
+%     catType=[catType;thisPhenotype*ones(length(normFlyVals{thisPhenotype}.value(:)),1)];
+%     
+% end
+% %%
+% %[dn,pn,sn]=manova1([real(totalList),imag(totalList)],catType);
+% % h99=figure(99);
+% % %%boxplot([abs(totalList)],catType, 'XTickLabel',ptName);
+% % set(gca,'XTickLabel',ptName);
+% 
+% % draws the graph with notches
+% [MyPh, MyPhtable, MyPhstats] = anova1(abs(totalList),catType)
+% title('Normalization values');
 % set(gca,'XTickLabel',ptName);
-
-% draws the graph with notches
-[MyPh, MyPhtable, MyPhstats] = anova1(abs(totalList),catType)
-set(gca,'XTickLabel',ptName);
-
-figure;
-c = multcompare(MyPhstats, 0.05)
-title('Normalization values');
-set(gca,'YTickLabel',fliplr(ptName));
-%%%%maxfig(gcf,1);
-
-%%%export_fig(bookName,'-pdf','-transparent','-append');
+% %%
+% figure;
+% c = multcompare(MyPhstats, 0.05)
+% title('Normalization values');
+% set(gca,'YTickLabel',fliplr(ptName));
+% %%%%maxfig(gcf,1);
+% 
+% %%%export_fig(bookName,'-pdf','-transparent','-append');
 
 %%
 
