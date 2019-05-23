@@ -1001,9 +1001,9 @@ bool writeFile(const char * c)
   //    int erg_in [max_data];
 
   int16_t iBytesWritten ;
-  year = 2014 ;
-  webTime ();
-  if (year == 2014)
+  year = 2019 ;
+  //webTime ();
+  if (year == 2019)
   {
     file__time();
   }
@@ -1986,6 +1986,12 @@ void sendReply ()
     return ;
   }
 
+
+  fPOS = MyInputString.indexOf F("favico");
+  if (fPOS > 0)
+  {
+    return ;
+  }
   //light up
   fPOS = MyInputString.indexOf F("white/");
   if (fPOS > 0)
@@ -2098,7 +2104,7 @@ void sendReply ()
   }
 
   // default - any other url
-  run_graph() ;
+  // run_graph() ;
   MyInputString = "";
 }
 
@@ -2223,4 +2229,3 @@ void do_fft()
   radix.get_Magnit( f_r, f_i, erg_in);
 
 }
-
