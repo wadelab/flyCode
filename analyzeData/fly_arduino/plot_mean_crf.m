@@ -153,7 +153,7 @@ if (bCloseGraphs)
     delete(gcf) ;
 end
 %% avoid this normally....
-if false
+if true
 %% now plot all the CRFs
 ss = get (0,'screensize') ;
 
@@ -181,19 +181,23 @@ for i=1:7
     hold off ;
     
     set(gca,'XScale','log');
-    ymax(j) = max(abs_CRF(:,j)+eb_CRF(:,j));
-    axis([0 110 0 ymax(j)]);
+    %ymax(j) = max(abs_CRF(:,j)+eb_CRF(:,j));
+    axis([0 110 0 1.2 * ymax(j)]); % allow for plotting the error bars
     
     if (i==1)
-        legend('UNmasked', 'Masked', 'Location', 'NorthWest') ;
-        text( 20, -0.15 * ymax(3), strjoin(myLabel) );
+        %legend('UNmasked', 'Masked', 'Location', 'northoutside') ;
+        xlabel( strjoin(myLabel) );
+        ylabel('response, a.u.');
+    end
+    
+    if (i==5)
+        xlabel("Masked in blue");
     end
     
     if (i==7)
         xlabel('contrast (%)');
-        ylabel('response, a.u.');
     end
-    text( 20, 1.05 * ymax(j), FreqNames{i} );
+    text( 20, 1.25 * ymax(j), FreqNames{i} );
 end
 
 %% and save eps
@@ -201,9 +205,10 @@ end
 
 printFilename = [pathstr, filesep, fileName, '_all_CRFs', sExt];
 h=gcf;
-set(h,'PaperOrientation','landscape');
-set(h,'PaperUnits','normalized');
-set(h,'PaperPosition', [0 0 1 0.3]);
+set(h,'PaperSize',[70 35]);
+%set(h,'PaperOrientation','landscape');
+%set(h,'PaperUnits','normalized');
+%set(h,'PaperPosition', [0 0 1 0.3]);
 print('-dpsc', printFilename );
 if (bCloseGraphs)
     delete(gcf) ;
