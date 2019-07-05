@@ -25,7 +25,7 @@ thisFlyData.nUnMasked = nUnMasked ;
 if (nargin < 6)
     % missing error bars
     eb = zeros(size(complx_CRF));
-    ymax(1:9) = max(abs_CRF([1:nUnMasked],:)) ;
+    ymax(1:9) = max(abs_CRF(:,:)) ;
 else
     eb = varargin{1};
     ymax = varargin{2};
