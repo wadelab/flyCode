@@ -98,7 +98,7 @@ if (do_fft)
     myPos = ss ;
     myPos(1) = 10 ;
     myPos(3) = ss(3) - 10 ;
-    figure ('Name', strcat('Data from: ',fileName), 'Position', myPos);
+    figure ('Name', strcat('Data from: ',fileName), 'Position', myPos, 'PaperSize', [80 40]);
 end
 
 %% do plotting
@@ -216,9 +216,9 @@ myNoise = std(meandata(1:300));
 %     set(gcf,'Color','red');
 % end
 %%
-sExt = getPictExt ();
+sExt = 'pdf' ; % getPictExt ();
 printFilename = [pathstr, filesep, fileName, '_MyData', sExt];
-print( '-dpsc', printFilename );
+print( '-dpdf',  printFilename );
 
 % %% not sure this is the best discriminat
 % if (myNoise > 100)
