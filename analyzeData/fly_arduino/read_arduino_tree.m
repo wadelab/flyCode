@@ -200,10 +200,16 @@ javaaddpath(fullfile(POIPATH,'poi_library/stax-api-1.0.1.jar'));
 %%  [status, message]=xlwrite(filename,A,sheet, range)
 dt = datestr(now,'mmm_dd_HH_MM');
 filename = [ dirName, '/SSVEP_', dt, '_summary.xls']
-status=xlwrite(filename, phenName, '1F1', 'A1');
-status=xlwrite(filename, phenName, '2F1', 'A1');
-status=xlwrite(filename, phenotypeAmps(:,:,1), '1F1', 'A2');
-status=xlwrite(filename, phenotypeAmps(:,:,3), '2F1', 'A2');
+status=xlwrite(filename, phenName, '1F1 unmasked', 'A1');
+status=xlwrite(filename, phenName, '2F1 unmasked', 'A1');
+status=xlwrite(filename, phenName, '1F1+1F2 masked', 'A1');
+status=xlwrite(filename, phenName, '1F2-1F1 masked', 'A1');
+
+status=xlwrite(filename, phenotypeAmps(:,:,1), '1F1 unmasked', 'A2');
+status=xlwrite(filename, phenotypeAmps(:,:,3), '2F1 unmasked', 'A2');
+status=xlwrite(filename, phenotypeAmps(:,:,5), '1F1+1F2 masked', 'A2');
+status=xlwrite(filename, phenotypeAmps(:,:,7), '1F2-1F1 masked', 'A2');
+
 status=xlwrite(filename, phenName, '1F1_phase', 'A1');
 status=xlwrite(filename, phenName, '2F1_phase', 'A1');
 status=xlwrite(filename, phenotypePh(:,:,1), '1F1_phase', 'A2');
