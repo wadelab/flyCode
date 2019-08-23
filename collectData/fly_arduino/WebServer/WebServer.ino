@@ -19,7 +19,7 @@
 
 #ifdef ESP8266
 #define __wifisetup__
-//#define __CLASSROOMSETUP__
+#define __CLASSROOMSETUP__
 #define ESP8266_DISPLAY
 
 // run as standalone access point ??
@@ -207,8 +207,8 @@ const byte bluLED = 7;
 
 #ifdef ESP8266
 const byte redled = 13; // Farnell 2080005
-const byte grnled = 15; // 1855562
-const byte bluLED = 2;  // 1045418
+const byte grnled = 2; // 1855562
+const byte bluLED = 15;  // 1045418
 #ifdef __CLASSROOMSETUP__
 #define TemperatureLED  grnled
 #endif
@@ -230,7 +230,7 @@ byte nMaxWaits = 15 ;
 #define maxbrightness 255
 byte brightness = maxbrightness ;
 #ifdef __CLASSROOMSETUP__
-byte Temperature = 0;
+byte Temperature = 20;
 #endif
 const byte maxContrasts = 9 ;
 const int maxsummaryentries = 16 ;
@@ -621,12 +621,12 @@ void setupEthernet()
   digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
   Serial.println F("Setting up the Ethernet card...\n");
   // start the Ethernet connection and the server:
-  for (int i=0; i<6; i++)
+  for (int i = 0; i < 6; i++)
   {
-Serial.print(mac[i], HEX);
-Serial.print(" ");
+    Serial.print(mac[i], HEX);
+    Serial.print(" ");
   }
-Serial.println ();
+  Serial.println ();
 #ifdef USE_DHCP
   if (! EthernetShield.begin(mac))
   {
@@ -1672,210 +1672,210 @@ void doreadSummaryFile (const char * c)
 
 }
 
-void addSummary ()    
-{   
-    
-  int iOffset = 0;    
-  int kk = 0 ;    
-  switch (eDoFlash)   
-  {   
-    case flash:   
-    case zap:   
-      {   
-        iOffset = (nRepeats - 1) * 15 ;   
-        // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,peak-peak");    
-    
-        pSummary[iOffset + kk] = erg_in[1] ;    
-        //    Serial.println (pSummary[iOffset + kk]);    
-    
-    
-        for (int ii = max_data / 10; ii < max_data - 1; ii = ii + max_data / 10)    
-        {   
-          pSummary [iOffset + kk] = erg_in[ii] ;    
-          kk ++ ;   
-        }   
-        int myminsofar = erg_in[0];   
-        int mymaxsofar = erg_in[0];   
-        for (int ii = 1; ii < (max_data - 1) / 2; ii++)   
-        {   
-          if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;    
-          if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;    
-        }   
-        pSummary [iOffset + kk] = mymaxsofar ;    
-        kk ++ ;   
-        pSummary [iOffset + kk] = myminsofar ;    
-        kk ++;    
-        myminsofar = erg_in[(max_data - 1) / 2];    
-        mymaxsofar = erg_in[(max_data - 1) / 2];    
-        for (int ii = (max_data - 1) / 2; ii < max_data - 1; ii++)    
-        {   
-          if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;    
-          if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;    
-        }   
-        pSummary [iOffset + kk] = mymaxsofar ;    
-        kk ++ ;   
-        pSummary [iOffset + kk] = myminsofar ;    
-        kk ++;    
-        pSummary [iOffset + kk] = max( pSummary [iOffset + kk - 2] , pSummary [iOffset + kk - 4] ) - min( pSummary [iOffset + kk - 1] , pSummary [iOffset + kk - 3] );    
-      }   
-      break ;   
-    
-    case SSVEP:   
-      {   
-        // fft    
-        iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 ;   
-        Serial.print F("Offset ");    
-        Serial.println ( iOffset );   
-    
-        pSummary[iOffset + kk] = time_stamp[max_data - 1] ;   
-        kk ++ ;   
-        pSummary[iOffset + kk] = erg_in[max_data - 1] ;   
-        kk ++ ;   
-        pSummary[iOffset + kk] = nRepeats ;   
-        kk ++ ;   
-    
-        // save erg as we do an in place FFT    
-        // For ESP we could save some memory by making erg_tmp a byte (and divide by 4 here)    
-    
-        byte erg_tmp [ max_data];   
-        for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = (byte)(erg_in[iERG] / 4);   
-    
-        do_fft() ;    
-    
-        // F2-F1    
-        pSummary[iOffset + kk] = erg_in[12] ;   
-        kk ++ ;   
-        pSummary[iOffset + kk] = erg_in[49] ;   
-        kk ++ ;   
-        pSummary[iOffset + kk] = erg_in[61] ;   
-        kk ++ ;   
-        pSummary[iOffset + kk] = erg_in[98] ;   
-        kk ++ ;   
-        pSummary[iOffset + kk] = erg_in[111] ;    
-        kk ++ ;   
-        pSummary[iOffset + kk] = erg_in[221] ;    
-        kk ++ ;   
-        pSummary[iOffset + kk] = erg_in[205] ; // 50Hz    
-        kk ++ ;   
-#ifndef ESP8266   
-        for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];   
-#endif    
-      }   
-      break ;   
-    
-  }   
-}   
-    
-bool writeSummaryFile(const char * cMain)   
-{   
-  int iCharMaxHere = 100 ;    
-  char c [iCharMaxHere]; // will hold filename    
-  char cTmp [iCharMaxHere]; // to hold text to write    
-  char * pDot = strchr ((char *)cMain, '.');    
-    
-  Serial.println F("Summarising filename ");    
-  Serial.println (cMain);   
-  Serial.flush();   
-  if (!pDot)    
-  {   
-    Serial.println F("Error in filename");    
-    Serial.println (c);   
-    Serial.flush();   
-    return false ;    
-  }   
-  Serial.println F("filename extension:");    
-  Serial.println (pDot);    
-  Serial.flush();   
-  int iBytes = pDot - cMain ;   
-    
-  Serial.println F("length of string:");    
-  Serial.println (iBytes);    
-  Serial.flush();   
-    
-  strncpy (c, cMain , iBytes);    
-  c[iBytes] = 0;    
-  strcat (c, ".CSV");   
-    
-  Serial.println F("now writing summary: ");    
-  Serial.println (c);   
-  Serial.flush();   
-    
-  int16_t iBytesWritten ;   
-    
-  if (fileExists(c))    
-  {   
-    Serial.println F("Error in opening file");    
-    Serial.println (c);   
-    Serial.flush();   
-    return false; // FIX - send error to usrrs    
-  }   
-  file = SD.open(c, FILE_WRITE);    
-  if ( !file )    
-  {   
-    Serial.println F("Error in opening file");    
-    Serial.println (c);   
-    Serial.flush();   
-    return false;   
-  }   
-    
-  iBytesWritten = file.write((uint8_t *)cInput, MaxInputStr + 2);   
-  if (iBytesWritten <= 0)   
-  {   
-    Serial.println F("Error in writing header to file");    
-    file.close();   
-    return false ;    
-  }   
-    
-  // for not bFlash   
-  int iOfssfet  = 10;   
-  int mm = maxRepeats * maxContrasts ;    
-    
-  switch (eDoFlash)   
-  {   
-    case SSVEP:   
-      strcpy_P (cTmp, (PGM_P) F("\nprobe contrast\t mask\t repeat\t F2-F1\t 1F1\t 2F1\t 2F2\t 1F1+1F2\t 2F1+2F2\t 50 Hz \n"));   
-      break ;   
-    
-    default :   
-    case flash :    
-      strcpy_P (cTmp, (PGM_P) F("\nstart level\t10%\t20%\t30%\t40%\t50%\t60%\t70%\t80%\t90%\tmax1\tmin1\tmax2\tmin2\tpeak-peak\n"));    
-    
-      iOfssfet = 15;    
-      mm = maxRepeats ;   
-    
-      break ;   
-  }   
-  iBytesWritten = file.write((uint8_t *)cTmp, strlen(cTmp)) ;   
-  if (iBytesWritten <= 0)   
-  {   
-    Serial.println F("Error in writing header to file");    
-    file.close();   
-    return false ;    
-  }   
-    
-  for ( int ii = 0; ii < mm ; ii++)   
-  {   
-    for (int jj = 0; jj < iOfssfet; jj++)   
-    {   
-      iBytesWritten = iBytesWritten + file.print (pSummary[ii * iOfssfet + jj]);    
-      iBytesWritten = iBytesWritten + file.print ("\t");   
-    }   
-    iBytesWritten = iBytesWritten + file.print ("\n");    
-  }   
-    
-  if (iBytesWritten <= 0)   
-  {   
-    Serial.println F("Error in writing summary data to file");    
-    file.close();   
-    return false;   
-  }   
-    
-  Serial.print F(" More bytes writen to file.........");    
-  Serial.print  (c);    
-  Serial.print F(" size now ");   
-  Serial.println (file.size());   
-  file.close();   
-  return true ;   
+void addSummary ()
+{
+
+  int iOffset = 0;
+  int kk = 0 ;
+  switch (eDoFlash)
+  {
+    case flash:
+    case zap:
+      {
+        iOffset = (nRepeats - 1) * 15 ;
+        // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,peak-peak");
+
+        pSummary[iOffset + kk] = erg_in[1] ;
+        //    Serial.println (pSummary[iOffset + kk]);
+
+
+        for (int ii = max_data / 10; ii < max_data - 1; ii = ii + max_data / 10)
+        {
+          pSummary [iOffset + kk] = erg_in[ii] ;
+          kk ++ ;
+        }
+        int myminsofar = erg_in[0];
+        int mymaxsofar = erg_in[0];
+        for (int ii = 1; ii < (max_data - 1) / 2; ii++)
+        {
+          if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;
+          if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;
+        }
+        pSummary [iOffset + kk] = mymaxsofar ;
+        kk ++ ;
+        pSummary [iOffset + kk] = myminsofar ;
+        kk ++;
+        myminsofar = erg_in[(max_data - 1) / 2];
+        mymaxsofar = erg_in[(max_data - 1) / 2];
+        for (int ii = (max_data - 1) / 2; ii < max_data - 1; ii++)
+        {
+          if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;
+          if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;
+        }
+        pSummary [iOffset + kk] = mymaxsofar ;
+        kk ++ ;
+        pSummary [iOffset + kk] = myminsofar ;
+        kk ++;
+        pSummary [iOffset + kk] = max( pSummary [iOffset + kk - 2] , pSummary [iOffset + kk - 4] ) - min( pSummary [iOffset + kk - 1] , pSummary [iOffset + kk - 3] );
+      }
+      break ;
+
+    case SSVEP:
+      {
+        // fft
+        iOffset = ((nRepeats * maxContrasts) + iThisContrast ) * 10 ;
+        Serial.print F("Offset ");
+        Serial.println ( iOffset );
+
+        pSummary[iOffset + kk] = time_stamp[max_data - 1] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[max_data - 1] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = nRepeats ;
+        kk ++ ;
+
+        // save erg as we do an in place FFT
+        // For ESP we could save some memory by making erg_tmp a byte (and divide by 4 here)
+
+        byte erg_tmp [ max_data];
+        for (int iERG = 0; iERG < max_data; iERG++) erg_tmp[iERG] = (byte)(erg_in[iERG] / 4);
+
+        do_fft() ;
+
+        // F2-F1
+        pSummary[iOffset + kk] = erg_in[12] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[49] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[61] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[98] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[111] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[221] ;
+        kk ++ ;
+        pSummary[iOffset + kk] = erg_in[205] ; // 50Hz
+        kk ++ ;
+#ifndef ESP8266
+        for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
+#endif
+      }
+      break ;
+
+  }
+}
+
+bool writeSummaryFile(const char * cMain)
+{
+  int iCharMaxHere = 100 ;
+  char c [iCharMaxHere]; // will hold filename
+  char cTmp [iCharMaxHere]; // to hold text to write
+  char * pDot = strchr ((char *)cMain, '.');
+
+  Serial.println F("Summarising filename ");
+  Serial.println (cMain);
+  Serial.flush();
+  if (!pDot)
+  {
+    Serial.println F("Error in filename");
+    Serial.println (c);
+    Serial.flush();
+    return false ;
+  }
+  Serial.println F("filename extension:");
+  Serial.println (pDot);
+  Serial.flush();
+  int iBytes = pDot - cMain ;
+
+  Serial.println F("length of string:");
+  Serial.println (iBytes);
+  Serial.flush();
+
+  strncpy (c, cMain , iBytes);
+  c[iBytes] = 0;
+  strcat (c, ".CSV");
+
+  Serial.println F("now writing summary: ");
+  Serial.println (c);
+  Serial.flush();
+
+  int16_t iBytesWritten ;
+
+  if (fileExists(c))
+  {
+    Serial.println F("Error in opening file");
+    Serial.println (c);
+    Serial.flush();
+    return false; // FIX - send error to usrrs
+  }
+  file = SD.open(c, FILE_WRITE);
+  if ( !file )
+  {
+    Serial.println F("Error in opening file");
+    Serial.println (c);
+    Serial.flush();
+    return false;
+  }
+
+  iBytesWritten = file.write((uint8_t *)cInput, MaxInputStr + 2);
+  if (iBytesWritten <= 0)
+  {
+    Serial.println F("Error in writing header to file");
+    file.close();
+    return false ;
+  }
+
+  // for not bFlash
+  int iOfssfet  = 10;
+  int mm = maxRepeats * maxContrasts ;
+
+  switch (eDoFlash)
+  {
+    case SSVEP:
+      strcpy_P (cTmp, (PGM_P) F("\nprobe contrast\t mask\t repeat\t F2-F1\t 1F1\t 2F1\t 2F2\t 1F1+1F2\t 2F1+2F2\t 50 Hz \n"));
+      break ;
+
+    default :
+    case flash :
+      strcpy_P (cTmp, (PGM_P) F("\nstart level\t10%\t20%\t30%\t40%\t50%\t60%\t70%\t80%\t90%\tmax1\tmin1\tmax2\tmin2\tpeak-peak\n"));
+
+      iOfssfet = 15;
+      mm = maxRepeats ;
+
+      break ;
+  }
+  iBytesWritten = file.write((uint8_t *)cTmp, strlen(cTmp)) ;
+  if (iBytesWritten <= 0)
+  {
+    Serial.println F("Error in writing header to file");
+    file.close();
+    return false ;
+  }
+
+  for ( int ii = 0; ii < mm ; ii++)
+  {
+    for (int jj = 0; jj < iOfssfet; jj++)
+    {
+      iBytesWritten = iBytesWritten + file.print (pSummary[ii * iOfssfet + jj]);
+      iBytesWritten = iBytesWritten + file.print ("\t");
+    }
+    iBytesWritten = iBytesWritten + file.print ("\n");
+  }
+
+  if (iBytesWritten <= 0)
+  {
+    Serial.println F("Error in writing summary data to file");
+    file.close();
+    return false;
+  }
+
+  Serial.print F(" More bytes writen to file.........");
+  Serial.print  (c);
+  Serial.print F(" size now ");
+  Serial.println (file.size());
+  file.close();
+  return true ;
 }
 
 #ifdef ESP8266
@@ -2062,7 +2062,14 @@ void tidyUp_Collection()
       analogWrite(usedLED, 127);
   }
 #ifdef __CLASSROOMSETUP__
-  analogWrite(TemperatureLED, Temperature * 4);
+  if (nMaxWaits > 1)
+  {
+    analogWrite(TemperatureLED, 1000 ); //(Temperature - 20) * 50);
+  }
+  else
+  {
+    analogWrite(TemperatureLED, 0 );
+  }
   //  Serial.println("Temperature on again");
 #endif
 
@@ -2075,7 +2082,7 @@ void tidyUp_Collection()
     }
     else
     {
-     Serial.println F("Now try summary file");    
+      Serial.println F("Now try summary file");
       addSummary() ;
     }
   }
@@ -2152,6 +2159,7 @@ void AppendWaitReport()
   else
   {
     client.print F("waiting ") ;
+    if (nMaxWaits > 1) client.print F("(warming) ") ;
     client.print ( nWaits );
     client.print F(" of ");
     client.print (nMaxWaits);
@@ -2519,7 +2527,7 @@ void sendReply ()
     brightness = atoi(cInput + ibrPos);
     if (bTestFlash) brightness = maxbrightness;
 #ifdef __CLASSROOMSETUP__
-    ibrPos  = MyInputString.indexOf ("IR=") + 3;
+    ibrPos  = MyInputString.indexOf ("Temp=") + 5;
     Temperature = atoi(cInput + ibrPos);
     if (bTestFlash) Temperature = 0;
 #endif
@@ -2597,6 +2605,27 @@ void sendReply ()
       }
       // new file
       nRepeats = iThisContrast = 0 ;
+      switch (Temperature)
+      {
+
+
+        case 40: nMaxWaits = 15;
+          break;
+
+        case 35: nMaxWaits = 13;
+          break;
+
+        case 30: nMaxWaits = 11;
+
+        case 25: nMaxWaits = 7;
+          break;
+
+        default:
+        case 20: nMaxWaits = 1 ;
+          break;
+
+
+      }
       nWaits = nMaxWaits ;
       if (bTestFlash)
       {
@@ -2607,7 +2636,7 @@ void sendReply ()
         if (eDoFlash == zap) nWaits = 1;
 #ifndef __CLASSROOMSETUP__
         // for shibire, always allow time for temperature to change
-        if (lastStim == flash ) nWaits = 1 ;
+        if (lastStim == flash) nWaits = 1 ;
 #endif
       }
       //turn off any lights we have on...
@@ -2641,7 +2670,7 @@ void sendReply ()
         client.print F(" bytes; expected size ");
         client.print (exp_size);
         wfile.close() ;
-        writeSummaryFile(cFile);
+        //writeSummaryFile(cFile);
 
         String sPicture = sFile;
         switch (eDoFlash)
@@ -2655,12 +2684,12 @@ void sendReply ()
             sPicture.replace ("ERP", "CSV" );
             break ;
 
-          case SSVEP:    
+          case SSVEP:
             sPicture.replace ("SVP", "CSV" );
         }
-   client.print F("<A HREF= \"");    
-       client.print (sPicture) ;    
-        client.print F("\" > (summary file)</A>" );
+        //   client.print F("<A HREF= \"");
+        //       client.print (sPicture) ;
+        //        client.print F("\" > (summary file)</A>" );
       }
       else
       {
@@ -3011,25 +3040,22 @@ void writehomepage ()
 
   client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody><tr>\n");
   client.print F("<td style=\"vertical-align: top; width = 50%\">Genotype</td>\n");
-  client.print F("<td style=\"vertical-align: top; width = 50%\">InfraRed Heating:</td></tr>\n");
+  client.print F("<td style=\"vertical-align: top; width = 50%\">Temperature (oC):</td></tr>\n");
 
   client.print F("<tr><td style=\"vertical-align: top;\">\n");
   client.print F("<select name=\"fly\" size = 6>\n");
-  client.print F("<option value=\"CS\" selected>CS</option>\n");
-  client.print F("<option value=\"w_minus\" >w-</option>\n");
+  //client.print F("<option value=\"CS\" selected>CS</option>\n");
+  client.print F("<option value=\"w_minus\" selected>w-</option>\n");
   client.print F("<option value=\"shi\" >shibire</option>\n");
   client.print F("</select><br></td>\n");
 
   client.print F("<td style=\"vertical-align: top;\">\n");
-  client.print F("<select name=\"IR\" size = 6>\n");
-  client.print F("<option value=\"255\"  >100%</option>\n");
-  client.print F("<option value=\"191\"  >75%</option>\n");
-  client.print F("<option value=\"127\"  >50%</option>\n");
-  client.print F("<option value=\"64\"  >25%</option>\n");
-  client.print F("<option value=\"25\"  >10%</option>\n");
-  client.print F("<option value=\"13\"  >5%</option>\n");
-  client.print F("<option value=\"6\"  >2%</option>\n");
-  client.print F("<option value=\"0\"  selected>0.0%</option>\n");
+  client.print F("<select name=\"Temp\" size = 6 style=\"width: 100px\">\n");
+  client.print F("<option value=\"40\"  >40</option>\n");
+  client.print F("<option value=\"35\"  >35</option>\n");
+  client.print F("<option value=\"30\"  >30</option>\n");
+  client.print F("<option value=\"25\"  >25</option>\n");
+  client.print F("<option value=\"20\"  selected>Room temp</option>\n");
   client.print F("</select><br></td></tr></tbody></table><BR>\n");
 
   client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody ><tr>\n");
@@ -3046,20 +3072,18 @@ void writehomepage ()
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG_T\" checked>Test ERG<br>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG\" >Save ERG<br>\n");
-  //#ifndef ESP8266
+#ifndef ESP8266
   client.print F("<input type=\"radio\" name=\"stim\" value=\"SSVEP\" >SSVEP (sine)<br></td>\n");
-  //#endif
+#endif
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<select name=\"bri\" size = 7>\n");
-  client.print F("<option value=\"255\"  >100%</option>\n");
-  client.print F("<option value=\"127\"  >50%</option>\n");
-  client.print F("<option value=\"64\"  >25%</option>\n");
-  client.print F("<option value=\"25\"  >10%</option>\n");
-  client.print F("<option value=\"13\" selected >5%</option>\n");
-  client.print F("<option value=\"6\"  >2%</option>\n");
-  client.print F("<option value=\"3\"  >1%</option>\n");
-  client.print F("<option value=\"2\"  >0.5%</option>\n");
-  client.print F("<option value=\"1\"  >0.25%</option>\n");
+  client.print F("<option value=\"50\"  >50%</option>\n");
+  client.print F("<option value=\"25\"  >25%</option>\n");
+  client.print F("<option value=\"10\" selected >10%</option>\n");
+  client.print F("<option value=\"5\"  >5%</option>\n");
+  client.print F("<option value=\"3\"  >3%</option>\n");
+  client.print F("<option value=\"2\"  >2%</option>\n");
+  client.print F("<option value=\"1\"  >1%</option>\n");
   client.print F("</select></td></tr></tbody></table><br>\n");
 
 

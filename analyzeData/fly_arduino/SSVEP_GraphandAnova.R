@@ -83,6 +83,27 @@ multiplot <- function(..., plotlist=NULL, cols) {
  p2 <- ggplot(r10, aes(x=g2,y= myVar,color=disco,group= interaction(g2,disco))) + geom_boxplot(outlier.shape = NA) + geom_point(position=position_jitterdodge(jitter.width = 0.20)) + coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) +theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("") + ylab("lamina neurons") + scale_colour_manual(values=cbbPalette)
  multiplot(p1,p2,cols=1)
 
+# or facet grid 
+sp<-ggplot(ag, aes(x=mytime,y=value)) + geom_point(size=0.1)
+sp + facet_grid(Fly ~ day)
+
+agm <- aggregate(ag$value, by=list(t=ag$mytime, c=ag$Condition), mean)
+sp<-ggplot(agm, aes(x=t,y=x)) + geom_point(size=0.1)
+sp + facet_grid(c ~ .)
+
+#or 
+library('dplyr')
+ summary.df <- ag %>%
+ filter(day > 7) %>%
+ group_by(mytime,Condition) %>%
+ summarise(Observations = n(), Mean.activity = mean(value))
+ summary.df
+
+library(ggthemes) # Load
+ cbPalette <- c("green", "gold", "blue", "#56B4E9","green", "gold", "blue", "#56B4E9")
+ sp <-ggplot(summary.df, aes(x=mytime,y=Mean.activity,colour=Condition)) + geom_point(size=0.1) + scale_colour_manual(values=cbPalette) + geom_rangeframe() + theme_tufte()
+ sp + facet_grid(Condition ~ .)
+
 xx <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))
 head (xx)
 attach(xx)
@@ -91,6 +112,7 @@ yy<-subset(xx, !duplicated(xx))
 r10_dark <- r10[r10$disco == "N ", ] #note spaces
 LC <- na.omit(LC) #remove all rows that have a NA in any variable
 LC <-[!is.na(LC$B), ] # remove if NA is in column B
+ph2 <- phs[grepl("ev", phs$genotype ) | grepl("_w", phs$genotype ),]
 
 
 THS_n <-THS[- grep("..Y", THS$ind),]
@@ -131,6 +153,8 @@ theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 p2
 
+ggplot(opt, aes(x=genotype,y= actual.area.MaxAt,color=genotype)) + geom_dotplot(binaxis='y', stackdir='center',
++                stackratio=0.8, dotsize=0.4, binwidth=10) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 p3 <- ggplot(xx, aes(x=genotype,y=X1F1,color=genotype)) + geom_boxplot() + geom_point(position=position_jitterdodge(dodge.width=0.75)) +
 coord_cartesian(ylim = c(0, 1.05 * max(X1F1))) +
@@ -142,6 +166,9 @@ theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 p4 <- p3 + annotate("text", x= xxSE$genotype, y = 10, label = xxSE$N, size = 3)
 p4
+
+#polar plot
+ggplot()+geom_point(data=ph2, aes(x=X2F1,y=X2F1_phase, colour=genotype, fill=disco, shape=21, size=4, stroke=3))+scale_shape_identity() +coord_polar(theta="y")+scale_color_manual(values=c('#999999','#E69F00', '#56B4E9'))
 
 myVar <- X1F1_masked
 ggplot(ee, aes(x=genotype,y= myVar,color=genotype)) + geom_boxplot() + geom_point(position=position_jitterdodge(dodge.width=0.75)) + coord_cartesian(ylim = c(0, 1.05 * max(myVar, na.rm=TRUE))) + theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1))  + ylab("photoreceptor")
@@ -278,3 +305,34 @@ bUpper <- function(N_pass, N_total) {
 	bUpper <- 100 * (b$conf.int[2]-b$estimate[1])
 	bUpper[[1]]
 	}
+	
+	
+cbbPalette <- c("#000000", "#009E73", "#000000", "#0072B2", "#000000", "#FF00FF", "#000000", "#CC79A7")	
+TPC2 <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""))	
+TPC2S <- stack(TPC2)
+names(TPC2S)<-c("laminaresponse", "genotype")
+TPC2S$genotype <- sub('.7.male.fly.blue.', ' ', TPC2S$genotype)
+TPC2S$genotype <- sub('.', ' > ', TPC2S$genotype, fixed = TRUE)
+ggplot(TPC2S, aes(x=genotype, y=laminaresponse, fill=genotype)) + geom_boxplot(fill="#FFFFFF") +
+geom_dotplot(binaxis='y', stackdir='center', stackratio=1.1, dotsize=0.6) + 
+theme(axis.text.x = element_text(angle = 45, hjust = 1)) + scale_fill_manual(values=cbbPalette)	
+	
+library('multcomp')
+	
+TPC2SN <- TPC2S[- grep("..Y", TPC2S$genotype),]
+TPC2SY <- TPC2S[ grep("..Y", TPC2S$genotype),]
+
+TPC2SY$genotype <- as.factor(TPC2SY$genotype)
+TPC2SY$genotype <- relevel(TPC2SY$genotype,"THG > ev..Y")
+model = lm(laminaresponse ~ genotype, data= TPC2SY)
+mc = glht(model, mcp(genotype = "Dunnett"))
+summary(mc)
+confint(mc, level = 0.95)
+
+TPC2SN $genotype <- as.factor(TPC2SN $genotype)
+TPC2SN $genotype <- relevel(TPC2SN $genotype,"TH > ev..N")
+model = lm(laminaresponse ~ genotype, data= TPC2SN)
+mc = glht(model, mcp(genotype = "Dunnett"))
+summary(mc)
+confint(mc, level = 0.95)
+

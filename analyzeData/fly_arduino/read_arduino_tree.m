@@ -5,6 +5,7 @@ clear all;
 
 SVPfiles = {};
 badSVPFiles = {};
+fileIDs = {};
 addmetothepath ;
 sExt = getPictExt () ;
 
@@ -32,21 +33,29 @@ for i=1:min(length(SVPfiles),maxFilesToRead)
     disp(['Reading:', SVPfiles{i}]);
     [flydata, success] = read_arduino_file ( SVPfiles{i} , true );
     if (success)
-
-        if (iSuccesseses == 1)
-            %set up an array to fill up
-            Collected_Data = repmat(flydata, maxFilesToRead) ;
+        % test if file already analysed..
+        % if not already analysed
+        if any(strcmp(fileIDs,flydata.fileName))
+            disp(['Duplicate file found' , flydata.fileName]);
+        else
+            fileIDs = [fileIDs;flydata.fileName];
+            
+            if (iSuccesseses == 1)
+                %set up an array to fill up
+                Collected_Data = repmat(flydata, maxFilesToRead) ;
+            end
+            
+            Collected_Data(iSuccesseses) = flydata;
+            phenotypeList{iSuccesseses} = strjoin(transpose(flydata.phenotypes(:)),'&');
+            
+            iSuccesseses = iSuccesseses + 1;
         end
-        
-        Collected_Data(iSuccesseses) = flydata;
-        phenotypeList{iSuccesseses} = strjoin(transpose(flydata.phenotypes(:)),'&');
-        
-        iSuccesseses = iSuccesseses + 1;
     else
         badSVPFiles = [badSVPFiles;SVPfiles{i}];
     end
-end;
+end
 
+%%
 if (iSuccesseses == 1)
    disp(['Exiting becuase No **Readable** SVP files were found in ',dirName]);
    return 
@@ -121,21 +130,21 @@ end
 %% and phases for 1F1 and 2F1
 CRF_Max = max(nPhenotypes, max(nFlies));
 % FreqsToExtract = [ F1, F2, 2*F1, 2*F2, F1+F2, 2*(F1+F2), F2-F1 ];
-FreqsToExtract = [48,60,96,120,108,216,12] ;
+FreqsToExtract = [48,60,96,120,108,216,12] ; % 4 times the real value...
 phenotypeAmps=NaN(CRF_Max,nPhenotypes,length(FreqsToExtract));
 phenotypePh=NaN(CRF_Max,nPhenotypes, length(FreqsToExtract));
 
 
 %% HB and GDS:  Calculate and save individual fly amplitudes
 %% and phases for  the 100% contrast condition
-%% Column 5 = 100% contrast;  
-
+% Column 5 = 100% contrast column 8 is 30:30;  
+ContrastToExtract = [5,5,5,5,8,8,8]
 
 for phen = 1 : nPhenotypes
     nFlies (phen) = 1 + ib(phen) - ia(phen) ;
     for j = 1 : length(FreqsToExtract)
-    phenotypeAmps(1:nFlies(phen,1),phen,j)= squeeze(abs(SortedFFTmatrix(ia(phen):ib(phen),5,FreqsToExtract(j))));
-    phenotypePh(1:nFlies(phen,1),phen,j)= squeeze(angle(SortedFFTmatrix(ia(phen):ib(phen),5,FreqsToExtract(j))));
+    phenotypeAmps(1:nFlies(phen,1),phen,j)= squeeze(abs(SortedFFTmatrix(ia(phen):ib(phen),ContrastToExtract(j),FreqsToExtract(j))));
+    phenotypePh(1:nFlies(phen,1),phen,j)= squeeze(angle(SortedFFTmatrix(ia(phen):ib(phen),ContrastToExtract(j),FreqsToExtract(j))));
     end
 end
     
@@ -191,17 +200,23 @@ javaaddpath(fullfile(POIPATH,'poi_library/stax-api-1.0.1.jar'));
 %%  [status, message]=xlwrite(filename,A,sheet, range)
 dt = datestr(now,'mmm_dd_HH_MM');
 filename = [ dirName, '/SSVEP_', dt, '_summary.xls']
-status=xlwrite(filename, phenName, '1F1', 'A1');
-status=xlwrite(filename, phenName, '2F1', 'A1');
-status=xlwrite(filename, phenotypeAmps(:,:,1), '1F1', 'A2');
-status=xlwrite(filename, phenotypeAmps(:,:,3), '2F1', 'A2');
+status=xlwrite(filename, phenName, '1F1 unmasked', 'A1');
+status=xlwrite(filename, phenName, '2F1 unmasked', 'A1');
+status=xlwrite(filename, phenName, '1F1+1F2 masked', 'A1');
+status=xlwrite(filename, phenName, '1F2-1F1 masked', 'A1');
+
+status=xlwrite(filename, phenotypeAmps(:,:,1), '1F1 unmasked', 'A2');
+status=xlwrite(filename, phenotypeAmps(:,:,3), '2F1 unmasked', 'A2');
+status=xlwrite(filename, phenotypeAmps(:,:,5), '1F1+1F2 masked', 'A2');
+status=xlwrite(filename, phenotypeAmps(:,:,7), '1F2-1F1 masked', 'A2');
+
 status=xlwrite(filename, phenName, '1F1_phase', 'A1');
 status=xlwrite(filename, phenName, '2F1_phase', 'A1');
 status=xlwrite(filename, phenotypePh(:,:,1), '1F1_phase', 'A2');
 status=xlwrite(filename, phenotypePh(:,:,3), '2F1_phase', 'A2');
 
 %% now add a page with the data tabulated vertically 
-outcells={'genotype','1F1','2F1','1F1_phase','2F1_phase', 'filename'};
+outcells={'genotype','1F1 unmasked','2F1 unmasked','1F1+1F2 masked', '1F2-1F1 masked', '1F1_phase','2F1_phase', 'filename'};
 iPreviousFlies = 1;
 k = 1 ;
 sZ = size(phenotypeAmps(:,:,1));
@@ -211,11 +226,13 @@ for j = 1: sZ(2)
         if (~myNAN(i,j))
             iPreviousFlies = iPreviousFlies + 1;
             outcells{iPreviousFlies,1} = phenName{j};
-            outcells{iPreviousFlies,2} = phenotypeAmps(i,j,1);
-            outcells{iPreviousFlies,3} = phenotypeAmps(i,j,3);
-            outcells{iPreviousFlies,4} = phenotypePh(i,j,1);
-            outcells{iPreviousFlies,5} = phenotypePh(i,j,3);
-            outcells{iPreviousFlies,6} = strrep(SortedData(k).fileName,'filename=','') ;
+            outcells{iPreviousFlies,2} = phenotypeAmps(i,j,1); %1F1 unmasked
+            outcells{iPreviousFlies,3} = phenotypeAmps(i,j,3); %2F1 unmasked
+            outcells{iPreviousFlies,4} = phenotypeAmps(i,j,5); %1F1+1F2 masked
+            outcells{iPreviousFlies,5} = phenotypeAmps(i,j,7); %1F1-1F2 masked
+            outcells{iPreviousFlies,6} = phenotypePh(i,j,1);
+            outcells{iPreviousFlies,7} = phenotypePh(i,j,3);
+            outcells{iPreviousFlies,8} = strrep(SortedData(k).fileName,'filename=','') ;
             k = k + 1 ;
         end
     end
@@ -256,4 +273,5 @@ end
 disp(' ');
 disp ([dirName, ' done! ']);
 disp(' ');
+
 

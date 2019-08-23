@@ -64,7 +64,7 @@ void loop () {
   int h = now.hour() ; // minute
   Serial.println(h, DEC);
 
-  if (h < 8 || h > 20)
+  if (h < 9 || h > 20)
   {
     rtc.writeSqwPinMode(modes[1]); // RTC board led off
     digitalWrite(LED_BUILTIN, LOW);
