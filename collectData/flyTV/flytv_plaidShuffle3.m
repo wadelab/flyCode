@@ -16,7 +16,7 @@ DUMMYRUN=0;
 if (~DUMMYRUN)
     jheapcl;
     
-    Screen('Preference', 'VisualDebuglevel', 0)% disables welcome and warning screens
+    Screen('Preference', 'VisualDebuglevel', 1)% disables welcome and warning screens
     HideCursor % Hides the mouse cursor
     
     
