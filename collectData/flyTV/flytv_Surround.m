@@ -79,13 +79,7 @@ for thisRun=1:nRepeats  % 5 repeats
         stim.spatial.pOffset=rand(2,1)*360;
         
         fprintf('\nRunning %d %d',stim.cont(1),stim.cont(2));
-%         
-%         thisaction= shuffleSeq(thisCond);
-%         t=ceil(thisaction/ nSF)
-%         s=1+rem(thisaction, nSF) %  Should be 1+rem(thisAction-1,nTF)
-%         
-%         tt(thisRun,thisCond)=t;
-%         ss(thisRun,thisCond)=s;
+
         
         stim.spatial.frequency=sfList(thisCond,:)
         stim.temporal.frequency=tfList(thisCond,:)
