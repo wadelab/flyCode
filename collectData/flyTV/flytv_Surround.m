@@ -39,10 +39,10 @@ dpy.frameRate=144;
 % distance, refresh rate, spectra, gamma.
 % For now if just has the gamma function (inverse) in it.
 
-tfList=[5 5 5; 7 7 7]'; % This is in Hz.
-sfList=[.028 .028 .028;.028 .028 .028]'; % Cycles per degree
+tfList=[7 7 7; 5 5 5]'; % This is in Hz.
+sfList=[.056 .056 .056;.056 .056 .056]'; % Cycles per degree
 orList=[0 0 90;0 0 0]'; % Orientations
-contList=[0 1 1;.4 .4 .4]'; %Contrasts
+contList=[0 1 1;.6 .6 .6]'; %Contrasts
 
 nTF=size(tfList,1);
 nSF=size(sfList,1);
@@ -60,7 +60,7 @@ shuffleSeq=Shuffle(ordered); % Shuffle all the possible presentation conditions
 stim.spatial.internalRotation = 1; % Does the grating rotate within the envelope?
 stim.rotateMode = [1]; % rotation of mask grating (1= horizontal, 2= vertical, etc?)
 
-stim.spatial.centralRadius=250;
+stim.spatial.centralRadius=150;
 stim.temporal.duration=11; % how long to flicker for
 
 % Loop over a set of contrast pair. All possible combinations of probe
@@ -69,7 +69,7 @@ stim.temporal.duration=11; % how long to flicker for
 
 nConds=length(ordered);
 
-nRepeats=3;
+nRepeats=30;
 
 for thisRun=1:nRepeats  % 5 repeats
     for thisCond=1:nConds
