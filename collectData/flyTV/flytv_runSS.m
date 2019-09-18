@@ -2,7 +2,7 @@ function [dataOut]=flytv_SS(dpy,stim)
 % function [dataOut]=flytv_SS(dpy,stim)
 % Based on flytv_PlaidDemo2(cyclespersecond, sfreq,contrast)
 % function dataOut=flytv_PlaidDemo2(cyclespersecond, sfreq,contrast)
-% Generates a 2-component stimulus - displays both components on screen at
+% Generat es a 2-component stimulus - displays both components on screen at
 % different locations.
 % Grating 1 can be parallel or orthogonal to grating 2
 % All the inputs are now 2 element vectors
