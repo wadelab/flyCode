@@ -8,39 +8,19 @@
 
 // don't use pin 4 or 10-12 either...
 
-// known bug on Edison: PWM code does not work // FIX
-
 // if we test file, it will return true if the file is open...
 // file append is not honoured, need to seek end...
 
-#ifdef ARDUINO_LINUX
-#define __wifisetup__
-#endif
 
-#ifdef ESP8266
-#define __wifisetup__
+
+
 #define __CLASSROOMSETUP__
-#define ESP8266_DISPLAY
 
-// run as standalone access point ??
-#define ESP8266AP
-#endif
 
-#ifndef __wifisetup__
 
-// for ethernet ..............................................................................
-// for ethernet ..............................................................................
 // define the due in an external file so we don't keep fighting with git, like this:
 
 #include "./due.h"
-
-#ifndef ARDUINO_LINUX
-#define EthernetShield Ethernet
-#define IPAddressShield IPAddress
-#define EthernetServerShield EthernetServer
-#define EthernetClientShield EthernetClient
-#endif
-#endif
 
 
 //_____________________________________________________
@@ -76,9 +56,7 @@
 //biolpc2804 //144.32.86.146
 #endif
 
-#ifdef __wifisetup__
-#define MAC_OK
-#endif
+
 
 //#if defined(__AVR_ATmega2560__  __SAM3X8E__
 /*
@@ -105,45 +83,11 @@
 // is 10 on normal uno
 
 #include <SPI.h>
-#ifdef ESP8266_DISPLAY
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#endif
 
 
-#ifndef __wifisetup__
-// ethernet...
-#ifndef ARDUINO_LINUX
+
 #include <Ethernet.h>
-#else
-#include <EthernetShield.h>
-#endif
-
-#else
-//wifi of some sort...
-
-#ifdef ESP8266AP
-const char pass[] = "FlyLab2016";
-#endif
-
-#ifdef ESP8266
-extern "C" {
-#include "user_interface.h"
-}
-#include <ESP8266WiFi.h>
-//#include <ESP8266mDNS.h>
-#else
-#include <WiFi.h>
-#endif
-#endif
-// end of if wifi or ethernet
-
-#ifdef ESP8266
-#include <FS.h>
-#else
 #include <SD.h>
-#endif
 
 //#include "mydata.h"
 // include fft
@@ -163,56 +107,10 @@ const byte fiberLED = 8 ;
 const byte noContactLED = 2;
 
 // define LED mapping here
-const byte bluvioletLED = 8 ;
-const byte amberled = 6;
-const byte whiteled = 11;
-const byte cyaled = 9;
+const byte bluLED = 11;
 const byte extrawhitepin = 53;
+const byte whiteled = 13;
 
-#ifdef ARDUINO_LINUX
-const byte redled = 3;
-const byte grnled = 5;
-const byte bluLED = 6;
-#endif
-
-#ifdef due3
-const byte redled = 7;
-const byte grnled = 3;
-const byte bluLED = 5;
-#endif
-
-#ifdef due4
-const byte redled = 7;
-const byte grnled = 3;
-const byte bluLED = 5;
-#endif
-
-#ifdef due5
-const byte redled = 7;
-const byte grnled = 3;
-const byte bluLED = 5;
-#endif
-
-#ifdef due6
-const byte redled = 6;
-const byte grnled = 5;
-const byte bluLED = 7;
-#endif
-
-//#ifdef ESP8266
-//const byte redled = 4;
-//const byte grnled = 0;
-//const byte bluLED = 5;
-//#endif
-
-#ifdef ESP8266
-const byte redled = 13; // Farnell 2080005
-const byte grnled = 2; // 1855562
-const byte bluLED = 15;  // 1045418
-#ifdef __CLASSROOMSETUP__
-#define TemperatureLED  grnled
-#endif
-#endif
 
 volatile byte analogPin = 0 ;
 const byte connectedPin = 1;
@@ -229,9 +127,13 @@ byte nMaxWaits = 15 ;
 
 #define maxbrightness 255
 byte brightness = maxbrightness ;
+
 #ifdef __CLASSROOMSETUP__
 byte Temperature = 20;
+byte TemperatureOutputPin = 12; 
+byte grnled = TemperatureOutputPin ;
 #endif
+
 const byte maxContrasts = 9 ;
 const int maxsummaryentries = 16 ;
 int pSummary [maxRepeats * maxContrasts * maxsummaryentries];
@@ -298,108 +200,21 @@ int iXDiv = 6 ;
 #endif
 
 
-
-#ifndef __wifisetup__
-//
-
-IPAddressShield myIP, theirIP, dnsIP ;
+IPAddress myIP, theirIP, dnsIP ;
 byte mac[] = { MAC_OK } ;
 
 
 // Initialize the Ethernet server library
 // with the IP address and port you want to use
 // (port 80 is default for HTTP):
-EthernetServerShield server(80);
-EthernetClientShield client ;
+EthernetServer server(80);
+EthernetClient client ;
 // FIX#include <Dns.h>
 
-#else
-IPAddress myIP, theirIP, dnsIP ;
-WiFiServer server (80);
-
-#ifdef ESP8266
-#ifdef ESP8266_DISPLAY
-Adafruit_SSD1306 display = Adafruit_SSD1306();
-#endif
-volatile os_timer_t myTimer;
-WiFiClient client ;
-#else
-WiFiClient client (80);
-#endif
-#endif
-
-#ifdef ESP8266
-void setupESPWiFi ();
-void printWifiStatus(char * c);
-void doShuffle();
-void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML = true, char * pDate = NULL);
-void sendFooter();
-void sendError (const String & sError);
-void send_GoBack_to_Stim_page ();
-
-void updateColour (const bool boolUpdatePage);
-void goColour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
-void goColour(const byte r, const bool boolUpdatePage);
-void goColour(const byte r, const byte g, const byte b, const byte f, const bool boolUpdatePage);
-void serve_dir ();
-//void run_graph();
-void printTwoDigits(char * p, uint8_t v);
-void printDirectory(String s);
-void webTime ();
-void doplotFile ();
-void doFFTFile (const char * c, bool bNeedHeadFooter);
-void doreadFile (const char * c);
-void doreadSummaryFile (const char * c);
-
-void addSummary ();
-
-
-void flickerPage();
-void AppendFlashReport();
-void AppendSSVEPReport();
-void getData ();
-void plotInColour (int iStart, const String & str_col);
-void TC3_Handler(void *pArg);
-void tidyUp_Collection() ;
-//void sendGraphic(StimTypes plot_stimulus);
-//void sendGraphic();
-void sendReply ();
-//void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
-//void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
-//void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage);
-void loop();
-void do_fft();
-int br_Now(double t);
-int Get_br_Now(double t, const double F1contrast, const double F2contrast);
-int fERG_Now (unsigned int t);
-int DayOfWeek (int d, int m, int y);
-
-bool writeFile(char * c);
-
-
-bool collect_Data ();
-void AppendWaitReport ();
-double sgn (double x);
-void writehomepage () ;
-
-void analogReadResolution(int i)
-{
-  // do nothing
-}
-
-uint myReadADC (int i)
-{
-  // see http://www.esp8266.com/viewtopic.php?f=28&t=3223&start=36 comemnt by bernd331
-  // see also http://41j.com/blog/2015/01/esp8266-analogue-input/
-  return system_adc_read();
-}
-#else
-// not an ESP
 int myReadADC (int i)
 {
   return analogRead (i);
 }
-#endif
 
 typedef enum StimTypes  {flash, SSVEP, zap};
 StimTypes eDoFlash = flash ;
@@ -417,26 +232,9 @@ void setup() {
 
 
   pinMode(noContactLED, OUTPUT);
-  pinMode( redled, OUTPUT);
-  pinMode( grnled, OUTPUT);
   pinMode( bluLED, OUTPUT);
-
-
-#ifdef ESP8266
-  system_update_cpu_freq(160);
-
-#ifdef ESP8266_DISPLAY
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-
-  display.display();
-  delay(1000);
-
-  // Clear the buffer.
-  display.clearDisplay();
-  display.display();
-#endif
-#else
-
+  pinMode( whiteled, OUTPUT);
+  pinMode( TemperatureOutputPin, OUTPUT );
   // ...
   pinMode(SS_SD_CARD, OUTPUT);
   pinMode(SS_ETHERNET, OUTPUT);
@@ -448,7 +246,6 @@ void setup() {
   {
     pinMode(i, OUTPUT);
   }
-#endif
 
 
   // Open serial communications and wait for port to open:
@@ -464,21 +261,6 @@ void setup() {
 
   ////////////////////////////////// Setup Disk first
 
-#ifdef ESP8266
-  // initialise Flash disk
-  Serial.println F("Now trying flash drive card ...\n");
-  if (SPIFFS.begin())
-  {
-    Serial.println F("Setting up flash drive  succeded OK...\n");
-  }
-
-#define SD SPIFFS
-#define MyDir Dir
-#define FILE_READ "r"
-#define FILE_WRITE "a"
-
-
-#else
   // initialize the SD card
   Serial.println F("Setting up SD card...\n");
 
@@ -493,16 +275,9 @@ void setup() {
   }
 #define MyDir File
 #define openDir open
-#endif
 
   /////////////////////////// Now setup network...................
-#ifdef __wifisetup__
-  setupESPWiFi();
-  server.begin();                           // start the web server on port 80
-#else
-  // no wifi so ethernet
   setupEthernet();
-#endif
 
   //  //////////////////////////////////////// basic settings for all
 
@@ -511,111 +286,9 @@ void setup() {
   goColour(0, 0, 0, 0, false);
   doShuffle();
 
-#ifdef ESP8266
-  // only call this once
-  os_timer_setfn((ETSTimer *) &myTimer, TC3_Handler, NULL);
-
-#endif
-
 }
 
 
-
-#ifdef __wifisetup__
-
-#ifdef ESP8266
-
-#ifndef ESP8266AP
-//char ssid[] = "SSID";     //  your network SSID (name)
-//char pass[] = "PASSWD";  // your network password
-#include "./secret.h"
-
-// client wifi
-void setupESPWiFi ()
-{
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect(false);
-
-  // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-  int status = WiFi.begin(ssid, pass);
-
-  while ( status != WL_CONNECTED)
-  {
-    Serial.print F("Attempting to connect to Network named: ");
-    Serial.print (ssid);                   // print the network name (SSID);
-    Serial.print F(" with Password: ");
-    Serial.println (pass);
-    status = WiFi.status();
-    Serial.print F("Wifi status ");
-    Serial.println (status);
-    // wait 10 seconds for connection:
-    delay(10000); // 2 s seems enough
-  }
-  myIP = WiFi.localIP();
-
-  Serial.println F("Connected ...");
-  printWifiStatus((char *)ssid);                        // you're connected now, so print out the status
-
-}
-
-#else
-
-// access point wifi
-void setupESPWiFi()
-{
-  WiFi.mode(WIFI_AP);
-
-  char macadr [WL_MAC_ADDR_LENGTH];
-  strcpy (macadr, WiFi.softAPmacAddress().c_str());
-
-  strcpy ( macadr, "FlyBox-" );
-  strcpy ( macadr + 7, macadr + 12 ) ;
-  strcpy ( macadr + 9, macadr + 15 ) ;
-
-  Serial.print F("Setting up access point 8266 with network ");
-  Serial.println (macadr);
-  WiFi.softAP(macadr, pass);
-  myIP = WiFi.softAPIP() ;
-  Serial.print F("ESP accesspoint :");
-  Serial.println (myIP) ;
-  // This would allow access via Bonjour to FlyBox-5DF0.local for example
-  // comment this out saves ~ 500 bytes
-  // MDNS.begin(macadr);
-  printWifiStatus(macadr);
-
-}
-#endif //access point or not
-#endif // wifi
-
-void printWifiStatus(char * c) {
-  //  // print where to go in a browser:
-  Serial.print F("Open a browser to http://");
-  Serial.println (myIP);
-  Serial.print F("on net: ");
-  Serial.println (c);
-  Serial.print F("Passwd: ");
-  Serial.println (pass);
-
-#ifdef ESP8266_DISPLAY
-  // text display the IP address
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 0);
-
-  display.print F("IP: ");
-  display.println (myIP);
-  display.print F("on net: ");
-  display.println (c);
-  display.print F("Passwd: ");
-  display.println (pass);
-  display.setCursor(0, 0);
-  display.display(); // actually display all of the above
-#endif
-}
-
-#endif
-
-#ifndef __wifisetup__
 void setupEthernet()
 {
   digitalWrite(SS_ETHERNET, LOW); // HIGH means Ethernet not active
@@ -628,7 +301,7 @@ void setupEthernet()
   }
   Serial.println ();
 #ifdef USE_DHCP
-  if (! EthernetShield.begin(mac))
+  if (! Ethernet.begin(mac))
   {
     Serial.println F("DHCP failed, trying 172, 16, 1, 10");
 #endif
@@ -638,20 +311,19 @@ void setupEthernet()
     //
     Serial.println F("Please set your mac ethernet to Manually and '172.16.1.1'");
     byte ip[] = { 172, 16, 1, 10 };
-    EthernetShield.begin(mac, ip);
+    Ethernet.begin(mac, ip);
     bNoInternet = true ;
 #ifdef USE_DHCP
   };
 #endif
   server.begin();
   Serial.print F("server is at ");
-  myIP = EthernetShield.localIP() ;
-  dnsIP = EthernetShield.dnsServerIP();
+  myIP = Ethernet.localIP() ;
+  dnsIP = Ethernet.dnsServerIP();
   Serial.print (myIP);
   Serial.print F(" using dns server ");
   Serial.println (dnsIP);
 }
-#endif
 
 void doShuffle()
 {
@@ -707,11 +379,7 @@ unsigned int crc32b(unsigned char *message) {
 }
 
 
-#ifdef ESP8266
-void sendHeader (const String & sTitle, const String & sINBody , bool isHTML , char * pDate)
-#else
 void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML = true, char * pDate = NULL)
-#endif
 {
   // send a standard http response header
   client.println F("HTTP/1.1 200 OK");
@@ -777,26 +445,10 @@ void updateColour (const bool boolUpdatePage)
 void goColour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
 {
   //Serial.println F("colouring 1");
-#ifdef ESP8266
-  //0/1023 rather than 0/255
-  analogWrite( redled, 4 * r );
-  analogWrite( grnled, 4 * g );
-  analogWrite( bluLED, 4 * b );
-#else
-  analogWrite( redled, r );
-  analogWrite( grnled, g );
   analogWrite( bluLED, b );
-#endif
-
-#ifdef due4
-  analogWrite( amberled, a );
   analogWrite( whiteled, w );
-  analogWrite( bluvioletLED, l );
-  analogWrite( cyaled, c );
-#endif
-#ifdef due1
-  analogWrite( fiberLED, a );
-#endif
+  analogWrite( grnled, g );
+  
 
   updateColour( boolUpdatePage);
 
@@ -810,8 +462,8 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
 
 void goColour(const byte r, const bool boolUpdatePage)
 {
-  goColour (r, r, r, 0, r, 0, 0, boolUpdatePage); // should this be all of them ?
-
+  //goColour (r, r, r, 0, r, 0, 0, boolUpdatePage); // should this be all of them ?
+  goColour (0, 0, 0, 0, r, 0, 0, boolUpdatePage);
 }
 
 void goColour(const byte r, const byte g, const byte b, const byte f, const bool boolUpdatePage)
@@ -839,32 +491,11 @@ void printTwoDigits(char * p, uint8_t v)
 }
 
 
-#ifdef ESP8266
-size_t GetFreeSpace ( WiFiClient * client)
-{
-  FSInfo fs_info;
-  SPIFFS.info(fs_info);
-  size_t fBytes = fs_info.totalBytes - fs_info.usedBytes ;
 
-  if (client)
-  {
-    client->print F("Disk size ");
-    client->println (fs_info.totalBytes);
-    client->print F("<BR>used Bytes " );
-    client->println ( fs_info.usedBytes);
-    client->print F("<BR>Free Bytes " );
-    client->println ( fBytes);
-    client->print F("<BR>");
-  }
-  return fBytes ;
-}
-
-#else
 size_t GetFreeSpace ( EthernetClient * client)
 {
   return (size_t) - 1 ;
 }
-#endif
 
 void printDirectory(String s)
 {
@@ -878,24 +509,7 @@ void printDirectory(String s)
 
   char sArray [maxDirSize * 15];
   long lArray [maxDirSize] ;
-#ifdef ESP8266
-  bool bNext ;
 
-  int iFiles = 0 ;
-  bNext =  dir.next();
-  while (bNext)
-  {
-    File entry = dir.openFile("r");
-    //Serial.println (entry.name());
-    strncpy (sArray + (iFiles * 15) , entry.name(), sizeof (entry)) ;
-    lArray [iFiles] = entry.size();
-    //Serial.println ((char*)sArray + (iFiles * 15));
-    iFiles ++ ;
-    //    }
-    entry.close();
-    bNext =  dir.next();
-  }
-#else
   File entry ;
   dir.rewindDirectory();
   int iFiles = 0 ;
@@ -913,7 +527,6 @@ void printDirectory(String s)
     entry.close();
     entry =  dir.openNextFile();
   }
-#endif
 
   GetFreeSpace (& client);
 
@@ -1007,74 +620,70 @@ int zap_Now (unsigned int t)
 
 
 
-void webTime ()
-{
-#ifdef __wifisetup__
-  WiFiClient timeclient;
-#else
-  EthernetClientShield timeclient;
-#endif
-  // default values ...
-  //year = 2015;
-  second = myminute = hour = day = month = 1;
-
-  // Just choose any reasonably busy web server, the load is really low
-  if (timeclient.connect ("www.york.ac.uk", 80))
-  {
-    // Make an HTTP 1.1 request which is missing a Host: header
-    // compliant servers are required to answer with an error that includes
-    // a Date: header.
-    timeclient.print (("GET / HTTP/1.1 \r\n\r\n"));
-    delay (10);
-
-    char buf[5];			// temporary buffer for characters
-    timeclient.setTimeout(8000);
-    if (timeclient.find((char *)"\r\nDate: ") // look for Date: header
-        && timeclient.readBytes(buf, 5) == 5) // discard
-    {
-      day = timeclient.parseInt();	   // day
-      timeclient.readBytes(buf, 1);	   // discard
-      timeclient.readBytes(buf, 3);	   // month
-      year = timeclient.parseInt();	   // year
-      hour = timeclient.parseInt();   // hour
-      myminute = timeclient.parseInt(); // minute
-      second = timeclient.parseInt(); // second
-
-
-      switch (buf[0])
-      {
-        case 'F': month = 2 ; break; // Feb
-        case 'S': month = 9; break; // Sep
-        case 'O': month = 10; break; // Oct
-        case 'N': month = 11; break; // Nov
-        case 'D': month = 12; break; // Dec
-        default:
-          if (buf[0] == 'J' && buf[1] == 'a')
-            month = 1;		// Jan
-          else if (buf[0] == 'A' && buf[1] == 'p')
-            month = 4;		// Apr
-          else switch (buf[2])
-            {
-              case 'r': month =  3; break; // Mar
-              case 'y': month = 5; break; // May
-              case 'n': month = 6; break; // Jun
-              case 'l': month = 7; break; // Jul
-              default: // add a default label here to avoid compiler warning
-              case 'g': month = 8; break; // Aug
-            }
-      } // months sorted
-      //month -- ; // zero based, I guess
-
-    }
-    Serial.println F("webtime:");
-    Serial.println (buf);
-  }
-  delay(10);
-  timeclient.flush();
-  timeclient.stop();
-
-  return ;
-}
+//void webTime ()
+//{
+//  EthernetClientShield timeclient;
+//  // default values ...
+//  //year = 2015;
+//  second = myminute = hour = day = month = 1;
+//
+//  // Just choose any reasonably busy web server, the load is really low
+//  if (timeclient.connect ("www.york.ac.uk", 80))
+//  {
+//    // Make an HTTP 1.1 request which is missing a Host: header
+//    // compliant servers are required to answer with an error that includes
+//    // a Date: header.
+//    timeclient.print (("GET / HTTP/1.1 \r\n\r\n"));
+//    delay (10);
+//
+//    char buf[5];			// temporary buffer for characters
+//    timeclient.setTimeout(8000);
+//    if (timeclient.find((char *)"\r\nDate: ") // look for Date: header
+//        && timeclient.readBytes(buf, 5) == 5) // discard
+//    {
+//      day = timeclient.parseInt();	   // day
+//      timeclient.readBytes(buf, 1);	   // discard
+//      timeclient.readBytes(buf, 3);	   // month
+//      year = timeclient.parseInt();	   // year
+//      hour = timeclient.parseInt();   // hour
+//      myminute = timeclient.parseInt(); // minute
+//      second = timeclient.parseInt(); // second
+//
+//
+//      switch (buf[0])
+//      {
+//        case 'F': month = 2 ; break; // Feb
+//        case 'S': month = 9; break; // Sep
+//        case 'O': month = 10; break; // Oct
+//        case 'N': month = 11; break; // Nov
+//        case 'D': month = 12; break; // Dec
+//        default:
+//          if (buf[0] == 'J' && buf[1] == 'a')
+//            month = 1;		// Jan
+//          else if (buf[0] == 'A' && buf[1] == 'p')
+//            month = 4;		// Apr
+//          else switch (buf[2])
+//            {
+//              case 'r': month =  3; break; // Mar
+//              case 'y': month = 5; break; // May
+//              case 'n': month = 6; break; // Jun
+//              case 'l': month = 7; break; // Jul
+//              default: // add a default label here to avoid compiler warning
+//              case 'g': month = 8; break; // Aug
+//            }
+//      } // months sorted
+//      //month -- ; // zero based, I guess
+//
+//    }
+//    Serial.println F("webtime:");
+//    Serial.println (buf);
+//  }
+//  delay(10);
+//  timeclient.flush();
+//  timeclient.stop();
+//
+//  return ;
+//}
 
 
 bool file_time (char * cIn)
@@ -1145,13 +754,6 @@ bool file_time (char * cIn)
 
 void do_fft();
 
-#ifdef ESP8266
-#define min(a,b) ((a)<(b)?(a):(b))
-#define max(a,b) ((a)>(b)?(a):(b))
-#endif
-
-
-
 
 bool writeFile(char * c)
 {
@@ -1198,7 +800,6 @@ bool writeFile(char * c)
       Serial.println (c);
       return false;
     }
-#ifndef ESP8266
     //FIXED - append - go to end of file
     unsigned long l = wfile.size() ;
     if (wfile.seek(l))
@@ -1212,7 +813,6 @@ bool writeFile(char * c)
       Serial.println (c);
 
     }
-#endif
   }
 
 
@@ -1757,9 +1357,7 @@ void addSummary ()
         kk ++ ;
         pSummary[iOffset + kk] = erg_in[205] ; // 50Hz
         kk ++ ;
-#ifndef ESP8266
         for (int iERG = 0; iERG < max_data; iERG++) erg_in[iERG] = erg_tmp[iERG];
-#endif
       }
       break ;
 
@@ -1878,20 +1476,6 @@ bool writeSummaryFile(const char * cMain)
   return true ;
 }
 
-#ifdef ESP8266
-void startTimer (uint32_t frequency)
-{
-  //os_timer_setfn((ETSTimer *) &myTimer, TC3_Handler, NULL);
-  os_timer_arm((ETSTimer *) &myTimer, 500 / frequency, true); // 1000/frequency
-}
-
-
-void stopTimer()
-{
-  os_timer_disarm((ETSTimer *) &myTimer);
-}
-#else
-
 
 // due
 
@@ -1930,18 +1514,12 @@ void stopTimer(Tc * tc, uint32_t channel, IRQn_Type irq)
   TC_Stop(tc, channel);
   NVIC_DisableIRQ(irq);
 }
-#endif
 
 
-#ifdef ESP8266
-void TC3_Handler(void * pArg)
-{
-#else
 void TC3_Handler()
 {
   // acknowledge interrupt
   TC_GetStatus(TC1, 0);
-#endif
 
   if (sampleCount >= max_data - 1)
   {
@@ -1985,7 +1563,7 @@ void StartTo_collect_Data ()
   mStart = millis();
 #ifdef __CLASSROOMSETUP__
   //turn off warmth while we record...
-  analogWrite(TemperatureLED, 0);
+  analogWrite(TemperatureOutputPin, 0);
   //  Serial.println ("Temp off, data starting..");
 #endif
   sampleCount = -presamples ;
@@ -2064,11 +1642,11 @@ void tidyUp_Collection()
 #ifdef __CLASSROOMSETUP__
   if (nMaxWaits > 1)
   {
-    analogWrite(TemperatureLED, 1000 ); //(Temperature - 20) * 50);
+    analogWrite(TemperatureOutputPin, (Temperature - 20) * 12);
   }
   else
   {
-    analogWrite(TemperatureLED, 0 );
+    analogWrite(TemperatureOutputPin, 0 );
   }
   //  Serial.println("Temperature on again");
 #endif
@@ -2642,18 +2220,14 @@ void sendReply ()
       //turn off any lights we have on...
       goColour(0, false);
 #ifdef __CLASSROOMSETUP__
-      analogWrite(TemperatureLED, Temperature * 4); // range to 1023 on an ESP
+      analogWrite(TemperatureOutputPin, Temperature );
       //      Serial.print("Temperature on at ");
       //      Serial.println (Temperature);
 #endif
     }
     //Serial.println F("repeats now ");
     //Serial.println (nRepeats);
-#ifdef ESP8266
-    if (nRepeats >= maxRepeats)
-#else
     if (wfile && wfile.size() >= exp_size ) //nRepeats >= maxRepeats)
-#endif
     {
       // done so tidy up
       Serial.println F("done and tidy up time");
@@ -2711,8 +2285,8 @@ void sendReply ()
       sendFooter ();
 
 #ifdef __CLASSROOMSETUP__
-      analogWrite(TemperatureLED, 0);
-      //      Serial.println("Temperature off");
+      analogWrite(TemperatureOutputPin, 0);
+            Serial.println("Temperature off");
 #endif
 
       return ;
@@ -2733,80 +2307,16 @@ void sendReply ()
     serve_dir("/") ;
     return ;
   }
-#ifdef ESP8266
-  fPOS = MyInputString.indexOf ("format");
-  if (fPOS > 0)
-  {
-    SPIFFS.format();
-    sendHeader ("disk reformatted");
-    client.print F("disk reformatted: <BR> Click here to go back to the ");
-
-    send_GoBack_to_Stim_page ();
-    Serial.println ( "disk reformatted" );
-    sendFooter ();
-    return ;
-  }
-#endif
 
   //light up
   fPOS = MyInputString.indexOf ("white/");
   if (fPOS > 0)
   {
-#ifdef __CLASSROOMSETUP__
-    // we get white light from the LEDS normally on the RED pin
-    goColour(255, 0, 0, 0, true) ;
-    return;
-#else
     goColour(255, true) ;
     return ;
-#endif
-  }
-
-#ifndef __CLASSROOMSETUP__
-  // none of these colours can be shown in the classroom mode
-  fPOS = MyInputString.indexOf ("amber/");
-  if (fPOS > 0)
-  {
-    //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
-    goColour(0, 0, 0, 255, 0, 0, 0, true) ;
-    return ;
-  }
-  fPOS = MyInputString.indexOf ("cyan/");
-  if (fPOS > 0)
-  {
-    //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
-    goColour(0, 0, 0, 0, 0, 0, 255, true) ;
-    return ;
-  }
-  fPOS = MyInputString.indexOf ("blueviolet/");
-  if (fPOS > 0)
-  {
-    //void go4Colour(const byte r, const byte g, const byte b, const byte a, const byte w, const byte l, const byte c,  const bool boolUpdatePage)
-    goColour(0, 0, 0, 0, 0, 255, 0, true) ;
-    return ;
-  }
-
-  fPOS = MyInputString.indexOf ("red/");
-  if (fPOS > 0)
-  {
-    goColour(255, 0, 0, 0, true) ;
-    return ;
-  }
-  fPOS = MyInputString.indexOf ("blue/");
-  if (fPOS > 0)
-  {
-    goColour(0, 0, 255, 0, true) ;
-    return ;
   }
 
 
-  fPOS = MyInputString.indexOf ("fiber/");
-  if (fPOS > 0)
-  {
-    goColour(0, 0, 0, 255, true) ;
-    return ;
-  }
-#endif
   // but classroomsetup can do blue and black
   fPOS = MyInputString.indexOf ("blue/");
   if (fPOS > 0)
@@ -2856,9 +2366,6 @@ void sendReply ()
   if (fPOS > 0)
   {
 
-#ifdef ESP8266
-    delay(1);
-#endif
 
     // requested a file...
     fPOS = MyInputString.indexOf ("/");
@@ -2924,9 +2431,6 @@ void loop()
   // delay till we are sure data acq is done ??
   // SSVEP ERG is 250 Hz so 4 ms per sample...
   delay(max_data + presamples * 10);
-#ifdef ESP8266
-  delay(1);
-#endif
   if (sampleCount >= max_data - 1)
   {
     tidyUp_Collection() ;
@@ -3072,9 +2576,6 @@ void writehomepage ()
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG_T\" checked>Test ERG<br>\n");
   client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG\" >Save ERG<br>\n");
-#ifndef ESP8266
-  client.print F("<input type=\"radio\" name=\"stim\" value=\"SSVEP\" >SSVEP (sine)<br></td>\n");
-#endif
   client.print F("<td style=\"vertical-align: top;\"><BR>\n");
   client.print F("<select name=\"bri\" size = 7>\n");
   client.print F("<option value=\"50\"  >50%</option>\n");
@@ -3111,6 +2612,37 @@ void writehomepage ()
   client.print F("Please try <a href = \"http://biolpc1677.york.ac.uk/pages\">biolpc1677</a> for starter page");
   sendFooter();
 #endif
+
+/*
+ * // assign onclick handler to hazard checkbox
+document.getElementById('hazard').onclick = function() {
+
+    // is hazard checkbox checked?
+    var hazard = this.checked; // true or false
+
+    // get list of radio buttons with name 'ship'
+    var radios = this.form.elements['ship'];
+
+    // loop through list of radio buttons
+    for (var i=0, len=radios.length; i<len; i++) {
+        var r = radios[i]; // current radio button
+
+        if ( hazard ) { // hazard checkbox checked
+
+            if ( r.value === 'std' ) { // standard shipping
+                r.checked = true; // set checked
+            } else { // not standard shipping
+                r.checked = false; // unchecked
+                r.disabled = true; // disable
+            }
+
+        } else { // hazard not checked
+            r.disabled = false; // no radios disabled
+        }
+
+    }
+}
+ */
 }
 
 void do_fft()
@@ -3141,4 +2673,3 @@ void do_fft()
   radix.get_Magnit( f_r, f_i, (int *) erg_in);
 
 }
-
