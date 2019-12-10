@@ -8,11 +8,11 @@ TWO_CHANNEL_SYSTEM=1;
 KbReleaseWait;
 whichScreen=1
 s = daq.createSession('ni');
-s.DurationInSeconds = 200;1
+s.DurationInSeconds = 200;
 s.Rate = 1000
-   addAnalogInputChannel(s,'Dev3',0,'Voltage')
+   addAnalogInputChannel(s,'Dev4',0,'Voltage')
 if(TWO_CHANNEL_SYSTEM==1)
-    addAnalogInputChannel(s,'Dev3',1,'Voltage')
+    addAnalogInputChannel(s,'Dev4',1,'Voltage')
 end
 
 s.NumberOfScans = 1000;
