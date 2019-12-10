@@ -1,7 +1,7 @@
 
 close all;
 clear all;
-
+writeAllData = false;
 
 SVPfiles = {};
 badSVPFiles = {};
@@ -138,7 +138,7 @@ phenotypePh=NaN(CRF_Max,nPhenotypes, length(FreqsToExtract));
 %% HB and GDS:  Calculate and save individual fly amplitudes
 %% and phases for  the 100% contrast condition
 % Column 5 = 100% contrast column 8 is 30:30;  
-ContrastToExtract = [5,5,5,5,8,8,8]
+ContrastToExtract = [5,5,5,5,8,8,8] ; % 4 for Rory and Sam
 
 for phen = 1 : nPhenotypes
     nFlies (phen) = 1 + ib(phen) - ia(phen) ;
@@ -166,8 +166,10 @@ for phen = 1 : nPhenotypes
     end
     %if we are here, its bound to be an SSVEP...
     phenName{phen} = strrep(strjoin(tmpTxt),'SSVEP','');
-        
-    plot_mean_crf ({myTxt,phenName{phen}}, squeeze(meanCRF(phen,:,:)), dirName, [' phenotype ', num2str(phen)], true, squeeze(SE_CRF(phen,:,:)), maxCRR);
+    
+    if writeAllData
+        plot_mean_crf ({myTxt,phenName{phen}}, squeeze(meanCRF(phen,:,:)), dirName, [' phenotype ', num2str(phen)], true, squeeze(SE_CRF(phen,:,:)), maxCRR);
+    end
 end
 
 %% write out the max CRF for each phenotype
@@ -242,23 +244,25 @@ status=xlwrite(filename, outcells, 'SPSS', 'A1');
 %% write meanCRF here...
 sTxt=[{'Mask','Contrast'},GetFreqNames()];
 
-for phen = 1:nPhenotypes
-    % phenotype..
-    % mask, contrast, 1F1..
-    % CRF
-    sSheet = ['CRF of phen ', num2str(phen)] ;
-    status=xlwrite(filename, [{'CRF for :'}, phenName{phen}], sSheet, 'A1');
-    status=xlwrite(filename, sTxt, sSheet,'A2');
-    status=xlwrite(filename, abs(squeeze(meanCRF(phen,:,:))),sSheet,'A3');
-    
-    if ia(phen) ~= ib(phen)
-        %dont bother writing zeros..
-        status=xlwrite(filename, {'SE'}, sSheet,'A14');
-        status=xlwrite(filename, abs(squeeze(meanCRF(phen,:,1:2))), sSheet,'A15');
-        status=xlwrite(filename, abs(squeeze(SE_CRF(phen,:,3:end))),sSheet,'C15');
+if writeAllData
+    for phen = 1:nPhenotypes
+        % phenotype..
+        % mask, contrast, 1F1..
+        % CRF
+        sSheet = ['CRF of phen ', num2str(phen)] ;
+        status=xlwrite(filename, [{'CRF for :'}, phenName{phen}], sSheet, 'A1');
+        status=xlwrite(filename, sTxt, sSheet,'A2');
+        status=xlwrite(filename, abs(squeeze(meanCRF(phen,:,:))),sSheet,'A3');
+        
+        if ia(phen) ~= ib(phen)
+            %dont bother writing zeros..
+            status=xlwrite(filename, {'SE'}, sSheet,'A14');
+            status=xlwrite(filename, abs(squeeze(meanCRF(phen,:,1:2))), sSheet,'A15');
+            status=xlwrite(filename, abs(squeeze(SE_CRF(phen,:,3:end))),sSheet,'C15');
+        end
+        
     end
-    
-end
+end 
 %%
 
 savefileName = [dirName, filesep, 'CollectedArduinoData.mat'];
