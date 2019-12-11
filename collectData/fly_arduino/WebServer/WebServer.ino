@@ -38,7 +38,7 @@
 
 #ifdef due2
 #define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x6F, 0x9E
-//90-A2-DA-0E-09-A2 biolpc2898 [used in testing...]
+//90-A2-DA-0F-6F-9E biolpc2898 [used in testing...]
 #endif
 
 #ifdef due3
@@ -1540,9 +1540,7 @@ void TC3_Handler()
   }
   else
   {
-#ifndef __CONTACTLESS__
     mean = mean + long(myReadADC(analogPin));
-#endif
   }
   int intensity = stimvalue [sampleCount + presamples] ;
   analogWrite(usedLED, intensity);
@@ -1561,6 +1559,7 @@ void TC3_Handler()
 void StartTo_collect_Data ()
 {
   mStart = millis();
+  mean = 0;
 #ifdef __CLASSROOMSETUP__
   //turn off warmth while we record...
   analogWrite(TemperatureOutputPin, 0);
