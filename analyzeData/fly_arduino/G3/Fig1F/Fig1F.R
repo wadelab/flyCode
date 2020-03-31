@@ -1,4 +1,5 @@
 #Fig 1F Plot and ANOVA
+ library('tidyverse')
  stav <- read.table(pipe("pbpaste"), sep="\t", header=T, na.strings=c(""), check.names=FALSE)
  stavs <- stack (stav)
  stavs <- na.omit(stavs)
@@ -36,14 +37,14 @@
 # TH_G2019S Rab7_23641 1-TH Rab7_23641 1                51168.277  31947.04 70389.51 0.0000001
 
 #same for 2F1
-            Df Sum Sq Mean Sq F value  Pr(>F)    
-ind          3  13392    4464   13.12 5.5e-06 ***
-Residuals   37  12590     340                    
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
->   TukeyHSD(myANOVA)
-  Tukey multiple comparisons of means
-    95% family-wise confidence level
+            # Df Sum Sq Mean Sq F value  Pr(>F)    
+# ind          3  13392    4464   13.12 5.5e-06 ***
+# Residuals   37  12590     340                    
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# >   TukeyHSD(myANOVA)
+  # Tukey multiple comparisons of means
+    # 95% family-wise confidence level
 
 # Fit: aov(formula = values ~ ind, data = stavs)
 
@@ -56,14 +57,14 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 # TH_G2019S Rab7_23641 1-TH_G2019S w 1 female fly blue 38.853970  18.142872 59.56507 0.0000700
 # TH_G2019S Rab7_23641 1-TH Rab7_23641 1               27.240278   6.529180 47.95138 0.0058408
 
-> summary.df <- stavs %>%
+summary.df <- stavs %>%
 +  group_by(ind) %>%
 +  summarise(Observations = n())
-> print (summary.df)
+print (summary.df)
 # A tibble: 4 x 2
-  ind                           Observations
-  <fct>                                <int>
-1 TH w 1 female fly blue                   7
-2 TH_G2019S w 1 female fly blue           11
-3 TH Rab7_23641 1                         11
-4 TH_G2019S Rab7_23641 1                  12
+  # ind                           Observations
+  # <fct>                                <int>
+# 1 TH w 1 female fly blue                   7
+# 2 TH_G2019S w 1 female fly blue           11
+# 3 TH Rab7_23641 1                         11
+# 4 TH_G2019S Rab7_23641 1                  12
