@@ -1,7 +1,10 @@
-function [dataOut]=flytv_runPlaid(dpy,stim)
+function [dataOut]=flytv_SS(dpy,stim)
+% function [dataOut]=flytv_SS(dpy,stim)
+% Based on flytv_PlaidDemo2(cyclespersecond, sfreq,contrast)
 % function dataOut=flytv_PlaidDemo2(cyclespersecond, sfreq,contrast)
-% Generates a 2-component plaid
-% Grating 1 is orthogonal to grating 2
+% Generat es a 2-component stimulus - displays both components on screen at
+% different locations.
+% Grating 1 can be parallel or orthogonal to grating 2
 % All the inputs are now 2 element vectors
 % that specify the parameters for rgating 1 and grating 2
 % So for example
@@ -45,7 +48,7 @@ function [dataOut]=flytv_runPlaid(dpy,stim)
 % History:
 % 3/1/9  mk   Written.
 % 25/04/14 rw531 edited for flytv
-
+% 6/9/19 ARW modified to do surround suppression
 % Make sure this is running on OpenGL Psychtoolbox:
 %AssertOpenGL;
 
@@ -133,10 +136,17 @@ disp(stim.cont)
 toc
 
 % Compute the alpha and amplitudes that we will use
-[amps,alpha]=flytv_computeAlphaAmps(stim.cont);
+amps=stim.thisCont;
+alpha=[1];
+
+
+
+
+% because we are doing surround suppression we will use the 'radius'
+% parameter to window one of the gratings to a circle.
 
 gratingtex1 = CreateProceduralSineGrating(win, dpy.res(1), dpy.res(2),[.5,.5,.5, 1]); % Bottom grating
-gratingtex2 = CreateProceduralSineGrating(win, dpy.res(1), dpy.res(2),[.5 .5 .5 alpha]); % Top grating blend 50%
+gratingtex2 = CreateProceduralSineGrating(win, dpy.res(1), dpy.res(2),[.5 .5 .5 alpha],stim.spatial.centralRadius); % Top grating 100% 
 
 % Wait for release of all keys on keyboard, then sync us to retrace:
 
