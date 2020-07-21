@@ -32,22 +32,18 @@ end
 
 line1a = fgets(fid);
 fclose(fid);
+line1a = line1a(1:strfind(line1a, "HTTP")-2);
 
 if (strfind(line1a, 'GET /?'))
     line1b=strrep(line1a, 'GET /?'  ,'');
-    line1c=strrep(line1b, ' HTTP/1.1','\0');
-    
-   
     % will return line as cell array
-    lineSaved = strsplit(line1c, '&');
+    lineSaved = strsplit(line1b, '&');
     line = lineSaved ;
 else
     %newer code
     line1b=strrep(line1a, 'GET /'  ,'');
-    line1c=strrep(line1b, ' HTTP/1.1','\0');
-    
     % will return line as cell array
-    lineSaved = strsplit(line1c, ',');
+    lineSaved = strsplit(line1b, ',');
     line = lineSaved ;
 end
 
@@ -59,7 +55,7 @@ if (isempty(ix))
     success = false ;
     return
 end
-thisFlyData.fileName = line{ix}(1:strfind(line{ix}, '\')-1) ;
+thisFlyData.fileName = line{ix};
 line (ix)=[];
 
 %%
