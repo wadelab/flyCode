@@ -37,6 +37,7 @@ if (strfind(line1a, 'GET /?'))
     line1b=strrep(line1a, 'GET /?'  ,'');
     line1c=strrep(line1b, 'HTTP/1.1','');
     
+   
     % will return line as cell array
     lineSaved = strsplit(line1c, '&');
     line = lineSaved ;
@@ -134,10 +135,26 @@ thisFlyData.phenotypes = line ;
 try
     alldata = csvread(fName, 1,0);
 catch
-    thisFlyData.Error = ['CSVfunction died with unknown error in file : ', fName];
-    disp(thisFlyData.Error);
-    success = false ;
-    return
+%     %% try to read the file as compressed
+[fid, msg] = fopen(fName, 'rt');
+    %line1a = fgets(fid)
+    A1 = fread(fid,[1,132],'uint8') ; %read this and throw it away as we've already read this
+    
+    %allocate memory for the data
+    alldata = zeros (1025*45, 3) ;
+    
+    for i = 0 : 44
+    alldata ((i*1025)+1:(i*1025)+1025, 3) = fread(fid,[1,1025],'int32') ; %  block of ergs   
+    alldata ((i*1025)+1:(i*1025)+1025, 1) = fread(fid,[1,1025],'int32') ; %  block of time_data
+    alldata ((i*1025)+1025,2) = alldata ((i*1025)+1025,1) ;
+    end
+    fclose(fid);
+    
+    %%
+%     thisFlyData.Error = ['CSVfunction died with unknown error in file : ', fName];
+%     disp(thisFlyData.Error);
+%     success = false ;
+%     return
 end
 [nSamples,c] = size(alldata);
 
