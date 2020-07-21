@@ -143,18 +143,21 @@ catch
     %allocate memory for the data
     alldata = zeros (1025*45, 3) ;
     
-    for i = 0 : 44
-    alldata ((i*1025)+1:(i*1025)+1025, 3) = fread(fid,[1,1025],'int32') ; %  block of ergs   
-    alldata ((i*1025)+1:(i*1025)+1025, 1) = fread(fid,[1,1025],'int32') ; %  block of time_data
-    alldata ((i*1025)+1025,2) = alldata ((i*1025)+1025,1) ;
-    end
-    fclose(fid);
+    try
+        for i = 0 : 44
+            alldata ((i*1025)+1:(i*1025)+1025, 3) = fread(fid,[1,1025],'int32') ; %  block of ergs   
+            alldata ((i*1025)+1:(i*1025)+1025, 1) = fread(fid,[1,1025],'int32') ; %  block of time_data
+            alldata ((i*1025)+1025,2) = alldata ((i*1025)+1025,1) ;
+        end
+        fclose(fid);
     
     %%
-%     thisFlyData.Error = ['CSVfunction died with unknown error in file : ', fName];
-%     disp(thisFlyData.Error);
-%     success = false ;
-%     return
+    catch
+        thisFlyData.Error = ['Binary Read function died with - file too small : ', fName];
+        disp(thisFlyData.Error);
+        success = false ;
+        return
+    end
 end
 [nSamples,c] = size(alldata);
 
