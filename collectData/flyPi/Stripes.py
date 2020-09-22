@@ -33,9 +33,10 @@ else:
         return data
 
 Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
-if not os.path.exists('/home/pi/Data'):
-        os.mkdir('/home/pi/Data')
-os.chdir('/home/pi/Data')
+#if not os.path.exists('/home/pi/Data'):
+#        os.mkdir('/home/pi/Data')
+#os.chdir('/home/pi/Data')
+os.chdir('/var/www/html')
 
 # create an array
 qty = 3 #  max types of stimulus
@@ -64,7 +65,7 @@ i = 0
 
 myCount = 0
 frame_rate = mywin.getActualFrameRate()
-frame_rpts = 15
+frame_rpts = 45
 stim_per_rpt = 4
 extra_samples_per_frame = 1
 sampling_values = numpy.zeros(((1 + extra_samples_per_frame) * frame_rpts * stim_per_rpt * 2, qty + 1), dtype=int)
@@ -123,7 +124,9 @@ plt.plot(sampling_values[:, 0], sampling_values[:, 1], linestyle='solid', marker
 
 # do an FFT
 rate = 120.  # rate of data collection in points per second
-ff = numpy.zeros((121, qty), dtype=float)
+lx = len(sampling_values)
+lx = (lx // 2) + 1
+ff = numpy.zeros((lx, qty), dtype=float)
 for i in range(qty):
     ff[:, i] = abs(numpy.fft.rfft(sampling_values[:, i + 1]))
 fx = numpy.linspace(0, rate / 2, len(ff))
