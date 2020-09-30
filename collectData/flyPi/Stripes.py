@@ -15,6 +15,14 @@ if "Darwin" in platform.system():
     def read_channel(x):
         adc = x + random.randrange(1023)
         return adc
+    
+    myHome = os.path.expanduser('~')  
+    myDataDir = myHome + '/pi_Data'  
+    if not os.path.exists( myDataDir ):
+	    os.mkdir(myDataDir)
+    os.chdir(myDataDir)
+	
+	
 else:
     import spidev
 
@@ -31,12 +39,14 @@ else:
         adc = spi.xfer2([1, (8 + channel) << 4, 0])
         data = ((adc[1] & 3) << 8) + adc[2]
         return data
-
+	#if not os.path.exists('/home/pi/Data'):
+	#        os.mkdir('/home/pi/Data')
+	#os.chdir('/home/pi/Data')
+    os.chdir('/var/www/html')
+	
+	
 Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
-#if not os.path.exists('/home/pi/Data'):
-#        os.mkdir('/home/pi/Data')
-#os.chdir('/home/pi/Data')
-os.chdir('/var/www/html')
+
 
 # create an array
 qty = 3 #  max types of stimulus
@@ -51,17 +61,6 @@ mywin = visual.Window([800, 600], monitor="testMonitor", units="deg")
 clock = core.Clock()
 expt_clock = core.Clock()
 timer = core.Clock()
-# setting the range of coordinates and how many coordinates to produce
-frame = 7.5
-seconds_stim = 1
-frame_rate = mywin.getActualFrameRate()
-
-i = 0
-#while i < qty: # need to make this randomise the order of the stimuli 
-    #x = random.randrange(*rangeX)
-    #y = random.randrange(*rangeY)
-    #cordinates[i, :] = [x, y]
-    #i += 1
 
 myCount = 0
 frame_rate = mywin.getActualFrameRate()
@@ -70,7 +69,7 @@ stim_per_rpt = 4
 extra_samples_per_frame = 1
 sampling_values = numpy.zeros(((1 + extra_samples_per_frame) * frame_rpts * stim_per_rpt * 2, qty + 1), dtype=int)
 
-for i in range(qty):  # show all dots one after another
+for i in range(qty):  
     clock.reset(0.00)
     frame_count = 0
     fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=cordinates[i,0], contrast=1, phase=(0.0, 0.0))
