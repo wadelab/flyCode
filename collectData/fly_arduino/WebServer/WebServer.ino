@@ -223,9 +223,9 @@ bool bTestFlash = true ;
 byte nRepeats = 0;
 const byte maxRepeats = 5;
 //byte nWaits = 1;
-//byte nMaxWaits = 1 ;
+byte nMaxWaits = 1 ;
 byte nWaits = 15;
-byte nMaxWaits = 15 ;
+//byte nMaxWaits = 15 ;
 
 #define maxbrightness 255
 byte brightness = maxbrightness ;
@@ -2367,7 +2367,7 @@ void sendGraphic(StimTypes plot_stimulus)
   istep = 15;
   plot_limit = max_data - max_data / 6 ;
   iXFactor = 4;
-  iYFactor = 10 ;
+  iYFactor = 50 ;
   iBaseline = 260 ;
   iXDiv = 6 ;
   if (SSVEP == plot_stimulus)
@@ -2375,7 +2375,7 @@ void sendGraphic(StimTypes plot_stimulus)
     istep = 1;
     plot_limit = plot_limit / 2;
     iXFactor = 10 ;
-    iYFactor = 5;
+    iYFactor = 10;
     iBaseline = 420 ;
     iXDiv = 5 ;
   }
@@ -2567,7 +2567,7 @@ void sendReply ()
       case SSVEP:
         sFile = sFile + (".SVP");
         exp_size = exp_size + (maxRepeats * maxContrasts * data_block_size) ;
-        analogPin = 3 ;
+        analogPin = 0 ;
     }
 
     //Serial.println F(" Proposed filename now" + sFile + ";");
@@ -2605,6 +2605,7 @@ void sendReply ()
       }
       // new file
       nRepeats = iThisContrast = 0 ;
+#ifdef __CLASSROOMSETUP__      
       switch (Temperature)
       {
 
@@ -2626,6 +2627,7 @@ void sendReply ()
 
 
       }
+#endif      
       nWaits = nMaxWaits ;
       if (bTestFlash)
       {
@@ -3141,4 +3143,3 @@ void do_fft()
   radix.get_Magnit( f_r, f_i, (int *) erg_in);
 
 }
-

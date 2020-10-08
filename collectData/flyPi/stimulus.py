@@ -10,11 +10,30 @@ import os
 import matplotlib.pyplot as plt
 import pdb
 from datetime import datetime
+import argparse
+
+parser = argparse.ArgumentParser(description='fly Pi')
+parser.add_argument("-p", "--protocol", type = str, default='stripes',
+                    help="This is the protocol variable, defaults to stripes")
+
+args = parser.parse_args()
+pdb.set_trace()
+protocol = args.protocol
+
+
 
 if "Darwin" in platform.system():
     def read_channel(x):
         adc = x + random.randrange(1023)
         return adc
+    
+    myHome = os.path.expanduser('~')  
+    myDataDir = myHome + '/pi_Data'  
+    if not os.path.exists( myDataDir ):
+	    os.mkdir(myDataDir)
+    os.chdir(myDataDir)
+	
+	
 else:
     import spidev
 
@@ -31,37 +50,36 @@ else:
         adc = spi.xfer2([1, (8 + channel) << 4, 0])
         data = ((adc[1] & 3) << 8) + adc[2]
         return data
-
+	#if not os.path.exists('/home/pi/Data'):
+	#        os.mkdir('/home/pi/Data')
+	#os.chdir('/home/pi/Data')
+    os.chdir('/var/www/html')
+	
+	
 Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
-#if not os.path.exists('/home/pi/Data'):
-#        os.mkdir('/home/pi/Data')
-#os.chdir('/home/pi/Data')
-os.chdir('/var/www/html')
 
+#protocol = 'stripes'
 # create an array
-qty = 3 #  max types of stimulus
-#sf = 0.2/0.4/0.8 gives 4/18/16 stripes
-cordinates = numpy.zeros((qty, 2), dtype=float)
-cordinates [0,0] = 0.2
-cordinates [1,0] = 0.4
-cordinates [2,0] = 0.8
+qty = 4 #  max types of stimulus
+#sf = 0.2/0.4/0.8 gives 4/8/16 stripes
+#contrast col 2 0 to 1
+cordinates = numpy.zeros((qty, qty), dtype=float)
+if protocol == 'stripes':
+    x = 0
+else:
+    x = 1
+
+for i in range(qty):
+	cordinates [i,x] = 0.2 * i
+
+
+print(cordinates)
 
 # create a window
 mywin = visual.Window([800, 600], monitor="testMonitor", units="deg")
 clock = core.Clock()
 expt_clock = core.Clock()
 timer = core.Clock()
-# setting the range of coordinates and how many coordinates to produce
-frame = 7.5
-seconds_stim = 1
-frame_rate = mywin.getActualFrameRate()
-
-i = 0
-#while i < qty: # need to make this randomise the order of the stimuli 
-    #x = random.randrange(*rangeX)
-    #y = random.randrange(*rangeY)
-    #cordinates[i, :] = [x, y]
-    #i += 1
 
 myCount = 0
 frame_rate = mywin.getActualFrameRate()
@@ -70,11 +88,11 @@ stim_per_rpt = 4
 extra_samples_per_frame = 1
 sampling_values = numpy.zeros(((1 + extra_samples_per_frame) * frame_rpts * stim_per_rpt * 2, qty + 1), dtype=int)
 
-for i in range(qty):  # show all dots one after another
+for i in range(qty):  
     clock.reset(0.00)
     frame_count = 0
-    fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=cordinates[i,0], contrast=1, phase=(0.0, 0.0))
-    inverse_fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=cordinates[i,0], contrast=-1, phase=(0.0, 0.0))
+    fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=cordinates[i,0], contrast=cordinates[i,1], phase=(0.0, 0.0))
+    inverse_fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=cordinates[i,0], contrast=-cordinates[i,1], phase=(0.0, 0.0))
 
     for j in range(frame_rpts):  # 15 times should give us 2 sec of flicker
         # this next bit should take 1/60 * 8 sec, ie 7.5 Hz
@@ -113,7 +131,7 @@ expt_time = expt_clock.getTime()
 # close window
 mywin.close()
 
-numpy.savetxt('myData.csv', sampling_values, delimiter=',', fmt='%i', newline='\n')
+numpy.savetxt('myData.csv', sampling_values, delimiter=',', fmt='%i', newline='\n', header='Protocol=' + protocol)
 
 print('Frame rate is ' + str(frame_rate))
 print('Expt time was ' + str(expt_time))
@@ -146,7 +164,7 @@ coords_with_data = numpy.append(cordinates, ff_2d_tr, axis=1)
 
 # merge x axis (frequency data) and y FFT data
 fall = numpy.insert(ff, 0, fx, axis=1)
-numpy.savetxt('myFFT.csv', fall, delimiter=',', newline='\n')
+numpy.savetxt('myFFT.csv', fall, delimiter=',', newline='\n', header='Protocol=' + protocol)
 
 plt.savefig('myGraphic.PDF')
 
