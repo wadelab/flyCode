@@ -12,7 +12,7 @@ import pdb
 from datetime import datetime
 
 if "Darwin" in platform.system():
-    def read_channel(x):
+    def read_channel(t, s, x):
         adc = x + random.randrange(1023)
         return adc
 else:
@@ -26,10 +26,13 @@ else:
 
     # Function to read SPI data from MCP3008 chip
     # Channel must be an integer 0-7
-    def read_channel(x):
+    def read_channel(t, s, x):
+        t.reset(0.0)
         channel = 0
         adc = spi.xfer2([1, (8 + channel) << 4, 0])
         data = ((adc[1] & 3) << 8) + adc[2]
+        while t.getTime () < 1.0/ (60.0 * s) :
+            pass
         return data
 
 Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
@@ -66,14 +69,14 @@ i = 0
 myCount = 0
 frame_rate = mywin.getActualFrameRate()
 frame_rpts = 2
-buffer_size= 450000
+buffer_size= 4500
 
 stim_per_rpt = 4
-extra_samples_per_frame = 1
-sampling_values = numpy.zeros(((1 + extra_samples_per_frame) * buffer_size * stim_per_rpt * 2, qty + 1), dtype=int)
+samples_per_frame = 10
+sampling_values = numpy.zeros(((1 + samples_per_frame) * buffer_size * stim_per_rpt * 2, qty + 1), dtype=int)
 
-for i in range(qty):  # show all dots one after another
-    clock.reset(0.00)
+for i in range(qty):  
+    
     frame_count = 0
     fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast=cordinates[i,0],  phase=(0.0, 0.0))
     inverse_fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast = - cordinates[i,0], phase=(0.0, 0.0))
@@ -82,42 +85,24 @@ for i in range(qty):  # show all dots one after another
     mywin.flip(clearBuffer=False)
     fixation.draw()
     mywin.flip(clearBuffer=False)
+    clock.reset(0.00)
 
     for j in range(frame_rpts):  # 15 times should give us 2 sec of flicker
         # this next bit should take 1/60 * 8 sec, ie 7.5 Hz
         for k in range(stim_per_rpt):  # show each pattern for 4 frames; sample every frame
-            # create some stimuli
-            
 
-            sampling_values[frame_count, i + 1] = read_channel(100)
-            sampling_values[frame_count, 0] = 1000 * clock.getTime()
-            frame_count = frame_count + 1
-            timer.reset(0.00)
-#            for l in range(extra_samples_per_frame):  # take some extra samples per frame
-            while timer.getTime() < (0.00833333*8):
-               myCount = myCount + 1
-
-
-               sampling_values[frame_count, i + 1] = read_channel(100)
-               sampling_values[frame_count, 0] = 1000 * clock.getTime()
+            for l in range(samples_per_frame):  # take some extra samples per frame
+               sampling_values[frame_count, 0] = 1000 * 1000 * clock.getTime()
+               sampling_values[frame_count, i + 1] = read_channel(timer, samples_per_frame, 100)
                frame_count = frame_count + 1
                
         mywin.flip(clearBuffer=False)
           
         for k in range(stim_per_rpt):  # now show the opposite frame
-#            inverse_fixation.draw()
-            sampling_values[frame_count, i + 1] = read_channel(-100)
-            sampling_values[frame_count, 0] = 1000 * clock.getTime()
-            frame_count = frame_count + 1
-            timer.reset(0.00)
-#            for l in range(extra_samples_per_frame):
-            while timer.getTime() < (0.0083333333*8):
-               myCount = myCount + 1
-               sampling_values[frame_count, i + 1] = read_channel(-100)
-               sampling_values[frame_count, 0] = 1000 * clock.getTime()
+            for l in range(samples_per_frame):
+               sampling_values[frame_count, 0] = 1000 * 1000 * clock.getTime()
+               sampling_values[frame_count, i + 1] = read_channel(timer, samples_per_frame, -100)
                frame_count = frame_count + 1
-                
-
             
         mywin.flip(clearBuffer=False)
 
@@ -132,7 +117,7 @@ numpy.savetxt('myData.csv', sampling_values, delimiter=',', fmt='%i', newline='\
 
 print('Frame rate is ' + str(frame_rate))
 print('Expt time was ' + str(expt_time))
-
+print('sample time was ' + str (1.0/ (60.0 * samples_per_frame)))
 # matplotlib graph the raw data
 plt.subplot(2, 2, 1)  # (rows, columns, panel number)
 plt.plot(sampling_values[:, 0], sampling_values[:, 1], linestyle='solid', marker='None')
