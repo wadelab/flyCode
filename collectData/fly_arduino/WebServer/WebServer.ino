@@ -165,9 +165,9 @@ const byte noContactLED = 2;
 // define LED mapping here
 const byte bluvioletLED = 8 ;
 const byte amberled = 6;
-const byte whiteled = 11;
+const byte whiteled = 13;
 const byte cyaled = 9;
-const byte extrawhitepin = 53;
+const byte extrawhitepin = 51;
 
 #ifdef ARDUINO_LINUX
 const byte redled = 3;
@@ -182,9 +182,9 @@ const byte bluLED = 5;
 #endif
 
 #ifdef due4
-const byte redled = 7;
-const byte grnled = 3;
-const byte bluLED = 5;
+const byte redled = 11;
+const byte grnled = 12;
+const byte bluLED = 11;
 #endif
 
 #ifdef due5
@@ -1962,9 +1962,7 @@ void TC3_Handler()
   }
   else
   {
-#ifndef __CONTACTLESS__
     mean = mean + long(myReadADC(analogPin));
-#endif
   }
   int intensity = stimvalue [sampleCount + presamples] ;
   analogWrite(usedLED, intensity);
@@ -2367,7 +2365,7 @@ void sendGraphic(StimTypes plot_stimulus)
   istep = 15;
   plot_limit = max_data - max_data / 6 ;
   iXFactor = 4;
-  iYFactor = 50 ;
+  iYFactor = 10 ;
   iBaseline = 260 ;
   iXDiv = 6 ;
   if (SSVEP == plot_stimulus)
@@ -2375,7 +2373,7 @@ void sendGraphic(StimTypes plot_stimulus)
     istep = 1;
     plot_limit = plot_limit / 2;
     iXFactor = 10 ;
-    iYFactor = 10;
+    iYFactor = 2 ;
     iBaseline = 420 ;
     iXDiv = 5 ;
   }
@@ -2427,13 +2425,13 @@ void sendGraphic(StimTypes plot_stimulus)
   {
     client.println F("ctx.beginPath();");
     client.print F("m(");
-    client.print (10 + (10 * light_NOW(time_stamp[1] - time_stamp[0], plot_stimulus)) / iYFactor);
+    client.print (10 + (10 * light_NOW(time_stamp[1] - time_stamp[0], plot_stimulus)) / (10 * iYFactor));
     client.println F(");");
 
     for (int i = 2 * istep + 1; i < plot_limit; i = i + 15)
     {
       client.print F("l(");
-      client.print (10 + (10 * light_NOW(time_stamp[i / 2] - time_stamp[0], plot_stimulus) ) / iYFactor);
+      client.print (10 + (10 * light_NOW(time_stamp[i / 2] - time_stamp[0], plot_stimulus) ) / (10 * iYFactor));
       client.println F(");");
     }
     client.println F("ctx.stroke();");
