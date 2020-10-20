@@ -134,6 +134,7 @@ catch
 %     %% try to read the file as compressed
 [fid, msg] = fopen(fName, 'rt');
     %line1a = fgets(fid)
+    %original code was 132; later was extended to 135
     A1 = fread(fid,[1,132],'uint8') ; %read this and throw it away as we've already read this
     
     %allocate memory for the data
