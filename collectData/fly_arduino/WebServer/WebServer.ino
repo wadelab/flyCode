@@ -2230,7 +2230,7 @@ void AppendSSVEPReport()
 
     client.println F("please wait....<BR>");
     //if (iThisContrast > 0)
-    if (wfile && (wfile.size() > MaxInputStr + 2 + data_block_size ) ) // at least one data block
+    if (wfile && (wfile.size() > MaxInputStr + 2 ) ) // at least one data block
     {
       iThisContrast -- ;
       client.println F("<canvas id=\"myCanvas\" width=\"620\" height=\"450\" style=\"border:1px solid #d3d3d3;\">");
@@ -2246,7 +2246,7 @@ void AppendSSVEPReport()
       client.println F("i = i + 8;");  // iStep ??
       client.println F("};");
       client.println F("function m(v){");
-      client.println F("ctx.moveTo(0,v);");
+      client.println F("ctx.moveTo(8,v);");
       client.println F("i = 8;");
       client.println F("};");
 
@@ -2255,23 +2255,34 @@ void AppendSSVEPReport()
       client.println F(" ctx = can.getContext(\"2d\");");
 
       int iStep = 2;
+      int iStart = iStep * 2;
       client.print F("m(");
-      client.print (myGraphData[0] / 4 + 350);
+      int u =  myGraphData[iStart]; // some nasty overflow hrer - FIXME
+      if (u < 128)
+      {
+        u = u + 256 ;
+      }
+      client.print ( u );
       client.print F(");");
-      for (int i = 1; i < 5 * max_graph_data - 2; i = i + iStep)
+      for (int i = iStart; i < 5 * max_graph_data - 2; i = i + iStep)
       {
         client.print F("l(");
-        client.print (myGraphData[i + iStep] / 4 + 350);
+        int u =  myGraphData[i]; // some nasty overflow hrer - FIXME
+        if (u < 128)
+        {
+          u = u + 256 ;
+        }
+        client.print ( u );
         client.println F(");");
       }
       client.println F("ctx.stroke();");
       client.print F("m(");
-      client.print (br_Now(time_stamp[0]) );
+      client.print (br_Now(time_stamp[iStart]) );
       client.println F(");");
-      for (int i = 1; i < 5 * max_graph_data - 2; i = i + iStep)
+      for (int i = iStart; i < 5 * max_graph_data - 2; i = i + iStep)
       {
         client.print F("l(");
-        client.print (br_Now(time_stamp[i + iStep]));
+        client.print (br_Now(time_stamp[i]));
         client.println F(");");
       }
       client.println F("ctx.stroke(); }");
@@ -2603,7 +2614,7 @@ void sendReply ()
       }
       // new file
       nRepeats = iThisContrast = 0 ;
-#ifdef __CLASSROOMSETUP__      
+#ifdef __CLASSROOMSETUP__
       switch (Temperature)
       {
 
@@ -2625,7 +2636,7 @@ void sendReply ()
 
 
       }
-#endif      
+#endif
       nWaits = nMaxWaits ;
       if (bTestFlash)
       {
