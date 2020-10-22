@@ -2255,7 +2255,7 @@ void AppendSSVEPReport()
       client.println F(" ctx = can.getContext(\"2d\");");
 
       int iStep = 2;
-      int iStart = iStep * 2;
+      const int iStart = 0;
       client.print F("m(");
       int u =  myGraphData[iStart]; // some nasty overflow hrer - FIXME
       if (u < 128)
@@ -2372,22 +2372,24 @@ int max_array(int * a, int num_elements)
 
 void sendGraphic(StimTypes plot_stimulus)
 {
+  if (SSVEP == plot_stimulus)
+  {
+    sendFFTTrace();
+  }
+  else
+  {
+    sendTrace();
+  }
+}
 
+void sendTrace ()
+{
   istep = 15;
   plot_limit = max_data - max_data / 6 ;
   iXFactor = 4;
   iYFactor = 10 ;
   iBaseline = 260 ;
   iXDiv = 6 ;
-  if (SSVEP == plot_stimulus)
-  {
-    istep = 1;
-    plot_limit = plot_limit / 2;
-    iXFactor = 10 ;
-    iYFactor = 2 ;
-    iBaseline = 420 ;
-    iXDiv = 5 ;
-  }
 
   client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
   client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
@@ -2432,35 +2434,85 @@ void sendGraphic(StimTypes plot_stimulus)
   }
   client.println F("ctx.stroke();");
 
-  if (SSVEP != plot_stimulus)
+
+  client.println F("ctx.beginPath();");
+  client.print F("m(");
+  client.print (10 + (10 * light_NOW(time_stamp[1] - time_stamp[0], flash)) / (10 * iYFactor));
+  client.println F(");");
+
+  for (int i = 2 * istep + 1; i < plot_limit; i = i + 15)
   {
-    client.println F("ctx.beginPath();");
-    client.print F("m(");
-    client.print (10 + (10 * light_NOW(time_stamp[1] - time_stamp[0], plot_stimulus)) / (10 * iYFactor));
+    client.print F("l(");
+    client.print (10 + (10 * light_NOW(time_stamp[i / 2] - time_stamp[0], flash) ) / (10 * iYFactor));
     client.println F(");");
-
-    for (int i = 2 * istep + 1; i < plot_limit; i = i + 15)
-    {
-      client.print F("l(");
-      client.print (10 + (10 * light_NOW(time_stamp[i / 2] - time_stamp[0], plot_stimulus) ) / (10 * iYFactor));
-      client.println F(");");
-    }
-    client.println F("ctx.stroke();");
   }
-
-  if (SSVEP == plot_stimulus)
-  {
-    plotInColour (4 * 12, String ("#0000FF"));
-    plotInColour (4 * 15, String ("#0088FF"));
-    plotInColour (4 * 12 * 2, String ("#8A2BE2"));
-    plotInColour (4 * 27, String ("#FF8C00"));
-    // 1024 rather than 1000
-    plotInColour (4 * 51, String ("#FF0000"));
-  }
-
+  client.println F("ctx.stroke();");
   client.println F("} </script>");
 }
 
+void sendFFTTrace ()
+{
+
+  istep = 2;
+  plot_limit = (max_data - max_data / 6) / 3;
+  iXFactor = 2 ;
+  iYFactor = 2 ;
+  iBaseline = 420 ;
+  iXDiv = 1 ;
+
+
+  client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
+  client.println F("Your browser does not support the HTML5 canvas tag.</canvas>");
+
+  client.println F("<script>");
+  client.println F("var can;");
+  client.println F("var ctx;");
+  client.print   ("var i = ");
+  client.print   ((iXFactor * istep) / iXDiv );
+  client.println F("; ");
+
+  client.println F("function l(v){");
+  client.println F("ctx.lineTo(i,v);");
+  client.println F("i = i +  ");
+  client.print   ((iXFactor * istep) / iXDiv );
+  client.println F("; ");  // iStep ??
+  client.println F("};");
+  client.println F("function m(v){");
+  client.println F("ctx.moveTo(0,v);");
+  client.print   ("i = ");
+  client.print   ((iXFactor * istep) / iXDiv );
+  client.println F("; ");
+  client.println F("};");
+
+  client.println F("function init() {");
+  client.println F(" can = document.getElementById(\"myCanvas\");");
+  client.println F(" ctx = can.getContext(\"2d\");");
+  //client.println F(" ctx.scale(0.21,1);");
+
+  // move to start of line
+  client.println F("ctx.beginPath();");
+  client.print F("m(");
+  client.print (iBaseline - (10 * myGraphData[istep]) / iYFactor);
+  client.print F(");\n");
+
+  //now join up the line
+  for (int i = istep; i < plot_limit; i = i + istep) // default is istep of 15
+  {
+    client.print F("l(");
+    client.print (iBaseline - (10 * myGraphData [i] ) / iYFactor);
+    client.print F(");\n");
+  }
+  client.println F("ctx.stroke();");
+
+  plotInColour (4 * 12, String ("#0000FF"));
+  plotInColour (4 * 15, String ("#0088FF"));
+  plotInColour (4 * 12 * 2, String ("#8A2BE2"));
+  plotInColour (4 * 27, String ("#FF8C00"));
+  // 1024 rather than 1000
+  plotInColour (4 * 51, String ("#FF0000"));
+
+  client.println F("} </script>");
+}
 
 void sendReply ()
 {
