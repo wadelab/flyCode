@@ -12,8 +12,15 @@ import pdb
 from datetime import datetime
 
 if "Darwin" in platform.system():
+    if not os.path.exists('/home/pi/Data'):
+        os.mkdir('/home/pi/Data')
+    os.chdir('/home/pi/Data')
+    
     def read_channel(t, s, x):
+        t.reset(0.0)
         adc = x + random.randrange(1023)
+        while t.getTime () < 1.0/ (60.0 * s) :
+            pass
         return adc
 else:
     import spidev
@@ -22,7 +29,8 @@ else:
     spi = spidev.SpiDev()
     spi.open(0, 0)
     spi.max_speed_hz =390000 
-
+    
+    os.chdir('/var/www/html')
 
     # Function to read SPI data from MCP3008 chip
     # Channel must be an integer 0-7
@@ -36,10 +44,8 @@ else:
         return data
 
 Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
-#if not os.path.exists('/home/pi/Data'):
-#        os.mkdir('/home/pi/Data')
-#os.chdir('/home/pi/Data')
-os.chdir('/var/www/html')
+
+
 
 # create an array
 qty = 3 #  max types of stimulus
@@ -68,19 +74,20 @@ i = 0
 
 myCount = 0
 frame_rate = mywin.getActualFrameRate()
-frame_rpts = 2
-buffer_size= 4500
+frame_rpts = 15
 
+#pdb.set_trace()
 stim_per_rpt = 4
 samples_per_frame = 10
-sampling_values = numpy.zeros(((1 + samples_per_frame) * buffer_size * stim_per_rpt * 2, qty + 1), dtype=int)
+n_rows= 2 * samples_per_frame  * stim_per_rpt * frame_rpts #need 2x because we do two halves of the loop
+sampling_values = numpy.zeros(( n_rows, qty + 1), dtype=int)
 
 for i in range(qty):  
-    
+    #generate some stimuli
     frame_count = 0
     fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast=cordinates[i,0],  phase=(0.0, 0.0))
     inverse_fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast = - cordinates[i,0], phase=(0.0, 0.0))
-
+    #draw the stimuli once, so we can flick back and forwards
     inverse_fixation.draw()
     mywin.flip(clearBuffer=False)
     fixation.draw()
