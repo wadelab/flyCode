@@ -12,9 +12,10 @@ import pdb
 from datetime import datetime
 
 if "Darwin" in platform.system():
-    if not os.path.exists('/home/pi/Data'):
-        os.mkdir('/home/pi/Data')
-    os.chdir('/home/pi/Data')
+    myHomePath = os.path.expanduser('~/pi/Data')    
+    if not os.path.exists(myHomePath):
+        os.makedirs(myHomePath)    
+    os.chdir(myHomePath) 
     
     def read_channel(t, s, x):
         t.reset(0.0)
