@@ -20,7 +20,7 @@ if "Darwin" in platform.system():
     def read_channel(t, s, x):
         t.reset(0.0)
         adc = x + random.randrange(1023)
-        while t.getTime () < 1.0/ (60.0 * s) :
+        while t.getTime () < 0.0017 : #1.0/ (60.0 * (1+s)) :
             pass
         return adc
 else:
@@ -40,7 +40,7 @@ else:
         channel = 0
         adc = spi.xfer2([1, (8 + channel) << 4, 0])
         data = ((adc[1] & 3) << 8) + adc[2]
-        while t.getTime () < 1.0/ (60.0 * s) :
+        while t.getTime () < 0.0017 : #
             pass
         return data
 
@@ -57,7 +57,7 @@ cordinates [1,0] = 0.4
 cordinates [2,0] = 0.8
 
 # create a window
-mywin = visual.Window([800, 600], monitor="testMonitor", units="deg", screen=0)
+mywin = visual.Window([800, 600], monitor="testMonitor", units="deg", screen=0, waitBlanking = False)
 clock = core.Clock()
 expt_clock = core.Clock()
 timer = core.Clock()
@@ -86,6 +86,7 @@ sampling_values = numpy.zeros(( n_rows, qty + 1), dtype=int)
 for i in range(qty):  
     #generate some stimuli
     frame_count = 0
+    
     fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast=cordinates[i,0],  phase=(0.0, 0.0))
     inverse_fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast = - cordinates[i,0], phase=(0.0, 0.0))
     #draw the stimuli once, so we can flick back and forwards
@@ -95,7 +96,7 @@ for i in range(qty):
     mywin.flip(clearBuffer=False)
     clock.reset(0.00)
 
-    for j in range(frame_rpts):  # 15 times should give us 2 sec of flicker
+    while frame_count < n_rows: #for j in range(frame_rpts):  # 15 times should give us 2 sec of flicker
         # this next bit should take 1/60 * 8 sec, ie 7.5 Hz
         for k in range(stim_per_rpt):  # show each pattern for 4 frames; sample every frame
 
@@ -113,7 +114,7 @@ for i in range(qty):
                frame_count = frame_count + 1
             
         mywin.flip(clearBuffer=False)
-
+        
 
 
 
@@ -125,7 +126,7 @@ numpy.savetxt('myData.csv', sampling_values, delimiter=',', fmt='%i', newline='\
 
 print('Frame rate is ' + str(frame_rate))
 print('Expt time was ' + str(expt_time))
-print('sample time was ' + str (1.0/ (60.0 * samples_per_frame)))
+#print('sample time was ' + str (1.0/ (60.0 * samples_per_frame)))
 # matplotlib graph the raw data
 plt.subplot(2, 2, 1)  # (rows, columns, panel number)
 plt.plot(sampling_values[:, 0], sampling_values[:, 1], linestyle='solid', marker='None')
