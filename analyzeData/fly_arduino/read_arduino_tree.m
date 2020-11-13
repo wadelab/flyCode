@@ -1,6 +1,13 @@
+function [] =read_arduino_tree(fInputDir, varargin)
 
+
+%%
+%handle arguments..
+
+%%
 close all;
-clear all;
+%clear all;
+clearvars -except fInputDir nargin
 writeAllData = false;
 
 SVPfiles = {};
@@ -9,7 +16,11 @@ fileIDs = {};
 addmetothepath ;
 sExt = getPictExt () ;
 
-dirName=uigetdir();
+if nargin < 1
+    dirName=uigetdir();
+else
+    dirName = fInputDir
+end
 SVPfiles =  walk_a_directory_recursively(dirName, '*.SVP');
 SVPfiles = [SVPfiles; walk_a_directory_recursively(dirName, '*.svp')];
 SVPfiles = [SVPfiles; walk_a_directory_recursively(dirName, '*.SVP.txt')];
@@ -278,4 +289,4 @@ disp(' ');
 disp ([dirName, ' done! ']);
 disp(' ');
 
-
+end
