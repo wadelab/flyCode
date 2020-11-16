@@ -17,11 +17,8 @@ if "Darwin" in platform.system():
         os.makedirs(myHomePath)    
     os.chdir(myHomePath) 
     
-    def read_channel(t, s, x):
-        t.reset(0.0)
+    def read_channel(x):
         adc = x + random.randrange(1023)
-        while t.getTime () < 0.0017 : #1.0/ (60.0 * (1+s)) :
-            pass
         return adc
 else:
     import spidev
@@ -35,13 +32,10 @@ else:
 
     # Function to read SPI data from MCP3008 chip
     # Channel must be an integer 0-7
-    def read_channel(t, s, x):
-        t.reset(0.0)
+    def read_channel(x):
         channel = 0
         adc = spi.xfer2([1, (8 + channel) << 4, 0])
         data = ((adc[1] & 3) << 8) + adc[2]
-        while t.getTime () < 0.0017 : #
-            pass
         return data
 
 Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
@@ -57,7 +51,7 @@ cordinates [1,0] = 0.4
 cordinates [2,0] = 0.8
 
 # create a window
-mywin = visual.Window([800, 600], monitor="testMonitor", units="deg", screen=0, waitBlanking = False)
+mywin = visual.Window([800, 600], monitor="testMonitor", units="deg", screen=0, waitBlanking = True)
 clock = core.Clock()
 expt_clock = core.Clock()
 timer = core.Clock()
@@ -66,12 +60,6 @@ frame = 7.5
 seconds_stim = 1
 frame_rate = mywin.getActualFrameRate()
 
-i = 0
-#while i < qty: # need to make this randomise the order of the stimuli 
-    #x = random.randrange(*rangeX)
-    #y = random.randrange(*rangeY)
-    #cordinates[i, :] = [x, y]
-    #i += 1
 
 myCount = 0
 frame_rate = mywin.getActualFrameRate()
@@ -82,6 +70,7 @@ stim_per_rpt = 4
 samples_per_frame = 10
 n_rows= 2 * samples_per_frame  * stim_per_rpt * frame_rpts #need 2x because we do two halves of the loop
 sampling_values = numpy.zeros(( n_rows, qty + 1), dtype=int)
+sampling_times = numpy.linspace(0, 1665 * float(n_rows), n_rows)
 
 for i in range(qty):  
     #generate some stimuli
@@ -101,16 +90,20 @@ for i in range(qty):
         for k in range(stim_per_rpt):  # show each pattern for 4 frames; sample every frame
 
             for l in range(samples_per_frame):  # take some extra samples per frame
+               while 1000 * 1000 * clock.getTime() < sampling_times[frame_count] :
+                   pass
                sampling_values[frame_count, 0] = 1000 * 1000 * clock.getTime()
-               sampling_values[frame_count, i + 1] = read_channel(timer, samples_per_frame, 100)
+               sampling_values[frame_count, i + 1] = read_channel(100)
                frame_count = frame_count + 1
                
         mywin.flip(clearBuffer=False)
           
         for k in range(stim_per_rpt):  # now show the opposite frame
-            for l in range(samples_per_frame):
+            for l in range(samples_per_frame):  # take some extra samples per frame
+               while 1000 * 1000 * clock.getTime() < sampling_times[frame_count] :
+                   pass
                sampling_values[frame_count, 0] = 1000 * 1000 * clock.getTime()
-               sampling_values[frame_count, i + 1] = read_channel(timer, samples_per_frame, -100)
+               sampling_values[frame_count, i + 1] = read_channel(100)
                frame_count = frame_count + 1
             
         mywin.flip(clearBuffer=False)
