@@ -10,6 +10,8 @@ import os
 import matplotlib.pyplot as plt
 import pdb
 from datetime import datetime
+import multiprocessing
+from multiprocessing import Queue
 
 if "Darwin" in platform.system():
     myHomePath = os.path.expanduser('~/pi/Data')    
@@ -60,6 +62,7 @@ def show_stimuli():
         mywin.flip(clearBuffer=False)
         fixation.draw()
         mywin.flip(clearBuffer=False)
+        myQ.put(i)
     
         for j in range (0, total_frames): 
             # this next bit should take 1/60 * 8 sec, ie 7.5 Hz
@@ -100,6 +103,7 @@ def do_ADC_with_wait(i):
 ##############
 # start program here    
 Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
+myQ = Queue()
 # create an array
 qty = 3 #  max types of stimulus
 #sf = 0.2/0.4/0.8 gives 4/18/16 stripes
@@ -118,12 +122,20 @@ n_rows= 2 * stim_per_rpt * frame_rpts #need 2x because we do two halves of the l
 sampling_values = numpy.zeros(( n_rows, qty + 1), dtype=int)
 sampling_times = numpy.linspace(0, 1665 * float(n_rows), n_rows)
     
+processes = [ ]
+t = multiprocessing.Process(target=show_stimuli, args=()) # args =...
+processes.append(t)
+t.start()
 
-
-show_stimuli()
+#show_stimuli() occurs in separate thread
 for i in range(qty):
+    while myQ.empty():
+        pass
     do_ADC_with_wait(i+1)
 
+for one_process in processes:
+    one_process.join()
+    
 numpy.savetxt('myData.csv', sampling_values, delimiter=',', fmt='%i', newline='\n')
 os.rename("myData.csv", "myData" + Date + ".csv")
  
