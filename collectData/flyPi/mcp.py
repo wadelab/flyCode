@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import pdb
 from datetime import datetime
 import multiprocessing
-from multiprocessing import Queue
+from multiprocessing import Queue, freeze_support
 
 if "Darwin" in platform.system():
     myHomePath = os.path.expanduser('~/pi/Data')    
@@ -102,100 +102,102 @@ def do_ADC_with_wait(i):
     return 
 ##############
 # start program here    
-Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
-myQ = Queue()
-# create an array
-qty = 3 #  max types of stimulus
-#sf = 0.2/0.4/0.8 gives 4/18/16 stripes
-cordinates = numpy.zeros((qty, 2), dtype=float)
-cordinates [0,0] = 0.2
-cordinates [1,0] = 0.4
-cordinates [2,0] = 0.8
+if __name__ == "__main__":
+    freeze_support()
+	Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
+	myQ = Queue()
+	# create an array
+	qty = 3 #  max types of stimulus
+	#sf = 0.2/0.4/0.8 gives 4/18/16 stripes
+	cordinates = numpy.zeros((qty, 2), dtype=float)
+	cordinates [0,0] = 0.2
+	cordinates [1,0] = 0.4
+	cordinates [2,0] = 0.8
 
-# create a window
-expt_clock = core.Clock()
-# setting the range of coordinates and how many coordinates to produce
-frame_rpts = 750 # 600 gives us 8 seconds
-#pdb.set_trace()
-stim_per_rpt = 4
-n_rows= 2 * stim_per_rpt * frame_rpts #need 2x because we do two halves of the loop
-sampling_values = numpy.zeros(( n_rows, qty + 1), dtype=int)
-sampling_times = numpy.linspace(0, 1665 * float(n_rows), n_rows)
-    
-processes = [ ]
-t = multiprocessing.Process(target=show_stimuli, args=()) # args =...
-processes.append(t)
-t.start()
+	# create a window
+	expt_clock = core.Clock()
+	# setting the range of coordinates and how many coordinates to produce
+	frame_rpts = 750 # 600 gives us 8 seconds
+	#pdb.set_trace()
+	stim_per_rpt = 4
+	n_rows= 2 * stim_per_rpt * frame_rpts #need 2x because we do two halves of the loop
+	sampling_values = numpy.zeros(( n_rows, qty + 1), dtype=int)
+	sampling_times = numpy.linspace(0, 1665 * float(n_rows), n_rows)
+	
+	processes = [ ]
+	t = multiprocessing.Process(target=show_stimuli, args=()) # args =...
+	processes.append(t)
+	t.start()
 
-#show_stimuli() occurs in separate thread
+	#show_stimuli() occurs in separate thread
 
-for i in range(qty):
-    while myQ.empty():
-        pass
-    do_ADC_with_wait(i+1)
-    myQ.get()
+	for i in range(qty):
+		while myQ.empty():
+			pass
+		do_ADC_with_wait(i+1)
+		myQ.get()
 
-for one_process in processes:
-    one_process.join()
-    
-numpy.savetxt('myData.csv', sampling_values, delimiter=',', fmt='%i', newline='\n')
-os.rename("myData.csv", "myData" + Date + ".csv")
-    
-expt_time = expt_clock.getTime()    
-print('Expt time was ' + str(expt_time))
-#print('Wait time was ' + str(t_real_start))
+	for one_process in processes:
+		one_process.join()
+	
+	numpy.savetxt('myData.csv', sampling_values, delimiter=',', fmt='%i', newline='\n')
+	os.rename("myData.csv", "myData" + Date + ".csv")
+	
+	expt_time = expt_clock.getTime()    
+	print('Expt time was ' + str(expt_time))
+	#print('Wait time was ' + str(t_real_start))
 
-# matplotlib graph the raw data
-plt.subplot(2, 2, 1)  # (rows, columns, panel number)
-plt.plot(sampling_values[1:500, 0]/1000, sampling_values[1:500, 1:3], linestyle='solid', marker='None')
-plt.xlabel('time (ms)')
+	# matplotlib graph the raw data
+	plt.subplot(2, 2, 1)  # (rows, columns, panel number)
+	plt.plot(sampling_values[1:500, 0]/1000, sampling_values[1:500, 1:3], linestyle='solid', marker='None')
+	plt.xlabel('time (ms)')
 
-# do an FFT
-rate = 600.0 #597.6  # rate of data collection in points per second
-lx = len(sampling_values)
-lx = (lx // 2) + 1
-ff = numpy.zeros((lx, qty), dtype=float)
-for i in range(qty):
-    ff[:, i] = abs(numpy.fft.rfft(sampling_values[:, i + 1])) / 1000.0
-fx = numpy.linspace(0, rate / 2, len(ff))
+	# do an FFT
+	rate = 600.0 #597.6  # rate of data collection in points per second
+	lx = len(sampling_values)
+	lx = (lx // 2) + 1
+	ff = numpy.zeros((lx, qty), dtype=float)
+	for i in range(qty):
+		ff[:, i] = abs(numpy.fft.rfft(sampling_values[:, i + 1])) / 1000.0
+	fx = numpy.linspace(0, rate / 2, len(ff))
 
-#plot the fft up to 60Hz
-plt.subplot(2, 2, 2)  # (rows, columns, panel number)
-plt.plot(fx[1:601], ff[1:601], linestyle='solid', marker='None')
-plt.xlabel('frequency (Hz)')
+	#plot the fft up to 60Hz
+	plt.subplot(2, 2, 2)  # (rows, columns, panel number)
+	plt.plot(fx[1:601], ff[1:601], linestyle='solid', marker='None')
+	plt.xlabel('frequency (Hz)')
 
-#pdb.set_trace()
-#ff[75,:] nicely gives the response at 1F1, 7.5Hz (x10 scale factor)
-ff_2d = numpy.reshape(ff[75], (-1, qty))
-ff_2d_tr = numpy.transpose(ff_2d)
-coords_with_data = numpy.append(cordinates, ff_2d_tr, axis=1)
-#and try with 2F1
-ff_2d = numpy.reshape(ff[150], (-1, qty))
-ff_2d_tr = numpy.transpose(ff_2d)
-coords_with_data = numpy.append(coords_with_data, ff_2d_tr, axis=1)
-coords_with_data[:, 0] = 100 * coords_with_data[:, 0]
+	#pdb.set_trace()
+	#ff[75,:] nicely gives the response at 1F1, 7.5Hz (x10 scale factor)
+	ff_2d = numpy.reshape(ff[75], (-1, qty))
+	ff_2d_tr = numpy.transpose(ff_2d)
+	coords_with_data = numpy.append(cordinates, ff_2d_tr, axis=1)
+	#and try with 2F1
+	ff_2d = numpy.reshape(ff[150], (-1, qty))
+	ff_2d_tr = numpy.transpose(ff_2d)
+	coords_with_data = numpy.append(coords_with_data, ff_2d_tr, axis=1)
+	coords_with_data[:, 0] = 100 * coords_with_data[:, 0]
 
-#pdb.set_trace()
-plt.subplot(2, 2, 4)  # (rows, columns, panel number)
-plt.plot(coords_with_data[:, 0], coords_with_data[:, 2], 'go-', label ='1F1') #, green dots and solid line
-plt.plot(coords_with_data[:, 0], coords_with_data[:, 3], 'bo-', label ='2F1') #, blue  dots and solid line
-ymax = 1.2 * numpy.max(coords_with_data[:, 2:3])
-plt.xlim(0,100)
-plt.ylim(0,ymax)
-plt.xlabel('contrast (%)')
-plt.legend()
+	#pdb.set_trace()
+	plt.subplot(2, 2, 4)  # (rows, columns, panel number)
+	plt.plot(coords_with_data[:, 0], coords_with_data[:, 2], 'go-', label ='1F1') #, green dots and solid line
+	plt.plot(coords_with_data[:, 0], coords_with_data[:, 3], 'bo-', label ='2F1') #, blue  dots and solid line
+	ymax = 1.2 * numpy.max(coords_with_data[:, 2:3])
+	plt.xlim(0,100)
+	plt.ylim(0,ymax)
+	plt.xlabel('contrast (%)')
+	plt.legend()
 
 
-numpy.savetxt('myCoordinates.csv', coords_with_data, delimiter=',', newline='\n')
-os.rename("myCoordinates.csv", "myCoordinates" + Date + ".csv")
+	numpy.savetxt('myCoordinates.csv', coords_with_data, delimiter=',', newline='\n')
+	os.rename("myCoordinates.csv", "myCoordinates" + Date + ".csv")
 
-# merge x axis (frequency data) and y FFT data
-fall = numpy.insert(ff, 0, fx, axis=1)
-numpy.savetxt('myFFT.csv', fall, delimiter=',', newline='\n')
-os.rename("myFFT.csv", "myFFT" + Date + ".csv")
+	# merge x axis (frequency data) and y FFT data
+	fall = numpy.insert(ff, 0, fx, axis=1)
+	numpy.savetxt('myFFT.csv', fall, delimiter=',', newline='\n')
+	os.rename("myFFT.csv", "myFFT" + Date + ".csv")
 
-plt.savefig('myGraphic.PDF')
-os.rename("myGraphic.PDF", "myGraphic" + Date + ".PDF")
+	plt.savefig('myGraphic.PDF')
+	os.rename("myGraphic.PDF", "myGraphic" + Date + ".PDF")
 
 
 #pdb.set_trace()
