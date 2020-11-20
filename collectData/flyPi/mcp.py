@@ -147,7 +147,8 @@ print('Expt time was ' + str(expt_time))
 
 # matplotlib graph the raw data
 plt.subplot(2, 2, 1)  # (rows, columns, panel number)
-plt.plot(sampling_values[:, 0], sampling_values[:, 1], linestyle='solid', marker='None')
+plt.plot(sampling_values[1:500, 0]/1000, sampling_values[1:500, 1:3], linestyle='solid', marker='None')
+plt.xlabel('time (ms)')
 
 # do an FFT
 rate = 600.0 #597.6  # rate of data collection in points per second
@@ -155,33 +156,47 @@ lx = len(sampling_values)
 lx = (lx // 2) + 1
 ff = numpy.zeros((lx, qty), dtype=float)
 for i in range(qty):
-    ff[:, i] = abs(numpy.fft.rfft(sampling_values[:, i + 1]))
+    ff[:, i] = abs(numpy.fft.rfft(sampling_values[:, i + 1])) / 1000.0
 fx = numpy.linspace(0, rate / 2, len(ff))
 
+#plot the fft up to 60Hz
 plt.subplot(2, 2, 2)  # (rows, columns, panel number)
-plt.plot(fx[1:], ff[1:], linestyle='solid', marker='None')
+plt.plot(fx[1:601], ff[1:601], linestyle='solid', marker='None')
+plt.xlabel('frequency (Hz)')
 
 #pdb.set_trace()
-# ff[15,:] nicely gives the response at 7.5Hz (x2 scale factor)
-# ff_2d = numpy.reshape(ff[75], (-1, qty))
-# ff_2d_tr = numpy.transpose(ff_2d)
-# coords_with_data = numpy.append(cordinates, ff_2d_tr, axis=1)
+#ff[75,:] nicely gives the response at 1F1, 7.5Hz (x10 scale factor)
+ff_2d = numpy.reshape(ff[75], (-1, qty))
+ff_2d_tr = numpy.transpose(ff_2d)
+coords_with_data = numpy.append(cordinates, ff_2d_tr, axis=1)
+#and try with 2F1
+ff_2d = numpy.reshape(ff[150], (-1, qty))
+ff_2d_tr = numpy.transpose(ff_2d)
+coords_with_data = numpy.append(coords_with_data, ff_2d_tr, axis=1)
+coords_with_data[:, 0] = 100 * coords_with_data[:, 0]
 
-#plt.subplot(2, 2, 4)  # (rows, columns, panel number)
-#plt.scatter(coords_with_data[:, 0], coords_with_data[:, 1], c=coords_with_data[:, 2], s=100)
+#pdb.set_trace()
+plt.subplot(2, 2, 4)  # (rows, columns, panel number)
+plt.plot(coords_with_data[:, 0], coords_with_data[:, 2], 'go-', label ='1F1') #, green dots and solid line
+plt.plot(coords_with_data[:, 0], coords_with_data[:, 3], 'bo-', label ='2F1') #, blue  dots and solid line
+ymax = 1.2 * numpy.max(coords_with_data[:, 2:3])
+plt.xlim(0,100)
+plt.ylim(0,ymax)
+plt.xlabel('contrast (%)')
+plt.legend()
 
-#numpy.savetxt('myCoordinates.csv', coords_with_data, delimiter=',', newline='\n')
+
+numpy.savetxt('myCoordinates.csv', coords_with_data, delimiter=',', newline='\n')
+os.rename("myCoordinates.csv", "myCoordinates" + Date + ".csv")
 
 # merge x axis (frequency data) and y FFT data
 fall = numpy.insert(ff, 0, fx, axis=1)
 numpy.savetxt('myFFT.csv', fall, delimiter=',', newline='\n')
+os.rename("myFFT.csv", "myFFT" + Date + ".csv")
 
 plt.savefig('myGraphic.PDF')
-
-# tidy up
-os.rename("myFFT.csv", "myFFT" + Date + ".csv")
-#os.rename("myCoordinates.csv", "myCoordinates" + Date + ".csv")
 os.rename("myGraphic.PDF", "myGraphic" + Date + ".PDF")
 
-    # #pdb.set_trace()
+
+#pdb.set_trace()
     
