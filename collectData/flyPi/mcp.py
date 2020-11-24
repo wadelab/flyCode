@@ -77,6 +77,8 @@ def show_stimuli():
                  while clock.getTime() < frame_count * 1.0/60.0:
                      pass
             fliptimes[j,0] = 1000 * 1000 *mywin.flip(clearBuffer=False)
+        # draw 50% here durin wait
+        core.wait(2) # 2 sec rest between stimuli     
          
     # close window
     mywin.close()
@@ -92,7 +94,7 @@ def do_ADC_with_wait(i):
     clock_for_ADC = core.Clock()
     clock_for_ADC.reset(0.0)
     
-    for frame_count in range(n_rows):  # take some extra samples per frame
+    for frame_count in range(n_rows):  # this is enough to still be in the stimulus
        while 1000 * 1000 * clock_for_ADC.getTime() < sampling_times[frame_count] :
            pass
        sampling_values[frame_count, 0] = 1000 * 1000 * clock_for_ADC.getTime()
@@ -105,12 +107,19 @@ def do_ADC_with_wait(i):
 Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
 myQ = Queue()
 # create an array
-qty = 3 #  max types of stimulus
+qty = 8 #  max types of stimulus
 #sf = 0.2/0.4/0.8 gives 4/18/16 stripes
 cordinates = numpy.zeros((qty, 2), dtype=float)
-cordinates [0,0] = 0.2
-cordinates [1,0] = 0.4
-cordinates [2,0] = 0.8
+cordinates [0,0] = 0.8
+cordinates [1,0] = 0.005
+cordinates [2,0] = 0.4
+cordinates [3,0] = 0.1
+cordinates [4,0] = 0.2
+cordinates [5,0] = 0.07
+cordinates [6,0] = 1.0
+cordinates [7,0] = 0.01
+
+
 
 # create a window
 expt_clock = core.Clock()
@@ -173,14 +182,15 @@ coords_with_data = numpy.append(cordinates, ff_2d_tr, axis=1)
 ff_2d = numpy.reshape(ff[150], (-1, qty))
 ff_2d_tr = numpy.transpose(ff_2d)
 coords_with_data = numpy.append(coords_with_data, ff_2d_tr, axis=1)
-coords_with_data[:, 0] = 100 * coords_with_data[:, 0]
+coords_with_data_for_plot[:, 0] = 100 * coords_with_data[:, 0]
+coords_with_data_for_plot = coords_with_data_for_plot[coords_with_data_for_plot[:,0].argsort()] # sort by first (zero) column see https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
 
 #pdb.set_trace()
 plt.subplot(2, 2, 4)  # (rows, columns, panel number)
-plt.plot(coords_with_data[:, 0], coords_with_data[:, 2], 'go-', label ='1F1') #, green dots and solid line
-plt.plot(coords_with_data[:, 0], coords_with_data[:, 3], 'bo-', label ='2F1') #, blue  dots and solid line
-ymax = 1.2 * numpy.max(coords_with_data[:, 2:3])
-plt.xlim(0,100)
+plt.plot(coords_with_data_for_plot[:, 0], coords_with_data_for_plot[:, 2], 'go-', label ='1F1') #, green dots and solid line
+plt.plot(coords_with_data_for_plot[:, 0], coords_with_data_for_plot[:, 3], 'bo-', label ='2F1') #, blue  dots and solid line
+ymax = 1.2 * numpy.max(coords_with_data_for_plot[:, 2:3])
+plt.xlim(0,110)
 plt.ylim(0,ymax)
 plt.xlabel('contrast (%)')
 plt.legend()
