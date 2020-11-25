@@ -55,8 +55,10 @@ def show_stimuli():
         total_frames = 120  # 120 rows, 15 seconds, 133 ms for each j loop; 7.5 Hz
         fliptimes = numpy.zeros(( total_frames, 1), dtype=int)
 
-        fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast=cordinates[i,0],  phase=(0.0, 0.0))
+        fixation =         visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast = cordinates[i,0],     phase=(0.0, 0.0))
         inverse_fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast = - cordinates[i,0], phase=(0.0, 0.0))
+        null_fixation =    visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast = 0,                 phase=(0.0, 0.0))
+        
         #draw the stimuli once, so we can flick back and forwards
         inverse_fixation.draw()
         mywin.flip(clearBuffer=False)
@@ -78,13 +80,14 @@ def show_stimuli():
                      pass
             fliptimes[j,0] = 1000 * 1000 *mywin.flip(clearBuffer=False)
         # draw 50% here durin wait
+        null_fixation.draw()
+        mywin.flip(clearBuffer=True)
         core.wait(2) # 2 sec rest between stimuli     
          
     # close window
     mywin.close()
     
-    numpy.savetxt('myFlips.csv', fliptimes, delimiter=',', fmt='%i', newline='\n')
-    os.rename("myFlips.csv", "myFlips" + Date + ".csv")
+    numpy.savetxt("myFlips" + Date + ".csv", fliptimes, delimiter=',', fmt='%i', newline='\n', header= myHeader)
     
     print('Frame rate is ' + str(frame_rate))
     return
@@ -106,7 +109,10 @@ def do_ADC_with_wait(i):
 # start program here    
 Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
 myQ = Queue()
-# create an array
+myHeader = 'GAL4=TH&UAS=G2019S_fake'
+
+
+# create an array of stimulus parameters
 qty = 7 #  max types of stimulus
 #sf = 0.2/0.4/0.8 gives 4/18/16 stripes
 #these ought not to be less than 1%, or they won't work as integers later
@@ -153,8 +159,7 @@ print('Expt time was ' + str(expt_time))
 #print('Wait time was ' + str(t_real_start))
 #save the stimuli (as %) in first row of data
 sampling_values[0,1:] = 100 * numpy.transpose(cordinates[:,0])
-numpy.savetxt('myData.csv', sampling_values, delimiter=',', fmt='%i', newline='\n')
-os.rename("myData.csv", "myData" + Date + ".csv")
+numpy.savetxt("myData" + Date + ".csv", sampling_values, delimiter=',', fmt='%i', newline='\n', header= myHeader)
  
 
 # matplotlib graph the raw data
@@ -204,18 +209,18 @@ plt.ylim(0,ymax)
 plt.xlabel('contrast (%)')
 plt.legend()
 
-
+plt.subplot(2, 2, 3)
+#plt.figtext(0,0,myHeader)
+plt.suptitle(myHeader)
+plt.tight_layout(2)
 #numpy.savetxt('myCoordinates.csv', coords_with_data, delimiter=',', newline='\n')
 #os.rename("myCoordinates.csv", "myCoordinates" + Date + ".csv")
 
 # merge x axis (frequency data) and y FFT data
 fall = numpy.insert(ff, 0, fx, axis=1)
-numpy.savetxt('myFFT.csv', fall, delimiter=',', newline='\n')
-os.rename("myFFT.csv", "myFFT" + Date + ".csv")
+numpy.savetxt('myFFT' + Date + '.csv', fall, delimiter=',', newline='\n', header= myHeader)
 
-plt.savefig('myGraphic.PDF')
-os.rename("myGraphic.PDF", "myGraphic" + Date + ".PDF")
-
+plt.savefig("myGraphic" + Date + ".PDF")
 
 #pdb.set_trace()
     
