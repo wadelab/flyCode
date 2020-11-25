@@ -173,7 +173,7 @@ plt.subplot(2, 2, 2)  # (rows, columns, panel number)
 plt.plot(fx[1:601], ff[1:601], linestyle='solid', marker='None')
 plt.xlabel('frequency (Hz)')
 
-#pdb.set_trace()
+pdb.set_trace()
 #ff[75,:] nicely gives the response at 1F1, 7.5Hz (x10 scale factor)
 ff_2d = numpy.reshape(ff[75], (-1, qty))
 ff_2d_tr = numpy.transpose(ff_2d)
@@ -182,14 +182,14 @@ coords_with_data = numpy.append(cordinates, ff_2d_tr, axis=1)
 ff_2d = numpy.reshape(ff[150], (-1, qty))
 ff_2d_tr = numpy.transpose(ff_2d)
 coords_with_data = numpy.append(coords_with_data, ff_2d_tr, axis=1)
-coords_with_data_for_plot[:, 0] = 100 * coords_with_data[:, 0]
-coords_with_data_for_plot = coords_with_data_for_plot[coords_with_data_for_plot[:,0].argsort()] # sort by first (zero) column see https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
+sorted_coords_with_data[:, 0] = 100 * coords_with_data[:, 0]
+sorted_coords_with_data = sorted_coords_with_data[sorted_coords_with_data[:,0].argsort()] # sort by first (zero) column see https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
 
 #pdb.set_trace()
 plt.subplot(2, 2, 4)  # (rows, columns, panel number)
-plt.plot(coords_with_data_for_plot[:, 0], coords_with_data_for_plot[:, 2], 'go-', label ='1F1') #, green dots and solid line
-plt.plot(coords_with_data_for_plot[:, 0], coords_with_data_for_plot[:, 3], 'bo-', label ='2F1') #, blue  dots and solid line
-ymax = 1.2 * numpy.max(coords_with_data_for_plot[:, 2:3])
+plt.plot(sorted_coords_with_data[:, 0], sorted_coords_with_data[:, 2], 'go-', label ='1F1') #, green dots and solid line
+plt.plot(sorted_coords_with_data[:, 0], sorted_coords_with_data[:, 3], 'bo-', label ='2F1') #, blue  dots and solid line
+ymax = 1.2 * numpy.max(sorted_coords_with_data[:, 2:3])
 plt.xlim(0,110)
 plt.ylim(0,ymax)
 plt.xlabel('contrast (%)')
