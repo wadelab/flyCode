@@ -12,6 +12,9 @@ import pdb
 from datetime import datetime
 import multiprocessing
 from multiprocessing import Queue
+import argparse
+
+
 
 if "Darwin" in platform.system():
     myHomePath = os.path.expanduser('~/pi/Data')    
@@ -55,9 +58,9 @@ def show_stimuli():
         total_frames = 120  # 120 rows, 15 seconds, 133 ms for each j loop; 7.5 Hz
         fliptimes = numpy.zeros(( total_frames, 1), dtype=int)
 
-        fixation =         visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast = cordinates[i,0],     phase=(0.0, 0.0))
-        inverse_fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast = - cordinates[i,0], phase=(0.0, 0.0))
-        null_fixation =    visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0, contrast = 0,                 phase=(0.0, 0.0))
+        fixation =         visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=cordinates[i,1], contrast = cordinates[i,0],   phase=(0.0, 0.0))
+        inverse_fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=cordinates[i,1], contrast = - cordinates[i,0], phase=(0.0, 0.0))
+        null_fixation =    visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0,               contrast = 0,                 phase=(0.0, 0.0))
         
         #draw the stimuli once, so we can flick back and forwards
         inverse_fixation.draw()
@@ -87,7 +90,7 @@ def show_stimuli():
     # close window
     mywin.close()
     
-    numpy.savetxt("myFlips" + Date + ".csv", fliptimes, delimiter=',', fmt='%i', newline='\n', header= myHeader)
+    # numpy.savetxt("myFlips" + Date + ".csv", fliptimes, delimiter=',', fmt='%i', newline='\n', header= myHeader)
     
     print('Frame rate is ' + str(frame_rate))
     return
@@ -105,26 +108,47 @@ def do_ADC_with_wait(i):
        frame_count = frame_count + 1
 
     return 
-##############
+##############################################################################################################################
 # start program here    
+##############################################################################################################################
+parser = argparse.ArgumentParser(description='fly Pi')
+parser.add_argument("-p", "--protocol", type = str, default='stripes',
+                    help="This is the protocol variable, defaults to stripes")
+
+args = parser.parse_args()
+#pdb.set_trace()
+protocol = args.protocol
 Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
 myQ = Queue()
-myHeader = 'GAL4=TH&UAS=G2019S_fake'
+myHeader = 'GAL4=TH&UAS=G2019S_fake ' + protocol
 
 
 # create an array of stimulus parameters
-qty = 7 #  max types of stimulus
-#sf = 0.2/0.4/0.8 gives 4/18/16 stripes
 #these ought not to be less than 1%, or they won't work as integers later
-cordinates = numpy.zeros((qty, 2), dtype=float)
-cordinates [0,0] = 0.8
-cordinates [1,0] = 0.01
-cordinates [2,0] = 0.4
-cordinates [3,0] = 0.1
-cordinates [4,0] = 0.2
-cordinates [5,0] = 0.07
-cordinates [6,0] = 1.0
 
+if 'stripes' in protocol:
+    qty = 5 #  max types of stimulus
+    cordinates = numpy.zeros((qty, 2), dtype=float)
+    #sf = 0.2/0.4/0.8 gives 4/18/16 stripes
+    cordinates [0,1] = 0.8
+    cordinates [1,1] = 0.1
+    cordinates [2,1] = 0.4
+    cordinates [3,1] = 1.0
+    cordinates [4,1] = 0.2
+    cordinates [:,0] = 0.8 # set the contrast of the stripes
+    proCol = 1
+else:
+    # simple CRF
+    qty = 7 #  max types of stimulus
+    cordinates = numpy.zeros((qty, 2), dtype=float)
+    cordinates [0,0] = 0.8
+    cordinates [1,0] = 0.01
+    cordinates [2,0] = 0.4
+    cordinates [3,0] = 0.1
+    cordinates [4,0] = 0.2
+    cordinates [5,0] = 0.07
+    cordinates [6,0] = 1.0
+    proCol = 0
 
 
 # create a window
@@ -136,7 +160,10 @@ stim_per_rpt = 4
 n_rows= 2 * stim_per_rpt * frame_rpts + 1 #need 2x because we do two halves of the loop; +1 to allow for stimuli in first row
 sampling_values = numpy.zeros(( n_rows, qty + 1), dtype=int)
 sampling_times = numpy.linspace(0, 1665 * float(n_rows), n_rows)
-    
+
+##################################################################################################
+#start multithread
+##################################################################################################    
 processes = [ ]
 t = multiprocessing.Process(target=show_stimuli, args=()) # args =...
 processes.append(t)
@@ -153,12 +180,14 @@ for i in range(qty):
 for one_process in processes:
     one_process.join()
     
-   
+##################################################################################################
+#process collected data
+##################################################################################################   
 expt_time = expt_clock.getTime()    
 print('Expt time was ' + str(expt_time))
 #print('Wait time was ' + str(t_real_start))
 #save the stimuli (as %) in first row of data
-sampling_values[0,1:] = 100 * numpy.transpose(cordinates[:,0])
+sampling_values[0,1:] = 100 * numpy.transpose(cordinates[:,proCol])
 numpy.savetxt("myData" + Date + ".csv", sampling_values, delimiter=',', fmt='%i', newline='\n', header= myHeader)
  
 
@@ -176,7 +205,7 @@ for i in range(qty):
     ff[:, i] = abs(numpy.fft.rfft(sampling_values[:, i + 1])) / 1000.0
 fx = numpy.linspace(0, rate / 2, len(ff))
 #save the stimuli in first row of FFT
-ff[0] = 100 * numpy.transpose(cordinates[:,0])
+ff[0] = 100 * numpy.transpose(cordinates[:,proCol])
 
 #plot the fft up to 60Hz
 plt.subplot(2, 2, 2)  # (rows, columns, panel number)
@@ -195,26 +224,28 @@ coords_with_data = numpy.append(cordinates, ff_2d_tr, axis=1)
 ff_2d = numpy.reshape(ff[150], (-1, qty))
 ff_2d_tr = numpy.transpose(ff_2d)
 coords_with_data = numpy.append(coords_with_data, ff_2d_tr, axis=1)
-coords_with_data[:, 0] = 100 * coords_with_data[:, 0]
-coords_with_data = coords_with_data[coords_with_data[:,0].argsort()] # sort by first (zero) column see https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
+coords_with_data[:, proCol] = 100 * coords_with_data[:, proCol]
+coords_with_data = coords_with_data[coords_with_data[:, proCol].argsort()] # sort by first (zero) column see https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
 
 #pdb.set_trace()
-plt.subplot(2, 2, 4)  # (rows, columns, panel number)
-plt.plot(coords_with_data[:, 0], coords_with_data[:, 2], 'go-', label ='1F1') #, green dots and solid line
-plt.plot(coords_with_data[:, 0], coords_with_data[:, 3], 'bo-', label ='2F1') #, blue  dots and solid line
+plt.subplot(2, 2, 3 + proCol)  # (rows, columns, panel number)
+plt.plot(coords_with_data[:, proCol], coords_with_data[:, 2], 'go-', label ='1F1') #, green dots and solid line
+plt.plot(coords_with_data[:, proCol], coords_with_data[:, 3], 'bo-', label ='2F1') #, blue  dots and solid line
 ymax = 1.2 * numpy.max(coords_with_data[:, 2:3])
-plt.xlim(0.8,110)
-plt.xscale('log')
 plt.ylim(0,ymax)
-plt.xlabel('contrast (%)')
+
+if proCol == 0:
+    plt.xlabel('contrast (%)')
+    plt.xlim(0.8,110)
+else:
+    plt.xlabel('spatial frequency (? units)')   
+    plt.xlim(8,110)
+
+plt.xscale('log')
 plt.legend()
 
-plt.subplot(2, 2, 3)
-#plt.figtext(0,0,myHeader)
 plt.suptitle(myHeader)
 plt.tight_layout(2)
-#numpy.savetxt('myCoordinates.csv', coords_with_data, delimiter=',', newline='\n')
-#os.rename("myCoordinates.csv", "myCoordinates" + Date + ".csv")
 
 # merge x axis (frequency data) and y FFT data
 fall = numpy.insert(ff, 0, fx, axis=1)
