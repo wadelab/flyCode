@@ -58,9 +58,9 @@ def show_stimuli():
         total_frames = 120  # 120 rows, 15 seconds, 133 ms for each j loop; 7.5 Hz
         fliptimes = numpy.zeros(( total_frames, 1), dtype=int)
 
-        fixation =         visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=cordinates[i,1], contrast = cordinates[i,0],   phase=(0.0, 0.0))
-        inverse_fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=cordinates[i,1], contrast = - cordinates[i,0], phase=(0.0, 0.0))
-        null_fixation =    visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0,               contrast = 0,                 phase=(0.0, 0.0))
+        fixation =         visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=cordinates[i,1], tex = 'sqr', contrast = cordinates[i,0],   phase=(0.0, 0.0))
+        inverse_fixation = visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=cordinates[i,1], tex = 'sqr', contrast = - cordinates[i,0], phase=(0.0, 0.0))
+        null_fixation =    visual.GratingStim(win=mywin, mask="none", size=20, pos=[0,0], sf=0,                            contrast = 0,                 phase=(0.0, 0.0))
         
         #draw the stimuli once, so we can flick back and forwards
         inverse_fixation.draw()
