@@ -30,13 +30,12 @@ for i in range(1):
     while frame_count < n_rows: 
         mywin.flip()
         fliptimes[frame_count,0] = 1000 * 1000 * expt_clock.getTime() 
-        frame_count += 1
         if frame_count % 8 < 4:
-            grate.draw()
+            grate.draw() #first draw ~45 ms, subsequent draws are ~1.2 ms
         else:
             grate_inv.draw()
         fliptimes[frame_count,1] = 1000 * 1000* expt_clock.getTime()        
-        
+        frame_count += 1        
         # 
         
 
