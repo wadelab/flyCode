@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<Head>
+<base href="http://biolpc3399.york.ac.uk/" >
+<script>
+
+
+function getTimeString() {
+    var today=new Date();
+    var yr=today.getFullYear();
+    var mo=today.getMonth()+1;
+    var d=today.getDate();
+    var h=today.getHours();
+    var m=today.getMinutes();
+    var s = today.getSeconds();
+
+    d = checkTime(d);
+    m = checkTime(m);
+    mo = checkTime(mo);
+    h = checkTime(h);
+    s = checkTime(s);
+    return yr + "_" + mo + "_" + d + "_" + h + "h" + m + "m" + s ;
+    }
+    
+function startTime()
+{
+    document.getElementById('txt').innerHTML = getTimeString();
+    var t = setTimeout(function(){startTime()},500);
+}
+
+function checkTime(i) {
+    if (i<10) {i = "0" + i};  // add zero in front of numbers < 10
+    return i;
+}
+
+function changeText() 
+{
+    x = document.getElementById("FileID");
+    x.value = getTimeString();
+    document.myform.submit(); 
+}
+</script>
+</head>
+
+<!-- body onload="startTime()" -->
+<body>
+
+<div id="txt">Arduino SSVEP starter page</div>
+<BR>
+
+<form name = "myform" action="/cgi-bin/test.cgi">
+
+<table style="text-align: left; width: 50%;" border="1" cellpadding="2"
+cellspacing="2">
+<tbody>
+<tr>
+<td style="vertical-align: top; width = 33%">GAL4:</td>
+<td style="vertical-align: top; width = 33%">UAS:</td>
+<td style="vertical-align: top; width = 33%">Age:</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">
+<select name="GAL4" size = 6>
+  <option value="TH" selected>TH</option>
+
+
+  
+  <option value="w_apr"  >w-apricot</option>
+</select><br>
+</td>
+<td style="vertical-align: top;">
+<select name="UAS" size = 6>
+<option value="homz" selected >homozygote</option>
+<option value="ev"  >empty vector</option>
+<option value="G2" >G2019S</option>
+<option value="TPC2" >TPC2</option>
+<option value="TPC2_G2" >TPC2 ; G2019S</option>
+
+</select><br>
+</td>
+<td style="vertical-align: top;">
+<select name="Age" size = 6>
+<option value="0_4">4 hours</option>
+<option value="1" >1 day</option>
+<option value="3">3</option>
+<option value="7" selected>7</option>
+<option value="-1">unknown</option>
+</select><br>
+</td>
+</tr>
+</tbody>
+</table>
+<BR>
+<table style="text-align: left; width: 50%;" border="1" cellpadding="2"
+cellspacing="2">
+<tbody >
+<tr>
+<td style="vertical-align: top; width = 20%"><BR>Disco <BR></td>
+<td style="vertical-align: top; width = 20%"><BR>Drug <BR></td>
+<td style="vertical-align: top; width = 20%"><BR>Colour</td>
+<td style="vertical-align: top; width = 20%"><BR>Intensity</td>
+<td style="vertical-align: top; width = 20%"><BR>Protocol</td>
+
+</tr>
+<tr>
+<td style="vertical-align: top;"><BR>
+<input type="radio" checked name="Disco" value="Y">Disco<br>
+<input type="radio"  name="Disco" value="N">Dark
+<BR><br>
+</td>
+<td style="vertical-align: top;"><BR> 
+<input type="radio" name="org" value="none" checked>normal lab<br>
+<input type="radio" name="org" value="Inst">Instant<br>
+<input type="radio" name="org" value="TET">TET<br>
+<input type="radio" name="org" value="CEPH">Ceph<br>
+<input type="radio" name="org" value="Ral">Ralf<br>
+<BR><br>
+</td>
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="col" value="blue" checked>blue<br>
+</td>
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="bri" value="255" checked>255<br>
+</td>
+
+
+<input type="hidden" name="F1" value="12" checked> 
+<input type="hidden" name="F2" value="15" checked>
+<br>
+
+
+<td style="vertical-align: top;"><BR>
+
+<input type="radio" name="stim" value="fERG" >flash ERG<br>
+
+<input type="radio" name="stim" value="SSVEP_SQ" >SSVEP (square)<br>
+</td>
+
+
+</tr>
+</tbody>
+</table>
+<br>
+
+
+
+<BR><input id="FileID" type="hidden" name="filename"> 
+<button onclick="changeText()" type="button">Stimulate!</button><br>
+
+</form>
+
+<BR><BR>
+
+<table>
+<tr><td>
+<A href="/white/">White</a>
+</td>
+
+<td bgcolor="Blue">
+<A href="/blue/"><font color="White">Blue </font></a>
+</td>
+<td bgcolor="Black">
+<A href="/black/"><font color="White">Black</font></a>
+
+<td>
+<a href="/dir=">Directory</a>
+  </td><td>
+    <a href ="http://biolpc1677.york.ac.uk/biolpc2939.york.ac.uk/?C=M;O=D">Archive</a>
+    </td>
+</table>
+</body>
+</html>
+

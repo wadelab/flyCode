@@ -1,12 +1,17 @@
+#!/home/pi/venv/bin/python -u
 # copyright Chris Elliott &  Loc Nguyen 2020
 
 # importing necessary libraries
-from psychopy import visual, core, filters
+from psychopy.visual import filters
+from psychopy import visual, core
 import random
 import pdb
 import numpy
 
+from datetime import datetime
+Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
 
+print ('hello from CRF')
 # create a window
 mywin = visual.Window([800, 600], monitor="testMonitor", units="deg", screen=0, waitBlanking = True)
 # setting the range of coordinates and how many coordinates to produce
@@ -39,13 +44,14 @@ for i in range(1):
         myStimuli[frame_count % 60].draw()
         fliptimes[frame_count,1] = 1000 * 1000 * expt_clock.getTime()        
         frame_count += 1        
-        # 
+        #
+        print (" sampling so far " + str(frame_count) +  "<BR>") 
         
 
 expt_time = expt_clock.getTime()
-print('Expt time was ' + str(expt_time))
-print('Frame rate was ' + str(frame_rate))
-numpy.savetxt("/var/www/html/data/myFlips.csv", fliptimes, delimiter=',', fmt='%i', newline='\n', header= "myData description")
+print('Expt time was ' + str(expt_time) + "<BR>")
+print('Frame rate was ' + str(frame_rate) + "<BR>")
+numpy.savetxt("/var/www/html/data/" + Date + "myFlips.csv", fliptimes, delimiter=',', fmt='%i', newline='\n', header= "myData description")
 # close window
 mywin.close()
 
