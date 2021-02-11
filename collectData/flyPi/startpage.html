@@ -45,7 +45,7 @@ function changeText()
 <!-- body onload="startTime()" -->
 <body>
 
-<div id="txt">Arduino SSVEP starter page</div>
+<div id="txt">Fly Pi SSVEP starter page</div>
 <BR>
 
 <form name = "myform" action="/cgi-bin/test.cgi">
@@ -98,7 +98,7 @@ cellspacing="2">
 <td style="vertical-align: top; width = 20%"><BR>Disco <BR></td>
 <td style="vertical-align: top; width = 20%"><BR>Drug <BR></td>
 <td style="vertical-align: top; width = 20%"><BR>Colour</td>
-<td style="vertical-align: top; width = 20%"><BR>Intensity</td>
+
 <td style="vertical-align: top; width = 20%"><BR>Protocol</td>
 
 </tr>
@@ -109,34 +109,36 @@ cellspacing="2">
 <BR><br>
 </td>
 <td style="vertical-align: top;"><BR> 
-<input type="radio" name="org" value="none" checked>normal lab<br>
-<input type="radio" name="org" value="Inst">Instant<br>
-<input type="radio" name="org" value="TET">TET<br>
-<input type="radio" name="org" value="CEPH">Ceph<br>
-<input type="radio" name="org" value="Ral">Ralf<br>
+<input type="radio" name="Drug" value="none" checked>normal lab<br>
+<input type="radio" name="Drug" value="Inst">Instant<br>
+<input type="radio" name="Drug" value="TET">TET<br>
+<input type="radio" name="Drug" value="CEPH">Ceph<br>
+<input type="radio" name="Drug" value="Ral">Ralf<br>
 <BR><br>
 </td>
 
 <td style="vertical-align: top;"><BR>
 <input type="radio" name="col" value="blue" checked>blue<br>
+<input type="radio" name="col" value="red" checked>red<br>
+
 </td>
+
 
 <td style="vertical-align: top;"><BR>
-<input type="radio" name="bri" value="255" checked>255<br>
-</td>
 
+<input type="radio" name="stim" value="fERG" checked >flash ERG<br>
+
+<input type="radio" name="stim" value="CRF" >plain full field CRF<br>
+<input type="radio" name="stim" value="stripes" >stripy CRF<br>
+
+</td>
 
 <input type="hidden" name="F1" value="12" checked> 
 <input type="hidden" name="F2" value="15" checked>
 <br>
 
 
-<td style="vertical-align: top;"><BR>
 
-<input type="radio" name="stim" value="fERG" >flash ERG<br>
-
-<input type="radio" name="stim" value="SSVEP_SQ" >SSVEP (square)<br>
-</td>
 
 
 </tr>
@@ -165,9 +167,9 @@ cellspacing="2">
 <A href="/black/"><font color="White">Black</font></a>
 
 <td>
-<a href="/dir=">Directory</a>
+<a href="/data/?C=M;O=D">Directory</a>
   </td><td>
-    <a href ="http://biolpc1677.york.ac.uk/biolpc2939.york.ac.uk/?C=M;O=D">Archive</a>
+    <a href ="http://biolpc1677.york.ac.uk/biolpc3399.york.ac.uk/?C=M;O=D">Archive</a>
     </td>
 </table>
 </body>

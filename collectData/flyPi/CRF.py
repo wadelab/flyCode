@@ -1,6 +1,8 @@
 #!/home/pi/venv/bin/python -u
 # copyright Chris Elliott &  Loc Nguyen 2020
 
+import os
+print ("In CRF, QS: " +  os.environ[ 'QUERY_STRING' ]  + "<BR>")
 # importing necessary libraries
 from psychopy.visual import filters
 from psychopy import visual, core
@@ -22,10 +24,10 @@ fliptimes = numpy.zeros(( n_rows + 1, 3), dtype=int)
 expt_clock = core.Clock()
 myStimuli = []
 
-for i in range(1):  
+for i in range(3):  
     #generate some stimuli, fHoriz and fVert is a Numpy array
     fHoriz = filters.makeGrating(256, 90, 1.0, 0.0, 'sin', 0.7) # res, ori=0.0,  # in degrees  cycles=1.0,  phase=0.0,  # in degrees  gratType="sin",  contr=1.0)
-    fVert =  filters.makeGrating(256, 0, 1.0, 0.0, 'sin', 0.3) # res, ori=0.0,  # in degrees  cycles=1.0,  phase=0.0,  # in degrees  gratType="sin",  contr=1.0)
+    fVert =  filters.makeGrating(256, 0, 0.5, 0.0, 'sin', 0.3) # res, ori=0.0,  # in degrees  cycles=1.0,  phase=0.0,  # in degrees  gratType="sin",  contr=1.0)
     
     
     # loop through 60 stimuli; every 6 frames invert grating, every 5 frames invert mask
@@ -45,7 +47,9 @@ for i in range(1):
         fliptimes[frame_count,1] = 1000 * 1000 * expt_clock.getTime()        
         frame_count += 1        
         #
-        print (" sampling so far " + str(frame_count) +  "<BR>") 
+    f = open ("/var/www/html/data/repeats.txt", "w")
+    f.write (" sampling so far " + str(i) +  "<BR> \n")
+    f.close()
         
 
 expt_time = expt_clock.getTime()

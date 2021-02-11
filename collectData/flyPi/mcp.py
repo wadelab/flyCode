@@ -1,6 +1,5 @@
-# copyright Chris Elliott &  Loc Nguyen 2020
+# copyright Chris Elliott &  Loc Nguyen 2020/21
 
-# try using export DISPLAY=0.0 if running this remotely
 # importing necessary libraries
 from psychopy import visual, core
 import random
@@ -12,36 +11,26 @@ import pdb
 from datetime import datetime
 import multiprocessing
 from multiprocessing import Queue
-import argparse
 
 
 
-if "Darwin" in platform.system():
-    myHomePath = os.path.expanduser('~/pi/Data')    
-    if not os.path.exists(myHomePath):
-        os.makedirs(myHomePath)    
-    os.chdir(myHomePath) 
-    
-    def read_channel(x):
-        adc = x + random.randrange(1023)
-        return adc
-else:
-    import spidev
+import spidev
+os.chdir('/var/www/html/data')
+# Open SPI bus
+spi = spidev.SpiDev()
+spi.open(0, 0)
+spi.max_speed_hz =390000 
 
-    # Open SPI bus
-    spi = spidev.SpiDev()
-    spi.open(0, 0)
-    spi.max_speed_hz =390000 
-    
-    os.chdir('/var/www/html/data')
 
-    # Function to read SPI data from MCP3008 chip
-    # Channel must be an integer 0-7
-    def read_channel(x):
-        channel = 0
-        adc = spi.xfer2([1, (8 + channel) << 4, 0])
-        data = ((adc[1] & 3) << 8) + adc[2]
-        return data
+
+# Function to read SPI data from MCP3008 chip
+# Channel must be an integer 0-7
+def read_channel(x):
+    channel = 0
+    adc = spi.xfer2([1, (8 + channel) << 4, 0])
+    data = ((adc[1] & 3) << 8) + adc[2]
+#    data = x + 1023
+    return data
 
 def show_stimuli():
     total_frames = 60
@@ -51,6 +40,9 @@ def show_stimuli():
     frame_rate = mywin.getActualFrameRate()
 
     for i in range(qty):  
+        f = open ("/var/www/html/data/repeats.txt", "w")
+        f.write (" Currently acquiring sample " + str(i) +  "<BR> \n")
+        f.close()
         
         #generate some stimuli
         frame_count = 0.0
@@ -89,7 +81,9 @@ def show_stimuli():
          
     # close window
     mywin.close()
-    
+    f = open ("/var/www/html/data/repeats.txt", "w")
+    f.write (" Sampling done (" + str(i) +  ")<BR> \n")
+    f.close()    
     # numpy.savetxt("myFlips" + Date + ".csv", fliptimes, delimiter=',', fmt='%i', newline='\n', header= myHeader)
     
     print('Frame rate is ' + str(frame_rate))
@@ -111,22 +105,16 @@ def do_ADC_with_wait(i):
 ##############################################################################################################################
 # start program here    
 ##############################################################################################################################
-parser = argparse.ArgumentParser(description='fly Pi')
-parser.add_argument("-p", "--protocol", type = str, default='stripes',
-                    help="This is the protocol variable, defaults to stripes")
 
-args = parser.parse_args()
-#pdb.set_trace()
-protocol = args.protocol
+myHeader = os.environ[ 'QUERY_STRING' ] 
+
 Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
 myQ = Queue()
-myHeader = 'GAL4=TH&UAS=G2019S_fake ' + protocol
-
 
 # create an array of stimulus parameters
 #these ought not to be less than 1%, or they won't work as integers later
 
-if 'stripes' in protocol:
+if 'stripes' in myHeader:
     qty = 5 #  max types of stimulus
     cordinates = numpy.zeros((qty, 2), dtype=float)
     #sf = 0.2/0.4/0.8 gives 4/18/16 stripes
