@@ -1,3 +1,4 @@
+#!/home/pi/venv/bin/python
 # copyright Chris Elliott &  Loc Nguyen 2020/21
 
 # importing necessary libraries
@@ -40,9 +41,12 @@ def show_stimuli():
     frame_rate = mywin.getActualFrameRate()
 
     for i in range(qty):  
-        f = open ("/var/www/html/data/repeats.txt", "w")
-        f.write (" Currently acquiring sample " + str(i) +  "<BR> \n")
-        f.close()
+        f = open ("/var/www/html/data/status.html", "w")
+        f.write ("<!DOCTYPE html><html><head><meta http-equiv=\"refresh\" content=\"10\"></head>")
+        f.write ("<body><h3>")
+        f.write (" Sampling (" + str(i) +  ")<BR> \n")
+        f.write("</h3></body></html>")
+        f.close() 
         
         #generate some stimuli
         frame_count = 0.0
@@ -78,14 +82,11 @@ def show_stimuli():
         null_fixation.draw()
         mywin.flip(clearBuffer=True)
         core.wait(2) # 2 sec rest between stimuli     
-         
+           
+     
+    # numpy.savetxt("myFlips" + Date + ".csv", fliptimes, delimiter=',', fmt='%i', newline='\n', header= myHeader)
     # close window
     mywin.close()
-    f = open ("/var/www/html/data/repeats.txt", "w")
-    f.write (" Sampling done (" + str(i) +  ")<BR> \n")
-    f.close()    
-    # numpy.savetxt("myFlips" + Date + ".csv", fliptimes, delimiter=',', fmt='%i', newline='\n', header= myHeader)
-    
     print('Frame rate is ' + str(frame_rate))
     return
     
@@ -106,9 +107,9 @@ def do_ADC_with_wait(i):
 # start program here    
 ##############################################################################################################################
 
-myHeader = os.environ[ 'QUERY_STRING' ] 
+myHeader = os.environ.get( 'QUERY_STRING' )  #return empty header if  no environment variable
 
-Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
+Date = datetime.today().strftime('%Y-%b-%d-%H-%M-%S')
 myQ = Queue()
 
 # create an array of stimulus parameters
@@ -240,6 +241,13 @@ fall = numpy.insert(ff, 0, fx, axis=1)
 numpy.savetxt('myFFT' + Date + '.csv', fall, delimiter=',', newline='\n', header= myHeader)
 
 plt.savefig("myGraphic" + Date + ".PDF")
+
+f = open ("/var/www/html/data/status.html", "w")
+f.write ("<!DOCTYPE html><html><head></head>")
+f.write ("<body><h3>")
+f.write (" Sampling completed (" + str(i) +  ")<BR> \n")
+f.write("</h3><a href=\"../../startpage.html\">Starter page</a></body></html>")
+f.close()   
 
 #pdb.set_trace()
     

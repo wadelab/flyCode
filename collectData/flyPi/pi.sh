@@ -5,7 +5,6 @@ whoami
 echo "<br>"
 
 #export DISPLAY=:0; lxterminal &
-#sudo -u pi
 
 PATH=/home/pi/venv/bin:$PATH
 HOME=/home/pi/www-data
@@ -31,8 +30,7 @@ export DISPLAY=:0
 export QUERY_STRING
 
 echo "starting.... <BR>"
-python /home/pi/git/flyCode/collectData/flyPi/mcp.py 2>&1
-
+python /home/pi/git/flyCode/collectData/flyPi/mcp.py 2>&1 &
 
 echo "<BR><BR>now done <br>"
 echo "result "

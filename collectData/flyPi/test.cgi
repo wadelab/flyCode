@@ -1,8 +1,14 @@
 #!/bin/bash
+
  echo "Content-type: text/html"
  echo "" 
-echo "<html><head><title>Sampling from fly Pi" 
-echo "</title></head><body>" 
+echo "<html><head>"
+echo "<title>Sampling from fly Pi" 
+echo "</title>"
+echo "<meta http-equiv=\"refresh\" content=\"15;URL='http://biolpc3399.york.ac.uk/data/status.html'\" />"
+echo "</head><body"
+#echo " onload=\"window.open('http://biolpc3399.york.ac.uk/status.html');\"
+echo ">" 
 echo "<h1>Stimulated!</h1>"
 
 #echo "Hello, World.<br>" # prints out "Hello, World."
@@ -10,12 +16,16 @@ echo "<h1>Stimulated!</h1>"
 # Use $1 to get the first argument:
 #echo "argument is "
 #echo $QUERY_STRING
-export QUERY_STRING
+set +m
+
 
 #env 
+echo "</body></html>"
+
 
 echo "<br>now trying CRF.py <br>"
-/home/pi/git/flyCode/collectData/flyPi/pi.sh &
-echo "now tried"
-echo $?
-echo "</body></html>"
+export QUERY_STRING
+exec env QS=$QUERY_STRING /home/pi/git/flyCode/collectData/flyPi/pi.sh 
+
+#echo "now tried"
+#echo $?

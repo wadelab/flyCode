@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <Head>
+<Title>Fly Pi Stimulus Selector</Title>
 <base href="http://biolpc3399.york.ac.uk/" >
 <script>
 
@@ -39,6 +40,13 @@ function changeText()
     x.value = getTimeString();
     document.myform.submit(); 
 }
+
+
+function myNewTab ()
+{
+    window.location.assign("/data/status.html")
+}
+
 </script>
 </head>
 
@@ -48,7 +56,7 @@ function changeText()
 <div id="txt">Fly Pi SSVEP starter page</div>
 <BR>
 
-<form name = "myform" action="/cgi-bin/test.cgi">
+<form name = "myform" action="/cgi-bin/test.cgi" onsubmit="myNewTab()">
 
 <table style="text-align: left; width: 50%;" border="1" cellpadding="2"
 cellspacing="2">
@@ -119,7 +127,7 @@ cellspacing="2">
 
 <td style="vertical-align: top;"><BR>
 <input type="radio" name="col" value="blue" checked>blue<br>
-<input type="radio" name="col" value="red" checked>red<br>
+<input type="radio" name="col" value="red" >red<br>
 
 </td>
 
