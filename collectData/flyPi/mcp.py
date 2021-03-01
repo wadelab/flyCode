@@ -108,6 +108,9 @@ def do_ADC_with_wait(i):
 ##############################################################################################################################
 
 myHeader = os.environ.get( 'QUERY_STRING' )  #return empty header if  no environment variable
+if myHeader is None:
+    myHeader = 'Test_String'
+
 
 Date = datetime.today().strftime('%Y-%b-%d-%H-%M-%S')
 myQ = Queue()

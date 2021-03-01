@@ -28,6 +28,7 @@ echo "<BR>"
 export HOME
 export DISPLAY=:0 
 export QUERY_STRING
+xset -display :0 dpms force on
 
 echo "starting.... <BR>"
 python /home/pi/git/flyCode/collectData/flyPi/mcp.py 2>&1 &
