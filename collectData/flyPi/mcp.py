@@ -42,10 +42,13 @@ def show_stimuli():
 
     for i in range(qty):  
         f = open ("/var/www/html/data/status.html", "w")
-        f.write ("<!DOCTYPE html><html><head><meta http-equiv=\"refresh\" content=\"10\"></head>")
+        f.write ("<!DOCTYPE html><html><head><meta http-equiv=\"refresh\" content=\"5\"></head>")
         f.write ("<body><h3>")
         f.write (" Sampling (" + str(i) +  ")<BR> \n")
-        f.write("</h3></body></html>")
+        f.write ("</h3>")
+        if (i>0):
+            f.write (' <img src="../../data/myLastData.png" alt="recording last trace"> ')
+        f.write ("</body></html>")
         f.close() 
         
         #generate some stimuli
@@ -83,7 +86,9 @@ def show_stimuli():
         mywin.flip(clearBuffer=True)
         core.wait(2) # 2 sec rest between stimuli     
            
-     
+    plt.plot(sampling_values[1:500, 0]/1000, sampling_values[1:500, 1:3], linestyle='solid', marker='None')
+    plt.xlabel('time (ms)') 
+    plt.savefig("myLastData.png")
     # numpy.savetxt("myFlips" + Date + ".csv", fliptimes, delimiter=',', fmt='%i', newline='\n', header= myHeader)
     # close window
     mywin.close()
@@ -248,8 +253,10 @@ plt.savefig("myGraphic" + Date + ".PDF")
 f = open ("/var/www/html/data/status.html", "w")
 f.write ("<!DOCTYPE html><html><head></head>")
 f.write ("<body><h3>")
-f.write (" Sampling completed (" + str(i) +  ")<BR> \n")
-f.write("</h3><a href=\"../../startpage.html\">Starter page</a></body></html>")
+f.write (" Sampling completed (" + str(i) +  ")<BR> </h3>\n")
+f.write("<a href=\"../../startpage.html\">Starter page </a>")
+f.write("<a href=\"../../data\"> Data Directory</a>")
+f.write("</body></html>")
 f.close()   
 
 #pdb.set_trace()
