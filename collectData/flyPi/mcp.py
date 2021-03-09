@@ -86,9 +86,6 @@ def show_stimuli():
         mywin.flip(clearBuffer=True)
         core.wait(2) # 2 sec rest between stimuli     
            
-    plt.plot(sampling_values[1:500, 0]/1000, sampling_values[1:500, 1:3], linestyle='solid', marker='None')
-    plt.xlabel('time (ms)') 
-    plt.savefig("myLastData.png")
     # numpy.savetxt("myFlips" + Date + ".csv", fliptimes, delimiter=',', fmt='%i', newline='\n', header= myHeader)
     # close window
     mywin.close()
@@ -172,6 +169,9 @@ for i in range(qty):
     while myQ.empty():
         pass
     do_ADC_with_wait(i+1)
+    plt.plot(sampling_values[1:250, 0]/1000, sampling_values[1:250, 1], linestyle='solid', marker='None')
+    plt.xlabel('time (ms)') 
+    plt.savefig("myLastData.png")
     myQ.get()
 
 for one_process in processes:
