@@ -169,9 +169,10 @@ for i in range(qty):
     while myQ.empty():
         pass
     do_ADC_with_wait(i+1)
-    plt.plot(sampling_values[1:250, 0]/1000, sampling_values[1:250, 1], linestyle='solid', marker='None')
+    plt.plot(sampling_values[2:250,0] / 1000, sampling_values[2:250, i+1], linestyle='solid', marker='None')
     plt.xlabel('time (ms)') 
     plt.savefig("myLastData.png")
+    plt.close()
     myQ.get()
 
 for one_process in processes:
@@ -255,7 +256,7 @@ f.write ("<!DOCTYPE html><html><head></head>")
 f.write ("<body><h3>")
 f.write (" Sampling completed (" + str(i) +  ")<BR> </h3>\n")
 f.write("<a href=\"../../startpage.html\">Starter page </a>")
-f.write("<a href=\"../../data\"> Data Directory</a>")
+f.write("<a href=\"../../data/?C=M;O=D\"> Data Directory</a>")
 f.write("</body></html>")
 f.close()   
 
