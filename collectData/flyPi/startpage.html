@@ -7,44 +7,44 @@
 
 
 function getTimeString() {
-    var today=new Date();
-    var yr=today.getFullYear();
-    var mo=today.getMonth()+1;
-    var d=today.getDate();
-    var h=today.getHours();
-    var m=today.getMinutes();
-    var s = today.getSeconds();
+var today=new Date();
+var yr=today.getFullYear();
+var mo=today.getMonth()+1;
+var d=today.getDate();
+var h=today.getHours();
+var m=today.getMinutes();
+var s = today.getSeconds();
 
-    d = checkTime(d);
-    m = checkTime(m);
-    mo = checkTime(mo);
-    h = checkTime(h);
-    s = checkTime(s);
-    return yr + "_" + mo + "_" + d + "_" + h + "h" + m + "m" + s ;
-    }
-    
+d = checkTime(d);
+m = checkTime(m);
+mo = checkTime(mo);
+h = checkTime(h);
+s = checkTime(s);
+return yr + "_" + mo + "_" + d + "_" + h + "h" + m + "m" + s ;
+}
+
 function startTime()
 {
-    document.getElementById('txt').innerHTML = getTimeString();
-    var t = setTimeout(function(){startTime()},500);
+document.getElementById('txt').innerHTML = getTimeString();
+var t = setTimeout(function(){startTime()},500);
 }
 
 function checkTime(i) {
-    if (i<10) {i = "0" + i};  // add zero in front of numbers < 10
-    return i;
+if (i<10) {i = "0" + i};  // add zero in front of numbers < 10
+return i;
 }
 
 function changeText() 
 {
-    x = document.getElementById("FileID");
-    x.value = getTimeString();
-    document.myform.submit(); 
+x = document.getElementById("FileID");
+x.value = getTimeString();
+document.myform.submit(); 
 }
 
 
 function myNewTab ()
 {
-    window.location.assign("/data/status.html")
+window.location.assign("/data/status.html")
 }
 
 </script>
@@ -65,29 +65,30 @@ cellspacing="2">
 <td style="vertical-align: top; width = 33%">GAL4:</td>
 <td style="vertical-align: top; width = 33%">UAS:</td>
 <td style="vertical-align: top; width = 33%">Age:</td>
+<td style="vertical-align: top; width = 33%">Protocol:</td>
 </tr>
 <tr>
 <td style="vertical-align: top;">
-<select name="GAL4" size = 6>
-  <option value="TH" selected>TH</option>
-
-
-  
-  <option value="w_apr"  >w-apricot</option>
+<select name="GAL4" size = 10>
+<option value="TH" >TH</option>
+<option value="nSyb" selected>nSyb</option>
+<option value="w_minus"  >w-</option>
 </select><br>
 </td>
 <td style="vertical-align: top;">
-<select name="UAS" size = 6>
-<option value="homz" selected >homozygote</option>
+<select name="UAS" size = 10>
+<option value="homz"  >homozygote</option>
 <option value="ev"  >empty vector</option>
-<option value="G2" >G2019S</option>
-<option value="TPC2" >TPC2</option>
-<option value="TPC2_G2" >TPC2 ; G2019S</option>
+<option value="GFP" selected >GFP</option>
+<option value="AP1000" >AP1000</option>
+<option value="GA1000" >GA1000</option>
+<option value="PR1000" >PR1000</option>
+<option value="GR1000" >GR1000</option>
 
 </select><br>
 </td>
 <td style="vertical-align: top;">
-<select name="Age" size = 6>
+<select name="Age" size = 010>
 <option value="0_4">4 hours</option>
 <option value="1" >1 day</option>
 <option value="3">3</option>
@@ -95,54 +96,16 @@ cellspacing="2">
 <option value="-1">unknown</option>
 </select><br>
 </td>
-</tr>
-</tbody>
-</table>
-<BR>
-<table style="text-align: left; width: 50%;" border="1" cellpadding="2"
-cellspacing="2">
-<tbody >
-<tr>
-<td style="vertical-align: top; width = 20%"><BR>Disco <BR></td>
-<td style="vertical-align: top; width = 20%"><BR>Drug <BR></td>
-<td style="vertical-align: top; width = 20%"><BR>Colour</td>
-
-<td style="vertical-align: top; width = 20%"><BR>Protocol</td>
-
-</tr>
-<tr>
-<td style="vertical-align: top;"><BR>
-<input type="radio" checked name="Disco" value="Y">Disco<br>
-<input type="radio"  name="Disco" value="N">Dark
-<BR><br>
-</td>
-<td style="vertical-align: top;"><BR> 
-<input type="radio" name="Drug" value="none" checked>normal lab<br>
-<input type="radio" name="Drug" value="Inst">Instant<br>
-<input type="radio" name="Drug" value="TET">TET<br>
-<input type="radio" name="Drug" value="CEPH">Ceph<br>
-<input type="radio" name="Drug" value="Ral">Ralf<br>
-<BR><br>
-</td>
-
-<td style="vertical-align: top;"><BR>
-<input type="radio" name="col" value="blue" checked>blue<br>
-<input type="radio" name="col" value="red" >red<br>
-
-</td>
 
 
 <td style="vertical-align: top;"><BR>
 
-<input type="radio" name="stim" value="fERG" checked >flash ERG<br>
 
 <input type="radio" name="stim" value="CRF" >plain full field CRF<br>
 <input type="radio" name="stim" value="stripes" >stripy CRF<br>
 
 </td>
 
-<input type="hidden" name="F1" value="12" checked> 
-<input type="hidden" name="F2" value="15" checked>
 <br>
 
 </tr>
@@ -157,23 +120,14 @@ cellspacing="2">
 <BR><BR>
 
 <table>
-<tr><td>
-<A href="/white/">White</a>
-</td>
-
-<td bgcolor="Blue">
-<A href="/blue/"><font color="White">Blue </font></a>
-</td>
-<td bgcolor="Black">
-<A href="/black/"><font color="White">Black</font></a>
-
+<tr>
 <td>
 <a href="/data/?C=M;O=D">Directory</a>
-  </td><td>
-    <a href ="cgi-bin/diskfree.sh">Disk space</a>
-    </td><td>
-    <a href ="https://drive.google.com/drive/folders/1vPxjmOhPI_DT18p6j98eNu_ofDPwerM1?usp=sharing">Archive</a>
-    </td>
+</td><td>
+<a href ="cgi-bin/diskfree.sh">Disk space</a>
+</td><td>
+<a href ="https://drive.google.com/drive/folders/1vPxjmOhPI_DT18p6j98eNu_ofDPwerM1?usp=sharing">Archive</a>
+</td>
 </table>
 </body>
 </html>
