@@ -1,31 +1,47 @@
-#!/bin/bash
+#!/usr/bin/python3
 
- echo "Content-type: text/html"
- echo "" 
-echo "<html><head>"
-echo "<title>Sampling from fly Pi" 
-echo "</title>"
-echo "<meta http-equiv=\"refresh\" content=\"15;URL='http://biolpc3399.york.ac.uk/data/status.html'\" />"
-echo "</head><body"
-#echo " onload=\"window.open('http://biolpc3399.york.ac.uk/status.html');\"
-echo ">" 
-echo "<h1>Stimulated!</h1>"
+#import cgi
+#import cgitb
+#cgitb.enable()
 
-#echo "Hello, World.<br>" # prints out "Hello, World."
+from multiprocessing import Process
+import subprocess
+from subprocess import DEVNULL
+import os
 
-# Use $1 to get the first argument:
-#echo "argument is "
-#echo $QUERY_STRING
-set +m
+def do_stimuli():
+    subprocess.Popen (['/home/pi/git/flyCode/collectData/flyPi/pi.sh'], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-#env 
-echo "</body></html>"
+def write_status_page():
+    print ( "Content-type:text/html\r\n\r\n" )
+    print ( "<html><head>" )
+    print ( "<title>Sampling from fly Pi"  )
+    print ( "</title>" )
+    print ( "<meta http-equiv=\"refresh\" content=\"15;URL='http://biolpc3399.york.ac.uk/data/status.html'\" />" )
+    print ( "</head><body>" )
+    print ( "<h1>Stimulation started</h1>" )
+
+    #print (( "Hello, World.<br>" # prints out "Hello, World."
+
+    # Use $1 to get the first argument:
+    print ( "argument is " )
+    print ( os.environ.get( 'QUERY_STRING' ))
+    #set +m
 
 
-echo "<br>now trying CRF.py <br>"
-export QUERY_STRING
-exec env QS=$QUERY_STRING /home/pi/git/flyCode/collectData/flyPi/pi.sh 
+    #env 
+    print ( "</body></html>" , flush=True)
+	
 
-#echo "now tried"
-#echo $?
+if __name__ == '__main__':
+    p = Process(target=write_status_page())
+    p.daemon = True
+    p.start()
+
+    p2 = Process(target=do_stimuli())
+    p2.daemon = True
+    p2.start()
+    
+    
+    

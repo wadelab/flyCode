@@ -20,14 +20,14 @@ os.chdir('/var/www/html/data')
 # Open SPI bus
 spi = spidev.SpiDev()
 spi.open(0, 0)
-spi.max_speed_hz =390000 
+spi.max_speed_hz = 390000  
 
 
 
 # Function to read SPI data from MCP3008 chip
 # Channel must be an integer 0-7
 def read_channel(x):
-    channel = 0
+    channel = 2
     adc = spi.xfer2([1, (8 + channel) << 4, 0])
     data = ((adc[1] & 3) << 8) + adc[2]
 #    data = x + 1023
