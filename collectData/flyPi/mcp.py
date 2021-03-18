@@ -111,7 +111,7 @@ def do_ADC_with_wait(i):
 
 myHeader = os.environ.get( 'QUERY_STRING' )  #return empty header if  no environment variable
 if myHeader is None:
-    myHeader = 'Test_String'
+    myHeader = 'Test_String_stripes'
 
 
 Date = datetime.today().strftime('%Y-%b-%d-%H-%M-%S')
@@ -229,7 +229,7 @@ coords_with_data = coords_with_data[coords_with_data[:, proCol].argsort()] # sor
 plt.subplot(2, 2, 3 + proCol)  # (rows, columns, panel number)
 plt.plot(coords_with_data[:, proCol], coords_with_data[:, 2], 'go-', label ='1F1') #, green dots and solid line
 plt.plot(coords_with_data[:, proCol], coords_with_data[:, 3], 'bo-', label ='2F1') #, blue  dots and solid line
-ymax = 1.2 * numpy.max(coords_with_data[:, 2:3])
+ymax = 1.2 * max (numpy.max(coords_with_data[:, 2]), numpy.max(coords_with_data[:, 3]))
 plt.ylim(0,ymax)
 
 if proCol == 0:
