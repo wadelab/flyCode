@@ -44,7 +44,7 @@ def show_stimuli():
         f = open ("/var/www/html/data/status.html", "w")
         f.write ("<!DOCTYPE html><html><head><meta http-equiv=\"refresh\" content=\"5\"></head>")
         f.write ("<body><h3>")
-        f.write (" Sampling (" + str(i) +  ")<BR> \n")
+        f.write (" Sampling (" + str(i) +  " of " + str(qty) + ")<BR> \n")
         f.write ("</h3>")
         if (i>0):
             f.write (' <img src="../../data/myLastData.png" alt="recording last trace"> ')
@@ -143,6 +143,9 @@ else:
     cordinates [5,0] = 0.07
     cordinates [6,0] = 1.0
     proCol = 0
+    
+    if 'uick' in myHeader: # just do a quick test to see if it works
+        qty = 1
 
 
 # create a window
@@ -183,6 +186,16 @@ for one_process in processes:
 ##################################################################################################   
 expt_time = expt_clock.getTime()    
 print('Expt time was ' + str(expt_time))
+if qty == 1:
+    f = open ("/var/www/html/data/status.html", "w")
+    f.write ("<!DOCTYPE html><html><head></head>")
+    f.write ("<body><h3>")
+    f.write (" Sampling done<BR> \n")
+    f.write ("</h3>")
+    f.write (' <img src="../../data/myLastData.png" alt="recorded last trace"> ')
+    f.write ("</body></html>")
+    f.close() 
+    quit
 #print('Wait time was ' + str(t_real_start))
 #save the stimuli (as %) in first row of data
 sampling_values[0,1:] = 100 * numpy.transpose(cordinates[:,proCol])
