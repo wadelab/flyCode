@@ -16,11 +16,11 @@ def do_stimuli():
 def write_status_page():
     print ( "Content-type:text/html\r\n\r\n" )
     print ( "<html><head>" )
-    print ( "<title>Sampling from fly Pi"  )
+    print ( "<title>Sstarting to sample from fly Pi"  )
     print ( "</title>" )
     print ( "<meta http-equiv=\"refresh\" content=\"15;URL='http://biolpc3399.york.ac.uk/data/status.html'\" />" )
     print ( "</head><body>" )
-    print ( "<h1>Stimulation started</h1>" )
+    print ( "<h1>Python loading up ... (takes about 20 s)</h1>" )
 
     #print (( "Hello, World.<br>" # prints out "Hello, World."
 
