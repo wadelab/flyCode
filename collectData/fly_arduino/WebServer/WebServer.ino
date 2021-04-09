@@ -932,7 +932,7 @@ void webTime ()
 
 void file__time ()
 {
-  year = 2019;
+  year = 2021;
   second = myminute = hour = day = month = 1;
 
   //GET /?GAL4=JoB&UAS=w&Age=-1&Antn=Ok&sex=male&org=fly&col=blue&F1=12&F2=15&stim=fERG&filename=7_04_14h35m44 HTTP/1.1
@@ -1001,9 +1001,9 @@ bool writeFile(const char * c)
   //    int erg_in [max_data];
 
   int16_t iBytesWritten ;
-  year = 2019 ;
+  year = 2021 ;
   //webTime ();
-  if (year == 2019)
+  if (year == 2021)
   {
     file__time();
   }
