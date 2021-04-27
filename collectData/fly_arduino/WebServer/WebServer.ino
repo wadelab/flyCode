@@ -23,80 +23,80 @@
 
 // Classroom allocation 2020
 
-#ifdef due11  
-#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x0B, 0xD0 
+#ifdef due11
+#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x0B, 0xD0
 //biolpc3462
 #endif
 
 
 #ifdef due12
-#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x05, 0xC1 
+#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x05, 0xC1
 //biolpc3463
 #endif
 
 
 #ifdef due13
-#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x0B, 0xD6 
+#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x0B, 0xD6
 //biolpc3464
 #endif
 
 
 #ifdef due14
-#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x05, 0x99 
+#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x05, 0x99
 //biolpc3465
 #endif
 
 
 #ifdef due15
-#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x05, 0x0F 
+#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x05, 0x0F
 //biolpc3466
 #endif
 
 
 #ifdef due16
-#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5E, 0xDF 
+#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5E, 0xDF
 //biolpc3467
 #endif
 
 
 #ifdef due17
-#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5E, 0xFD 
+#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5E, 0xFD
 //biolpc3468
 #endif
 
 
 #ifdef due18
-#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x4B, 0x55 
+#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x4B, 0x55
 //biolpc3469
 #endif
 
 
 #ifdef due19
-#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5E, 0xE6 
+#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5E, 0xE6
 //biolpc3470
 #endif
 
 
 #ifdef due20
-#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5E, 0xE0 
+#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5E, 0xE0
 //biolpc3471
 #endif
 
 
 #ifdef due21
-#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5E, 0xA1 
+#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5E, 0xA1
 //biolpc3472
 #endif
 
 
 #ifdef due22
-#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5D, 0x36 
+#define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5D, 0x36
 //biolpc3473
 #endif
 
 
 #ifdef due23
-#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x4C, 0x02 
+#define MAC_OK 0x90, 0xA2, 0xDA, 0x0F, 0x4C, 0x02
 //biolpc3474
 #endif
 
@@ -1958,14 +1958,14 @@ void plotInColour (int iStart, const String & str_col)
   // 4 ms per point 0.25 Hz per point, so 12 Hz expected at 48
   client.println F("ctx.beginPath();");
   client.print F("ctx.moveTo(");
-  client.print ((iXFactor * iStart) / iXDiv );
+  client.print ((iXFactor * iStart) / (iXDiv + 1) );
   client.print F(",");
   client.print (iBaseline - (10 * myGraphData[iStart]) / iYFactor);
   client.println F(");");
   for (int i = iStart + istep; i < iStart + 5; i = i + istep)
   {
     client.print F("ctx.lineTo(");
-    client.print ((iXFactor * i) / iXDiv );
+    client.print ((iXFactor * i) / (iXDiv + 1) );
     client.print F(",");
     client.print (iBaseline - (10 * myGraphData[i]) / iYFactor);
     client.println F(");");
@@ -2008,9 +2008,9 @@ void sendGraphic(StimTypes plot_stimulus)
     istep = 1;
     plot_limit = plot_limit / 2;
     iXFactor = 10 ;
-    iYFactor = 10;
+    iYFactor = 5;
     iBaseline = 420 ;
-    iXDiv = 5 ;
+    iXDiv = 4 ;
   }
 
   client.println F("<canvas id=\"myCanvas\" width=\"640\" height=\"520\" style=\"border:1px solid #d3d3d3;\">");
@@ -2020,19 +2020,19 @@ void sendGraphic(StimTypes plot_stimulus)
   client.println F("var can;");
   client.println F("var ctx;");
   client.print   ("var i = ");
-  client.print   ((iXFactor * istep) / iXDiv );
+  client.print   ((iXFactor * 2 * istep) / iXDiv );
   client.println F("; ");
 
   client.println F("function l(v){");
   client.println F("ctx.lineTo(i,v);");
-  client.println F("i = i +  ");
+  client.print   F("i = i +  ");
   client.print   ((iXFactor * istep) / iXDiv );
   client.println F("; ");  // iStep ??
   client.println F("};");
   client.println F("function m(v){");
   client.println F("ctx.moveTo(0,v);");
   client.print   ("i = ");
-  client.print   ((iXFactor * istep) / iXDiv );
+  client.print   ((iXFactor * 2 * istep) / iXDiv );
   client.println F("; ");
   client.println F("};");
 
@@ -2041,23 +2041,11 @@ void sendGraphic(StimTypes plot_stimulus)
   client.println F(" ctx = can.getContext(\"2d\");");
   //client.println F(" ctx.scale(0.21,1);");
 
-  // move to start of line
-  client.println F("ctx.beginPath();");
-  client.print F("m(");
-  client.print (iBaseline - (10 * myGraphData[istep]) / iYFactor);
-  client.print F(");\n");
 
-  //now join up the line
-  for (int i = 2 * istep + 1; i < plot_limit; i = i + 15) // default is istep of 15
-  {
-    client.print F("l(");
-    client.print (iBaseline - (10 * max_array(myGraphData + i, istep)) / iYFactor);
-    client.print F(");\n");
-  }
-  client.println F("ctx.stroke();");
 
   if (SSVEP != plot_stimulus)
   {
+    //plot the stimulus
     client.println F("ctx.beginPath();");
     client.print F("m(");
     client.print (10 + (10 * light_NOW(time_stamp[1] - time_stamp[0], plot_stimulus)) / iYFactor);
@@ -2070,10 +2058,41 @@ void sendGraphic(StimTypes plot_stimulus)
       client.println F(");");
     }
     client.println F("ctx.stroke();");
+
+    // move to start of response line
+    client.println F("ctx.beginPath();");
+    client.print F("m(");
+    client.print (iBaseline - (10 * myGraphData[istep]) / iYFactor);
+    client.print F(");\n");
+
+    //now join up the line
+    for (int i = 2 * istep + 1; i < plot_limit; i = i + istep) // default is istep of 15
+    {
+      client.print F("l(");
+      client.print (iBaseline - (10 * max_array(myGraphData + i, istep)) / iYFactor);
+      client.print F(");\n");
+    }
+    client.println F("ctx.stroke();");
   }
 
   if (SSVEP == plot_stimulus)
   {
+    //plot the FFT
+    // move to start of line
+    // move to start of line
+    client.println F("ctx.beginPath();");
+    client.print F("m(");
+    client.print (iBaseline - (10 * myGraphData[istep]) / iYFactor);
+    client.print F(");\n");
+
+    //now join up the line
+    for (int i = 2 * istep + 1; i < plot_limit; i = i + istep) // default is istep of 15
+    {
+      client.print F("l(");
+      client.print (iBaseline - (10 * max_array(myGraphData + i, istep)) / iYFactor);
+      client.print F(");\n");
+    }
+    client.println F("ctx.stroke();");
     plotInColour (4 * 12, String ("#0000FF"));
     plotInColour (4 * 15, String ("#0088FF"));
     plotInColour (4 * 12 * 2, String ("#8A2BE2"));
@@ -2220,7 +2239,7 @@ void sendReply ()
         return ;
       }
       // new file
-      nRepeats = iThisContrast = 0 ;  
+      nRepeats = iThisContrast = 0 ;
       nWaits = nMaxWaits ;
       if (bTestFlash)
       {
@@ -2505,7 +2524,7 @@ void loop()
 void writehomepage ()
 {
 
- sendHeader (String("Fly lab here!"));
+  sendHeader (String("Fly lab here!"));
   client.print F("Please try <a href = \"http://biolpc1677.york.ac.uk/pages\">biolpc1677</a> for starter page");
   sendFooter();
 }
