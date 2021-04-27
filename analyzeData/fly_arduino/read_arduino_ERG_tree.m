@@ -51,7 +51,7 @@ for i=1:min(length(ERGfiles),maxFilesToRead)
 end;
 
 if (iSuccesseses == 1)
-    disp(['Exiting becuase No **Readable** SVP files were found in ',dirName]);
+    disp(['Exiting becuase No **Readable** ERG files were found in ',dirName]);
     return
 end
 

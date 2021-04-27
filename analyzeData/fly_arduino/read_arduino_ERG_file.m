@@ -58,9 +58,30 @@ thisFlyData.phenotypes = line ;
 try
     alldata = csvread(fName, 1,0);
 catch
-    thisFlyData.Error = ['error in CSV format : ', fName]
-    success = false ;
-    return
+%     %% try to read the file as compressed
+[fid, msg] = fopen(fName, 'rt');
+    %line1a = fgets(fid)
+    %original code was 132; later was extended to 135
+    A1 = fread(fid,[1,132],'uint8') ; %read this and throw it away as we've already read this
+    
+    %allocate memory for the data
+    alldata = zeros (1025*5, 3) ;
+    
+    try
+        for i = 0 : 4
+            alldata ((i*1025)+1:(i*1025)+1025, 3) = fread(fid,[1,1025],'int32') ; %  block of ergs   
+            alldata ((i*1025)+1:(i*1025)+1025, 1) = fread(fid,[1,1025],'int32') ; %  block of time_data
+            alldata ((i*1025)+1025,2) = alldata ((i*1025)+1025,1) ;
+        end
+        fclose(fid);
+    
+    %%
+    catch
+        thisFlyData.Error = ['Binary Read function died with - file too small : ', fName];
+        disp(thisFlyData.Error);
+        success = false ;
+        return
+    end
 end
 
 
