@@ -14,9 +14,8 @@
 
 
 
-#define __CLASSROOMSETUP__
 
-
+#define USE_DHCP
 
 // define the due in an external file so we don't keep fighting with git, like this:
 
@@ -209,12 +208,6 @@ byte nWaits = 15;
 #define maxbrightness 255
 byte brightness = maxbrightness ;
 
-#ifdef __CLASSROOMSETUP__
-byte Temperature = 20;
-byte TemperatureOutputPin = 12; 
-byte grnled = TemperatureOutputPin ;
-#endif
-
 const byte maxContrasts = 9 ;
 const int maxsummaryentries = 16 ;
 int pSummary [maxRepeats * maxContrasts * maxsummaryentries];
@@ -315,7 +308,6 @@ void setup() {
   pinMode(noContactLED, OUTPUT);
   pinMode( bluLED, OUTPUT);
   pinMode( whiteled, OUTPUT);
-  pinMode( TemperatureOutputPin, OUTPUT );
   // ...
   pinMode(SS_SD_CARD, OUTPUT);
   pinMode(SS_ETHERNET, OUTPUT);
@@ -528,8 +520,6 @@ void goColour(const byte r, const byte g, const byte b, const byte a, const byte
   //Serial.println F("colouring 1");
   analogWrite( bluLED, b );
   analogWrite( whiteled, w );
-  analogWrite( grnled, g );
-  
 
   updateColour( boolUpdatePage);
 
@@ -1641,11 +1631,6 @@ void StartTo_collect_Data ()
 {
   mStart = millis();
   mean = 0;
-#ifdef __CLASSROOMSETUP__
-  //turn off warmth while we record...
-  analogWrite(TemperatureOutputPin, 0);
-  //  Serial.println ("Temp off, data starting..");
-#endif
   sampleCount = -presamples ;
   switch (eDoFlash)
   {
@@ -1719,17 +1704,7 @@ void tidyUp_Collection()
       sampleCount ++ ;
       analogWrite(usedLED, 127);
   }
-#ifdef __CLASSROOMSETUP__
-  if (nMaxWaits > 1)
-  {
-    analogWrite(TemperatureOutputPin, (Temperature - 20) * 12);
-  }
-  else
-  {
-    analogWrite(TemperatureOutputPin, 0 );
-  }
-  //  Serial.println("Temperature on again");
-#endif
+
 
   if (! bTestFlash)
   {
@@ -2154,20 +2129,7 @@ void sendReply ()
     char * cP = strstr(cInput, "HTTP/");
     if (cP) cP = '\0';
 
-#ifdef __CLASSROOMSETUP__
     usedLED = bluLED;
-#else
-    // now choose the colour
-    int oldLED = usedLED ;
-    if (MyInputString.indexOf ("col=blue&") > 0 ) usedLED  = bluLED ; //
-    if (MyInputString.indexOf ("col=green&") > 0 ) usedLED  = grnled ; //
-    if (MyInputString.indexOf ("col=red&") > 0 ) usedLED  = redled ; //
-    if (MyInputString.indexOf ("col=fiber") > 0 ) usedLED  = fiberLED ; //
-    //due4 is special
-    if (MyInputString.indexOf ("col=amber&") > 0 ) usedLED  = amberled ; //
-    if (MyInputString.indexOf ("col=cyan&") > 0 ) usedLED  = cyaled ; //
-    if (MyInputString.indexOf ("col=bvio&") > 0 ) usedLED  = bluvioletLED ; //
-#endif
 
     //flash ERG or SSVEP?
     StimTypes lastStim = eDoFlash ;
@@ -2184,11 +2146,7 @@ void sendReply ()
     int ibrPos  = MyInputString.indexOf ("bri=") + 4;
     brightness = atoi(cInput + ibrPos);
     if (bTestFlash) brightness = maxbrightness;
-#ifdef __CLASSROOMSETUP__
-    ibrPos  = MyInputString.indexOf ("Temp=") + 5;
-    Temperature = atoi(cInput + ibrPos);
-    if (bTestFlash) Temperature = 0;
-#endif
+
 
     // find filename
     String sFile = MyInputString.substring(fPOS + 9); // ignore the leading / should be 9
@@ -2262,30 +2220,7 @@ void sendReply ()
         return ;
       }
       // new file
-      nRepeats = iThisContrast = 0 ;
-#ifdef __CLASSROOMSETUP__      
-      switch (Temperature)
-      {
-
-
-        case 40: nMaxWaits = 15;
-          break;
-
-        case 35: nMaxWaits = 13;
-          break;
-
-        case 30: nMaxWaits = 11;
-
-        case 25: nMaxWaits = 7;
-          break;
-
-        default:
-        case 20: nMaxWaits = 1 ;
-          break;
-
-
-      }
-#endif      
+      nRepeats = iThisContrast = 0 ;  
       nWaits = nMaxWaits ;
       if (bTestFlash)
       {
@@ -2294,18 +2229,14 @@ void sendReply ()
       else
       {
         if (eDoFlash == zap) nWaits = 1;
-#ifndef __CLASSROOMSETUP__
+
         // for shibire, always allow time for temperature to change
         if (lastStim == flash) nWaits = 1 ;
-#endif
+
       }
       //turn off any lights we have on...
       goColour(0, false);
-#ifdef __CLASSROOMSETUP__
-      analogWrite(TemperatureOutputPin, Temperature );
-      //      Serial.print("Temperature on at ");
-      //      Serial.println (Temperature);
-#endif
+
     }
     //Serial.println F("repeats now ");
     //Serial.println (nRepeats);
@@ -2365,11 +2296,6 @@ void sendReply ()
           doFFTFile (cFile, false) ;
       }
       sendFooter ();
-
-#ifdef __CLASSROOMSETUP__
-      analogWrite(TemperatureOutputPin, 0);
-            Serial.println("Temperature off");
-#endif
 
       return ;
     }
@@ -2579,152 +2505,9 @@ void loop()
 void writehomepage ()
 {
 
-#ifdef __CLASSROOMSETUP__
-
-  client.print F("<!DOCTYPE html> <html> <head> <title> Welcome to FlyLab! </title> <link rel=\"icon\" type=\"image/png\" href=\"http://biolpc1677.york.ac.uk/favicons/favicon-32x32.png\" sizes=\"32x32\"> <base href=\"http://");
-  client.print  (myIP);
-  client.println F("\"><script>\n");
-  ////////////////////////////////////
-
-  client.print F("function getTimeString() {\n");
-  client.print F("var today=new Date();\n");
-  client.print F("var yr=today.getFullYear();\n");
-  client.print F("var mo=today.getMonth()+1;\n");
-  client.print F("var d=today.getDate();\n");
-  client.print F("var h=today.getHours();\n");
-  client.print F("var m=today.getMinutes();\n");
-  client.print F("var s = today.getSeconds();\n");
-
-  client.print F("d = checkTime(d);\n");
-  client.print F("m = checkTime(m);\n");
-  client.print F("mo = checkTime(mo);\n");
-  client.print F("h = checkTime(h);\n");
-  client.print F("s = checkTime(s);\n");
-  client.print F("return yr + \"_\" + mo + \"_\" + d + \"_\" + h + \"h\" + m + \"m\" + s ;\n");
-  client.print F("} \n");
-
-  client.print F("function startTime()\n");
-  client.print F("{\n");
-  client.print F("document.getElementById('txt').innerHTML = getTimeString();\n");
-  client.print F("var t = setTimeout(function(){startTime()},500);}\n");
-
-  client.print F("function checkTime(i) {\n");
-  client.print F("if (i<10) {i = \"0\" + i};  // add zero in front of numbers < 10\n");
-  client.print F("return i;} \n");
-
-  client.print F("function changeText() \n");
-  client.print F("{\n");
-  client.print F("x = document.getElementById(\"FileID\");\n");
-  client.print F("x.value = getTimeString() ; \ndocument.myform.submit(); \n }\n");
-  client.print F("</script>\n");
-  client.print F("</head>\n");
-
-  client.print F("<!-- body onload=\"startTime()\" -->\n");
-  client.print F("<body><div id=\"txt\">Flylab Starter page</div><BR>\n");
-
-  client.print F("<form name = \"myform\" action=\"/\">\n");
-
-  client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody><tr>\n");
-  client.print F("<td style=\"vertical-align: top; width = 50%\">Genotype</td>\n");
-  client.print F("<td style=\"vertical-align: top; width = 50%\">Temperature (oC):</td></tr>\n");
-
-  client.print F("<tr><td style=\"vertical-align: top;\">\n");
-  client.print F("<select name=\"fly\" size = 6>\n");
-  //client.print F("<option value=\"CS\" selected>CS</option>\n");
-  client.print F("<option value=\"w_minus\" selected>w-</option>\n");
-  client.print F("<option value=\"shi\" >shibire</option>\n");
-  client.print F("</select><br></td>\n");
-
-  client.print F("<td style=\"vertical-align: top;\">\n");
-  client.print F("<select name=\"Temp\" size = 6 style=\"width: 100px\">\n");
-  client.print F("<option value=\"40\"  >40</option>\n");
-  client.print F("<option value=\"35\"  >35</option>\n");
-  client.print F("<option value=\"30\"  >30</option>\n");
-  client.print F("<option value=\"25\"  >25</option>\n");
-  client.print F("<option value=\"20\"  selected>Room temp</option>\n");
-  client.print F("</select><br></td></tr></tbody></table><BR>\n");
-
-  client.print F("<table style=\"text-align: left; width: 50%;\" border=\"1\" cellpadding=\"2\"cellspacing=\"2\"><tbody ><tr>\n");
-
-  client.print F("<td style=\"vertical-align: top; width = 33%\"><BR>Protocol</td>\n");
-  client.print F("<td style=\"vertical-align: top; width = 33%\"><BR>ERG Intensity</td></tr><tr>\n");
-
-
-  //  client.print F("<td style=\"vertical-align: top;\"><BR>\n");
-  //  client.print F("<input type=\"hidden\" name=\"col\" value=\"blue\" checked>blue<br>\n");
-  //  client.print F("<input type=\"radio\" name=\"col\" value=\"green\">green<br>\n");
-  //  client.print F("<input type=\"radio\" name=\"col\" value=\"red\">red<br></td>\n");
-
-  client.print F("<td style=\"vertical-align: top;\"><BR>\n");
-  client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG_T\" checked>Test ERG<br>\n");
-  client.print F("<input type=\"radio\" name=\"stim\" value=\"fERG\" >Save ERG<br>\n");
-  client.print F("<td style=\"vertical-align: top;\"><BR>\n");
-  client.print F("<select name=\"bri\" size = 7>\n");
-  client.print F("<option value=\"50\"  >50%</option>\n");
-  client.print F("<option value=\"25\"  >25%</option>\n");
-  client.print F("<option value=\"10\" selected >10%</option>\n");
-  client.print F("<option value=\"5\"  >5%</option>\n");
-  client.print F("<option value=\"3\"  >3%</option>\n");
-  client.print F("<option value=\"2\"  >2%</option>\n");
-  client.print F("<option value=\"1\"  >1%</option>\n");
-  client.print F("</select></td></tr></tbody></table><br>\n");
-
-
-
-  client.print F("<BR>\n");
-  client.print F("<input id=\"FileID\" type=\"hidden\" name=\"filename\"> \n");
-  client.print F("<button onclick=\"changeText()\" type=\"button\">Stimulate!</button><br><BR><BR>\n");
-  // client.print F("<input type=\"submit\" value=\"Submit\">\n");
-
-  client.print F("</form>\n");
-
-  client.print F("<BR><BR><table><tr><td>\n");
-  client.print F("<A href=\"/white/\">Light on</a></td>\n");
-  client.print F("<td bgcolor=\"Blue\">\n");
-  client.print F("<td bgcolor=\"Black\">\n");
-  client.print F("<A href=\"/black/\"><font color=\"White\">Light off</font></a></td>\n");
-
-  //client.print F("<td><a href=\"/\">Test setup</a></td>\n");
-  client.print F("<td><a href=\"/dir=\">Directory</a></td></table></body></html>\n");
-
-#else
-  // thus not __CLASSROOMSETUP__
-
-  sendHeader (String("Fly lab here!"));
+ sendHeader (String("Fly lab here!"));
   client.print F("Please try <a href = \"http://biolpc1677.york.ac.uk/pages\">biolpc1677</a> for starter page");
   sendFooter();
-#endif
-
-/*
- * // assign onclick handler to hazard checkbox
-document.getElementById('hazard').onclick = function() {
-
-    // is hazard checkbox checked?
-    var hazard = this.checked; // true or false
-
-    // get list of radio buttons with name 'ship'
-    var radios = this.form.elements['ship'];
-
-    // loop through list of radio buttons
-    for (var i=0, len=radios.length; i<len; i++) {
-        var r = radios[i]; // current radio button
-
-        if ( hazard ) { // hazard checkbox checked
-
-            if ( r.value === 'std' ) { // standard shipping
-                r.checked = true; // set checked
-            } else { // not standard shipping
-                r.checked = false; // unchecked
-                r.disabled = true; // disable
-            }
-
-        } else { // hazard not checked
-            r.disabled = false; // no radios disabled
-        }
-
-    }
-}
- */
 }
 
 void do_fft()
