@@ -32,9 +32,10 @@ end
 
 line1a = fgets(fid);
 fclose(fid);
-line1a = line1a(1:strfind(line1a, "HTTP")-2);
+
 
 if (strfind(line1a, 'GET /?'))
+    line1a = line1a(1:strfind(line1a, "HTTP")-2);
     line1b=strrep(line1a, 'GET /?'  ,'');
     % will return line as cell array
     lineSaved = strsplit(line1b, '&');
