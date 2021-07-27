@@ -78,7 +78,7 @@ Collected_Data(iSuccesseses:end) = [] ; % remove all the unsused columns
 disp('Number of flies in this analysis');
 nFlies = length(Collected_Data)
 savefileName = [dirName, filesep, 'CollectedData.mat'];
-save(savefileName);
+%save(savefileName);
 
 %% Sort the data and work out how many of each phenotype we have 
 [SortedPhenotypes,z]=sort(phenotypeList) ;
@@ -280,7 +280,7 @@ end
 %%
 
 savefileName = [dirName, filesep, 'CollectedArduinoData.mat'];
-save(savefileName);
+%save(savefileName);
 
 %% add list of files not read
 if length(badSVPFiles)
