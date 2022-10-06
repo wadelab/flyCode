@@ -12,7 +12,7 @@ function [thisFlyData, success] = arw_read_arduino_file (fName)
 
 success = true ;
 thisFlyData.Error = 'None' ;
-sExt = getPictExt () ;
+%sExt = getPictExt () ;
 bCloseGraphs = true ;
 
 [pathstr, fileName, ext] = fileparts(fName) ;

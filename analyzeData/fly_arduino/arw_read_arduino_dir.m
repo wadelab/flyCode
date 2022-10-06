@@ -15,9 +15,11 @@ if (nargin<2)
 end
 
 allFiles = dir([fullfile(fInputDir, '*.*')]); % matlab cannot do a case-insensitive dir so we list all files and then sub-select using strcmpi
-SVPfilesIndices=endsWith(lower({allFiles.name}),'.svp');
-SVPfiles=allFiles(find(SVPfilesIndices));
+SVPfilesIndices=find(endsWith(lower({allFiles.name}),'.svp'));
+SVPfilesIndices=[SVPfilesIndices,find(endsWith(lower({allFiles.name}),'.svp.txt'))];
 
+SVPfiles=allFiles((SVPfilesIndices));
+ 
 
 
 %% now we have a list of all the files with .SVP in that tree
@@ -42,7 +44,7 @@ groupMeanFFT=abs(squeeze(mean(allMeanFFT)));
 groupAngleFFT=angle(squeeze(mean(allMeanFFT)));
 groupSEMFFT=abs(squeeze(std(allMeanFFT)/sqrt(i)));
 %%
-freqsToPlot=[12 24 15 30];
+freqsToPlot=[12 24 15 30 27 3];
 plotIndex=1;
 for thisFreq=1:length(freqsToPlot)
     
@@ -50,7 +52,7 @@ for thisFreq=1:length(freqsToPlot)
 figure(figureOffset);
 hold off;
 % 1F1 Amp
-subplot(2,2,plotIndex);
+subplot(2,3,plotIndex);
 hold off
 
 criticalF=freqsToPlot(thisFreq)*4+1;
@@ -67,7 +69,7 @@ title(num2str(freqsToPlot(plotIndex)));
 figure(figureOffset+1);
 hold off;
 % 1F1 Compass
-subplot(2,2,plotIndex);
+subplot(2,3,plotIndex);
 
 hold off
 compass(groupAngleFFT(6:9,criticalF),groupMeanFFT(6:9,criticalF),'r');
