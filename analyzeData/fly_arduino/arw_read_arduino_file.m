@@ -87,24 +87,24 @@ thisFlyData.phenotypes = line ;
 try
     alldata = csvread(fName, 1,0);
 catch
-%     %% try to read the file as compressed
-[fid, msg] = fopen(fName, 'rt');
+    %     %% try to read the file as compressed
+    [fid, msg] = fopen(fName, 'rt');
     %line1a = fgets(fid)
     %original code was 132; later was extended to 135
     A1 = fread(fid,[1,132],'uint8') ; %read this and throw it away as we've already read this
-    
+
     %allocate memory for the data
     alldata = zeros (1025*45, 3) ;
-    
+
     try
         for i = 0 : 44
-            alldata ((i*1025)+1:(i*1025)+1025, 3) = fread(fid,[1,1025],'int32') ; %  block of ergs   
+            alldata ((i*1025)+1:(i*1025)+1025, 3) = fread(fid,[1,1025],'int32') ; %  block of ergs
             alldata ((i*1025)+1:(i*1025)+1025, 1) = fread(fid,[1,1025],'int32') ; %  block of time_data
             alldata ((i*1025)+1025,2) = alldata ((i*1025)+1025,1) ;
         end
         fclose(fid);
-    
-    %%
+
+        %%
     catch
         thisFlyData.Error = ['Binary Read function died with - file too small : ', fName];
         disp(thisFlyData.Error);
@@ -158,7 +158,7 @@ ymin = min(alldata(:,3)) ;
 rawdata=zeros(nSamples,1024);
 stimdata=zeros(nSamples,1024);
 for i = 1:nSamples
-    
+
     rawdata(i,:)=alldata(iStart:iEnd,3) ;
     stimdata(i,:)=alldata(iStart:iEnd,2) * 4 - 400  ; % stimdata only used for plotting
     contrasts(i,:) = alldata(iEnd+1,:) ;
@@ -171,7 +171,7 @@ end;
 fft_display_limit = 250 ;
 complex_fftData= zeros(nSamples,1000);
 for i = 1:nSamples
-    % limit it to 1 sec worth of data? 
+    % limit it to 1 sec worth of data?
     complex_fftData(i,:)=fft(rawdata(i,1:1000)) /1000; %% return this to main program and then average first and then calculate the abs
 end
 
@@ -204,17 +204,17 @@ thisFlyData.meanFFT=zeros(nContrasts,240);
 thisFlyData.meanContrasts=zeros(nContrasts,3);
 
 for i = 1 : nContrasts
-    
+
     RPT = 5*(i-1) + 1 ;
-    
+
     % to extract just some repeats alter code here;
     % don't add more than 4 [5 repeats, inclusive counting]
     % eg to ignore 1st round
     % startRPT = RPT + 1
     startRPT = RPT + 1 ;
     end_RPT = RPT + 4 ; % RPT ;
-    %find mean 
-    
+    %find mean
+
     meanFFT = mean(thisFlyData.sortedComplex_FFTdata(startRPT:end_RPT,1:240),1) ;
     thisFlyData.meanFFT(i,:) = meanFFT;
     thisFlyData.meanContrasts(i,:) = thisFlyData.sortedContrasts(RPT,:);
