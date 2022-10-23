@@ -15,10 +15,11 @@ function pars = fit_hyper_ratio(resps,nn,R0)
 % see also: hyper_ratio
 %disp('-------');
 %cs=[ 0    0.0700    0.1400    0.2100    0.2800    0.3500    0.4200    0.4900    0.5600    0.6300    0.7000];
-cs=linspace(0,.7,size(resps,2));
+%cs=linspace(0,.7,size(resps,2));
+cs=[5,10,30,70,100]/100;
 
 %disp(resps)
-resps=abs(mean((resps),1)); % Average across rows
+resps=abs(mean((resps),1)); % Average down cols, take abs val after (in case data were complex)
 
 %disp(resps);
 
