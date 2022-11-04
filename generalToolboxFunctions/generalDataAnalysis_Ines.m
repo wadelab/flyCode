@@ -30,12 +30,11 @@ fToExamine=48;
 close all
 %dataDir='c:\Users\wade\Documents\flyData2022\orgData\';
 dataDir='/Volumes/GoogleDrive/My Drive/York/Projects/InesFly/flyData2022/orgData/';
-
 inputDirList={'CA','DN','elavssg'};
 
 nGT=length(inputDirList);
 for thisGT=1:nGT
-    fInputDir=fullfile(dataDir,inputDirList{thisGT});
+    fInputDir=fullfile(dataDir,inputDirList{thisGT})
     offset=thisGT*2-1;
     [outData{thisGT}, successArray]=arw_read_arduino_dir(fInputDir,0);
 end
@@ -132,11 +131,11 @@ for thisGT=1:nGT
             poolsize = poolobj.NumWorkers
         end
         if(poolsize ==0   )
-            parpool('local',8); % Open 8 cores. If your computer has more than 4 cores then you can get even better performance. I think GPUs are supported these days so with the right hardware you might be able to get x100 speedup!
+            parpool('local'); % Open 8 cores. If your computer has more than 4 cores then you can get even better performance. I think GPUs are supported these days so with the right hardware you might be able to get x100 speedup!
         end
 
         options=statset('UseParallel','always'); % Assume you opened up the pool - tell the stats routines to use parallel functions
-        toc
+        
         disp('Assigned matlabpool - remember to close it later!');
     else
         options = statset('UseParallel',0);
@@ -178,10 +177,11 @@ for thisGT=1:nGT
     shadedErrorBar(xVals,squeeze(yVals(:,thisGT)),std(squeeze(yValArray(:,:,thisGT))),'lineprops',{'Color',lineColArray(thisGT,:),'markerfacecolor',lineColArray(thisGT,:)});
     grid on
     hold on
-    set(gca,"XScale",'Log');
-
+    set(gca,'XScale','Log');
 end
-legend(inputDirList)
+l=legend(inputDirList)
+set(l,'FontSize',14)
+
 %%
 maxY=max(yVals(:));
           figure(4);
@@ -198,24 +198,32 @@ subplot(2,1,1);
 hold off
 [h1,x]=hist(squeeze(a(:,:,2)'),40);
 for thisGT=1:nGT
-    f=bar(x+.25*thisGT,h1(:,thisGT),.25)
+    f=bar(x+.25*thisGT,h1(:,thisGT),.8)
     set(f,'FaceColor',lineColArray(thisGT,:))
+    set(f,'EdgeColor',lineColArray(thisGT,:))
+
     set(f,'FaceAlpha',.6)
     hold on;
 end
-legend(inputDirList)
+l=legend(inputDirList)
+set(l,'FontSize',14)
+
 title('c50')
 subplot(2,1,2);
 hold off;
 h2=hist(squeeze(a(:,:,1)'),40);
 for thisGT=1:nGT
-    f=bar(x+.25*thisGT,h2(:,thisGT),.25)
+    f=bar(x+.25*thisGT,h2(:,thisGT),.8)
     set(f,'FaceColor',lineColArray(thisGT,:))
+        set(f,'EdgeColor',lineColArray(thisGT,:))
+
     set(f,'FaceAlpha',.6)
     hold on;
 end
-legend(inputDirList)
+l=legend(inputDirList)
 title('Rmax')
+set(l,'FontSize',14)
+
     
 
 

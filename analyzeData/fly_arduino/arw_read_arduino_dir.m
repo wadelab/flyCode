@@ -9,7 +9,7 @@ function [outData, successArray]=arw_read_arduino_dir(fInputDir,figureOffset)
 % single dir
 
 % Check the input dir exists
-assert(exist(fInputDir,'dir'),'Input directory not found');
+assert(exist(fInputDir,'dir')==7,'Input directory not found');
 if (nargin<2)
     figureOffset=1; % First figure to plot
 end
