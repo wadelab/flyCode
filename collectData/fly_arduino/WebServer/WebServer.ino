@@ -61,7 +61,7 @@
 
 #ifdef due17
 #define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5E, 0xFD
-//biolpc3468
+//biolpc3468 This is the one in Sheffield that has an IP address. 143.167.150.56
 #endif
 
 
@@ -91,7 +91,7 @@
 
 #ifdef due22
 #define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5D, 0x36
-//biolpc3473
+//biolpc3473. This is the one in Sheffield ARW took down on 19/10/22023
 #endif
 
 
@@ -477,7 +477,7 @@ void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML
   {
     client.println F("<!DOCTYPE HTML><head><html><title>");
     client.println (sTitle);
-    client.println F("</title><link rel=\"icon\" type=\"image/png\" href=\"http://biolpc1677.york.ac.uk/favicons/favicon-32x32.png\" sizes=\"32x32\"></head><body ");
+    client.println F("</title><a href=\'http://13.41.255.27/sitran/'>This is the AWS server</a></head><body ");
     client.println (sINBody);
     client.println F(">");
   }
@@ -2525,7 +2525,7 @@ void writehomepage ()
 {
 
   sendHeader (String("Fly lab here!"));
-  client.print F("Please try <a href = \"http://biolpc1677.york.ac.uk/pages\">biolpc1677</a> for starter page");
+  client.print F("Please try <a href = \'http://13.41.255.27/sitran/'>AWS Server</a> for starter page");
   sendFooter();
 }
 
