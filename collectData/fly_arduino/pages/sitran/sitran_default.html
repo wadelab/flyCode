@@ -45,6 +45,22 @@ function changeText()
 <!-- body onload="startTime()" -->
 <body>
 
+    <p id="referrer">Loading referrer...</p>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var referrer = document.referrer;
+            var referrerElement = document.getElementById('referrer');
+
+            if (referrer) {
+                referrerElement.textContent = 'You came from: ' + referrer;
+            } else {
+                referrerElement.textContent = 'No referrer information available.';
+            }
+        });
+    </script>
+
+
 <div id="txt">Arduino SSVEP starter page</div>
 <BR>
 
