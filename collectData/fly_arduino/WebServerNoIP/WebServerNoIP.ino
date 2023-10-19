@@ -92,7 +92,7 @@
 
 #ifdef due22
 #define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5D, 0x36
-//biolpc3473. This is the one in Sheffield ARW took down on 19/10/22023
+//biolpc3473. This is the one in Sheffield ARW took down on 19/10/22023 IP : 143.167.151.4
 #endif
 
 
