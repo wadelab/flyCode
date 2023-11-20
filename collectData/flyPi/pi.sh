@@ -8,6 +8,14 @@ echo "<br>"
 
 PATH=/home/pi/venv/bin:$PATH
 HOME=/home/pi/www-data
+
+if [ -z "$QUERY_STRING" ]; then 
+	echo "QUERY_STRING is not set"
+	QUERY_STRING="GAL4=TH&UAS=homz&Age=7&Disco=Y&org=none&col=blue&bri=255&F1=12&F2=15&filename=2021_02_09_15h43m24"
+
+else 
+	echo "QUERY_STRING is set" 
+fi
 #QUERY_STRING="GAL4=TH&UAS=homz&Age=7&Disco=Y&org=none&col=blue&bri=255&F1=12&F2=15&filename=2021_02_09_15h43m24"
 
 echo "path is"
