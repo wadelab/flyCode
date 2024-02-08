@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<Head>
+	<!-- changed on Jan 11/ 2024 #<base href="http://143.167.151.4/" > -->
+<base href="http://biolpc3464.york.ac.uk/" >
+<script>
+
+
+function getTimeString() {
+    var today=new Date();
+    var yr=today.getFullYear();
+    var mo=today.getMonth()+1;
+    var d=today.getDate();
+    var h=today.getHours();
+    var m=today.getMinutes();
+    var s = today.getSeconds();
+
+    d = checkTime(d);
+    m = checkTime(m);
+    mo = checkTime(mo);
+    h = checkTime(h);
+    s = checkTime(s);
+    return yr + "_" + mo + "_" + d + "_" + h + "h" + m + "m" + s ;
+    }
+    
+function startTime()
+{
+    document.getElementById('txt').innerHTML = getTimeString();
+    var t = setTimeout(function(){startTime()},500);
+}
+
+function checkTime(i) {
+    if (i<10) {i = "0" + i};  // add zero in front of numbers < 10
+    return i;
+}
+
+function changeText() 
+{
+    x = document.getElementById("FileID");
+    x.value = getTimeString();
+    document.myform.submit(); 
+}
+</script>
+</head>
+
+<!-- body onload="startTime()" -->
+<body>
+
+    <p id="referrer">Loading referrer...</p>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var referrer = document.referrer;
+            var referrerElement = document.getElementById('referrer');
+
+            if (referrer) {
+                referrerElement.textContent = 'You came from: ' + referrer;
+            } else {
+                referrerElement.textContent = 'No referrer information available.';
+            }
+        });
+    </script>
+
+
+<div id="txt">Arduino SSVEP starter page</div>
+<BR>
+
+<form name = "myform" action="/">
+
+<table style="text-align: left; width: 50%;" border="1" cellpadding="2"
+cellspacing="2">
+<tbody>
+<tr>
+<td style="vertical-align: top; width = 33%">GAL4:</td>
+<td style="vertical-align: top; width = 33%">UAS:</td>
+<td style="vertical-align: top; width = 33%">Age:</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">
+<select name="GAL4" size = 6>
+    <option value="Tub" selected>Tubulin</option>
+    <option value="TH" >TH</option>
+    <option value="w_apr">w-apricot</option>
+    <option value="nsyb">nsyb</option>
+    <option value="cs">cs</option>
+    <option value="or">or</option>
+    <option value="park25">park25</option>
+    <option value="pink1b9">pink1b9</option>
+    <option value="parkz472">parkz472</option>
+    <option value="pink15">pink15</option>
+</select><br>
+</td>
+<td style="vertical-align: top;">
+<select name="UAS" size = 6>
+    <option value="test" >test</option>
+    <option value="homz" >homozygote</option>
+    <option value="ev"   selected>empty vector</option>
+    <option value="het" >het</option>
+    <option value="or_x" >or</option>
+    <option value="cs_x" >cs</option>
+    <option value="hLRRK2" >hLRRK2</option>
+    <option value="G2019S" >G2019S</option>
+    <option value="G2019S_kd" >G2019S_kd</option>
+    <option value="hLRRKp2020t" >hLRRKp2020t</option>
+    <option value="snca" >snca</option>
+    <option value="snca_a30p" >snca_a30p</option>
+    <option value="snca_a53t" >snca_a53t</option>
+    <option value="snca_h50q" >snca_h50q</option>
+    <option value="snca_e46k" >snca_e46k</option>
+    <option value="snca_g51d" >snca_g51d</option>
+
+
+
+
+
+</select><br>
+</td>
+<td style="vertical-align: top;">
+<select name="Age" size = 6>
+<option value="0_4">4 hours</option>
+<option value="1" >1 day</option>
+<option value="3">3</option>
+<option value="5" selected>5 days</option>
+<option value="7" >7</option>
+<option value="10" >10 days</option>
+<option value="14" >14</option>
+<option value="21" >21</option>
+<option value="28" >28</option>
+<option value="35" >35</option>
+<option value="42" >42</option>
+<option value="-1">unknown</option>
+</select><br>
+</td>
+</tr>
+</tbody>
+</table>
+<BR>
+<table style="text-align: left; width: 50%;" border="1" cellpadding="2"
+cellspacing="2">
+<tbody >
+<tr>
+
+  <td style="vertical-align: top; width = 20%"><BR>Food <BR></td>
+  <td style="vertical-align: top; width = 20%"><BR>Colour <BR></td>
+<td style="vertical-align: top; width = 20%"><BR>Flash Intensity</td>
+<td style="vertical-align: top; width = 20%"><BR>Protocol</td>
+
+</tr>
+<tr>
+
+<td style="vertical-align: top;"><BR> 
+<input type="radio" name="org" value="NV" checked>Vehicle<br>
+<BR><br>
+</td>
+
+
+<input type="hidden" name="F1" value="12" checked> 
+<input type="hidden" name="F2" value="15" checked>
+<br>
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="col" value="blue" checked>blue<br>
+</td>
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="bri" value="255" checked>255<br>
+</td>
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="stim" value="fERG_T" checked>Test ERG<br>
+<input type="radio" name="stim" value="fERG" checked>flash ERG<br>
+<input type="radio" name="stim" value="SSVEP">SSVEP<br>
+</td>
+
+
+</tr>
+</tbody>
+</table>
+<br>
+
+
+
+<BR><input id="FileID" type="hidden" name="filename"> 
+<button onclick="changeText()" type="button">Stimulate!</button><br>
+
+</form>
+
+<BR><BR>
+
+<table>
+<tr><td>
+<A href="/white/">White</a>
+</td>
+
+<td bgcolor="Blue">
+<A href="/blue/"><font color="White">Blue </font></a>
+</td>
+<td bgcolor="Black">
+<A href="/black/"><font color="White">Black</font></a>
+
+<td>
+<a href="/dir=">Directory</a>
+  </td>
+</table>
+</body>
+</html>
