@@ -7,7 +7,8 @@ from psychopy import visual, core
 import pdb
 import sys
 
-
+import faulthandler
+faulthandler.enable()
 
 
 def show_stimuli(c1):
@@ -18,13 +19,14 @@ def show_stimuli(c1):
     mywin.close()
     print('Intensity was ' + str(c1))
     return
-    
+
+
 ##############################################################################################################################
 # start program here    
 ##############################################################################################################################
 
 
-#pdb.set_trace()
+pdb.set_trace()
 if (len(sys.argv) > 0) :
     show_stimuli(sys.argv[1]) 
 else :

@@ -18,7 +18,7 @@ def write_status_page():
     print ( "<html><head>" )
     print ( "<title>Sampling from fly Pi"  )
     print ( "</title>" )
-    print ( "<meta http-equiv=\"refresh\" content=\"15;URL='http://biolpc3399.york.ac.uk/data/status.html'\" />" )
+    print ( "<meta http-equiv=\"refresh\" content=\"15;URL='http://localhost/data/status.html'\" />" )
     print ( "</head><body>" )
     print ( "<h1>Stimulation started</h1>" )
 

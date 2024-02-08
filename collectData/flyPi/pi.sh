@@ -8,7 +8,14 @@ echo "<br>"
 
 PATH=/home/pi/venv/bin:$PATH
 HOME=/home/pi/www-data
-#QUERY_STRING="GAL4=TH&UAS=homz&Age=7&Disco=Y&org=none&col=blue&bri=255&F1=12&F2=15&filename=2021_02_09_15h43m24"
+
+if [ -z "$QUERY_STRING" ]; then 
+	echo "QUERY_STRING is not set"
+	QUERY_STRING="GAL4=eG4&UAS=GFP&Age=7&stim=quick&message=Any+comment+goes+here.%0D%0A&filename=2023_11_21_13h59m40"
+else 
+	echo "QUERY_STRING is set" 
+fi
+#QUERY_STRING="GAL4=eG4&UAS=GFP&Age=7&stim=quick&message=Any+comment+goes+here.%0D%0A&filename=2023_11_21_13h59m40"
 
 echo "path is"
 echo  $PATH
@@ -30,6 +37,8 @@ export DISPLAY=:0
 export QUERY_STRING
 xset -display :0 dpms force on
 
+#get right version of python and .py installs
+source /home/pi/venv/bin/activate
 echo "starting.... <BR>"
 python /home/pi/git/flyCode/collectData/flyPi/mcp.py 2>&1 &
 

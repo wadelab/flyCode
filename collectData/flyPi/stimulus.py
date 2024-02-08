@@ -26,36 +26,32 @@ if "Darwin" in platform.system():
     def read_channel(x):
         adc = x + random.randrange(1023)
         return adc
-    
-    myHome = os.path.expanduser('~')  
-    myDataDir = myHome + '/pi_Data'  
+
+    myHome = os.path.expanduser('~')
+    myDataDir = myHome + '/pi_Data'
     if not os.path.exists( myDataDir ):
 	    os.mkdir(myDataDir)
     os.chdir(myDataDir)
-	
-	
+
 else:
     import spidev
 
     # Open SPI bus
     spi = spidev.SpiDev()
     spi.open(0, 0)
-    spi.max_speed_hz =3900000 
+    spi.max_speed_hz =3900000
 
 
     # Function to read SPI data from MCP3008 chip
     # Channel must be an integer 0-7
     def read_channel(x):
         channel = 0
-        adc = spi.xfer2([1, (8 + channel) << 4, 0])
-        data = ((adc[1] & 3) << 8) + adc[2]
+        adc = 22 #spi.xfer2([1, (8 + channel) << 4, 0])
+        data = 26 #((adc[1] & 3) << 8) + adc[2]
+        data  = x + random.randrange(1023)
         return data
-	#if not os.path.exists('/home/pi/Data'):
-	#        os.mkdir('/home/pi/Data')
-	#os.chdir('/home/pi/Data')
-    os.chdir('/var/www/html')
-	
-	
+    os.chdir('/var/www/html/data')
+
 Date = datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
 
 #protocol = 'stripes'
@@ -71,8 +67,6 @@ else:
 
 for i in range(qty):
 	cordinates [i,x] = 0.2 * i
-
-
 print(cordinates)
 
 # create a window

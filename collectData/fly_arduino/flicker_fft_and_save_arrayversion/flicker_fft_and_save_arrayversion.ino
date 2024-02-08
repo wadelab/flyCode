@@ -27,6 +27,7 @@ fly test : grey wire to GND, purple to pin 9
 // include the SD library:
 #include <SD.h>
 #include <Arduino.h>
+#include <FFT.h> // include the library
 
 
 // change this to match your SD shield or module;
@@ -42,7 +43,6 @@ const int max_data = 1024 + waitTime ;
 #define LOG_OUT 1 // use the log output function
 #define FFT_N 256 // set to 256 point fft
 
-#include <FFT.h> // include the library
 unsigned int time_stamp [max_data] ;
 int erg_in [max_data];
 int SummedFFT [FFT_N/2] ;

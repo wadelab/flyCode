@@ -478,7 +478,7 @@ void sendHeader (const String & sTitle, const String & sINBody = "", bool isHTML
   {
     client.println F("<!DOCTYPE HTML><head><html><title>");
     client.println (sTitle);
-    client.println F("</title><a href=\'https://www.doesmyrobotunderstand.me/sitran/'>This is the AWS server</a></head><body ");
+    client.println F("</title><a href=\'http://13.41.255.27/sitran/'>This is the AWS server</a></head><body ");
     client.println (sINBody);
     client.println F(">");
   }

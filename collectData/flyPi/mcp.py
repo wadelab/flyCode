@@ -28,9 +28,9 @@ spi.max_speed_hz = 390000
 # Channel must be an integer 0-7
 def read_channel(x):
     channel = 2
-    adc = spi.xfer2([1, (8 + channel) << 4, 0])
-    data = ((adc[1] & 3) << 8) + adc[2]
-#    data = x + 1023
+#    adc = spi.xfer2([1, (8 + channel) << 4, 0])
+#    data = ((adc[1] & 3) << 8) + adc[2]
+    data = random.randrange(1023)
     return data
 
 def show_stimuli():
@@ -268,7 +268,7 @@ f = open ("/var/www/html/data/status.html", "w")
 f.write ("<!DOCTYPE html><html><head></head>")
 f.write ("<body><h3>")
 f.write (" Sampling completed (" + str(i) +  ")<BR> </h3>\n")
-f.write("<a href=\"../../startpage.html\">Starter page </a>")
+f.write("<a href=\"../../index.html\">Starter page </a><BR><BR>")
 f.write("<a href=\"../../data/?C=M;O=D\"> Data Directory</a>")
 f.write("</body></html>")
 f.close()   
