@@ -98,8 +98,8 @@ catch
 
     try
         for i = 0 : 44
-            alldata ((i*1025)+1:(i*1025)+1025, 3) = fread(fid,[1,1025],'int32') ; %  block of ergs
-            alldata ((i*1025)+1:(i*1025)+1025, 1) = fread(fid,[1,1025],'int32') ; %  block of time_data
+            alldata ((i*1025)+1:(i*1025)+1025, 3) = fread(fid,[1,1025],'int32','ieee-le') ; %  block of ergs
+            alldata ((i*1025)+1:(i*1025)+1025, 1) = fread(fid,[1,1025],'int32','ieee-le') ; %  block of time_data
             alldata ((i*1025)+1025,2) = alldata ((i*1025)+1025,1) ;
         end
         fclose(fid);
