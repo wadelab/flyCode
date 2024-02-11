@@ -460,7 +460,7 @@ void sendHeader(const String &sTitle, const String &sINBody = "", bool isHTML = 
   if (isHTML) {
     client.println F("<!DOCTYPE HTML><head><html><title>");
     client.println(sTitle);
-    client.println F("</title><a href=\'http://13.41.255.27/sitran/'>This is the AWS server</a></head><body ");
+    client.println F("</title><a href=\'https://wadelab.github.io/flyCode/collectData/fly_arduino/pages/sitran/'>This is the AWS server</a></head><body ");
     client.println(sINBody);
     client.println F(">");
   }
@@ -1080,9 +1080,11 @@ void sendLastModified(char *cPtr, char *c, bool bIsHTML) {
 
 
 int light_NOW(int i, StimTypes bErg) {
+  //Serial.println F("berg=");
+  //Serial.println(bErg);
   switch (bErg) {
     case flash:
-    default:
+
       return (fERG_Now(i));  // i is related to max data, not the actual time
 
     case SSVEP:
@@ -1103,7 +1105,6 @@ int GetStimType(unsigned char *cPtr) {
     bERG = flash;
     Serial.println("flash found");
   }
-  //if (strstr ( (char *) cPtr, "stim=fERG_Z") ) bERG = zap ;
   return (int)bERG;
 }
 
@@ -1248,8 +1249,11 @@ void addSummary() {
   int iOffset = 0;
   int kk = 0;
   switch (eDoFlash) {
+    Serial.println F("eDoFlash=");
+    Serial.println(eDoFlash);
+    
     case flash:
-      /* case zap:
+
       {
         iOffset = (nRepeats - 1) * 15 ;
         // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,peak-peak");
@@ -1287,7 +1291,7 @@ void addSummary() {
         kk ++;
         pSummary [iOffset + kk] = max( pSummary [iOffset + kk - 2] , pSummary [iOffset + kk - 4] ) - min( pSummary [iOffset + kk - 1] , pSummary [iOffset + kk - 3] );
       }
-      break ; */
+      break ; 
 
     case SSVEP:
       {
@@ -1390,7 +1394,8 @@ bool writeSummaryFile(const char *cMain) {
   // for not bFlash
   int iOfssfet = 10;
   int mm = maxRepeats * maxContrasts;
-
+  Serial.println F("eDoFlash=");
+  Serial.println(eDoFlash);
   switch (eDoFlash) {
     case SSVEP:
       strcpy_P(cTmp, (PGM_P)F("\nprobe contrast\t mask\t repeat\t F2-F1\t 1F1\t 2F1\t 2F2\t 1F1+1F2\t 2F1+2F2\t 50 Hz \n"));
@@ -1507,6 +1512,8 @@ void StartTo_collect_Data() {
   mStart = millis();
   mean = 0;
   sampleCount = -presamples;
+  Serial.println F("eDoFlash=");
+  Serial.println (eDoFlash);
   switch (eDoFlash) {
     case flash:
 
@@ -1624,7 +1631,7 @@ void flickerPage() {
 
   switch (eDoFlash) {
     case flash:
-      /*  case zap:
+  
       if (nWaits > 0)
       {
         AppendWaitReport ();
@@ -1633,7 +1640,7 @@ void flickerPage() {
       {
         AppendFlashReport ();
       }
-      break; */
+      break; 
 
     case SSVEP:
       AppendSSVEPReport();
@@ -1783,6 +1790,8 @@ void AppendSSVEPReport() {
 
 void getData() {
   if (sampleCount < 0) {
+    Serial.println F("eDoFlash=");
+    Serial.println(eDoFlash);
     if (eDoFlash == flash)  // || eDoFlash == zap)
     {
       if (nWaits > 0) return;
@@ -2013,11 +2022,11 @@ void sendReply() {
     }
     switch (eDoFlash) {
       case flash:
-        /*  case zap:
+        
         sFile = sFile + (".ERG");
         exp_size = exp_size + (maxRepeats * data_block_size) ;
         analogPin = 0 ;
-        break ; */
+        break ;
 
       case SSVEP:
         sFile = sFile + (".SVP");
@@ -2092,13 +2101,13 @@ void sendReply() {
         String sPicture = sFile;
         switch (eDoFlash) {
           case flash:
-            /* case zap:
+           
             sPicture.replace ("ERG", "ERP" );
             client.print F("<A HREF= \"");
             client.print (sPicture) ;
             client.print F("\" > (averaged picture)</A>" );
             sPicture.replace ("ERP", "CSV" );
-            break ; */
+            break ; 
 
           case SSVEP:
             sPicture.replace("SVP", "CSV");
@@ -2306,7 +2315,7 @@ void loop() {
 void writehomepage() {
 
   sendHeader(String("Fly lab here!"));
-  client.print F("Please try <a href=\'http://13.41.255.27/sitran/'>AWS Server</a> for starter page");
+  client.print F("Please try <a href=\'https://wadelab.github.io/flyCode/collectData/fly_arduino/pages/sitran/'>AWS Server</a> for starter page");
   sendFooter();
 }
 
