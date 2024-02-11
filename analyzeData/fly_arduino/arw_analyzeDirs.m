@@ -1,5 +1,5 @@
 close all
-
+baseDir='/raid/data/SITRAN/'
 inputDirList={'CA','DN','elav_ssg'};
 
 nGT=length(inputDirList);

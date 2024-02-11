@@ -25,3 +25,4 @@ analyzeData/NewRig/fly_analyzeDirectory.m
 analyzeData/Tunis/TunisPDData.pdf
 
 collectData/flyTV/flytv_CRF_TRF.m
+.vscode/c_cpp_properties.json
