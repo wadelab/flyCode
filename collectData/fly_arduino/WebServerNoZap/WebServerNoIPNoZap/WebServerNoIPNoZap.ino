@@ -460,7 +460,7 @@ void sendHeader(const String &sTitle, const String &sINBody = "", bool isHTML = 
   if (isHTML) {
     client.println F("<!DOCTYPE HTML><head><html><title>");
     client.println(sTitle);
-    client.println F("</title><a href=\'https://wadelab.github.io/flyCode/collectData/fly_arduino/pages/sitran/'>This is the AWS server</a></head><body ");
+    client.println F("</title><a href=\'https://wadelab.github.io/flyCode/collectData/fly_arduino/pages/york/'>This is the AWS server</a></head><body ");
     client.println(sINBody);
     client.println F(">");
   }
@@ -1251,47 +1251,44 @@ void addSummary() {
   switch (eDoFlash) {
     Serial.println F("eDoFlash=");
     Serial.println(eDoFlash);
-    
+
     case flash:
 
       {
-        iOffset = (nRepeats - 1) * 15 ;
+        iOffset = (nRepeats - 1) * 15;
         // "start,10,20,30,40,50,60,70,80,90%,max1,min1,max2,min2,peak-peak");
 
-        pSummary[iOffset + kk] = erg_in[1] ;
+        pSummary[iOffset + kk] = erg_in[1];
         //    Serial.println (pSummary[iOffset + kk]);
 
 
-        for (int ii = max_data / 10; ii < max_data - 1; ii = ii + max_data / 10)
-        {
-          pSummary [iOffset + kk] = erg_in[ii] ;
-          kk ++ ;
+        for (int ii = max_data / 10; ii < max_data - 1; ii = ii + max_data / 10) {
+          pSummary[iOffset + kk] = erg_in[ii];
+          kk++;
         }
         int myminsofar = erg_in[0];
         int mymaxsofar = erg_in[0];
-        for (int ii = 1; ii < (max_data - 1) / 2; ii++)
-        {
-          if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;
-          if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;
+        for (int ii = 1; ii < (max_data - 1) / 2; ii++) {
+          if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii];
+          if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii];
         }
-        pSummary [iOffset + kk] = mymaxsofar ;
-        kk ++ ;
-        pSummary [iOffset + kk] = myminsofar ;
-        kk ++;
+        pSummary[iOffset + kk] = mymaxsofar;
+        kk++;
+        pSummary[iOffset + kk] = myminsofar;
+        kk++;
         myminsofar = erg_in[(max_data - 1) / 2];
         mymaxsofar = erg_in[(max_data - 1) / 2];
-        for (int ii = (max_data - 1) / 2; ii < max_data - 1; ii++)
-        {
-          if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii] ;
-          if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii] ;
+        for (int ii = (max_data - 1) / 2; ii < max_data - 1; ii++) {
+          if (erg_in[ii] < myminsofar) myminsofar = erg_in[ii];
+          if (erg_in[ii] > mymaxsofar) mymaxsofar = erg_in[ii];
         }
-        pSummary [iOffset + kk] = mymaxsofar ;
-        kk ++ ;
-        pSummary [iOffset + kk] = myminsofar ;
-        kk ++;
-        pSummary [iOffset + kk] = max( pSummary [iOffset + kk - 2] , pSummary [iOffset + kk - 4] ) - min( pSummary [iOffset + kk - 1] , pSummary [iOffset + kk - 3] );
+        pSummary[iOffset + kk] = mymaxsofar;
+        kk++;
+        pSummary[iOffset + kk] = myminsofar;
+        kk++;
+        pSummary[iOffset + kk] = max(pSummary[iOffset + kk - 2], pSummary[iOffset + kk - 4]) - min(pSummary[iOffset + kk - 1], pSummary[iOffset + kk - 3]);
       }
-      break ; 
+      break;
 
     case SSVEP:
       {
@@ -1513,7 +1510,7 @@ void StartTo_collect_Data() {
   mean = 0;
   sampleCount = -presamples;
   Serial.println F("eDoFlash=");
-  Serial.println (eDoFlash);
+  Serial.println(eDoFlash);
   switch (eDoFlash) {
     case flash:
 
@@ -1631,16 +1628,13 @@ void flickerPage() {
 
   switch (eDoFlash) {
     case flash:
-  
-      if (nWaits > 0)
-      {
-        AppendWaitReport ();
+
+      if (nWaits > 0) {
+        AppendWaitReport();
+      } else {
+        AppendFlashReport();
       }
-      else
-      {
-        AppendFlashReport ();
-      }
-      break; 
+      break;
 
     case SSVEP:
       AppendSSVEPReport();
@@ -2022,11 +2016,11 @@ void sendReply() {
     }
     switch (eDoFlash) {
       case flash:
-        
+
         sFile = sFile + (".ERG");
-        exp_size = exp_size + (maxRepeats * data_block_size) ;
-        analogPin = 0 ;
-        break ;
+        exp_size = exp_size + (maxRepeats * data_block_size);
+        analogPin = 0;
+        break;
 
       case SSVEP:
         sFile = sFile + (".SVP");
@@ -2101,13 +2095,13 @@ void sendReply() {
         String sPicture = sFile;
         switch (eDoFlash) {
           case flash:
-           
-            sPicture.replace ("ERG", "ERP" );
+
+            sPicture.replace("ERG", "ERP");
             client.print F("<A HREF= \"");
-            client.print (sPicture) ;
-            client.print F("\" > (averaged picture)</A>" );
-            sPicture.replace ("ERP", "CSV" );
-            break ; 
+            client.print(sPicture);
+            client.print F("\" > (averaged picture)</A>");
+            sPicture.replace("ERP", "CSV");
+            break;
 
           case SSVEP:
             sPicture.replace("SVP", "CSV");

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<Head>
+<base href="http://biolpc3466.york.ac.uk/">
+<script>
+
+
+function getTimeString() {
+    var today=new Date();
+    var mo=today.getMonth() + 1;
+    var d=today.getDate();
+    var h=today.getHours();
+    var m=today.getMinutes();
+    var s = today.getSeconds()
+    m = checkTime(m);
+	mo = checkTime(mo);
+	h = checkTime(h);
+	s = checkTime(s);
+    return d + "_" + mo + "_" + h + "h" + m + "m" + s ;
+    }
+    
+function startTime()
+{
+    document.getElementById('txt').innerHTML = getTimeString();
+    var t = setTimeout(function(){startTime()},500);
+}
+
+function checkTime(i) {
+    if (i<10) {i = "0" + i};  // add zero in front of numbers < 10
+    return i;
+}
+
+function changeText() 
+{
+    x = document.getElementById("FileID");
+    x.value = getTimeString() 
+}
+</script>
+</head>
+
+<!-- body onload="startTime()" -->
+<body>
+
+<div id="txt">Arduino SSVEP starter page</div>
+<BR><BR>
+
+<form action="/">
+
+<table style="text-align: left; width: 50%;" border="1" cellpadding="2"
+cellspacing="2">
+<tbody>
+<tr>
+<td style="vertical-align: top; width = 33%">GAL4:</td>
+<td style="vertical-align: top; width = 33%">UAS:</td>
+<td style="vertical-align: top; width = 33%">Age:</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">
+<select name="GAL4" size = 6>
+<option value="w" >w-</option>
+<option value="TH"  >TH</option>
+<option value="NF1_P1"  >NF1[P1]</option>
+<option value="elav" selected >elav</option>
+<option value="nSyb"  >nSyb</option>
+<option value="GMR"  >GMR</option>
+<option value="THG"   >TH G2019S</option>
+
+</select><br>
+</td>
+<td style="vertical-align: top;">
+  <select name="UAS" size = 6>
+
+    <option value="homoz" >homozygote</option>
+    <option value="ev" selected >empty vector</option>
+    <option value="sggDN" >sggDN</option>
+        <option value="sggCA" >sggCA</option>
+    <option value="sgg_ctrl" >sgg-ctrl</option>
+    <option value="UAS_NF1_RNAi" >UAS-NF1-RNAi</option>
+    
+</select><br>
+</td>
+<td style="vertical-align: top;">
+<select name="Age" size = 6>
+<option value="0.4">4-8 hours</option>
+<option  value="1">1 day</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="5">5</option>
+<option value="7" selected>7</option>
+<option value="10" >10</option>
+<option value="14">14</option>
+<option value="21">21</option>
+<option value="-1">unknown</option>
+</select><br>
+</td>
+</tr>
+</tbody>
+</table>
+<BR>
+<table style="text-align: left; width: 50%;" border="1" cellpadding="2"
+cellspacing="2">
+<tbody >
+<tr>
+<td style="vertical-align: top; width = 20%"><BR>Sex <BR></td>
+<td style="vertical-align: top; width = 20%"><BR>Drug <BR></td>
+<td style="vertical-align: top; width = 20%"><BR>Colour</td>
+<td style="vertical-align: top; width = 20%"><BR>Intensity</td>
+<td style="vertical-align: top; width = 20%"><BR>Treatment</td>
+<td style="vertical-align: top; width = 20%"><BR>Protocol</td>
+</tr>
+<tr>
+<td style="vertical-align: top;"><BR>
+<input type="radio" checked name="sex" value="male">Male<br>
+<input type="radio"  name="sex" value="female">Female
+<BR><br>
+</td>
+<td style="vertical-align: top;"><BR> 
+<input type="radio" name="org" value="none" >none<br>
+<input type="radio" name="org" value="tet" checked>tetrandrine<br>
+
+<BR><br>
+</td>
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="col" value="blue" checked>blue<br>
+<input type="radio" name="col" value="green">green<br>
+<input type="radio" name="col" value="red">red<br>
+<input type="radio" name="col" value="fiber">fiber<br>
+</td>
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="bri" value="255" checked>255<br>
+</td>
+<td style="vertical-align: top;"><BR>
+
+<input type="radio" name="Disco" value="Y"  > Disco<br>
+<input type="radio" name="Disco" value="N" checked > Dark <br>
+
+</td>
+
+<td style="vertical-align: top;"><BR>
+<input type="radio" name="stim" value="fERG" checked>flash ERG<br>
+<input type="radio" name="stim" value="SSVEP">SSVEP<br>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+
+
+
+<BR>
+File name: <input id="FileID" type="text" name="filename"> 
+<button onclick="changeText()" type="button">Auto</button><br>
+
+<BR><BR>
+<input type="submit" value="Submit">
+
+</form>
+
+<BR><BR>
+
+<table>
+<tr><td>
+<A href="/white/">White</a>
+</td>
+
+<td bgcolor="Red">
+<A href="/red/"><font color="White">Red </font></a>
+</td>
+
+<td bgcolor="Green">
+<A href="/green/"><font color="White">Green </font></a>
+</td>
+<td bgcolor="Blue">
+<A href="/blue/"><font color="White">Blue </font></a>
+</td>
+<td bgcolor="Black">
+<A href="/black/"><font color="White">Black</font></a>
+</td>
+<td bgcolor="Cyan">
+<A href="http://biolpc2886.york.ac.uk/fiber/"><font color="White">Fiber</font></a>
+</td>
+
+<td>
+<a href="/">Test setup</a>
+</td><td>
+<a href="/dir=">Directory</a>
+</table>
+</body>
+</html>
