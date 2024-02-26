@@ -5,37 +5,41 @@
 <script>
 
 
-function getTimeString() {
-    var today=new Date();
-    var mo=today.getMonth() + 1;
-    var d=today.getDate();
-    var h=today.getHours();
-    var m=today.getMinutes();
-    var s = today.getSeconds()
-    m = checkTime(m);
-	mo = checkTime(mo);
-	h = checkTime(h);
-	s = checkTime(s);
-    return d + "_" + mo + "_" + h + "h" + m + "m" + s ;
+    function getTimeString() {
+        var today=new Date();
+        var yr=today.getFullYear();
+        var mo=today.getMonth()+1;
+        var d=today.getDate();
+        var h=today.getHours();
+        var m=today.getMinutes();
+        var s = today.getSeconds();
+    
+        d = checkTime(d);
+        m = checkTime(m);
+        mo = checkTime(mo);
+        h = checkTime(h);
+        s = checkTime(s);
+        return yr + "_" + mo + "_" + d + "_" + h + "h" + m + "m" + s ;
+        }
+        
+    function startTime()
+    {
+        document.getElementById('txt').innerHTML = getTimeString();
+        var t = setTimeout(function(){startTime()},500);
     }
     
-function startTime()
-{
-    document.getElementById('txt').innerHTML = getTimeString();
-    var t = setTimeout(function(){startTime()},500);
-}
-
-function checkTime(i) {
-    if (i<10) {i = "0" + i};  // add zero in front of numbers < 10
-    return i;
-}
-
-function changeText() 
-{
-    x = document.getElementById("FileID");
-    x.value = getTimeString() 
-}
-</script>
+    function checkTime(i) {
+        if (i<10) {i = "0" + i};  // add zero in front of numbers < 10
+        return i;
+    }
+    
+    function changeText() 
+    {
+        x = document.getElementById("FileID");
+        x.value = getTimeString();
+        document.myform.submit(); 
+    }
+    </script>
 </head>
 
 <!-- body onload="startTime()" -->
