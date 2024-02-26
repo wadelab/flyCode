@@ -463,7 +463,7 @@ void sendHeader(const String &sTitle, const String &sINBody = "", bool isHTML = 
     client.println F("</title><a href=\'https://wadelab.github.io/flyCode/collectData/fly_arduino/pages/york/'>This is the git server</a></head><body ");
     client.println(sINBody);
     client.println F(">");
-  }
+  } 
 }
 
 void sendFooter() {
@@ -2309,7 +2309,7 @@ void loop() {
 void writehomepage() {
 
   sendHeader(String("Fly lab here!"));
-  client.print F("Please try <a href=\'https://wadelab.github.io/flyCode/collectData/fly_arduino/pages/sitran/'>AWS Server</a> for starter page");
+  client.print F("Please try <a href=\'https://wadelab.github.io/flyCode/collectData/fly_arduino/pages/york/'>Git Server</a> for starter page");
   sendFooter();
 }
 
