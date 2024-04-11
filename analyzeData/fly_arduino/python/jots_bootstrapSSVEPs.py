@@ -12,6 +12,7 @@ import csv
 from time import sleep
 import math
 
+
 def resample(this_list, length = None):
     if length == None:
         length = len(this_list)
@@ -325,13 +326,13 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
     plt.show()
 
 
-
+'''
 if __name__ == "__main__":
     main_directory = '202403--_OS_gsk3b_epoB'
     genotypes = ['epoB_DN', 'epoB_WT', 'epoB_CA']
     bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=10, plus=False, label='', save=True)
 
-
+'''
 
 
 
