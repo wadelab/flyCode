@@ -1,4 +1,4 @@
-function [outData, successArray]=arw_read_arduino_dir(fInputDir,figureOffset)
+function [outData, successArray]=arw_read_arduino_dir(fInputDir,figureOffset,harmonic)
 %function outData=arw_read_arduino_dir(fInputDir, varargin)
 % Reads the data from an arduino directory
 % Returns it as a block subs x conditions x time
@@ -46,7 +46,7 @@ groupSEMFFT=abs(squeeze(std(allMeanFFT)/sqrt(i)));
 
 %%
 if (figureOffset>0)
-    freqsToPlot=[12,15];
+    freqsToPlot=[12,15]*harmonic;
  
     plotIndex=1;
     for thisFreq=1:length(freqsToPlot)

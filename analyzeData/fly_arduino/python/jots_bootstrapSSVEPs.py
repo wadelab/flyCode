@@ -80,7 +80,24 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
         print(f'getting {genotype} data ready!')
         subdirectory = f'{main_directory}/{genotype}/'
         files = getSVPFiles(listdir(subdirectory))
+        if len(files) == 0:
+            print(f"No files found in {subdirectory}. Please check the directory and try again.")
+            return
+        else:
+            valid_files = []
+            for file in files:
+                try:
+                    scd, md = readFile(subdirectory + file, freq=list(frequencies.values())[0])
+                    valid_files.append(file)
+                except Exception as e:
+                    print(f"Error reading file {file}: {e}")
+    
+            print(f"Found {len(valid_files)} valid files for genotype {genotype}:")
+            for file in valid_files:
+                print(file)
 
+        files=valid_files
+        
         # establish probes and masks, and initialise genotype-structures
         scd, md = readFile(subdirectory + files[0], freq=list(frequencies.values())[0])
 
