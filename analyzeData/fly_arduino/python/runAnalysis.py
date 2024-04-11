@@ -3,7 +3,7 @@ import sys
 import os
 
 # Get the directory of the current script
-current_script_path = '/groups/labs/wadelab/toolbox/flyCode/analyzeData/fly_arduino/python/'
+current_script_path = '/groups/labs/wadelab/toolbox/flyCode/analyzeData/fly_arduino/python/' # This is machine dependent
 print(f'{current_script_path}')
 
 # Add the directory to sys.path if it's not already there
