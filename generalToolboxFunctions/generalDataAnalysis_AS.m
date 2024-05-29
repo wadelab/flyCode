@@ -28,15 +28,15 @@ clear all;
 close all;
 
 nBootstraps=1000;
-fToExamine=48; % Change this depending on which harmonic you want. Over 1 second it would be 12 (or 15) - those are the 1F. For 2F you can look at 96,120 cycle
+fToExamine=96; % Change this depending on which harmonic you want. Over 1 second it would be 12 (or 15) - those are the 1F. For 2F you can look at 96,120 cycle
 close all
 
 %dataDir='c:\Users\wade\Documents\flyData2022\orgData\';
 %dataDir='/Volumes/GoogleDrive/My Drive/York/Projects/InesFly/flyData2022/orgData/';
 
 dataDir='/groups/labs/wadelab/data/SITRAN/flyData/flyArduino2/FromHardDrive290524';
-inputDirList={  'DJ1beta_1dpe' , 'DJ1beta_3dpe', 'DJ1beta_5dpe', 'DJ1beta_7dpe','DJ1beta_10dpe','DJ1beta_14dpe','DJ1beta_21dpe','DJ1beta_28dpe' };  % This is a list of directories where you have saved the data specific to each genotype. For these will depend on your project
-%inputDirList={'DJ1alpha_7dpe','DJ1beta_7dpe','W1118CS_7dpe'}
+%inputDirList={  'DJ1beta_1dpe' , 'DJ1beta_3dpe', 'DJ1beta_5dpe', 'DJ1beta_7dpe','DJ1beta_10dpe','DJ1beta_14dpe','DJ1beta_21dpe','DJ1beta_28dpe' };  % This is a list of directories where you have saved the data specific to each genotype. For these will depend on your project
+inputDirList={'DJ1alpha_7dpe','DJ1beta_7dpe','W1118CS_7dpe'}
 %inputDirList={'Pink15_1dpe','Pink1B9_1dpe','W1118CSfem_1dpe'}
 
 nGT=length(inputDirList);
@@ -237,5 +237,14 @@ set(l,'FontSize',14)
 
 
 %%
-return
+% Also make boxplots to visualise significance more easily
+
+figure(12)
+for thisParam=1:2
+    subplot(2,1,thisParam);
+    boxplot(squeeze(a(:,:,thisParam))','notch','on','outliersize',.001);
+    title(paramNameList{thisParam})
+    set(gca,'XTickLabel',inputDirList)
+end
+
 
