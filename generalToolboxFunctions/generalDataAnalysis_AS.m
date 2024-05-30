@@ -37,12 +37,28 @@ close all
 %dataDir='/groups/labs/wadelab/data/SITRAN/flyData/flyArduino2/FromHardDrive290524';
 %inputDirList={  'Pink1B9_1dpe' , 'Pink1B9_3dpe', 'Pink1B9_5dpe', 'Pink1B9_7dpe','Pink1B9_10dpe','Pink1B9_14dpe','Pink1B9_21dpe','Pink1B9_28dpe' };  % This is a list of directories where you have saved the data specific to each genotype. For these will depend on your project
 dataDir='/Users/abbiestretch/Documents/PhD/Vision';
-%inputDirList={  'Pink1B9_1dpe' , 'Pink1B9_3dpe', 'Pink1B9_5dpe', 'Pink1B9_7dpe','Pink1B9_10dpe','Pink1B9_14dpe','Pink1B9_21dpe','Pink1B9_28dpe' };
+
 %inputDirList={  'DJ1beta_1dpe' , 'DJ1beta_3dpe', 'DJ1beta_5dpe', 'DJ1beta_7dpe','DJ1beta_10dpe','DJ1beta_14dpe','DJ1beta_21dpe','DJ1beta_28dpe' };  % This is a list of directories where you have saved the data specific to each genotype. For these will depend on your project
+%inputDirList={  'DJ1alpha_1dpe' , 'DJ1alpha_3dpe', 'DJ1alpha_5dpe', 'DJ1alpha_7dpe','DJ1alpha_10dpe','DJ1alpha_14dpe','DJ1alpha_21dpe','DJ1alpha_28dpe' };
+%inputDirList={'DJ1alpha_1dpe','DJ1beta_1dpe','W1118CS_1dpe'}
+%inputDirList={'DJ1alpha_3dpe','DJ1beta_3dpe','W1118CS_3dpe'}
+%inputDirList={'DJ1alpha_5dpe','DJ1beta_5dpe','W1118CS_5dpe'}
+%inputDirList={'DJ1alpha_7dpe','DJ1beta_7dpe','W1118CS_7dpe'}
+%inputDirList={'DJ1alpha_10dpe','DJ1beta_10dpe','W1118CS_10dpe'}
+%inputDirList={'DJ1alpha_14dpe','DJ1beta_14dpe','W1118CS_14dpe'}
+%inputDirList={'DJ1alpha_21dpe','DJ1beta_21dpe','W1118CS_21dpe'}
+%inputDirList={'DJ1alpha_28dpe','DJ1beta_28dpe','W1118CS_28dpe'}
+
 %inputDirList={  'Pink15_1dpe' , 'Pink15_3dpe', 'Pink15_5dpe', 'Pink15_7dpe','Pink15_10dpe','Pink15_14dpe','Pink15_21dpe' };
-%inputDirList={'DJ1alpha_1dpe','DJ1beta_1dpe','W1118CS_1dpe'}
-%inputDirList={'DJ1alpha_1dpe','DJ1beta_1dpe','W1118CS_1dpe'}
+%inputDirList={  'Pink1B9_1dpe' , 'Pink1B9_3dpe', 'Pink1B9_5dpe', 'Pink1B9_7dpe','Pink1B9_10dpe','Pink1B9_14dpe','Pink1B9_21dpe','Pink1B9_28dpe' };
 %inputDirList={'Pink15_1dpe','Pink1B9_1dpe','W1118CSfem_1dpe'}
+%inputDirList={'Pink15_3dpe','Pink1B9_3dpe','W1118CSfem_3dpe'}
+%inputDirList={'Pink15_5dpe','Pink1B9_5dpe','W1118CSfem_5dpe'}
+%inputDirList={'Pink15_7dpe','Pink1B9_7dpe','W1118CSfem_7dpe'}
+%inputDirList={'Pink15_10dpe','Pink1B9_10dpe','W1118CSfem_10dpe'}
+%inputDirList={'Pink15_14dpe','Pink1B9_14dpe','W1118CSfem_14dpe'}
+%inputDirList={'Pink15_21dpe','Pink1B9_21dpe','W1118CSfem_21dpe'}
+%inputDirList={'Pink15_28dpe','Pink1B9_28dpe','W1118CSfem_28dpe'}
 
 nGT=length(inputDirList);
 lineColArray=jet(nGT)
