@@ -28,7 +28,7 @@ clear all;
 close all;
 
 nBootstraps=1000;
-fToExamine=96; % Change this depending on which harmonic you want. Over 1 second it would be 12 (or 15) - those are the 1F. For 2F you can look at 96,120 cycle
+fToExamine=48; % Change this depending on which harmonic you want. Over 1 second it would be 12 (or 15) - those are the 1F. For 2F you can look at 96,120 cycle
 close all
 
 %dataDir='c:\Users\wade\Documents\flyData2022\orgData\';
@@ -53,14 +53,16 @@ dataDir='/Users/abbiestretch/Documents/PhD/Vision';
 %inputDirList={  'Pink15_1dpe' , 'Pink15_3dpe', 'Pink15_5dpe', 'Pink15_7dpe','Pink15_10dpe','Pink15_14dpe','Pink15_21dpe', 'Pink15_28dpe' };
 %inputDirList={  'Pink1B9_1dpe' , 'Pink1B9_3dpe', 'Pink1B9_5dpe', 'Pink1B9_7dpe','Pink1B9_10dpe','Pink1B9_14dpe','Pink1B9_21dpe','Pink1B9_28dpe' };
 %inputDirList={  'W1118CSfem_1dpe' , 'W1118CSfem_3dpe', 'W1118CSfem_5dpe', 'W1118CSfem_7dpe','W1118CSfem_10dpe','W1118CSfem_14dpe','W1118CSfem_21dpe' };
-%inputDirList={'Pink15_1dpe','Pink1B9_1dpe','W1118CSfem_1dpe'}
+ inputDirList={'Pink15_1dpe','Pink1B9_1dpe','W1118CSfem_1dpe'}
 %inputDirList={'Pink15_3dpe','Pink1B9_3dpe','W1118CSfem_3dpe'}
 %inputDirList={'Pink15_5dpe','Pink1B9_5dpe','W1118CSfem_5dpe'}
 %inputDirList={'Pink15_7dpe','Pink1B9_7dpe','W1118CSfem_7dpe'}
 %inputDirList={'Pink15_10dpe','Pink1B9_10dpe','W1118CSfem_10dpe'}
 %inputDirList={'Pink15_14dpe','Pink1B9_14dpe','W1118CSfem_14dpe'}
-inputDirList={'Pink15_21dpe','Pink1B9_21dpe','W1118CSfem_21dpe'}
+%inputDirList={'Pink15_21dpe','Pink1B9_21dpe','W1118CSfem_21dpe'}
 %inputDirList={'Pink15_28dpe','Pink1B9_28dpe','W1118CSfem_28dpe'}
+
+%inputDirList={  'Pink15_1dpe' , 'Pink1B9_1dpe', 'W1118CSfem_1dpe', 'Pink15_3dpe','Pink1B9_3dpe', 'W1118CSfem_3dpe', 'Pink15_5dpe', 'Pink1B9_5dpe', 'W1118CSfem_5dpe','Pink15_7dpe','Pink1B9_7dpe', 'W1118CSfem_7dpe','Pink15_10dpe', 'Pink1B9_10dpe', 'W1118CSfem_10dpe','Pink15_14dpe', 'Pink1B9_14dpe', 'W1118CSfem_14dpe','Pink15_21dpe', 'Pink1B9_21dpe', 'W1118CSfem_21dpe', 'Pink15_28dpe', 'Pink1B9_28dpe', 'W1118CSfem_28dpe', };
 
 nGT=length(inputDirList);
 lineColArray=jet(nGT)
