@@ -52,13 +52,11 @@ dataDir='/Users/abbiestretch/Documents/PhD/Vision';
 
 %inputDirList={  'Pink15_1dpe' , 'Pink15_3dpe', 'Pink15_5dpe', 'Pink15_7dpe','Pink15_10dpe','Pink15_14dpe','Pink15_21dpe' };
 %inputDirList={  'Pink1B9_1dpe' , 'Pink1B9_3dpe', 'Pink1B9_5dpe', 'Pink1B9_7dpe','Pink1B9_10dpe','Pink1B9_14dpe','Pink1B9_21dpe','Pink1B9_28dpe' };
-<<<<<<< HEAD
+
 %inputDirList={  'W1118CSfem_1dpe' , 'W1118CSfem_3dpe', 'W1118CSfem_5dpe', 'W1118CSfem_7dpe','W1118CSfem_10dpe','W1118CSfem_14dpe','W1118CSfem_21dpe' };
- inputDirList={'Pink15_1dpe','Pink1B9_1dpe','W1118CSfem_1dpe'}
-=======
+ %inputDirList={'Pink15_1dpe','Pink1B9_1dpe','W1118CSfem_1dpe'}
 %inputDirList={  'W1118CSfem_1dpe' , 'W1118CSfem_3dpe', 'W1118CSfem_5dpe', 'W1118CSfem_7dpe','W1118CSfem_10dpe','W1118CSfem_14dpe','W1118CSfem_21dpe','W1118CSfem_28dpe' };
 %inputDirList={'Pink15_1dpe','Pink1B9_1dpe','W1118CSfem_1dpe'}
->>>>>>> parent of 381f340 (Update generalDataAnalysis_AS.m)
 %inputDirList={'Pink15_3dpe','Pink1B9_3dpe','W1118CSfem_3dpe'}
 %inputDirList={'Pink15_5dpe','Pink1B9_5dpe','W1118CSfem_5dpe'}
 inputDirList={'Pink15_7dpe','Pink1B9_7dpe','W1118CSfem_7dpe'}
