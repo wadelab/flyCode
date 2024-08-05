@@ -27,6 +27,8 @@
 clear all;
 close all;
 
+
+
 nBootstraps=1000;
 fToExamine=96; % Change this depending on which harmonic you want. Over 1 second it would be 12 (or 15) - those are the 1F. For 2F you can look at 96,120 cycle
 close all
@@ -75,6 +77,8 @@ inputDirList={  'DJ1alpha_1dpe' , 'DJ1beta_1dpe', 'DJ1aDJ1b_1dpe', 'W1118CS_1dpe
 nGT=length(inputDirList);
 lineColArray=jet(nGT)
 
+outData = cell(nGT, 1);  % Initialize outData
+
 for thisGT=1:nGT
     fInputDir=fullfile(dataDir,inputDirList{thisGT})
     offset=thisGT*2-1;
@@ -104,6 +108,13 @@ end
 fComponentList=[1 2];
 paramNameList={'Rmax','c50','n','R0'};
 %%
+% Initialize arrays to store statistics
+meanParamsArray = NaN(nGT, length(paramNameList));  % Mean of bootstrap parameters
+medianParamsArray = NaN(nGT, length(paramNameList));  % Median of bootstrap parameters
+stdParamsArray = NaN(nGT, length(paramNameList));  % Standard deviation of bootstrap parameters
+stderrParamsArray = NaN(nGT, length(paramNameList));  % Standard error of bootstrap parameters
+nArray = NaN(nGT, 1);  % Sample size for each genotype
+
 for thisGT=1:nGT % Loop over all genotypes. (I know - sometimes the GT is the same and something else has changed like age
     thisGTData=outData{thisGT};
     nFlies=length(thisGTData);
@@ -203,9 +214,59 @@ for thisGT=1:nGT
     subplot(nGT,1,thisGT);
 
     bar(abs(F1ResponseGT))
-    grid on
+    grid on;
+     
+    % Calculate statistics for each parameter
+    for iParam = 1:length(paramNameList)
+        paramValues = squeeze(bootFitParams(thisGT, :, iParam));
+
+        % Mean
+        meanParamsArray(thisGT, iParam) = mean(paramValues);
+
+        % Median
+        medianParamsArray(thisGT, iParam) = median(paramValues);
+
+        % Standard deviation
+        stdParamsArray(thisGT, iParam) = std(paramValues);
+
+        % Standard error
+        stderrParamsArray(thisGT, iParam) = std(paramValues) / sqrt(length(paramValues));
+    end
+     % Sample size (N)
+    nArray(thisGT) = length(paramValues);  % Assuming paramValues are all of the same length
 end
 %%
+% Create table of statistics
+resultsTable = table(inputDirList', meanParamsArray, medianParamsArray, stdParamsArray, stderrParamsArray, nArray, ...
+    'VariableNames', {'InputDir', 'MeanParams', 'MedianParams', 'StdParams', 'StderrParams', 'SampleSize'});
+
+disp(resultsTable);
+
+% Plot the table data
+figure(10);
+for iParam = 1:length(paramNameList)
+    subplot(length(paramNameList), 1, iParam);
+    bar(meanParamsArray(:, iParam));
+    hold on;
+    errorbar(1:nGT, meanParamsArray(:, iParam), stderrParamsArray(:, iParam), 'k', 'linestyle', 'none');
+    title(['Mean and SE of ', paramNameList{iParam}]);
+    xticks(1:nGT);
+    xticklabels(inputDirList);
+    xtickangle(45);
+end
+
+% Boxplot of parameters
+figure (11);
+for iParam = 1:length(paramNameList)
+    subplot(length(paramNameList), 1, iParam);
+    boxplot(squeeze(bootFitParams(:,:,iParam))', 'Labels', inputDirList);
+    title(['Distribution of ', paramNameList{iParam}]);
+    xtickangle(45);
+end
+
+% Optional: Export table to a file
+writetable(resultsTable, fullfile(dataDir, 'DJ1aDJ1bresultsTable.csv'));
+
 
 for thisGT=1:nGT
      % Do nice plotting
