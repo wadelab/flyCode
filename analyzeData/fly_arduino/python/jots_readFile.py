@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 
 def readFile(file, freq=12, expected=False, verbose=False):
-
     # expected experimental parameters are coded into a dictionary with the following keys
     # these are the experimental parameters for JOTS for NatSci project 2023/24 with ARW and IH
     if not expected:
@@ -40,9 +39,14 @@ def readFile(file, freq=12, expected=False, verbose=False):
                         print(f'FLICKER: for {file}, cannot store {md}')
                     pass
         """
-        if ('html' in file) or ('txt' in file):
+        if ('html' in file) or ('txt' in file) or ('SVP' in file):
+
+
             with open(file, 'r') as f:
                 for line in f:
+                    if verbose:
+                        print(line)
+
                     if 'GET' in line:
                         meta_line = line.strip(" \n").split(",")
                         break
@@ -56,6 +60,8 @@ def readFile(file, freq=12, expected=False, verbose=False):
             times = np.array(df['time']).reshape(num_trials, num_samples + 1)
             stimuli = np.array(df['stimulus']).reshape(num_trials, num_samples + 1)
             responses = np.array(df['response']).reshape(num_trials, num_samples + 1)
+            if verbose:
+                print(df)
             # the extra 3-integer line contains information about probes and masks
             # [-99, probe, mask]
 
@@ -204,6 +210,8 @@ def readFile(file, freq=12, expected=False, verbose=False):
                                f'{metadata["filename"][6:8]}' \
                                f'{metadata["filename"][9:11]}' \
                                f'{metadata["filename"][12:14]}'  # YYYYMMDDHHMMSS
+        if verbose:
+            print(metadata)
     except:
         pass
 
@@ -231,7 +239,8 @@ def readFile(file, freq=12, expected=False, verbose=False):
                 "complexData": amplitudes[np.where(frequencies == freq)],
             })
         sortedComplexData = pd.concat([sortedComplexData, data_to_add], axis=0, ignore_index=True)
-
+        if verbose:
+            print(sortedComplexData)
     metadata["n_trials"] = sortedComplexData.shape[0] # n rows
     if len(ix_to_omit) == 0:
         metadata["omitted"] = None
