@@ -26,3 +26,9 @@ analyzeData/Tunis/TunisPDData.pdf
 
 collectData/flyTV/flytv_CRF_TRF.m
 .vscode/c_cpp_properties.json
+analyzeData/fly_arduino/python/20240819120824__bootstrap_HIS.png
+analyzeData/fly_arduino/python/20240819120824__bootstrap_RAW.csv
+analyzeData/fly_arduino/python/20240819120824__bootstrap_SUM.csv
+analyzeData/fly_arduino/python/20240819121336__bootstrap_HIS.png
+analyzeData/fly_arduino/python/20240819121336__bootstrap_RAW.csv
+analyzeData/fly_arduino/python/20240819121336__bootstrap_SUM.csv

@@ -46,12 +46,14 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
     frequencies = {"1F1": input_freq, "2F1": input_freq * 2}
 
     # establishing colours:
+    if len(genotypes) == 5:
+        colors = ['red', 'orange', 'yellow','green', 'blue']
     if len(genotypes) == 4:
-        colors = ['red', 'orange', 'green', 'blue']
+        colors = ['red', 'yellow', 'green','blue']
     elif len(genotypes) == 3:
-        colors = ['green', 'blue', 'red']
+        colors = ['red', 'green', 'blue']
     elif len(genotypes) == 2:
-        colors = ['blue', 'orange']
+        colors = ['red', 'blue']
     else:
         print(f"function 'bootstrapSSVEPs' can only colour 2, 3 or 4 genotypes")
         return
@@ -332,6 +334,7 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
                     plt.ylabel(f'{key[1]}\nmask = {key[0]}', rotation=0, labelpad=lp, fontsize=fs)
                 plt.tick_params(axis='both', labelsize=ts)
                 count += 1
+            plt.legend(genotypes)
 
     if save:
         sum.close()
