@@ -56,17 +56,22 @@ def readFile(file, freq=12, expected=False, verbose=False):
             metadata[dp_split[0]] = dp_split[1]
 
         try: # open txt file and sort data by trial # TODO: continue updating here
+            print('**Reading with PANDAS / CSV - TEXT FILE')
+
             df = pd.read_csv(file, skiprows=1, names=['time', 'stimulus', 'response'])
             times = np.array(df['time']).reshape(num_trials, num_samples + 1)
             stimuli = np.array(df['stimulus']).reshape(num_trials, num_samples + 1)
             responses = np.array(df['response']).reshape(num_trials, num_samples + 1)
             if verbose:
                 print(df)
+                print(f'Found {num_trials} * {num_samples}')
             # the extra 3-integer line contains information about probes and masks
             # [-99, probe, mask]
 
         except:
             try: # open as html files
+                print('**Reading with PANDAS / CSV - HTML FILE')
+
                 df = pd.read_csv(file, skiprows=6, names=['time', 'stimulus', 'response'])
                 times = np.array(df['time']).reshape(num_trials, num_samples + 1)
                 stimuli = np.array(df['stimulus']).reshape(num_trials, num_samples + 1)
@@ -74,6 +79,7 @@ def readFile(file, freq=12, expected=False, verbose=False):
                 # the extra 3-integer line contains information about probes and masks
                 # [-99, probe, mask]
             except:
+                print('**Reading with PANDAS / CSV')
                 df = pd.read_csv(file, skiprows=12, names=['time', 'stimulus', 'response'])
                 # ARW came on Monday and set up new jig and software... new file formats could do with generalising
                 times = np.array(df['time']).reshape(num_trials, num_samples + 1)
@@ -81,7 +87,7 @@ def readFile(file, freq=12, expected=False, verbose=False):
                 responses = np.array(df['response']).reshape(num_trials, num_samples + 1)
                 # the extra 3-integer line contains information about probes and masks
                 # [-99, probe, mask]
-
+        print(f'*** Read {responses}') 
         # checking for unreasonable data / recordings - to omit
         ix_to_omit = []
         omit_info = []
@@ -120,7 +126,7 @@ def readFile(file, freq=12, expected=False, verbose=False):
         # times irrelevant here on out
         stimuli = np.delete(stimuli, ix_to_omit, axis=0)
         responses = np.delete(responses, ix_to_omit, axis=0)
-
+        print(f'***Size of responses = {responses.shape}')
         filetype = 'txt'
         if verbose:
             print(f"UPDATE: successfully read {file} as txt/html file")
@@ -241,6 +247,8 @@ def readFile(file, freq=12, expected=False, verbose=False):
         sortedComplexData = pd.concat([sortedComplexData, data_to_add], axis=0, ignore_index=True)
         if verbose:
             print(sortedComplexData)
+
+
     metadata["n_trials"] = sortedComplexData.shape[0] # n rows
     if len(ix_to_omit) == 0:
         metadata["omitted"] = None

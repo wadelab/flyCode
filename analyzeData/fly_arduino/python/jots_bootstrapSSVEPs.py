@@ -23,39 +23,50 @@ def hyperbolic(c, c50, Rmax):
     # numpy's math functions handle edge cases more robustly and can prevent overflow errors
     return (Rmax * (np.power(c, n) / (np.power(c50, n) + np.power(c, n)))) + R0
 
+def powerFunction(c,expnt,sc):
+    # Fits a power function to the data sc*(c^expnt)
+    return sc*(c**expnt)
+
 def hyperbolicPlus(c, c50, Rmax, n, R0):
     # numpy's math functions handle edge cases more robustly and can prevent overflow errors
     return (Rmax * (np.power(c, n) / (np.power(c50, n) + np.power(c, n)))) + R0
 
+def fittingCurvePower(cs, rs):
+    pmin = (0, 0)
+    p0 = [1, np.max(rs)]
+    pmax = (10, 2 * np.max(rs))
+    params, covs = curve_fit(powerFunction, cs, rs, p0=p0, bounds=(pmin, pmax))
+    return params
+
 def fittingcurve(cs, rs):
     pmin = (0, 0)
     p0 = [np.mean(cs), np.max(rs)]
-    pmax = (np.inf, 2 * np.max(rs))
+    pmax = (100, 2 * np.max(rs))
     params, covs = curve_fit(hyperbolic, cs, rs, p0=p0, bounds=(pmin, pmax))
     return params
 
 def fittingcurvePlus(cs, rs):
     pmin = (0, 0, 1.5, 0)
     p0 = [np.mean(cs), np.max(rs), 2, 0]
-    pmax = (np.inf, 2 * np.max(rs), 2.5, 0.0001) # these are the same bounds as os_bootstrapDatasets
+    pmax = (100, 2 * np.max(rs), 2.5, 0.0001) # these are the same bounds as os_bootstrapDatasets
     params, covs = curve_fit(hyperbolicPlus, cs, rs, p0=p0, bounds=(pmin, pmax))
     return params
 
-def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12, label=None, save=True, plus=False):
+def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12, label=None, save=True, curveType='reducedHyper'):
     # this function only bootstraps 1F1 and 2F1, but does so simultaneously
     frequencies = {"1F1": input_freq, "2F1": input_freq * 2}
-
+    allData=[]
     # establishing colours:
     if len(genotypes) == 5:
         colors = ['red', 'orange', 'yellow','green', 'blue']
-    if len(genotypes) == 4:
+    elif len(genotypes) == 4:
         colors = ['red', 'yellow', 'green','blue']
     elif len(genotypes) == 3:
         colors = ['red', 'green', 'blue']
     elif len(genotypes) == 2:
         colors = ['red', 'blue']
     else:
-        print(f"function 'bootstrapSSVEPs' can only colour 2, 3 or 4 genotypes")
+        print(f"function 'bootstrapSSVEPs' can only colour 2, 3,4 or 5 genotypes")
         return
 
     # each output file is labelled with datetime of analysis start
@@ -65,7 +76,7 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
 
     # create csv files
     if save:
-        if plus is True:
+        if curveType=='fullHyper':
             savedAs = "bootstrapPlus"
         else:
             savedAs = "bootstrap"
@@ -122,7 +133,7 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
             common_conds[cond] = []
 
         c50s_for_this_genotype, Rmaxs_for_this_genotype = deepcopy(common_sets), deepcopy(common_sets)
-        if plus is True:
+        if curveType=='fullHyper':
             ns_for_this_genotype, R0s_for_this_genotype = deepcopy(common_sets), deepcopy(common_sets)
         resps_1F1, resps_2F1 = deepcopy(common_conds), deepcopy(common_conds)
 
@@ -131,7 +142,7 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
             for (mask, comp) in common_sets.keys():
                 raw_headings.append(f'c50_{mask}_{comp}')
                 raw_headings.append(f'Rmax_{mask}_{comp}')
-                if plus is True:
+                if curveType=='fullHyper':
                     raw_headings.append(f'n_{mask}_{comp}')
                     raw_headings.append(f'R0_{mask}_{comp}')
             raw_writer.writerow(raw_headings)
@@ -156,7 +167,7 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
                 print(f'this is bootstrap {b} out of {n_bootstraps} for {genotype}')
 
             c50s_for_this_bootstrap, Rmaxs_for_this_bootstrap = deepcopy(common_sets), deepcopy(common_sets)
-            if plus is True:
+            if curveType=='fullHyper':
                 ns_for_this_bootstrap, R0s_for_this_bootstrap = deepcopy(common_sets), deepcopy(common_sets)
             resampled_1F1, resampled_2F1 = deepcopy(common_conds), deepcopy(common_conds)
 
@@ -191,18 +202,26 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
                             else:
                                 ps = probes[:-1]
 
-                            if plus is True:
+                            if curveType=='fullHyper':
                                 params = fittingcurvePlus(ps, synthetic_fly[key])
-                            else:
-                                params = fittingcurve(ps, synthetic_fly[key])
-
-                            # params are stored
-                            params = list(params)
-                            c50s_for_this_bootstrap[key].append(params[0])
-                            Rmaxs_for_this_bootstrap[key].append(params[1])
-                            if plus is True:
+                                                                # params are stored
+                                params = list(params)
+                                c50s_for_this_bootstrap[key].append(params[0])
+                                Rmaxs_for_this_bootstrap[key].append(params[1])
                                 ns_for_this_bootstrap[key].append(params[2])
                                 R0s_for_this_bootstrap[key].append(params[3])
+                            elif curveType=='reducedHyper':
+                                params = fittingcurve(ps, synthetic_fly[key])
+                                params = list(params)
+                                c50s_for_this_bootstrap[key].append(params[0])
+                                Rmaxs_for_this_bootstrap[key].append(params[1])
+                            elif curveType=='power':                 
+                                params = fittingCurvePower(ps, synthetic_fly[key])
+                                params = list(params)
+                                c50s_for_this_bootstrap[key].append(params[1]) # For the power function fit we use c50 and Rmax to represent exponent and scale respectively
+                                Rmaxs_for_this_bootstrap[key].append(params[0])
+
+
 
                 except Exception as e:
                     # TODO: need to solve this...
@@ -216,7 +235,7 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
                     print(params)
                     print(e)
                     print('waiting 2 secs')
-                    sleep(2)
+                    #sleep(2)
                     print('trying again by making new fly...')
                     pass
 
@@ -224,19 +243,23 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
             for key in synthetic_fly.keys():
                 c50s_for_this_genotype[key].append(np.mean(c50s_for_this_bootstrap[key]))
                 Rmaxs_for_this_genotype[key].append(np.mean(Rmaxs_for_this_bootstrap[key]))
-                if plus is True:
+           
+
+                if curveType=='fullHyper':
                     ns_for_this_genotype[key].append(np.mean(ns_for_this_bootstrap[key]))
                     R0s_for_this_genotype[key].append(np.mean(R0s_for_this_bootstrap[key]))
 
-        if save:
-            for b in range(n_bootstraps): # saving to raw file
-                to_add_to_raw_file = [genotype, b]
-                for (mask, comp) in common_sets.keys():
-                    to_add_to_raw_file.append(c50s_for_this_genotype[(mask, comp)][b])
-                    to_add_to_raw_file.append(Rmaxs_for_this_genotype[(mask, comp)][b])
-                    if plus is True:
-                        to_add_to_raw_file.append(ns_for_this_genotype[(mask, comp)][b])
-                        to_add_to_raw_file.append(R0s_for_this_genotype[(mask, comp)][b])
+        for b in range(n_bootstraps): # saving to raw file
+            to_add_to_raw_file = [genotype, b]
+            for (mask, comp) in common_sets.keys():
+                to_add_to_raw_file.append(c50s_for_this_genotype[(mask, comp)][b])
+                to_add_to_raw_file.append(Rmaxs_for_this_genotype[(mask, comp)][b])
+            if curveType=='fullHyper':
+                    to_add_to_raw_file.append(ns_for_this_genotype[(mask, comp)][b])
+                    to_add_to_raw_file.append(R0s_for_this_genotype[(mask, comp)][b])
+            allData.append(to_add_to_raw_file)
+            if save:
+
                 raw_writer.writerow(to_add_to_raw_file)
 
             # saving to summary file
@@ -261,7 +284,7 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
                                      np.mean(Rmaxs_for_this_genotype[(mask, comp)]),
                                      np.quantile(Rmaxs_for_this_genotype[(mask, comp)], 0.975),
                                      np.max(Rmaxs_for_this_genotype[(mask, comp)])])
-                if plus is True:
+                if curveType=='fullHyper':
                     sum_writer.writerow([genotype,
                                          len(files),
                                          "n",
@@ -284,7 +307,7 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
                                          np.max(R0s_for_this_genotype[(mask, comp)])])
 
         count = 1
-        if plus is True:
+        if curveType=='fullHyper':
             ncols = 4
         else:
             ncols = 2
@@ -314,7 +337,7 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
             plt.tick_params(axis='both', labelsize=ts)
             count += 1
 
-            if plus is True:
+            if curveType=='fullHyper':
                 plt.subplot(4, ncols, count)
                 plt.hist(ns_for_this_genotype[key], bins=40, alpha=0.5, color=colors[g])
                 if count <= ncols:
@@ -344,6 +367,7 @@ def bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=1000, input_freq=12,
     print("bootstrapSSVEPs has finished!")
 
     plt.show()
+    return allData
 
 
 '''

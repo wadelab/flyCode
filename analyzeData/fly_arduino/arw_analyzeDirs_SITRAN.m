@@ -1,6 +1,6 @@
 close all
-baseDir='/raid/data/SITRAN/'
 baseDir='/groups/labs/wadelab/data/sitran/flyArduino2'
+baseDir='/raid/data/SITRAN/flyData/flyArduino2/CSOR_Pink1_W1118'
 
 %inputDirList={'W1118CS_1dpe','W1118CS_3dpe','W1118CS_7dpe'};
 inputDirList={'Pink1B9_1dpe','Pink1B9_7dpe','Pink1B9_14dpe'};

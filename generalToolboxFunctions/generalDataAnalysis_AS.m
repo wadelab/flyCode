@@ -38,7 +38,9 @@ close all
 
 %dataDir='/groups/labs/wadelab/data/SITRAN/flyData/flyArduino2/FromHardDrive290524';
 %inputDirList={  'Pink1B9_1dpe' , 'Pink1B9_3dpe', 'Pink1B9_5dpe', 'Pink1B9_7dpe','Pink1B9_10dpe','Pink1B9_14dpe','Pink1B9_21dpe','Pink1B9_28dpe' };  % This is a list of directories where you have saved the data specific to each genotype. For these will depend on your project
+%dataDir='/Users/abbiestretch/Documents/PhD/Vision';
 dataDir='/Users/abbiestretch/Documents/PhD/Vision';
+dataDir='/raid/data/SITRAN/DJ1_data_15_08_24'
 
 %inputDirList={  'DJ1beta_1dpe' , 'DJ1beta_3dpe', 'DJ1beta_5dpe', 'DJ1beta_7dpe','DJ1beta_10dpe','DJ1beta_14dpe','DJ1beta_21dpe','DJ1beta_28dpe' };  % This is a list of directories where you have saved the data specific to each genotype. For these will depend on your project
 %inputDirList={  'DJ1alpha_1dpe' , 'DJ1alpha_3dpe', 'DJ1alpha_5dpe', 'DJ1alpha_7dpe','DJ1alpha_10dpe','DJ1alpha_14dpe','DJ1alpha_21dpe','DJ1alpha_28dpe' };
@@ -71,7 +73,12 @@ dataDir='/Users/abbiestretch/Documents/PhD/Vision';
 %inputDirList={  'DJ1alpha_1dpe' , 'DJ1beta_1dpe', 'W1118CS_1dpe', 'DJ1alpha_3dpe',  'DJ1beta_3dpe', 'W1118CS_3dpe','DJ1alpha_5dpe',  'DJ1beta_5dpe', 'W1118CS_5dpe', 'DJ1alpha_7dpe',  'DJ1beta_7dpe', 'W1118CS_7dpe','DJ1alpha_10dpe',  'DJ1beta_10dpe', 'W1118CS_10dpe','DJ1alpha_14dpe',  'DJ1beta_14dpe', 'W1118CS_14dpe','DJ1alpha_21dpe',  'DJ1beta_21dpe', 'W1118CS_21dpe','DJ1alpha_28dpe',  'DJ1beta_28dpe', 'W1118CS_28dpe'};
 
 %inputDirList={  'Pink15_1dpe' , 'Pink1B9_1dpe', 'W1118CSfem_1dpe', 'Pink15_7dpe','Pink1B9_7dpe', 'W1118CSfem_7dpe', 'Pink15_14dpe', 'Pink1B9_14dpe', 'W1118CSfem_14dpe','Pink15_21dpe', 'Pink1B9_21dpe', 'W1118CSfem_21dpe', 'Pink15_28dpe', 'Pink1B9_28dpe', 'W1118CSfem_28dpe', };
-inputDirList={  'DJ1alpha_1dpe' , 'DJ1beta_1dpe', 'DJ1aDJ1b_1dpe', 'W1118CS_1dpe',  'DJ1alpha_7dpe',  'DJ1beta_7dpe', 'DJ1aDJ1b_7dpe','W1118CS_7dpe','DJ1alpha_14dpe',  'DJ1beta_14dpe', 'DJ1aDJ1b_14dpe', 'W1118CS_14dpe','DJ1alpha_21dpe',  'DJ1beta_21dpe', 'DJ1aDJ1b_21dpe', 'W1118CS_21dpe','DJ1alpha_28dpe',  'DJ1beta_28dpe', 'DJ1aDJ1b_28dpe', 'W1118CS_28dpe'};
+
+% Here with the White flashes
+
+%inputDirList={  'DJ1alpha_1dpe' , 'DJ1beta_1dpe', 'DJ1aDJ1b_1dpe', 'W1118CS_1dpe',  'DJ1alpha_7dpe',  'DJ1beta_7dpe', 'DJ1aDJ1b_7dpe','W1118CS_7dpe','DJ1alpha_14dpe',  'DJ1beta_14dpe', 'DJ1aDJ1b_14dpe', 'W1118CS_14dpe','DJ1alpha_21dpe',  'DJ1beta_21dpe', 'DJ1aDJ1b_21dpe', 'W1118CS_21dpe','DJ1alpha_28dpe',  'DJ1beta_28dpe', 'DJ1aDJ1b_28dpe', 'W1118CS_28dpe'};
+
+inputDirList={  'DJ1alpha_1dpe' ,   'DJ1alpha_7dpe', 'DJ1alpha_14dpe', 'DJ1alpha_21dpe','DJ1alpha_28dpe', 'DJ1beta_1dpe', 'DJ1beta_7dpe',  'DJ1beta_14dpe','DJ1beta_21dpe', 'DJ1beta_28dpe',   'DJ1aDJ1b_1dpe','DJ1aDJ1b_7dpe',  'DJ1aDJ1b_14dpe',   'DJ1aDJ1b_21dpe', 'DJ1aDJ1b_28dpe'};
 
 
 nGT=length(inputDirList);
@@ -167,6 +174,23 @@ for thisGT=1:nGT % Loop over all genotypes. (I know - sometimes the GT is the sa
 
     end % next fly
 end % Next GT
+
+%% Here we could do statistics directly on the raw data (without bootstrapping)
+% In an ANOVA for example, we could look for an effect of GT and contrast
+% and an interaction
+% To do that we need to make the data into the appropriate format for an
+% ANOVA
+% meanFT is a cell array of nGenotypes cells.
+% Each cell contains an array of nFliesxnContitions*nDataPoints
+% We are interested in the first 5 (unmasked) conditions corresponding to
+% increasing probe contrast
+% And we want the 13th entry in the third dimension (corresponding to 2F1)
+% 
+
+
+
+
+
 %%
 for thisGT=1:nGT
     % Okay now we can bootstrap. For now, I think just consider
