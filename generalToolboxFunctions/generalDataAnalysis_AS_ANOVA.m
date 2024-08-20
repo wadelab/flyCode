@@ -27,12 +27,6 @@
 clear all;
 close all;
 
-
-
-nBootstraps=1000;
-fToExamine=96; % Change this depending on which harmonic you want. Over 1 second it would be 12 (or 15) - those are the 1F. For 2F you can look at 96,120 cycle
-close all
-
 %dataDir='c:\Users\wade\Documents\flyData2022\orgData\';
 %dataDir='/Volumes/GoogleDrive/My Drive/York/Projects/InesFly/flyData2022/orgData/';
 
@@ -76,10 +70,18 @@ dataDir='/raid/data/SITRAN/DJ1_data_15_08_24'
 
 % Here with the White flashes
 
-%inputDirList={  'DJ1alpha_1dpe' , 'DJ1beta_1dpe', 'DJ1aDJ1b_1dpe', 'W1118CS_1dpe',  'DJ1alpha_7dpe',  'DJ1beta_7dpe', 'DJ1aDJ1b_7dpe','W1118CS_7dpe','DJ1alpha_14dpe',  'DJ1beta_14dpe', 'DJ1aDJ1b_14dpe', 'W1118CS_14dpe','DJ1alpha_21dpe',  'DJ1beta_21dpe', 'DJ1aDJ1b_21dpe', 'W1118CS_21dpe','DJ1alpha_28dpe',  'DJ1beta_28dpe', 'DJ1aDJ1b_28dpe', 'W1118CS_28dpe'};
+%inputDirList={  'DJ1alpha_1dpe' , 'DJ1beta_1dpe', 'DJ1aDJ1b_1dpe', 'W1118CS_1dpe',  'DJ1alpha_7dpe',  'DJ1beta_7dpe', 'DJ1aDJ1b_7dpe','W1118CS_7dpe','DJ1alpha_14dpe',  'DJ1beta_14dpe', 'DJ1aDJ1b_14dpe', 'W1118CS_14dpe','DJ1alpha_21dpe',  'DJ1beta_21dpe', 'DJ1aDJ1b_21dpe', 'W1118CS_21dpe','DJ1alpha_28dpe',  'DJ1beta_28dpe', 'DJ1aDJ1b_28dpe', 'W1118CS_28dpe'};Freq_1F1=6
+NORMALIZE_DATA=0;
+COMPUTE_SNR=1;
+FREQ_1F1=12;
+FREQ_2F1=FREQ_1F1*2;
+FREQ_3F1=FREQ_1F1*3;
+FREQ_4F1=FREQ_1F1*4;
 
 inputDirList={  'DJ1alpha_1dpe' ,   'DJ1alpha_7dpe', 'DJ1alpha_14dpe', 'DJ1alpha_21dpe','DJ1alpha_28dpe', 'DJ1beta_1dpe', 'DJ1beta_7dpe',  'DJ1beta_14dpe','DJ1beta_21dpe', 'DJ1beta_28dpe',   'DJ1aDJ1b_1dpe','DJ1aDJ1b_7dpe',  'DJ1aDJ1b_14dpe',   'DJ1aDJ1b_21dpe', 'DJ1aDJ1b_28dpe'};
 
+critFreqHz=[FREQ_1F1, FREQ_2F1, FREQ_3F1, FREQ_4F1] ;
+fileNameOut='responseWideFormatALLF1_SNR.csv'
 
 nGT=length(inputDirList);
 lineColArray=jet(nGT)
@@ -167,8 +169,12 @@ for thisGT=1:nGT % Loop over all genotypes. (I know - sometimes the GT is the sa
 
         % reshape and average in the complex domain
         rawReshaped=reshape(rawData,[nAvs,nConts,nPoints]); % reshaped ready for average
-        meanRaw=squeeze(mean(rawReshaped(:,:,1:1000)));
+        if NORMALIZE_DATA
+            rawReshaped=zscore(rawReshaped,[],3);
+        end
 
+        meanRaw=squeeze(mean(rawReshaped(:,:,1:1000)));
+        
         meanTS{thisGT}(thisFly,:,:)=meanRaw; % Mean across all reps for this fly
         meanFT{thisGT}(thisFly,:,:)=fft(meanRaw,[],2);
 
@@ -224,7 +230,19 @@ for thisGT = 1:nGT
         meanFTFly = squeeze(meanFTFly);
 
         % We want the 13th entry in the third dimension (corresponding to 2F1)
-        targetResponse = abs(meanFTFly(1:5, 49)); % Extract the 2F1 data
+        targetResponse = abs(meanFTFly(1:5, critFreqHz*4+1)); % Extract the data that we want. If it's a list then we compute the RMS
+        if COMPUTE_SNR
+            % Estimate noise from +-2 side bins
+            for thisCF=1:length(critFreqHz)
+                noiseBins=([-5,-4,-3,-2,-1,1,2,3,4,5])+critFreqHz(thisCF)*4+1
+                localRMSNoise=sqrt(sum(abs(meanFTFly(1:5,noiseBins).^2)/length(noiseBins),2))
+                targetResponse(:,thisCF)=targetResponse(:,thisCF)./localRMSNoise
+            end
+        end
+
+        if size(targetResponse,2)>1
+            targetResponse=sqrt(sum(targetResponse.^2,2)/size(targetResponse,2))
+        end
 
         % Store the data in arrays for ANOVA
         nConditions = length(targetResponse);
@@ -271,3 +289,56 @@ disp(ranovatbl);
 % Get the summary of the full model including between-subject effects
 betweenSubjectsEffects = anova(rm);
 disp(betweenSubjectsEffects);
+
+%%
+% Perform the repeated-measures ANOVA (within-subjects effects)
+ranovatbl = ranova(rm);
+disp('Repeated-Measures ANOVA Table (Within-Subjects):');
+disp(ranovatbl);
+
+% Perform the between-subjects ANOVA (Genotype, Age, and their interaction)
+betweenSubjectsEffects = anova(rm);
+disp('Between-Subjects Effects:');
+disp(betweenSubjectsEffects);
+
+% Optional: Post-hoc comparisons (e.g., for Genotype)
+postHocResults = multcompare(rm, 'Genotype');
+disp('Post-Hoc Comparisons for Genotype:');
+disp(postHocResults);
+
+
+%%
+figure(10);
+h1=maineffectsplot(anovaTable.Response,{anovaTable.Contrast, anovaTable.Genotype, anovaTable.Age},'varnames',{'Contrast','Genotype','Age'});
+title('Main effects ofContrast, Genotype and Age');
+ylabel('Mean Response');
+grid on
+c=get(h1,'Children')
+for t=1:length(c)
+    set(c(t),'XGrid','on')
+    set(c(t),'YGrid','on')
+    %set(c(t),'DataAspectRatio',[1,5000,1])
+end
+
+
+
+
+
+%%
+figure(11)
+% Corrected interactionplot call
+h2=interactionplot(anovaTable.Response,{anovaTable.Contrast, anovaTable.Genotype}); %,'varnames',{'Contrast','Genotype'});
+title('Interaction Plot of Contrast and Genotype');
+xlabel('Contrast Levels');
+ylabel('Mean Response');
+c2=get(h2,'Children')
+
+for t=1:length(c2)
+    if (isprop(c2(t),'XGrid'))
+        set(c2(t),'XGrid','on')
+        set(c2(t),'YGrid','on')
+    end
+end
+
+
+writetable(responseMatrix,fileNameOut)
