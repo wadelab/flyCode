@@ -56,7 +56,7 @@
 
 #ifdef due16
 #define MAC_OK 0xA8, 0x61, 0x0A, 0xAE, 0x5E, 0xDF
-//biolpc3467
+//biolpc3467 - Sheffield Rig 3
 #endif
 
 
@@ -1975,8 +1975,14 @@ void sendReply() {
     char *cP = strstr(cInput, "HTTP/");
     if (cP) cP = '\0';
 
-    usedLED = bluLED;
-
+    fPOS = MyInputString.indexOf ("white"); // Check which LED we are using for the SSVEP / ERG
+    if (fPOS > 0)
+    {
+      usedLED = whiteled;
+    }
+    else {
+      usedLED = bluLED;
+    } 
     //flash ERG or SSVEP?
     StimTypes lastStim = eDoFlash;
     if (bTestFlash) {
