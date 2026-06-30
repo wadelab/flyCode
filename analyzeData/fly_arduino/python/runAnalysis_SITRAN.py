@@ -50,7 +50,7 @@ average_responses = noMask.groupby('probe')['complexData'].mean()
     
 
 plt.plot(average_responses)
-bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=10, curveType='power', label='', save=True)
+rawData=bootstrapSSVEPs(main_directory, genotypes, n_bootstraps=10, curveType='power', label='', save=True)
 
 
 

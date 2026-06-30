@@ -126,10 +126,10 @@ def readFile(file, freq=12, expected=False, verbose=False):
         # times irrelevant here on out
         stimuli = np.delete(stimuli, ix_to_omit, axis=0)
         responses = np.delete(responses, ix_to_omit, axis=0)
-        print(f'***Size of responses = {responses.shape}')
         filetype = 'txt'
         if verbose:
             print(f"UPDATE: successfully read {file} as txt/html file")
+            print(f'***Size of responses = {responses.shape}')
 
     except Exception as e:
         if verbose:

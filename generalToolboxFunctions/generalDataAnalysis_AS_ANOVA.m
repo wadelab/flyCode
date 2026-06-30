@@ -78,16 +78,16 @@ FREQ_2F1=FREQ_1F1*2;
 FREQ_3F1=FREQ_1F1*3;
 FREQ_4F1=FREQ_1F1*4;
 
-inputDirList={  'DJ1alpha_1dpe' ,   'DJ1alpha_7dpe', 'DJ1alpha_14dpe', 'DJ1alpha_21dpe','DJ1alpha_28dpe', 'DJ1beta_1dpe', 'DJ1beta_7dpe',  'DJ1beta_14dpe','DJ1beta_21dpe', 'DJ1beta_28dpe',   'DJ1aDJ1b_1dpe','DJ1aDJ1b_7dpe',  'DJ1aDJ1b_14dpe',   'DJ1aDJ1b_21dpe', 'DJ1aDJ1b_28dpe'};
+inputDirList={  'DJ1alpha_1dpe' ,   'DJ1alpha_7dpe', 'DJ1alpha_14dpe', 'DJ1alpha_21dpe','DJ1alpha_28dpe', 'DJ1beta_1dpe', 'DJ1beta_7dpe',  'DJ1beta_14dpe','DJ1beta_21dpe', 'DJ1beta_28dpe',   'DJ1aDJ1b_1dpe','DJ1aDJ1b_7dpe',  'DJ1aDJ1b_14dpe', 'DJ1aDJ1b_21dpe', 'DJ1aDJ1b_28dpe','W1118CS_1dpe','W1118CS_7dpe','W1118CS_14dpe','W1118CS_21dpe','W1118CS_28dpe'};
 
-critFreqHz=[FREQ_1F1, FREQ_2F1, FREQ_3F1, FREQ_4F1] ;
-fileNameOut='responseWideFormatALLF1_SNR.csv'
+critFreqHz=[FREQ_4F1] ;
+fileNameOut='responseWideFormat_4F1_SNR.csv'
 
 nGT=length(inputDirList);
 lineColArray=jet(nGT)
 
 outData = cell(nGT, 1);  % Initialize outData
-
+,'W1118CS_14dpe'
 for thisGT=1:nGT
     fInputDir=fullfile(dataDir,inputDirList{thisGT})
     offset=thisGT*2-1;
