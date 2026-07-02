@@ -13,6 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
+arw-analyse = "ssvep_analysis.arw_cli:main"
 ssvep-analyse = "ssvep_analysis.cli:main"
 ssvep-convert = "ssvep_analysis.converter:_main"
 

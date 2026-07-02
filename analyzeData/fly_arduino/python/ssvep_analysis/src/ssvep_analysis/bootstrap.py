@@ -33,6 +33,8 @@ from .reader import ExperimentDefaults, get_svp_files, read_file
 
 log = logging.getLogger(__name__)
 
+C50_UPPER_BOUND = 100.0
+
 
 # ── curve functions ───────────────────────────────────────────────────────
 
@@ -55,24 +57,30 @@ def power_function(c: np.ndarray, exponent: float, scale: float) -> np.ndarray:
 # ── fitting wrappers ──────────────────────────────────────────────────────
 
 def _fit_hyperbolic(cs: list[int], rs: list[float]) -> np.ndarray:
-    p0 = [np.mean(cs), np.max(rs)]
+    p0 = [min(float(np.mean(cs)), C50_UPPER_BOUND), np.max(rs)]
     params, _ = curve_fit(hyperbolic, cs, rs, p0=p0,
-                          bounds=([0, 0], [np.inf, 2 * np.max(rs)]))
+                          bounds=([0, 0], [C50_UPPER_BOUND, 2 * np.max(rs)]))
     return params
 
 
 def _fit_hyperbolic_full(cs: list[int], rs: list[float]) -> np.ndarray:
-    p0 = [np.mean(cs), np.max(rs), 2, 0]
+    p0 = [min(float(np.mean(cs)), C50_UPPER_BOUND), np.max(rs), 2, 0]
     params, _ = curve_fit(hyperbolic_full, cs, rs, p0=p0,
-                          bounds=([0, 0, 1.5, 0], [np.inf, 2 * np.max(rs), 2.5, 0.0001]))
+                          bounds=([0, 0, 1.5, 0], [C50_UPPER_BOUND, 2 * np.max(rs), 2.5, 0.0001]))
     return params
 
 
 def _fit_power(cs: list[int], rs: list[float]) -> np.ndarray:
-    p0 = [1, np.max(rs)]
-    params, _ = curve_fit(power_function, cs, rs, p0=p0,
-                          bounds=([0, 0], [10, 2 * np.max(rs)]))
-    return params
+    cs_arr = np.asarray(cs, dtype=float)
+    rs_arr = np.asarray(rs, dtype=float)
+    valid = (cs_arr > 0) & (rs_arr > 0) & np.isfinite(cs_arr) & np.isfinite(rs_arr)
+    if np.count_nonzero(valid) < 2:
+        raise ValueError("Power fit needs at least two positive finite points")
+
+    exponent, log_scale = np.polyfit(np.log(cs_arr[valid]), np.log(rs_arr[valid]), deg=1)
+    exponent = float(np.clip(exponent, 0, 10))
+    scale = float(np.exp(log_scale))
+    return np.array([exponent, scale])
 
 
 # ── helpers ───────────────────────────────────────────────────────────────

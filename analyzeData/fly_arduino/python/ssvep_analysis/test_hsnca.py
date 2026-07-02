@@ -7,6 +7,7 @@ Generates CRF plots and bootstrap comparisons for each timepoint.
 import sys
 sys.path.insert(0, "src")
 
+import runpy
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -135,7 +136,7 @@ for tp_idx, tp in enumerate(TIMEPOINTS):
         save_dir=OUTPUT,
         show_plot=False,
         label=f"hSNCA_{tp}",
-        n_processes=1,
+        n_processes=None,
     )
     print(f"  {tp}: {len(results)} rows")
 
@@ -147,6 +148,29 @@ print("=" * 70)
 # Read all summary CSVs
 import csv
 fig_summary, axes_sum = plt.subplots(2, 2, figsize=(12, 8), layout="constrained")
+SUMMARY_HARMONIC = "1F1"
+SUMMARY_MASK = "0"
+
+
+def read_summary_parameter(tp, gt_base, parameter):
+    sum_files = sorted(OUTPUT.glob(f"*hSNCA_{tp}*reduced_hyper*SUM.csv"))
+    if not sum_files:
+        return np.nan, [np.nan, np.nan]
+
+    with open(sum_files[-1]) as f:
+        for row in csv.DictReader(f):
+            if (
+                row["genotype"] == f"{gt_base}_{tp}"
+                and row["parameter"] == parameter
+                and row.get("harmonic") == SUMMARY_HARMONIC
+                and str(row.get("mask")) == SUMMARY_MASK
+            ):
+                return (
+                    float(row["mean"]),
+                    [float(row["lower_bound"]), float(row["upper_bound"])],
+                )
+
+    return np.nan, [np.nan, np.nan]
 
 for gt_idx, gt_base in enumerate(GENOTYPE_BASES):
     c50_per_tp = []
@@ -155,29 +179,12 @@ for gt_idx, gt_base in enumerate(GENOTYPE_BASES):
     rmax_ci_per_tp = []
 
     for tp in TIMEPOINTS:
-        sum_files = sorted(OUTPUT.glob(f"*hSNCA_{tp}*reduced_hyper*SUM.csv"))
-        if not sum_files:
-            c50_per_tp.append(np.nan)
-            rmax_per_tp.append(np.nan)
-            c50_ci_per_tp.append([np.nan, np.nan])
-            rmax_ci_per_tp.append([np.nan, np.nan])
-            continue
-
-        sum_file = sum_files[-1]
-        with open(sum_file) as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if row["genotype"] == f"{gt_base}_{tp}":
-                    param = row["parameter"]
-                    mean_val = float(row["mean"])
-                    lo = float(row["lower_bound"])
-                    hi = float(row["upper_bound"])
-                    if param == "c50":
-                        c50_per_tp.append(mean_val)
-                        c50_ci_per_tp.append([lo, hi])
-                    elif param == "Rmax":
-                        rmax_per_tp.append(mean_val)
-                        rmax_ci_per_tp.append([lo, hi])
+        c50, c50_ci = read_summary_parameter(tp, gt_base, "c50")
+        rmax, rmax_ci = read_summary_parameter(tp, gt_base, "Rmax")
+        c50_per_tp.append(c50)
+        c50_ci_per_tp.append(c50_ci)
+        rmax_per_tp.append(rmax)
+        rmax_ci_per_tp.append(rmax_ci)
 
     tp_nums = [7, 14, 21, 28, 35]
     color = COLORS[gt_idx]
@@ -208,19 +215,10 @@ for gt_idx, gt_base in enumerate(GENOTYPE_BASES):
     rmax_norm = []
 
     for tp in TIMEPOINTS:
-        sum_files = sorted(OUTPUT.glob(f"*hSNCA_{tp}*reduced_hyper*SUM.csv"))
-        if not sum_files:
-            c50_norm.append(np.nan)
-            rmax_norm.append(np.nan)
-            continue
-        with open(sum_files[-1]) as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if row["genotype"] == f"{gt_base}_{tp}":
-                    if row["parameter"] == "c50":
-                        c50_norm.append(float(row["mean"]))
-                    elif row["parameter"] == "Rmax":
-                        rmax_norm.append(float(row["mean"]))
+        c50, _ = read_summary_parameter(tp, gt_base, "c50")
+        rmax, _ = read_summary_parameter(tp, gt_base, "Rmax")
+        c50_norm.append(c50)
+        rmax_norm.append(rmax)
 
     if c50_norm and c50_norm[0] and not np.isnan(c50_norm[0]):
         c50_norm = [v / c50_norm[0] for v in c50_norm]
@@ -252,9 +250,34 @@ summary_path = OUTPUT / "hSNCA_timecourse.png"
 fig_summary.savefig(summary_path, dpi=150)
 print(f"Saved summary to {summary_path}")
 
+# ── Step 5: Regenerate labelled summary exports ──────────────────────────
+print("\n" + "=" * 70)
+print("STEP 5: Regenerating labelled summary exports")
+print("=" * 70)
+
+summary_export_script = Path(__file__).with_name("plot_hsnca_summary.py")
+runpy.run_path(summary_export_script, run_name="__main__")
+
 # ── Done ──────────────────────────────────────────────────────────────────
 print("\n" + "=" * 70)
 print("ALL DONE")
 print("=" * 70)
 for f in sorted(OUTPUT.glob("*.png")):
-    print(f"  {f.name}")
+    print(f"  plot: {f.name}")
+
+labelled_outputs = {
+    "hSNCA_fit_parameters_JASP_wide.csv": "JASP-ready fitted-parameter export",
+    "hSNCA_fit_parameters_FLY_long.csv": "fly-level fitted-parameter long export",
+    "hSNCA_fit_parameters_2way_anova.csv": "fit-parameter 2-way ANOVA table",
+    "hSNCA_fit_parameters_genotype_posthoc_tukey.csv": "fit-parameter Tukey-Kramer genotype post-hocs",
+    "hSNCA_high_contrast_mean_JASP_wide.csv": "JASP-ready wide export",
+    "hSNCA_high_contrast_mean_FLY.csv": "fly-level long export",
+    "hSNCA_high_contrast_mean_2way_anova.csv": "2-way ANOVA table",
+    "hSNCA_high_contrast_mean_genotype_posthoc_tukey.csv": "Tukey-Kramer genotype post-hocs",
+    "hSNCA_high_contrast_mean_RAW.csv": "bootstrap raw high-contrast means",
+    "hSNCA_high_contrast_mean_SUM.csv": "bootstrap summary high-contrast means",
+}
+for filename, label in labelled_outputs.items():
+    path = OUTPUT / filename
+    if path.exists():
+        print(f"  csv:  {filename} ({label})")
