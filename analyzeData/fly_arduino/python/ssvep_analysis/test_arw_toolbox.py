@@ -90,9 +90,12 @@ def check_stats(observations):
     assert not high_contrast.empty
     assert {"genotype", "timepoint", "value"} <= set(high_contrast.columns)
 
-    fit_parameters = arw_fit_observations(observations, fit_types=("reduced_hyper",))
+    fit_parameters = arw_fit_observations(observations, fit_types=("reduced_hyper", "fixed_c50_hyper"))
     assert not fit_parameters.empty
-    assert set(fit_parameters["parameter"]) == {"c50", "Rmax"}
+    reduced = fit_parameters[fit_parameters["fit_type"] == "reduced_hyper"]
+    fixed = fit_parameters[fit_parameters["fit_type"] == "fixed_c50_hyper"]
+    assert set(reduced["parameter"]) == {"c50", "Rmax"}
+    assert set(fixed["parameter"]) == {"Rmax"}
 
     anova = arw_anova_table(
         high_contrast,
@@ -132,6 +135,13 @@ def check_plots(observations, high_contrast, fit_parameters, anova, posthoc):
         )
         crf = arw_plot_crfs(observations, config, output_path=out / "crf.png")
         assert crf.exists() and crf.stat().st_size > 0
+        crf_fixed = arw_plot_crfs(
+            observations,
+            config,
+            output_path=out / "crf_fixed.png",
+            overlay_fit_type="fixed_c50_hyper",
+        )
+        assert crf_fixed.exists() and crf_fixed.stat().st_size > 0
 
         box = arw_plot_high_contrast_boxplots(
             high_contrast, posthoc, config, output_path=out / "hc_box.png", anova=anova,

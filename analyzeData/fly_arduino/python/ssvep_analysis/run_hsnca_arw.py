@@ -38,7 +38,7 @@ def main() -> None:
         output_dir=OUTPUT,
         output_prefix="hSNCA",
         input_freq=12,
-        fit_types=("reduced_hyper", "power", "full_hyper"),
+        fit_types=("reduced_hyper", "power", "full_hyper", "fixed_c50_hyper"),
         high_contrast_n=2,
         genotype_order=GENOTYPE_ORDER,
         timepoint_order=TIMEPOINT_ORDER,

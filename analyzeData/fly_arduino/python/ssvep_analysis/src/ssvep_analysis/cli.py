@@ -7,7 +7,7 @@ import logging
 import sys
 from pathlib import Path
 
-from .bootstrap import bootstrap_ssveps
+from .bootstrap import CURVE_SPECS, bootstrap_ssveps
 from .reader import ExperimentDefaults
 
 
@@ -20,7 +20,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument("genotypes", nargs="+", help="Genotype sub-folder names to analyse.")
     p.add_argument("-n", "--n-bootstraps", type=int, default=1000, help="Number of bootstrap iterations (default: 1000).")
     p.add_argument("-f", "--freq", type=int, default=12, help="Fundamental stimulus frequency in Hz (default: 12).")
-    p.add_argument("-c", "--curve", choices=["reduced_hyper", "full_hyper", "power"], default="reduced_hyper",
+    p.add_argument("-c", "--curve", choices=sorted(CURVE_SPECS), default="reduced_hyper",
                    help="Curve type to fit (default: reduced_hyper).")
     p.add_argument("-l", "--label", default="", help="Label for output file names.")
     p.add_argument("-o", "--output-dir", type=Path, default=None, help="Directory for output files (default: cwd).")

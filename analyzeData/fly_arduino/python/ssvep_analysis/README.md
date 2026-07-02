@@ -27,7 +27,7 @@ source .venv/bin/activate
 arw-analyse /raid/data/SITRAN/GAL80_hSNCA-raw \
     -o ./output/hSNCA \
     -p arw_hSNCA \
-    --fit-types reduced_hyper power full_hyper
+    --fit-types reduced_hyper power full_hyper fixed_c50_hyper
 ```
 
 Useful options:
@@ -96,6 +96,7 @@ results = bootstrap_ssveps(
 | Key | Function | Parameters |
 |---|---|---|
 | `reduced_hyper` | Rmax·c² / (c50² + c²) | c50, Rmax |
+| `fixed_c50_hyper` | Rmax·c² / (50² + c²) | Rmax |
 | `full_hyper` | Rmax·cⁿ / (c50ⁿ + cⁿ) + R0 | c50, Rmax, n, R0 |
 | `power` | scale · c^exponent | exponent, scale |
 

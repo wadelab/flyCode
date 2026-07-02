@@ -34,6 +34,7 @@ from .reader import ExperimentDefaults, get_svp_files, read_file
 log = logging.getLogger(__name__)
 
 C50_UPPER_BOUND = 100.0
+FIXED_C50 = 50.0
 
 
 # ── curve functions ───────────────────────────────────────────────────────
@@ -42,6 +43,11 @@ def hyperbolic(c: np.ndarray, c50: float, r_max: float) -> np.ndarray:
     """Reduced hyperbolic ratio: Rmax * c^2 / (c50^2 + c^2)."""
     n = 2
     return r_max * (np.power(c, n) / (np.power(c50, n) + np.power(c, n)))
+
+
+def hyperbolic_fixed_c50(c: np.ndarray, r_max: float) -> np.ndarray:
+    """Reduced hyperbolic ratio with c50 fixed at 50% contrast."""
+    return hyperbolic(c, FIXED_C50, r_max)
 
 
 def hyperbolic_full(c: np.ndarray, c50: float, r_max: float, n: float, r0: float) -> np.ndarray:
@@ -60,6 +66,13 @@ def _fit_hyperbolic(cs: list[int], rs: list[float]) -> np.ndarray:
     p0 = [min(float(np.mean(cs)), C50_UPPER_BOUND), np.max(rs)]
     params, _ = curve_fit(hyperbolic, cs, rs, p0=p0,
                           bounds=([0, 0], [C50_UPPER_BOUND, 2 * np.max(rs)]))
+    return params
+
+
+def _fit_hyperbolic_fixed_c50(cs: list[int], rs: list[float]) -> np.ndarray:
+    p0 = [np.max(rs)]
+    params, _ = curve_fit(hyperbolic_fixed_c50, cs, rs, p0=p0,
+                          bounds=([0], [2 * np.max(rs)]))
     return params
 
 
@@ -97,13 +110,36 @@ def _resample(data: list, length: int | None = None) -> list:
 @dataclass
 class CurveSpec:
     fit_fn: Any
-    param_names: list[str]   # stored under c50, Rmax, (n, R0)
+    param_names: list[str]
+    curve_fn: Any
+    bootstrap_param_names: list[str] | None = None
+    bootstrap_param_labels: list[str] | None = None
+
+    @property
+    def bootstrap_names(self) -> list[str]:
+        return self.bootstrap_param_names or self.param_names
+
+    @property
+    def bootstrap_labels(self) -> list[str]:
+        return self.bootstrap_param_labels or self.bootstrap_names
 
 
 CURVE_SPECS: dict[str, CurveSpec] = {
-    "reduced_hyper": CurveSpec(_fit_hyperbolic, ["c50", "Rmax"]),
-    "full_hyper":    CurveSpec(_fit_hyperbolic_full, ["c50", "Rmax", "n", "R0"]),
-    "power":         CurveSpec(_fit_power, ["exponent", "scale"]),
+    "reduced_hyper":    CurveSpec(_fit_hyperbolic, ["c50", "Rmax"], hyperbolic),
+    "fixed_c50_hyper":  CurveSpec(_fit_hyperbolic_fixed_c50, ["Rmax"], hyperbolic_fixed_c50),
+    "full_hyper":       CurveSpec(
+        _fit_hyperbolic_full,
+        ["c50", "Rmax", "n", "R0"],
+        hyperbolic_full,
+        bootstrap_param_names=["c50", "Rmax"],
+    ),
+    "power":            CurveSpec(
+        _fit_power,
+        ["exponent", "scale"],
+        power_function,
+        bootstrap_param_names=["c50", "Rmax"],
+        bootstrap_param_labels=["exponent", "scale"],
+    ),
 }
 
 
@@ -233,7 +269,7 @@ def _compare_genotypes(
 
 def _bootstrap_single_genotype(
     geno_args: tuple,
-) -> tuple[str, list[list[float]], int]:
+) -> tuple[str, dict[str, dict[tuple[int, str], list[float]]], int]:
     """Bootstrap a single genotype in a worker process (for multiprocessing).
 
     Parameters
@@ -264,12 +300,11 @@ def _bootstrap_single_genotype(
                 else:
                     resps_2f1[cond].append(val)
 
-    c50s_gt = deepcopy(common_sets)
-    rmaxs_gt = deepcopy(common_sets)
+    bootstrap_names = spec.bootstrap_names
+    param_values_gt = {param_name: deepcopy(common_sets) for param_name in bootstrap_names}
 
     for _b in range(n_bootstraps):
-        c50s_bs = deepcopy(common_sets)
-        rmaxs_bs = deepcopy(common_sets)
+        param_values_bs = {param_name: deepcopy(common_sets) for param_name in bootstrap_names}
 
         fit_ok = False
         while not fit_ok:
@@ -294,18 +329,18 @@ def _bootstrap_single_genotype(
                         ps = probes if key[0] == 0 else probes[:-1]
                         fitted = spec.fit_fn(ps, synth_fly[key])
                         params_list = list(fitted)
-                        c50s_bs[key].append(params_list[0])
-                        rmaxs_bs[key].append(params_list[1])
+                        for param_name, value in zip(bootstrap_names, params_list):
+                            param_values_bs[param_name][key].append(value)
 
                 fit_ok = True
             except Exception:
                 pass  # retry
 
         for key in common_sets:
-            c50s_gt[key].append(np.mean(c50s_bs[key]))
-            rmaxs_gt[key].append(np.mean(rmaxs_bs[key]))
+            for param_name in bootstrap_names:
+                param_values_gt[param_name][key].append(np.mean(param_values_bs[param_name][key]))
 
-    return genotype, [c50s_gt, rmaxs_gt], len(valid_files)
+    return genotype, param_values_gt, len(valid_files)
 
 
 # ── main entry point ──────────────────────────────────────────────────────
@@ -333,7 +368,7 @@ def bootstrap_ssveps(
     genotypes : list of genotype sub-folder names.
     n_bootstraps : number of bootstrap iterations.
     input_freq : fundamental stimulus frequency (Hz).
-    curve_type : one of 'reduced_hyper', 'full_hyper', 'power'.
+    curve_type : one of 'reduced_hyper', 'fixed_c50_hyper', 'full_hyper', 'power'.
     label : label prepended to output filenames.
     save : whether to write CSV / PNG outputs.
     save_dir : directory for output files (defaults to cwd).
@@ -355,7 +390,6 @@ def bootstrap_ssveps(
 
     spec = CURVE_SPECS[curve_type]
     frequencies = {"1F1": input_freq, "2F1": input_freq * 2}
-    n_harmonics = len(frequencies)
 
     # colour palette
     palette = {2: ["red", "blue"], 3: ["red", "green", "blue"],
@@ -385,12 +419,8 @@ def bootstrap_ssveps(
         sum_fh = raw_fh = None  # type: ignore[assignment]
         sum_writer = raw_writer = None  # type: ignore[assignment]
 
-    fig, axes = plt.subplots(
-        4, 2 * n_harmonics,
-        figsize=(11.7, 8.3),
-        layout="constrained",
-    )
-
+    bootstrap_names = spec.bootstrap_names
+    bootstrap_labels = spec.bootstrap_labels
     all_data: list[list[Any]] = []
     raw_headings_written = False
 
@@ -444,6 +474,23 @@ def bootstrap_ssveps(
             "common_sets": common_sets,
         })
 
+    if not genotype_prep:
+        if save:
+            if sum_fh is not None:
+                sum_fh.close()
+            if raw_fh is not None:
+                raw_fh.close()
+        return all_data
+
+    n_conditions = max(len(gp["common_sets"]) for gp in genotype_prep)
+    fig, axes = plt.subplots(
+        len(bootstrap_names),
+        n_conditions,
+        figsize=(max(3.0 * n_conditions, 6.0), max(2.4 * len(bootstrap_names), 3.2)),
+        squeeze=False,
+        layout="constrained",
+    )
+
     # ── run bootstrapping (parallel if n_processes > 1) ──────────────────
     if n_processes is None:
         n_processes = min(cpu_count() - 1, len(genotype_prep)) if cpu_count() else 1
@@ -476,7 +523,7 @@ def bootstrap_ssveps(
 
     # ── process results ──────────────────────────────────────────────────
     for result in results_list:
-        genotype, [c50s_gt, rmaxs_gt], f_count = result
+        genotype, param_values_gt, f_count = result
         gp = next(g for g in genotype_prep if g["genotype"] == genotype)
         g_idx = gp["g_idx"]
         common_sets = gp["common_sets"]
@@ -487,23 +534,23 @@ def bootstrap_ssveps(
             if not raw_headings_written:
                 raw_headings = ["genotype", "bootstrap"]
                 for m, harm in common_sets:
-                    raw_headings.append(f"c50_{m}_{harm}")
-                    raw_headings.append(f"Rmax_{m}_{harm}")
+                    for param_name in bootstrap_names:
+                        raw_headings.append(f"{param_name}_{m}_{harm}")
                 raw_writer.writerow(raw_headings)
                 raw_headings_written = True
 
             for b in range(n_bootstraps):
                 row = [genotype, b]
                 for m, harm in common_sets:
-                    row.append(c50s_gt[(m, harm)][b])
-                    row.append(rmaxs_gt[(m, harm)][b])
+                    for param_name in bootstrap_names:
+                        row.append(param_values_gt[param_name][(m, harm)][b])
                 all_data.append(row)
                 raw_writer.writerow(row)
 
         if save and sum_writer is not None:
             for m, harm in common_sets:
-                for param_name, param_data in [("c50", c50s_gt), ("Rmax", rmaxs_gt)]:
-                    vals = param_data[(m, harm)]
+                for param_name in bootstrap_names:
+                    vals = param_values_gt[param_name][(m, harm)]
                     sum_writer.writerow([
                         genotype, len(valid_files), param_name, harm, m,
                         np.min(vals), np.quantile(vals, 0.025),
@@ -512,58 +559,35 @@ def bootstrap_ssveps(
                     ])
 
         # ── histogram subplots (with error bars at mean) ─────────────────
-        ncols = 2 * n_harmonics
-        col = 0
         means_for_genotype: list[float] = []
         cis_for_genotype: list[list[float]] = []
 
-        for key in common_sets:
-            c50_vals = c50s_gt[key]
-            rmax_vals = rmaxs_gt[key]
+        for col, key in enumerate(common_sets):
+            for row_idx, (param_name, param_label) in enumerate(zip(bootstrap_names, bootstrap_labels)):
+                vals = param_values_gt[param_name][key]
+                mean_val = float(np.mean(vals))
+                ci = [float(np.quantile(vals, 0.025)), float(np.quantile(vals, 0.975))]
 
-            c50_mean = float(np.mean(c50_vals))
-            rmax_mean = float(np.mean(rmax_vals))
-            c50_ci = [float(np.quantile(c50_vals, 0.025)), float(np.quantile(c50_vals, 0.975))]
-            rmax_ci = [float(np.quantile(rmax_vals, 0.025)), float(np.quantile(rmax_vals, 0.975))]
+                means_for_genotype.append(mean_val)
+                cis_for_genotype.append(ci)
 
-            means_for_genotype.extend([c50_mean, rmax_mean])
-            cis_for_genotype.extend([c50_ci, rmax_ci])
-
-            # c50
-            ax_c = axes[0, col] if axes.ndim == 2 else axes[col]
-            ax_c.hist(c50_vals, bins=40, alpha=0.5, color=colors[g_idx],
-                      label=genotype if g_idx == 0 else None)
-            ax_c.errorbar(
-                c50_mean, 0,
-                xerr=[[c50_mean - c50_ci[0]], [c50_ci[1] - c50_mean]],
-                color=colors[g_idx], capsize=5, fmt="o",
-            )
-            if g_idx == 0:
-                ax_c.set_title("c50" if curve_type != "power" else "exponent", fontsize=10)
-            if col == 0:
-                ax_c.set_ylabel(f"{key[1]}\nmask={key[0]}", rotation=0, labelpad=30, fontsize=9)
-            ax_c.tick_params(labelsize=5)
-
-            # Rmax
-            ax_r = axes[1, col] if axes.ndim == 2 else axes[col + ncols]
-            ax_r.hist(rmax_vals, bins=40, alpha=0.5, color=colors[g_idx])
-            ax_r.errorbar(
-                rmax_mean, 0,
-                xerr=[[rmax_mean - rmax_ci[0]], [rmax_ci[1] - rmax_mean]],
-                color=colors[g_idx], capsize=5, fmt="o",
-            )
-            if g_idx == 0:
-                ax_r.set_title("Rmax" if curve_type != "power" else "scale", fontsize=10)
-            ax_r.tick_params(labelsize=5)
-
-            col += 1
+                ax = axes[row_idx, col]
+                ax.hist(vals, bins=40, alpha=0.5, color=colors[g_idx],
+                        label=genotype if g_idx == 0 else None)
+                ax.errorbar(
+                    mean_val, 0,
+                    xerr=[[mean_val - ci[0]], [ci[1] - mean_val]],
+                    color=colors[g_idx], capsize=5, fmt="o",
+                )
+                if g_idx == 0 and row_idx == 0:
+                    ax.set_title(f"{key[1]}, mask={key[0]}", fontsize=10)
+                if col == 0:
+                    ax.set_ylabel(param_label, fontsize=9)
+                ax.tick_params(labelsize=5)
 
         # legend on last genotype
         if g_idx == genotype_prep[-1]["g_idx"]:
-            if axes.ndim == 2:
-                axes[0, -1].legend(genotypes, fontsize=6)
-            else:
-                axes[-1].legend(genotypes, fontsize=6)
+            axes[0, -1].legend(genotypes, fontsize=6)
 
         # store for comparison
         comparison_means[genotype] = means_for_genotype
@@ -577,7 +601,7 @@ def bootstrap_ssveps(
         if raw_fh is not None:
             raw_fh.close()
         fig_path = save_dir / f"{file_stem}_HIS.png"
-        plt.savefig(fig_path)
+        fig.savefig(fig_path)
         log.info("Saved histogram to %s", fig_path)
 
     if show_plot:
@@ -588,10 +612,8 @@ def bootstrap_ssveps(
     # ── statistical comparison (from flickerPy) ──────────────────────────
     param_names_for_comparison = []
     for key in common_sets:
-        p_label = "c50" if curve_type != "power" else "exponent"
-        r_label = "Rmax" if curve_type != "power" else "scale"
-        param_names_for_comparison.append(f"{p_label}_{key[0]}_{key[1]}")
-        param_names_for_comparison.append(f"{r_label}_{key[0]}_{key[1]}")
+        for param_label in bootstrap_labels:
+            param_names_for_comparison.append(f"{param_label}_{key[0]}_{key[1]}")
 
     if comparison_means:
         _compare_genotypes(

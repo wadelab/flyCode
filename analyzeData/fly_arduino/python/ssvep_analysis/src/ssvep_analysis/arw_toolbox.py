@@ -24,7 +24,7 @@ from scipy.stats import f as f_dist
 from scipy.stats import studentized_range
 from scipy.stats import t as t_dist
 
-from .bootstrap import CURVE_SPECS, hyperbolic, hyperbolic_full, power_function
+from .bootstrap import CURVE_SPECS
 from .reader import ExperimentDefaults, get_svp_files, read_file
 
 log = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ class ArwAnalysisConfig:
     output_prefix: str | None = None
     input_freq: int = 12
     harmonics: Mapping[str, int] | None = None
-    fit_types: Sequence[str] = ("reduced_hyper", "power", "full_hyper")
+    fit_types: Sequence[str] = ("reduced_hyper", "power", "full_hyper", "fixed_c50_hyper")
     high_contrast_n: int = 2
     genotype_order: Sequence[str] | None = None
     timepoint_order: Sequence[str] | None = None
@@ -355,7 +355,7 @@ def _fit_curve(probes: np.ndarray, responses: np.ndarray, fit_type: str) -> np.n
 def arw_fit_observations(
     observations: pd.DataFrame,
     *,
-    fit_types: Sequence[str] = ("reduced_hyper", "power", "full_hyper"),
+    fit_types: Sequence[str] = ("reduced_hyper", "power", "full_hyper", "fixed_c50_hyper"),
 ) -> pd.DataFrame:
     """Fit configured contrast-response curves to each fly/harmonic/mask."""
 
@@ -747,13 +747,9 @@ def _apply_plot_style(ax: plt.Axes) -> None:
 
 
 def _curve_values(fit_type: str, x_values: np.ndarray, params: Sequence[float]) -> np.ndarray:
-    if fit_type == "reduced_hyper":
-        return hyperbolic(x_values, *params)
-    if fit_type == "full_hyper":
-        return hyperbolic_full(x_values, *params)
-    if fit_type == "power":
-        return power_function(x_values, *params)
-    raise ValueError(f"Unknown fit type {fit_type!r}")
+    if fit_type not in CURVE_SPECS:
+        raise ValueError(f"Unknown fit type {fit_type!r}")
+    return CURVE_SPECS[fit_type].curve_fn(x_values, *params)
 
 
 def _bootstrap_curve_band(
@@ -1394,7 +1390,7 @@ def arw_analyze_directory(
     output_dir: Path | str | None = None,
     output_prefix: str | None = None,
     input_freq: int = 12,
-    fit_types: Sequence[str] = ("reduced_hyper", "power", "full_hyper"),
+    fit_types: Sequence[str] = ("reduced_hyper", "power", "full_hyper", "fixed_c50_hyper"),
     high_contrast_n: int = 2,
     genotype_order: Sequence[str] | None = None,
     timepoint_order: Sequence[str] | None = None,

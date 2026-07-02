@@ -6,6 +6,7 @@ import argparse
 import logging
 from pathlib import Path
 
+from .bootstrap import CURVE_SPECS
 from .arw_toolbox import ArwAnalysisConfig, arw_analyze_directory
 
 
@@ -31,8 +32,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--fit-types",
         nargs="+",
-        default=["reduced_hyper", "power", "full_hyper"],
-        choices=["reduced_hyper", "power", "full_hyper"],
+        default=["reduced_hyper", "power", "full_hyper", "fixed_c50_hyper"],
+        choices=sorted(CURVE_SPECS),
         help="Curve families to fit per fly.",
     )
     parser.add_argument(
